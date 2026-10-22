@@ -28,13 +28,32 @@ export default function StorePage({ params }: { params: { slug: string } }) {
     else setCart([...cart, {...p, qty:1}]);
   }
   function total(){ return cart.reduce((s,i)=>s+i.price*i.qty,0); }
+  
   function orderWA(){
     if(cart.length===0) return;
     const name = prompt('Your Name?')||'Customer';
     const phone = prompt('Your Phone?')||'';
+    if(!name || !phone) return alert('Please enter name and phone');
     const items = cart.map(i=>`${i.name} x${i.qty} = Rs.${i.price*i.qty}`).join('%0A');
     const msg = `Salam ${profile.business_name}!%0ANew Order:%0A${items}%0ATotal Rs.${total()}%0ACustomer: ${name} ${phone}`;
-    window.open(`https://wa.me/${profile.whatsapp_number}?text=${msg}`, '_blank');
+    const waUrl = `https://wa.me/${profile.whatsapp_number}?text=${msg}`;
+    
+    // FIX: Avoid popup blocker - use direct navigation instead of window.open
+    // This works on all mobiles
+    const link = document.createElement('a');
+    link.href = waUrl;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Fallback if still blocked
+    setTimeout(() => {
+      if (!document.hidden) {
+        window.location.href = waUrl;
+      }
+    }, 500);
   }
 
   if(loading) return <div className="p-10 text-center">Loading {params.slug}...</div>;
