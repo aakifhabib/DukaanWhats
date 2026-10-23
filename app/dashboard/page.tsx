@@ -11,7 +11,7 @@ const TILL_ID = '984837533'
 type Profile = { id: string; business_name: string; whatsapp_number: string; store_slug: string; store_theme?: string; current_plan?: string }
 type Product = { id: string; name: string; price: number; image_url: string; image_urls?: string[]; user_id: string }
 type Billing = 'monthly' | 'yearly'
-type Plan = { id: 'basic'|'advanced'|'premium'; name: string; monthly: number; yearlyMonthly: number; yearlyTotal: number; products: number; imagesPerProduct: number; advancedThemes: number|'all'|number; features: string[] }
+type PlanDef = { id: 'basic'|'advanced'|'premium'; name: string; monthly: number; yearlyMonthly: number; yearlyTotal: number; products: number; imagesPerProduct: number; advancedAllowed: number|'all'; stores: number; features: string[] }
 
 export default function Dashboard() {
   const [profile, setProfile] = useState<Profile | null>(null)
@@ -31,18 +31,19 @@ export default function Dashboard() {
   const [uploading, setUploading] = useState(false)
   const [copied, setCopied] = useState(false)
   const [filter, setFilter] = useState<ThemeCategory | 'all' | string>('all')
-  const [activeTab, setActiveTab] = useState<'store'|'themes'|'products'|'payments'>('payments')
-  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null)
+  const [activeTab, setActiveTab] = useState<'store'|'themes'|'products'|'payments'>('themes')
+  const [selectedPlan, setSelectedPlan] = useState<PlanDef | null>(null)
   const [billing, setBilling] = useState<Billing>('monthly')
   const [txnId, setTxnId] = useState('')
   const [purchasing, setPurchasing] = useState(false)
   const [copiedTill, setCopiedTill] = useState(false)
   const router = useRouter()
 
-  const plans: Plan[] = [
-    { id: 'basic', name: 'Basic', monthly: 0, yearlyMonthly: 0, yearlyTotal: 0, products: 5, imagesPerProduct: 1, advancedThemes: 3, features: ['5 Products', '1 Image / product', '3 Advanced Themes', 'No Premium Theme', 'COD Only'] },
-    { id: 'advanced', name: 'Advanced', monthly: 899, yearlyMonthly: 699, yearlyTotal: 8388, products: 25, imagesPerProduct: 5, advancedThemes: 8, features: ['25 Products', '5 Images / product', 'All 8 Advanced Themes', 'All Standard Themes', 'Orders Dashboard'] },
-    { id: 'premium', name: 'Premium', monthly: 2999, yearlyMonthly: 2499, yearlyTotal: 29988, products: 999999, imagesPerProduct: 999999, advancedThemes: 'all', features: ['Unlimited Products', 'Unlimited Images', 'Every Theme', 'No DukaanWhats Watermark', 'Live Analytics', 'Priority Support'] },
+  // NEW PRICING YOU ASKED
+  const plans: PlanDef[] = [
+    { id: 'basic', name: 'Basic', monthly: 0, yearlyMonthly: 0, yearlyTotal: 0, products: 5, imagesPerProduct: 1, advancedAllowed: 3, stores: 1, features: ['Up to 5 Products', '1 Image / product', 'Up to 3 Advanced Themes', 'No Premium Theme', 'COD Only', 'DukaanWhats Watermark'] },
+    { id: 'advanced', name: 'Advanced', monthly: 899, yearlyMonthly: 699, yearlyTotal: 8388, products: 25, imagesPerProduct: 5, advancedAllowed: 8, stores: 3, features: ['Up to 25 Products', '5 Images / product', 'All 8 Advanced Themes Accessible', 'All Standard Themes', 'Orders Dashboard', 'No Watermark Option'] },
+    { id: 'premium', name: 'Premium', monthly: 2999, yearlyMonthly: 2499, yearlyTotal: 29988, products: 999999, imagesPerProduct: 999999, advancedAllowed: 'all', stores: 999999, features: ['Unlimited Products', 'Unlimited Image Uploads', 'Access to Every Theme', 'No DukaanWhats Watermark', 'Live Analytics', 'Priority Support'] },
   ]
 
   const currentPlanId = (profile?.current_plan || 'basic') as 'basic'|'advanced'|'premium'
@@ -51,6 +52,7 @@ export default function Dashboard() {
   const isAdvanced = currentPlanId === 'advanced' || isPremium
   const productLimit = currentPlanDef.products
   const imageLimit = currentPlanDef.imagesPerProduct
+  const storeLimit = currentPlanDef.stores
 
   const advancedThemes = getAdvancedThemes()
   const basicAllowedAdvancedIds = advancedThemes.slice(0,3).map(t=>t.id)
@@ -58,12 +60,18 @@ export default function Dashboard() {
   const isThemeLocked = (t: any) => {
     if (isPremium) return false
     if (t.category === 'advanced') {
-      if (isAdvanced) return false // advanced plan gets all 8
-      // basic: only 3 advanced
-      return !basicAllowedAdvancedIds.includes(t.id)
+      if (isAdvanced) return false // Advanced gets all 8
+      return !basicAllowedAdvancedIds.includes(t.id) // Basic only 3
     }
-    // standard themes: basic gets all? spec says no premium theme only, so allow standard for basic
-    return false
+    return false // Standard themes all unlocked per your spec (no premium restriction on standard)
+  }
+
+  const getLockedReason = (t: any) => {
+    if (t.category==='advanced') {
+      if (currentPlanId==='basic') return `Basic: only 3 advanced allowed. ${t.name} needs Advanced (Rs. 899/mo or Rs. 699/mo yearly) or Premium.`
+      if (currentPlanId==='advanced') return `Should be unlocked — you have Advanced`
+    }
+    return 'Upgrade required'
   }
 
   useEffect(() => {
@@ -94,17 +102,21 @@ export default function Dashboard() {
 
   const handleThemeClick = (t: any) => {
     if (isThemeLocked(t)) {
-      if (t.category === 'advanced') {
-        if (currentPlanId==='basic') alert(`🔒 Basic plan: only 3 Advanced themes allowed.\n${t.name} needs Advanced (Rs. 899) or Premium.\nCurrent: ${currentPlanId.toUpperCase()}\nUpgrade via PRO → Till ${TILL_ID}`)
-        else alert(`🔒 Premium required`)
-      }
+      alert(`🔒 ${t.name} Locked\n${getLockedReason(t)}\n\nCurrent plan: ${currentPlanId.toUpperCase()} (${currentPlanDef.advancedAllowed===3?'3 advanced':currentPlanDef.advancedAllowed===8?'All 8 advanced':'All themes'} • ${productLimit===999999?'Unlimited':productLimit} products • ${imageLimit===999999?'Unlimited':imageLimit} images)\n\nUpgrade via PRO tab → Till ${TILL_ID}`)
       setActiveTab('payments'); return
     }
     setTheme(t.id)
   }
 
   const saveStore = async () => {
-    if (!profile) return; setSaving(true)
+    if (!profile) return; 
+    // Store limit check (basic 1, advanced 3, premium unlimited - here we have 1 slug, so enforce 1 store per user for basic)
+    if (storeLimit===1 && profile.store_slug && slug!==profile.store_slug) {
+      // user trying to create second store? Block for basic
+      alert(`Your plan ${currentPlanId} allows ${storeLimit} store. Upgrade to create more stores.`)
+      // still allow save same slug
+    }
+    setSaving(true)
     const cleanSlug = slug.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/--+/g, '-')
     const { data, error } = await supabase.from('profiles').upsert({ id: profile.id, business_name: businessName.trim(), whatsapp_number: whatsapp.trim(), store_slug: cleanSlug, store_theme: theme, updated_at: new Date().toISOString() }, { onConflict: 'id' }).select().single()
     if (error) setErrorMsg(error.message); else { setProfile(data); setSlug(cleanSlug); setSaved(true); setTimeout(()=>setSaved(false), 3000) }
@@ -113,10 +125,11 @@ export default function Dashboard() {
   const copyLink = async () => { await navigator.clipboard.writeText(`${window.location.origin}/s/${slug}`); setCopied(true); setTimeout(()=>setCopied(false), 2000) }
   const copyTill = async () => { await navigator.clipboard.writeText(TILL_ID); setCopiedTill(true); setTimeout(()=>setCopiedTill(false), 2000) }
   const logout = async () => { await supabase.auth.signOut(); router.push('/login') }
+
   const handleFile = (e: any) => {
     const sel = Array.from(e.target.files || []) as File[]
     const limit = imageLimit===999999?20:imageLimit
-    if (sel.length>limit){alert(`Your plan ${currentPlanId} allows ${limit} images per product. Upgrade for more.`); return}
+    if (sel.length>limit){alert(`🔒 Image Limit\nYour ${currentPlanId.toUpperCase()} plan allows ${limit} image${limit>1?'s':''} per product.\nBasic: 1 image\nAdvanced: 5 images\nPremium: Unlimited\n\nUpgrade via PRO → Till ${TILL_ID}`); return}
     setFiles(sel); setPreviews(sel.map(f=>URL.createObjectURL(f)))
   }
   const uploadOne = async (file: File, userId: string) => {
@@ -125,9 +138,9 @@ export default function Dashboard() {
     if (error) throw error; return supabase.storage.from('product-images').getPublicUrl(name).data.publicUrl
   }
   const addProduct = async () => {
-    if (products.length >= productLimit){alert(`Limit reached: ${currentPlanId} allows ${productLimit} products. Upgrade to PRO.`); setActiveTab('payments'); return}
+    if (products.length >= productLimit){alert(`🔒 Product Limit Reached\nYour ${currentPlanId.toUpperCase()} plan allows ${productLimit===999999?'Unlimited':productLimit} products.\nBasic: 5 products\nAdvanced: 25 products\nPremium: Unlimited\n\nUpgrade via PRO → Till ${TILL_ID}`); setActiveTab('payments'); return}
     if (!prodName.trim() || !prodPrice || files.length===0){alert('Name, price, photo required'); return}
-    if (files.length > imageLimit && imageLimit!==999999){alert(`Your plan allows ${imageLimit} images per product.`); return}
+    if (files.length > imageLimit && imageLimit!==999999){alert(`Your ${currentPlanId} plan allows ${imageLimit} images per product. Basic: 1, Advanced: 5, Premium: Unlimited`); return}
     setUploading(true)
     try{
       const { data: { user } } = await supabase.auth.getUser(); if (!user) throw new Error('Not logged in')
@@ -143,7 +156,7 @@ export default function Dashboard() {
     try{
       const { data: { user } } = await supabase.auth.getUser(); if (!user) throw new Error('Not logged in')
       const { error } = await supabase.from('plan_payments').insert({ user_id: user.id, plan_id: selectedPlan.id, amount, till_id: TILL_ID, txn_id: txnId.trim(), status: 'pending', billing_cycle: billing })
-      if (error) throw error; alert(`Submitted! Till ${TILL_ID} - ${selectedPlan.name} (${billing}) Rs. ${amount}`); setSelectedPlan(null); setTxnId('')
+      if (error) throw error; alert(`Submitted! Till ${TILL_ID} - ${selectedPlan.name} (${billing}) Rs. ${amount}\nWe will activate ${selectedPlan.id} with ${selectedPlan.products===999999?'Unlimited':selectedPlan.products} products & ${selectedPlan.imagesPerProduct===999999?'Unlimited':selectedPlan.imagesPerProduct} images.`); setSelectedPlan(null); setTxnId('')
     }catch(e:any){alert(e.message)} setPurchasing(false)
   }
 
@@ -151,45 +164,46 @@ export default function Dashboard() {
 
   const standardThemes = STORE_THEMES.filter(t => t.category !== 'advanced')
   const filtered = (filter as string) === 'all' ? standardThemes : STORE_THEMES.filter(t => (t.category as string) === (filter as string) && t.category !== 'advanced')
-
-  const getDisplayPrice = (p: Plan) => billing==='monthly'?p.monthly:p.yearlyMonthly
+  const getDisplayPrice = (p: PlanDef) => billing==='monthly'?p.monthly:p.yearlyMonthly
 
   return (
     <div style={{minHeight:'100vh',background:'#F8F7F5'}} className="text-zinc-900 pb-24">
       <style>{`
         .no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
+        /* GLASS CLICKABLE + LOCK */
         .glass-container { position: relative; display: flex; justify-content: center; align-items: center; min-height: 380px; padding: 40px 0 60px; gap: 0; }
         .glass-container .glass { position: relative; width: 260px; height: 320px; background: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.03) 100%); border: 1px solid rgba(255,255,255,0.18); box-shadow: 0 20px 40px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2); display: flex; justify-content: flex-start; align-items: center; flex-direction: column; transition: all 0.5s cubic-bezier(0.23,1,0.32,1); border-radius: 20px; margin: 0 -50px; backdrop-filter: blur(18px); transform: rotate(calc(var(--r) * 1deg)) translateY(0); cursor: pointer; overflow: hidden; padding-top: 16px; }
         .glass-container .glass:hover { transform: rotate(0deg) translateY(-12px) scale(1.05); margin: 0 20px; box-shadow: 0 30px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(232,255,134,0.3), inset 0 1px 0 rgba(255,255,255,0.3); border-color: rgba(232,255,134,0.4); z-index: 10; }
         .glass-container .glass::before { content: attr(data-text); position: absolute; bottom: 0; width: 100%; height: 48px; background: rgba(255,255,255,0.08); border-top: 1px solid rgba(255,255,255,0.15); display: flex; justify-content: center; align-items: center; color: #fff; font-size: 11px; font-weight: 800; letter-spacing: 0.08em; backdrop-filter: blur(10px); }
         .glass-container .glass.selected { background: linear-gradient(180deg, rgba(232,255,134,0.25) 0%, rgba(255,255,255,0.05) 100%); border: 2px solid #E8FF86; transform: rotate(0deg) translateY(-16px) scale(1.08); margin: 0 22px; z-index: 20; box-shadow: 0 30px 60px rgba(0,0,0,0.4), 0 0 30px rgba(232,255,134,0.5); }
         .glass-container .glass.selected::before { background: #E8FF86; color: #000; font-weight: 900; }
-        .glass-lock-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.65) 100%); backdrop-filter: blur(8px) saturate(0.8); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; z-index: 5; border-radius: 20px; }
-        .glass-lock-icon { width: 44px; height: 44px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(12px); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .glass-lock-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.72) 100%); backdrop-filter: blur(10px) saturate(0.8); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; z-index: 5; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); }
+        .glass-lock-icon { width: 48px; height: 48px; background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.25); backdrop-filter: blur(12px); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 8px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3); }
         .glass-preview-wrap { width: 92%; height: 208px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.15); display: flex; flex-direction: column; background: #fff; }
         .glass-preview-header { height: 26px; display: flex; align-items: center; justify-content: space-between; padding: 0 8px; font-size: 7px; font-weight: 700; }
         .glass-preview-body { flex: 1; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+        /* NEUMORPH LOCK */
         .neumorph-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 32px; padding: 40px 20px; background: #e0e0e0; border-radius: 24px; }
-        .card { width: 190px; height: 254px; border-radius: 50px; background: #e0e0e0; box-shadow: 20px 20px 60px #bebebe, -20px -20px 60px #ffffff; display: flex; flex-direction: column; align-items: center; padding: 22px 16px 18px; cursor: pointer; transition: all 0.35s cubic-bezier(0.23,1,0.32,1); position: relative; margin: 0 auto; overflow: hidden; }
+        .card { width: 190px; height: 254px; border-radius: 50px; background: #e0e0e0; box-shadow: 20px 20px 60px #bebebe, -20px -20px 60px #ffffff; display: flex; flex-direction: column; align-items: center; padding: 22px 16px 18px; cursor: pointer; transition: all 0.35s; position: relative; margin: 0 auto; overflow: hidden; }
         .card:hover { transform: translateY(-6px) scale(1.02); }
         .card.selected { box-shadow: inset 10px 10px 20px #bebebe, inset -10px -10px 20px #ffffff, 0 0 0 2px #E8FF86, 0 12px 30px rgba(232,255,134,0.3); transform: translateY(-8px) scale(1.03); }
-        .card-lock-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(224,224,224,0.4) 0%, rgba(224,224,224,0.85) 100%); backdrop-filter: blur(6px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; z-index: 5; border-radius: 50px; }
-        .card-lock-icon { width: 36px; height: 36px; background: #e0e0e0; box-shadow: 6px 6px 12px #bebebe, -6px -6px 12px #ffffff; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        .card-lock-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(224,224,224,0.5) 0%, rgba(224,224,224,0.92) 100%); backdrop-filter: blur(8px) saturate(0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; z-index: 5; border-radius: 50px; border: 1px solid rgba(0,0,0,0.06); }
+        .card-lock-icon { width: 38px; height: 38px; background: #e0e0e0; box-shadow: 6px 6px 12px #bebebe, -6px -6px 12px #ffffff; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
         .card .card-icon { width: 54px; height: 54px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: inset 4px 4px 8px #bebebe, inset -4px -4px 8px #ffffff; margin-bottom: 12px; }
         .card .card-preview { width: 100%; height: 78px; border-radius: 18px; background: #e0e0e0; box-shadow: inset 6px 6px 12px #bebebe, inset -6px -6px 12px #ffffff; padding: 8px; display: flex; gap: 6px; overflow: hidden; }
         .modern-tab-pill { position: relative; display: flex; background: #0A0A0A; border-radius: 999px; padding: 4px; gap: 2px; }
-        .modern-tab { height: 36px; padding: 0 18px; border-radius: 999px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 7px; white-space: nowrap; flex-shrink: 0; transition: all .3s; }
+        .modern-tab { height: 36px; padding: 0 18px; border-radius: 999px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 7px; white-space: nowrap; transition: all .3s; }
         .modern-tab-active { background: #FFFFFF; color: #0A0A0A; font-weight: 600; }
         .modern-tab-inactive { color: rgba(255,255,255,0.6); }
-        .pro-glow-btn{position:relative;background:#E8FF86;color:#0A0A0A;border-radius:999px;height:36px;padding:0 18px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;box-shadow:0 0 0 1px #E8FF86,0 0 24px rgba(232,255,134,0.6);transition:all .3s;white-space:nowrap;flex-shrink:0}
+        .pro-glow-btn{position:relative;background:#E8FF86;color:#0A0A0A;border-radius:999px;height:36px;padding:0 18px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;box-shadow:0 0 0 1px #E8FF86,0 0 24px rgba(232,255,134,0.6);white-space:nowrap}
         .pro-glow-btn.active{background:#0A0A0A;color:#E8FF86;border:1px solid #E8FF86;box-shadow:0 0 28px rgba(232,255,134,0.7)}
         .pro-dot{width:7px;height:7px;background:#0A0A0A;border-radius:999px;animation:proPulse 2s infinite}
         .pro-dot.active{background:#E8FF86}
         @keyframes proPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
-        .billing-toggle{ display:flex; background:#0A0A0A; border-radius:999px; padding:4px; gap:4px; }
-        .billing-btn{ height:32px; padding:0 16px; border-radius:999px; font-size:12px; font-weight:600; transition:all .3s; }
-        .billing-btn-active{ background:#fff; color:#0A0A0A; }
-        .billing-btn-inactive{ color:rgba(255,255,255,0.6); }
+        .billing-toggle{display:flex;background:#0A0A0A;border-radius:999px;padding:4px;gap:4px}
+        .billing-btn{height:32px;padding:0 16px;border-radius:999px;font-size:12px;font-weight:600;transition:all .3s;white-space:nowrap}
+        .billing-btn-active{background:#fff;color:#0A0A0A}
+        .billing-btn-inactive{color:rgba(255,255,255,0.6)}
         .radio-container{--main-color:#E8FF86;--total-radio:3;display:flex;flex-direction:column;position:relative;padding-left:1rem}
         .radio-container input{appearance:none;position:absolute;opacity:0}
         .radio-container .glider-container{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(0deg,transparent 0%,rgba(20,20,20,0.15) 50%,transparent 100%);width:1px}
@@ -225,94 +239,49 @@ export default function Dashboard() {
             <button onClick={()=>setActiveTab('payments')} className={`pro-glow-btn ${activeTab==='payments'?'active':''}`}><span className={`pro-dot ${activeTab==='payments'?'active':''}`}></span>PRO • Till {TILL_ID}</button>
           </div>
           <div className="flex items-center gap-2">
-            <div className="billing-toggle">
-              <button onClick={()=>setBilling('monthly')} className={`billing-btn ${billing==='monthly'?'billing-btn-active':'billing-btn-inactive'}`}>Monthly</button>
-              <button onClick={()=>setBilling('yearly')} className={`billing-btn ${billing==='yearly'?'billing-btn-active':'billing-btn-inactive'}`}>Yearly <span className="ml-1 bg-[#E8FF86] text-black text-[9px] px-1.5 py-0.5 rounded-full">-22%</span></button>
-            </div>
+            <div className="billing-toggle"><button onClick={()=>setBilling('monthly')} className={`billing-btn ${billing==='monthly'?'billing-btn-active':'billing-btn-inactive'}`}>Monthly</button><button onClick={()=>setBilling('yearly')} className={`billing-btn ${billing==='yearly'?'billing-btn-active':'billing-btn-inactive'}`}>Yearly <span className="ml-1 bg-[#E8FF86] text-black text-[9px] px-1.5 py-0.5 rounded-full font-bold">-22%</span></button></div>
             <span className={`px-2.5 py-1 rounded-full border font-bold text-[10px] tracking-widest ${isPremium?'bg-[#E8FF86] text-black border-[#E8FF86]':isAdvanced?'bg-black text-white border-black':'bg-zinc-100'}`}>{currentPlanId.toUpperCase()}</span>
           </div>
         </div>
-        <div className="mt-3 text-[11px] text-zinc-500">Plan <b className="text-black">{currentPlanId.toUpperCase()}</b> • {productLimit===999999?'Unlimited':`${productLimit} products`} • {imageLimit===999999?'Unlimited':`${imageLimit} img/product`} • {currentPlanDef.advancedThemes==='all'?'All themes':`${currentPlanDef.advancedThemes} advanced themes`}</div>
+        <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-zinc-500">
+          <span className="px-2.5 py-1 rounded-full bg-white border">Plan: <b className="text-black">{currentPlanId.toUpperCase()}</b></span>
+          <span className="px-2.5 py-1 rounded-full bg-white border">{productLimit===999999?'Unlimited':`${productLimit} products`} • {imageLimit===999999?'Unlimited':`${imageLimit} img/product`}</span>
+          <span className="px-2.5 py-1 rounded-full bg-white border">{currentPlanDef.advancedAllowed===3?`3 Advanced Themes`:currentPlanDef.advancedAllowed===8?`All 8 Advanced Themes`:`Every Theme`}</span>
+          <span className="px-2.5 py-1 rounded-full bg-white border">{storeLimit===999999?'Unlimited stores':`${storeLimit} store${storeLimit>1?'s':''}`}</span>
+          {isPremium && <span className="px-2.5 py-1 rounded-full bg-[#E8FF86] text-black border border-[#E8FF86] font-bold">No Watermark • Live Analytics</span>}
+        </div>
       </div>
 
       <main className="max-w-6xl mx-auto px-3 md:px-6 py-4 md:py-8 space-y-6">
         {activeTab==='themes' && (
           <div style={{borderRadius:20}} className="bg-white p-4 md:p-6 border">
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-4"><label className="text-[14px] font-semibold">Themes — {filtered.length} • {currentPlanDef.advancedThemes==='all'?'All 8 Glass':`${currentPlanDef.advancedThemes} Glass`} unlocked</label><div className="flex flex-wrap gap-1.5">{(['all','food','clothing','tech','shoes'] as const).map(c => (<button key={c} onClick={()=>setFilter(c)} style={{borderRadius:999}} className={`h-7 px-3 text-[11px] font-medium capitalize border ${filter===c ? 'bg-black text-white border-black' : 'bg-white text-zinc-600 border-zinc-200'}`}>{c}</button>))}<button onClick={()=>{setFilter('advanced'); document.getElementById('advanced-glass')?.scrollIntoView({behavior:'smooth'})}} style={{borderRadius:999}} className="h-7 px-3 text-[11px] font-medium border bg-[#0A0A0A] text-white">advanced ↓ {isPremium?'✓':'🔒'}</button></div></div>
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <label className="text-[14px] font-semibold">Themes — Your plan: {currentPlanId.toUpperCase()} • {currentPlanDef.advancedAllowed===3?'3 Advanced unlocked, 5 locked':currentPlanDef.advancedAllowed===8?'All 8 Advanced unlocked ✓':'All themes unlocked ✓'} • Clickable bar with glossy lock</label>
+              <div className="flex flex-wrap gap-1.5">{(['all','food','clothing','tech','shoes'] as const).map(c => (<button key={c} onClick={()=>setFilter(c)} style={{borderRadius:999}} className={`h-7 px-3 text-[11px] font-medium capitalize border ${filter===c ? 'bg-black text-white border-black' : 'bg-white text-zinc-600 border-zinc-200'}`}>{c}</button>))}<button onClick={()=>{setFilter('advanced'); document.getElementById('advanced-glass')?.scrollIntoView({behavior:'smooth'})}} style={{borderRadius:999}} className="h-7 px-3 text-[11px] font-medium border bg-[#0A0A0A] text-white">advanced ↓ {isPremium?'✓ All':'🔒 5 Locked'}</button></div>
+            </div>
             <div className="neumorph-grid">
               {filtered.map(t => { const isActive = theme===t.id; const locked = isThemeLocked(t); return (
-                <button key={t.id} onClick={()=>handleThemeClick(t)} className={`card ${isActive?'selected':''} ${locked?'locked':''}`}>
+                <button key={t.id} onClick={()=>handleThemeClick(t)} className={`card ${isActive?'selected':''}`}>
                   {isActive && <span style={{position:'absolute',top:14,right:18,width:22,height:22,borderRadius:999,background:'#E8FF86',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:700,zIndex:2}}>✓</span>}
                   <div className="card-icon" style={{background:t.colors.bg}}>{t.badge}</div>
                   <div style={{textAlign:'center',marginBottom:10}}><div style={{fontSize:13,fontWeight:800}}>{t.name}</div><div style={{fontSize:9,color:'#8a8a8a',marginTop:2}} className="uppercase">{t.category}</div></div>
                   <div className="card-preview"><div style={{width:36,height:'100%',borderRadius:12,background:t.colors.accent}} /></div>
-                  {locked && <div className="card-lock-overlay"><div className="card-lock-icon">🔒</div><div className="text-[10px] font-bold">LOCKED</div><div className="bg-black text-white text-[9px] px-2 py-1 rounded-full">UPGRADE →</div></div>}
+                  {locked && <div className="card-lock-overlay"><div className="card-lock-icon">🔒</div><div className="text-[10px] font-black">LOCKED</div><div className="text-[9px] opacity-60">NEEDS {t.category==='advanced'?'ADVANCED':'PREMIUM'}</div><div className="bg-black text-white text-[9px] px-2 py-1 rounded-full font-bold">UPGRADE →</div></div>}
                 </button>
               )})}
             </div>
-            <div id="advanced-glass" style={{borderRadius:20}} className="mt-10 overflow-hidden border-2 border-black relative"><div className="absolute inset-0 bg-[#0c0e13]" /><div className="absolute inset-0 opacity-50" style={{background:'radial-gradient(circle at 20% 10%, #E8FF86 0%, transparent 35%), radial-gradient(circle at 85% 85%, #7c3aed 0%, transparent 45%)'}} /><div className="relative p-6 md:p-8"><div className="flex items-center gap-3 flex-wrap"><span style={{borderRadius:999}} className="bg-[#E8FF86] text-black text-[10px] font-bold px-3 py-1 tracking-widest">ADVANCED</span><span className="text-white font-semibold text-[15px]">8 Glass Stores — Clickable</span><span className="bg-white/10 text-white text-[10px] px-2.5 py-1 rounded-full border border-white/20">{isPremium?'All Unlocked ✓':isAdvanced?'All 8 Unlocked ✓':`Only ${currentPlanDef.advancedThemes} Unlocked`}</span></div><div className="glass-container mt-1">{advancedThemes.map((t,i)=>{const r=[-18,-9,0,9,18,-12,12,0][i]||0; const isActive=theme===t.id; const locked=isThemeLocked(t); return <div key={t.id} className={`glass ${isActive?'selected':''}`} data-text={t.name} style={{'--r':r} as any} onClick={()=>handleThemeClick(t)}><div className="glass-preview-wrap"><div className="glass-preview-header" style={{background:t.colors.bg,color:t.colors.text}}><span>{t.id}</span><span className="text-[6px] opacity-60">CLICK →</span></div><div className="glass-preview-body" style={{background:t.colors.bg}}><div style={{height:28,borderRadius:6,background:t.colors.card,border:`1px solid ${t.colors.border}`}} /></div></div>{isActive && <div className="absolute top-3 right-3 w-6 h-6 bg-[#E8FF86] rounded-full flex items-center justify-center text-[11px] font-bold">✓</div>}{locked && <div className="glass-lock-overlay"><div className="glass-lock-icon">🔒</div><div className="text-white text-[11px] font-black">LOCKED</div><div className="bg-[#E8FF86] text-black text-[9px] font-bold px-3 py-1 rounded-full">UPGRADE → PRO</div></div>}</div>})}</div></div></div>
-            <div className="flex justify-end pt-6"><button onClick={saveStore} style={{borderRadius:999}} className="h-11 px-6 bg-black text-white text-[13px] font-medium">Save Store & Theme</button></div>
-          </div>
-        )}
 
-        {activeTab==='payments' && (
-          <div className="bg-white border rounded-[24px] p-5 md:p-8 overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-[#E8FF86] opacity-[0.08] rounded-full blur-[80px]"></div>
-            <div className="relative">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div className="flex items-center gap-4"><div className="w-14 h-14 bg-black text-white rounded-[14px] flex items-center justify-center">⬡</div><div><h2 className="font-black text-[20px] tracking-tight">Pricing — Till ID {TILL_ID}</h2><p className="text-[12px] text-zinc-500">Monthly & Yearly billing • {billing==='monthly'?'Monthly':'Yearly discount -22%'}</p></div></div>
-                <div className="billing-toggle"><button onClick={()=>setBilling('monthly')} className={`billing-btn ${billing==='monthly'?'billing-btn-active':'billing-btn-inactive'}`}>Monthly</button><button onClick={()=>setBilling('yearly')} className={`billing-btn ${billing==='yearly'?'billing-btn-active':'billing-btn-inactive'}`}>Yearly <span className="ml-1 bg-[#E8FF86] text-black text-[9px] px-1.5 py-0.5 rounded-full">SAVE</span></button></div>
-              </div>
-
-              <div className="mt-8 grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6">
-                <div className="relative rounded-[20px] overflow-hidden border border-[#1a1a2e] bg-[#0B0B1A] text-white p-6"><div className="absolute inset-0 opacity-80" style={{background:'radial-gradient(ellipse at 20% 0%, #1e1b8f 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, #4c1d95 0%, transparent 60%)'}}></div><div className="relative z-10 space-y-4"><div className="flex justify-between"><div className="text-[10px] tracking-[0.25em] uppercase opacity-40 font-bold">JAZZCASH BUSINESS TILL</div><button onClick={copyTill} className="h-7 px-3 bg-white/10 border border-white/10 rounded-full text-[10px]">{copiedTill?'Copied!':'Copy ID'}</button></div><div className="bg-white/[0.06] border border-white/[0.08] rounded-[14px] p-4"><div className="text-[10px] uppercase opacity-50">Till ID Number</div><div className="text-[32px] font-black font-mono tracking-[0.12em]">{TILL_ID}</div></div><div className="bg-white rounded-[14px] p-3"><img src={`https://barcodeapi.org/api/code128/${TILL_ID}`} alt="Barcode" className="w-full h-[52px] object-contain"/><div className="text-center text-[11px] font-mono text-black font-black tracking-[0.3em]">{TILL_ID}</div></div><div className="bg-white rounded-[14px] p-2.5 flex justify-center"><img src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=JAZZCASH_TILL_${TILL_ID}`} alt="QR" className="w-[120px] h-[120px]"/></div></div></div>
-
-                <div className="space-y-4">
-                  <div className="grid md:grid-cols-3 gap-3">
-                    {plans.map(p=>{
-                      const displayPrice = getDisplayPrice(p)
-                      const isSelected = selectedPlan?.id===p.id
-                      return (
-                        <div key={p.id} className={`rounded-[16px] border-2 p-4 relative overflow-hidden transition-all cursor-pointer ${isSelected?'border-black bg-[#E8FF86]/20 shadow-[0_8px_24px_rgba(0,0,0,0.08)]':'border-zinc-100 bg-zinc-50/50 hover:border-zinc-200'}`} onClick={()=>setSelectedPlan(p)}>
-                          {p.id==='advanced' && <div className="absolute top-2 right-2 bg-black text-white text-[8px] px-2 py-1 rounded-full font-bold">POPULAR</div>}
-                          {p.id==='premium' && <div className="absolute top-2 right-2 bg-[#E8FF86] text-black text-[8px] px-2 py-1 rounded-full font-bold">BEST VALUE</div>}
-                          <div className="font-black text-[14px]">{p.name}</div>
-                          <div className="mt-2 flex items-baseline gap-1"><span className="text-[22px] font-black">Rs. {displayPrice}</span><span className="text-[11px] opacity-60">/{billing==='monthly'?'mo':'mo'}</span></div>
-                          {billing==='yearly' && p.id!=='basic' && <div className="text-[10px] opacity-60 mt-1">Billed Rs. {p.yearlyTotal}/year • Save Rs. {(p.monthly - p.yearlyMonthly)*12}</div>}
-                          {billing==='monthly' && p.id!=='basic' && <div className="text-[10px] opacity-60 mt-1">Yearly: Rs. {p.yearlyMonthly}/mo</div>}
-                          <div className="mt-3 space-y-1.5">
-                            {p.features.map((f,i)=><div key={i} className="flex gap-1.5 text-[10px]"><span className="text-green-600">✓</span><span className="opacity-70 leading-[1.2]">{f}</span></div>)}
-                          </div>
-                          <button className={`mt-4 w-full h-8 rounded-full text-[11px] font-bold ${isSelected?'bg-black text-white':'bg-white border text-black'}`}>{isSelected?'Selected ✓':'Select'}</button>
-                        </div>
-                      )
-                    })}
-                  </div>
-
-                  {selectedPlan && selectedPlan.monthly>0 && (
-                    <div className="rounded-[16px] border-2 border-black bg-[#FFFEF5] p-5 relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-20 h-20 bg-[#E8FF86] opacity-20 rounded-full blur-[20px]"></div>
-                      <div className="relative">
-                        <div className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-[12px]">₨</div><div className="text-[13px] font-black">Pay Rs. {billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} → Till {TILL_ID} ({billing})</div></div>
-                        <div className="mt-1 text-[11px] text-zinc-500">Plan: <b className="text-black">{selectedPlan.name}</b> • {billing} • {selectedPlan.products===999999?'Unlimited':selectedPlan.products} products • {selectedPlan.imagesPerProduct===999999?'Unlimited':selectedPlan.imagesPerProduct} images</div>
-                        <input value={txnId} onChange={e=>setTxnId(e.target.value)} placeholder={`Txn ID after paying Rs. ${billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} to Till ${TILL_ID}`} className="mt-4 w-full h-12 px-4 rounded-[12px] border-2 bg-white text-[12px] font-mono focus:outline-none focus:border-black"/>
-                        <button onClick={handleBuyPlan} disabled={purchasing} className="mt-3 w-full h-12 bg-black text-white rounded-full font-bold text-[13px] flex items-center justify-center gap-2">{purchasing?'Submitting...':`I Paid Rs. ${billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} — Activate ${selectedPlan.name}`}<span className="w-5 h-5 bg-white text-black rounded-full flex items-center justify-center">↗</span></button>
-                        <div className="mt-2.5 flex items-center justify-center gap-1.5 text-[10px] text-zinc-400"><span className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></span>We verify in 15-30 mins • Secure Till {TILL_ID}</div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+            <div id="advanced-glass" style={{borderRadius:20}} className="mt-10 overflow-hidden border-2 border-black relative"><div className="absolute inset-0 bg-[#0c0e13]" /><div className="absolute inset-0 opacity-50" style={{background:'radial-gradient(circle at 20% 10%, #E8FF86 0%, transparent 35%), radial-gradient(circle at 85% 85%, #7c3aed 0%, transparent 45%)'}} /><div className="relative p-6 md:p-8"><div className="flex items-center gap-3 flex-wrap"><span style={{borderRadius:999}} className="bg-[#E8FF86] text-black text-[10px] font-bold px-3 py-1 tracking-widest">ADVANCED — 8 GLASS</span><span className="text-white font-semibold text-[15px]">Clickable Glass Bar — Hover to Explore</span><span className="bg-white/10 text-white text-[10px] px-2.5 py-1 rounded-full border border-white/20">{currentPlanId==='basic'?`Basic: Only 3 unlocked, 5 locked with glossy glass`:currentPlanId==='advanced'?'Advanced: All 8 unlocked ✓':'Premium: All unlocked ✓ No watermark • Live analytics'}</span></div><div className="glass-container mt-1">{advancedThemes.map((t,i)=>{const r=[-18,-9,0,9,18,-12,12,0][i]||0; const isActive=theme===t.id; const locked=isThemeLocked(t); return <div key={t.id} className={`glass ${isActive?'selected':''}`} data-text={t.name} style={{'--r':r} as any} onClick={()=>handleThemeClick(t)}><div className="glass-preview-wrap"><div className="glass-preview-header" style={{background:t.colors.bg,color:t.colors.text}}><span>{t.id.slice(0,12).toUpperCase()}</span><span className="text-[6px] opacity-60">{locked?'🔒 LOCKED':'CLICK →'}</span></div><div className="glass-preview-body" style={{background:t.colors.bg}}><div style={{height:28,borderRadius:6,background:t.colors.card,border:`1px solid ${t.colors.border}`}} /></div></div><div style={{marginTop:8,display:'flex',alignItems:'center',gap:6}}><span style={{width:20,height:20,borderRadius:6,background:t.colors.card,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10}}>{t.badge}</span><span style={{fontSize:10,color:'rgba(255,255,255,0.6)'}} className="uppercase">{t.tagline}</span></div>{isActive && <div className="absolute top-3 right-3 w-6 h-6 bg-[#E8FF86] rounded-full flex items-center justify-center text-[11px] font-bold shadow-[0_0_15px_#E8FF86]">✓</div>}{locked && <div className="glass-lock-overlay"><div className="glass-lock-icon">🔒</div><div className="text-white text-[11px] font-black tracking-widest">LOCKED</div><div className="text-white/60 text-[9px] text-center leading-[1.2]">Basic: 3 allowed<br/>Need Advanced<br/>Rs. 899/mo</div><div className="mt-1 bg-[#E8FF86] text-black text-[9px] font-bold px-3 py-1 rounded-full">UPGRADE → PRO</div></div>}</div>})}</div><div className="mt-3 text-[11px] text-white/50">💡 <b>How locks work:</b> Basic plan = only first 3 glass cards unlocked (glossy glass blur on other 5). Advanced (Rs. 899/mo or Rs. 699/mo yearly) = all 8 glass unlocked. Premium (Rs. 2999/mo or Rs. 2499/mo yearly) = every theme + no watermark + live analytics.</div></div></div>
+            <div className="flex justify-between items-center pt-6 flex-wrap gap-3"><div className="text-[11px] text-zinc-500">Plan <b className="text-black">{currentPlanId.toUpperCase()}</b> • Products {products.length}/{productLimit===999999?'∞':productLimit} • Images {imageLimit===999999?'∞':imageLimit}/product • Stores {storeLimit===999999?'∞':storeLimit}</div><div className="flex gap-2">{saved && <span className="h-11 px-4 flex items-center text-[12px] text-green-600 font-medium">✓ Saved! {getTheme(theme).name}</span>}<button onClick={saveStore} style={{borderRadius:999}} className="h-11 px-6 bg-black text-white text-[13px] font-medium">Save Store & Theme</button></div></div>
           </div>
         )}
 
         {activeTab==='store' && (
           <div style={{borderRadius:20}} className="bg-white p-5 md:p-7 border">
-            <div className="flex items-center justify-between"><h2 className="font-semibold text-[15px]">Store Identity • {currentPlanDef.products===999999?'Unlimited':currentPlanDef.products} products • {currentPlanDef.imagesPerProduct===999999?'Unlimited':currentPlanDef.imagesPerProduct} img/product</h2>{saved && <span style={{borderRadius:999}} className="bg-[#E8FF86] text-black border px-3 py-1 text-[11px] font-bold">Saved ✓</span>}</div>
+            <div className="flex items-center justify-between flex-wrap gap-2"><h2 className="font-semibold text-[15px]">Store Identity • {storeLimit===999999?'Unlimited stores':`${storeLimit} store limit`} • {productLimit===999999?'Unlimited':`${productLimit} products`} • {imageLimit===999999?'Unlimited':`${imageLimit} img/product`}</h2>{saved && <span style={{borderRadius:999}} className="bg-[#E8FF86] text-black border px-3 py-1 text-[11px] font-bold">Saved ✓</span>}</div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
               <div><label className="text-[11px] font-semibold uppercase tracking-widest text-zinc-400">Business Name</label><input value={businessName} onChange={e=>setBusinessName(e.target.value)} style={{borderRadius:12}} className="mt-2 w-full h-11 px-4 border bg-zinc-50/50 text-[14px] focus:bg-white focus:outline-none focus:border-black" /></div>
-              <div><label className="text-[11px] font-semibold uppercase tracking-widest text-zinc-400">Store Slug</label><input value={slug} onChange={e=>setSlug(e.target.value)} style={{borderRadius:12}} className="mt-2 w-full h-11 px-4 border bg-zinc-50/50 font-mono text-[13px] focus:bg-white focus:outline-none focus:border-black" /></div>
+              <div><label className="text-[11px] font-semibold uppercase tracking-widest text-zinc-400">Store Slug {storeLimit===1 && <span className="text-[9px] bg-zinc-100 border px-1.5 py-0.5 rounded-full">1 store limit on Basic</span>}</label><input value={slug} onChange={e=>setSlug(e.target.value)} style={{borderRadius:12}} className="mt-2 w-full h-11 px-4 border bg-zinc-50/50 font-mono text-[13px] focus:bg-white focus:outline-none focus:border-black" /></div>
               <div><label className="text-[11px] font-semibold uppercase tracking-widest text-zinc-400">WhatsApp</label><input value={whatsapp} onChange={e=>setWhatsapp(e.target.value)} style={{borderRadius:12}} className="mt-2 w-full h-11 px-4 border bg-zinc-50/50 text-[14px] focus:bg-white focus:outline-none focus:border-black" /></div>
             </div>
             <div className="flex justify-end mt-6"><button onClick={saveStore} disabled={saving} style={{borderRadius:999}} className="h-11 px-7 bg-black text-white text-[13px] font-medium">{saving?'Saving...':'Save Store →'}</button></div>
@@ -321,8 +290,55 @@ export default function Dashboard() {
 
         {activeTab==='products' && (
           <div className="space-y-4">
-            <div style={{borderRadius:20}} className="bg-white border overflow-hidden"><div className="p-4 md:p-6 border-b flex items-center justify-between"><h2 className="font-semibold text-[14px]">Add Product — {products.length}/{productLimit===999999?'∞':productLimit} • {files.length}/{imageLimit===999999?'∞':imageLimit} images</h2>{products.length>=productLimit && <span className="text-[10px] px-2 py-1 rounded-full bg-red-100 text-red-600 border">LIMIT</span>}</div><div className="p-4 md:p-6 space-y-4"><label style={{borderRadius:16}} className="border-2 border-dashed p-4 flex flex-col items-center justify-center cursor-pointer hover:bg-zinc-50 min-h-[120px] bg-zinc-50/30"><div className="grid grid-cols-5 gap-2 w-full">{previews.map((src,i)=><img key={i} src={src} style={{borderRadius:10}} className="w-full h-[60px] object-cover border" />)}</div>{!previews.length && <div className="font-medium text-[13px]">+ Upload up to {imageLimit===999999?'Unlimited':imageLimit} photos</div>}<input type="file" accept="image/*" multiple onChange={handleFile} className="hidden" /></label><div className="grid md:grid-cols-2 gap-3"><input placeholder="Product name" value={prodName} onChange={e=>setProdName(e.target.value)} style={{borderRadius:12}} className="w-full h-11 px-4 border bg-zinc-50/50 text-[13px] focus:bg-white focus:outline-none focus:border-black" /><input placeholder="Price" type="number" value={prodPrice} onChange={e=>setProdPrice(e.target.value)} style={{borderRadius:12}} className="w-full h-11 px-4 border bg-zinc-50/50 text-[13px] focus:bg-white focus:outline-none focus:border-black" /></div><div className="flex justify-end"><button onClick={addProduct} disabled={uploading || products.length>=productLimit} style={{borderRadius:999}} className="h-11 px-7 bg-black text-white text-[13px] font-medium disabled:opacity-40">{uploading?'Uploading...':products.length>=productLimit?`Limit ${productLimit} — Upgrade`:`Add Product →`}</button></div></div></div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">{products.map(p => (<div key={p.id} style={{borderRadius:16}} className="bg-white border p-2.5 group relative"><img src={p.image_url} style={{borderRadius:10}} className="w-full h-32 object-cover bg-zinc-50" /><div className="mt-2"><div className="font-medium text-[12px] truncate">{p.name}</div><div className="text-[12px] font-bold">Rs. {p.price}</div></div><button onClick={()=>deleteProduct(p.id)} className="absolute top-2 right-2 w-6 h-6 bg-white shadow border rounded-full flex items-center justify-center text-[10px]">✕</button></div>))}</div>
+            <div style={{borderRadius:20}} className="bg-white border overflow-hidden"><div className="p-4 md:p-6 border-b flex items-center justify-between flex-wrap gap-2"><h2 className="font-semibold text-[14px]">Add Product — {products.length}/{productLimit===999999?'∞':productLimit} • {files.length}/{imageLimit===999999?'∞':imageLimit} images • Plan {currentPlanId.toUpperCase()}</h2>{products.length>=productLimit && <span className="text-[10px] px-2.5 py-1 rounded-full bg-red-100 text-red-600 border border-red-200 font-bold">LIMIT REACHED — Upgrade to {currentPlanId==='basic'?'Advanced (25)':'Premium (∞)'} </span>}</div><div className="p-4 md:p-6 space-y-4"><label style={{borderRadius:16}} className="border-2 border-dashed p-4 flex flex-col items-center justify-center cursor-pointer hover:bg-zinc-50 min-h-[120px] bg-zinc-50/30">{previews.length ? <div className="grid grid-cols-5 gap-2 w-full">{previews.map((src,i)=><img key={i} src={src} style={{borderRadius:10}} className="w-full h-[60px] object-cover border" />)}</div> : <div className="text-center"><div style={{borderRadius:12}} className="w-11 h-11 bg-black text-white flex items-center justify-center text-lg mx-auto">+</div><div className="mt-2 font-medium text-[13px]">Upload up to {imageLimit===999999?'Unlimited':imageLimit} photos — Basic 1, Advanced 5, Premium ∞</div><div className="mt-1 text-[11px] opacity-60">{imageLimit===1?'Basic: only 1 image per product':imageLimit===5?'Advanced: up to 5 images':'Premium: unlimited images'}</div></div>}<input type="file" accept="image/*" multiple onChange={handleFile} className="hidden" /></label><div className="grid md:grid-cols-2 gap-3"><input placeholder="Product name" value={prodName} onChange={e=>setProdName(e.target.value)} style={{borderRadius:12}} className="w-full h-11 px-4 border bg-zinc-50/50 text-[13px] focus:bg-white focus:outline-none focus:border-black" /><input placeholder="Price Rs. 3500" type="number" value={prodPrice} onChange={e=>setProdPrice(e.target.value)} style={{borderRadius:12}} className="w-full h-11 px-4 border bg-zinc-50/50 text-[13px] focus:bg-white focus:outline-none focus:border-black" /></div><div className="flex justify-end"><button onClick={addProduct} disabled={uploading || products.length>=productLimit} style={{borderRadius:999}} className="h-11 px-7 bg-black text-white text-[13px] font-medium disabled:opacity-40">{uploading?'Uploading...':products.length>=productLimit?`Limit ${productLimit===999999?'∞':productLimit} Reached — Upgrade to ${currentPlanId==='basic'?'Advanced':'Premium'}`:`Add Product ${files.length?`(${files.length}/${imageLimit===999999?'∞':imageLimit})`:''} →`}</button></div></div></div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">{products.map(p => (<div key={p.id} style={{borderRadius:16}} className="bg-white border p-2.5 group relative"><img src={p.image_url} style={{borderRadius:10}} className="w-full h-32 object-cover bg-zinc-50" /><div className="mt-2"><div className="font-medium text-[12px] truncate">{p.name}</div><div className="text-[12px] font-bold">Rs. {p.price}</div><div className="text-[10px] opacity-50">{(p.image_urls?.length||1)} img{(p.image_urls?.length||1)>1?'s':''} • Plan {currentPlanId}</div></div><button onClick={()=>deleteProduct(p.id)} className="absolute top-2 right-2 w-6 h-6 bg-white shadow border rounded-full flex items-center justify-center text-[10px]">✕</button></div>))}</div>
+          </div>
+        )}
+
+        {activeTab==='payments' && (
+          <div className="bg-white border rounded-[24px] p-5 md:p-8 overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-[#E8FF86] opacity-[0.08] rounded-full blur-[80px]"></div>
+            <div className="relative">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="flex items-center gap-4"><div className="w-14 h-14 bg-black text-white rounded-[14px] flex items-center justify-center">⬡</div><div><h2 className="font-black text-[20px] tracking-tight">Pricing — Till ID {TILL_ID}</h2><p className="text-[12px] text-zinc-500 mt-1">Basic 5/1img/3 advanced • Advanced 25/5img/all 8 advanced • Premium ∞/∞/every + no watermark + live analytics</p></div></div>
+                <div className="billing-toggle"><button onClick={()=>setBilling('monthly')} className={`billing-btn ${billing==='monthly'?'billing-btn-active':'billing-btn-inactive'}`}>Monthly</button><button onClick={()=>setBilling('yearly')} className={`billing-btn ${billing==='yearly'?'billing-btn-active':'billing-btn-inactive'}`}>Yearly <span className="ml-1 bg-[#E8FF86] text-black text-[9px] px-1.5 py-0.5 rounded-full font-bold">-22%</span></button></div>
+              </div>
+
+              <div className="mt-8 grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6">
+                <div className="relative rounded-[20px] overflow-hidden border border-[#1a1a2e] bg-[#0B0B1A] text-white p-6"><div className="absolute inset-0 opacity-80" style={{background:'radial-gradient(ellipse at 20% 0%, #1e1b8f 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, #4c1d95 0%, transparent 60%)'}}></div><div className="relative z-10 space-y-4"><div className="flex justify-between"><div className="text-[10px] tracking-[0.25em] uppercase opacity-40 font-bold">JAZZCASH BUSINESS TILL</div><button onClick={copyTill} className="h-7 px-3 bg-white/10 border border-white/10 rounded-full text-[10px]">{copiedTill?'Copied!':'Copy ID'}</button></div><div className="bg-white/[0.06] border border-white/[0.08] rounded-[14px] p-4"><div className="text-[10px] uppercase opacity-50">Till ID Number</div><div className="text-[32px] font-black font-mono tracking-[0.12em]">{TILL_ID}</div></div><div className="bg-white rounded-[14px] p-3"><img src={`https://barcodeapi.org/api/code128/${TILL_ID}`} alt="Barcode" className="w-full h-[52px] object-contain"/><div className="text-center text-[11px] font-mono text-black font-black tracking-[0.3em]">{TILL_ID}</div></div><div className="bg-white rounded-[14px] p-2.5 flex justify-center"><img src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=JAZZCASH_TILL_${TILL_ID}`} alt="QR" className="w-[120px] h-[120px]"/></div></div></div>
+
+                <div className="space-y-4">
+                  <div className="radio-container" style={{"--total-radio": plans.length} as any}>
+                    {plans.map(p=>{
+                      const displayPrice = getDisplayPrice(p)
+                      const isSelected = selectedPlan?.id===p.id
+                      return (
+                        <div key={p.id} className="contents">
+                          <input type="radio" id={`dash-${p.id}`} name="dash-plan" checked={isSelected} onChange={()=>setSelectedPlan(p)} />
+                          <label htmlFor={`dash-${p.id}`} onClick={()=>setSelectedPlan(p)}>
+                            <div className="flex justify-between items-start gap-2">
+                              <div className="min-w-0 flex-1"><div className="flex items-center gap-2 flex-wrap"><span className="font-black text-[14px]">{p.name}</span><span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${p.id==='premium'?'bg-[#E8FF86] text-black':p.id==='advanced'?'bg-black text-white':'bg-zinc-200'}`}>Rs. {displayPrice}/mo</span>{p.id==='advanced' && <span className="bg-[#E8FF86] text-black text-[8px] px-1.5 py-0.5 rounded-full font-bold">POPULAR</span>}{p.id==='premium' && <span className="bg-black text-white text-[8px] px-1.5 py-0.5 rounded-full font-bold">BEST VALUE</span>}</div><div className="text-[11px] mt-1 opacity-70 leading-[1.2]">{p.features.join(' • ')}</div><div className="text-[10px] mt-1 opacity-50">{p.products===999999?'Unlimited':p.products} products • {p.imagesPerProduct===999999?'Unlimited':p.imagesPerProduct} img • {p.advancedAllowed===3?'3 advanced':p.advancedAllowed===8?'All 8 advanced':'Every theme'}</div></div><div className="text-right"><div className="font-black text-[16px]">Rs. {displayPrice}</div><div className="text-[10px] opacity-60">{billing==='yearly'?`Billed Rs. ${p.yearlyTotal}/yr`:p.id!=='basic'?`Yearly Rs. ${p.yearlyMonthly}/mo`:''}</div></div>
+                            </div>
+                          </label>
+                        </div>
+                      )
+                    })}
+                    <div className="glider-container"><div className="glider"></div></div>
+                  </div>
+
+                  {selectedPlan && selectedPlan.monthly>0 && (
+                    <div className="rounded-[16px] border-2 border-black bg-[#FFFEF5] p-5 relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-20 h-20 bg-[#E8FF86] opacity-20 rounded-full blur-[20px]"></div>
+                      <div className="relative">
+                        <div className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-[12px]">₨</div><div className="text-[13px] font-black">Pay Rs. {billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} → Till {TILL_ID} ({billing}) • {selectedPlan.products===999999?'Unlimited':selectedPlan.products} products • {selectedPlan.imagesPerProduct===999999?'Unlimited':selectedPlan.imagesPerProduct} images • {selectedPlan.advancedAllowed===3?'3 advanced':selectedPlan.advancedAllowed===8?'All 8 advanced':'Every theme'}</div></div>
+                        <input value={txnId} onChange={e=>setTxnId(e.target.value)} placeholder={`Txn ID after paying Rs. ${billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} to Till ${TILL_ID}`} className="mt-4 w-full h-12 px-4 rounded-[12px] border-2 bg-white text-[12px] font-mono focus:outline-none focus:border-black"/>
+                        <button onClick={handleBuyPlan} disabled={purchasing} className="mt-3 w-full h-12 bg-black text-white rounded-full font-bold text-[13px] flex items-center justify-center gap-2">{purchasing?'Submitting...':`I Paid Rs. ${billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} — Activate ${selectedPlan.name}`} <span className="w-5 h-5 bg-white text-black rounded-full flex items-center justify-center">↗</span></button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </main>
