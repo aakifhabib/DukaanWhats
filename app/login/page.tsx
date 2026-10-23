@@ -1,81 +1,206 @@
-'use client';
-import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
-import { useRouter } from 'next/navigation';
+'use client'
+import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 export default function LoginPage() {
-  const [email,setEmail]=useState(''); 
-  const [pass,setPass]=useState('');
-  const [mode,setMode]=useState<'login'|'signup'>('login');
-  const [loading,setLoading]=useState(false); 
-  const [msg,setMsg]=useState('');
-  const [shake,setShake]=useState(false); 
-  const [needResend,setNeedResend]=useState(false);
-  const [checkingSession, setCheckingSession] = useState(true);
-  const router=useRouter();
+  const [isSignup, setIsSignup] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [storeName, setStoreName] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [msg, setMsg] = useState('')
+  const router = useRouter()
 
-  // ✅ NEW: Stay logged in forever - auto redirect if already logged in
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        router.replace('/dashboard');
-      } else {
-        setCheckingSession(false);
-      }
-    });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        router.replace('/dashboard');
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [router]);
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) router.push('/dashboard')
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      if (session) router.push('/dashboard')
+    })
+    return () => subscription.unsubscribe()
+  }, [router])
 
-  async function go() {
-    setLoading(true); setMsg(''); setNeedResend(false);
-    try{
-      if(mode==='signup'){
-        const {error}=await supabase.auth.signUp({email,password:pass,options:{emailRedirectTo:`${window.location.origin}/auth/callback`}});
-        if(error) throw error;
-        setMsg('✅ Account created! Open Gmail → Tap BLUE link "Confirm email address" → Then login here.');
-        setNeedResend(true); setMode('login');
-      }else{
-        const {error}=await supabase.auth.signInWithPassword({email,password:pass});
-        if(error){
-          if(error.message.toLowerCase().includes('confirm')){ setNeedResend(true); throw new Error('Email not confirmed yet! Open Gmail, tap blue link, then login.'); }
-          throw error;
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setMsg('')
+    try {
+      if (isSignup) {
+        const { data, error } = await supabase.auth.signUp({ email, password })
+        if (error) throw error
+        if (data.user) {
+          const slug = (storeName || email.split('@')[0]).toLowerCase().trim().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'')
+          await supabase.from('profiles').upsert({ id: data.user.id, business_name: storeName || 'My Store', store_slug: slug })
         }
-        router.push('/dashboard');
+        setMsg('Account created! Redirecting to dashboard...')
+        setTimeout(() => router.push('/dashboard'), 800)
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password })
+        if (error) throw error
+        router.push('/dashboard')
       }
-    }catch(e:any){ setMsg('❌ '+e.message); setShake(true); setTimeout(()=>setShake(false),400); }
-    setLoading(false);
+    } catch (err: any) {
+      setMsg(err.message)
+    }
+    setLoading(false)
   }
 
-  async function resend(){
-    const {error}=await supabase.auth.resend({type:'signup',email,options:{emailRedirectTo:`${window.location.origin}/auth/callback`}});
-    setMsg(error?('❌ '+error.message):'📧 Resent! Check Gmail + Spam folder.');
-  }
+  return (
+    <div className="app-shell">
+      <style>{`
+        :root { --page-bg: #F8F7F5; }
+        * { -webkit-font-smoothing: antialiased; }
+        .app-shell {
+          min-height: 100vh;
+          min-height: 100dvh;
+          background-color: var(--page-bg);
+          background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.08) 1px, transparent 0);
+          background-size: 28px 28px;
+          display: flex;
+          flex-direction: column;
+          position: relative;
+        }
+        .top-bar {
+          position: absolute; top: 0; left: 0; right: 0; height: 72px;
+          display: flex; align-items: center; padding: 0 24px; z-index: 20;
+        }
+        @media (min-width: 768px) { .top-bar { padding: 0 40px; height: 80px; } }
+        .logo-link { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
+        .logo-mark {
+          width: 32px; height: 32px; background: #0d0f14; border-radius: 10px;
+          display: grid; place-items: center; color: #E8FF86;
+          font-weight: 800; font-size: 18px;
+        }
+        .logo-text { font-weight: 650; font-size: 15px; letter-spacing: -0.4px; color: #0d0f14; }
+        .logo-text span { font-weight: 400; color: #6b7280; }
+        .stage { flex: 1; display: flex; align-items: center; justify-content: center; padding: 88px 16px 40px; }
 
-  if (checkingSession) {
-    return <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a]"><div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin"></div></div>
-  }
+        .login-wrapper, .login-wrapper * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        .login-wrapper {
+          --blob-1-color: #E8FF86;
+          --blob-2-color: #25D366;
+          --btn-hover-glow: rgba(232,255,134,0.35);
+          --input-focus-glow: rgba(37,211,102,0.20);
+          position: relative;
+          animation: floatUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          opacity: 0; transform: translateY(30px);
+        }
+        @keyframes floatUp { to { opacity: 1; transform: translateY(0); } }
+        .login-card {
+          position: relative; width: 340px; background-color: #0d0f14; border-radius: 24px;
+          padding: 36px 28px 28px; overflow: hidden;
+          box-shadow: 0 24px 48px rgba(0,0,0,0.20), 0 8px 16px rgba(0,0,0,0.10), inset 0 0 0 1px rgba(255,255,255,0.06);
+          transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s;
+        }
+        @media (max-width: 390px) { .login-card { width: 92vw; padding: 30px 22px 24px; } }
+        @media (min-width: 768px) { .login-card { width: 360px; padding: 40px 32px 32px; } }
+        .login-wrapper:hover .login-card { transform: translateY(-6px); box-shadow: 0 32px 64px rgba(0,0,0,0.30), 0 12px 24px rgba(0,0,0,0.15); }
+        .glow-blob { position: absolute; filter: blur(45px); border-radius: 50%; z-index: 0; opacity: 0.6; animation: pulseGlow 4s infinite alternate ease-in-out; }
+        .login-wrapper:hover .glow-blob { opacity: 0.82; filter: blur(40px); }
+        .blob-1 { top: -30px; right: -30px; width: 170px; height: 170px; background: var(--blob-1-color); opacity: 0.72; }
+        .blob-2 { bottom: -50px; left: -50px; width: 210px; height: 210px; background: var(--blob-2-color); animation-delay: -2s; opacity: 0.58; }
+        @keyframes pulseGlow { 0% { transform: scale(0.9); opacity: 0.5; } 100% { transform: scale(1.1); opacity: 0.75; } }
+        .dark-overlay {
+          position: absolute; inset: 0;
+          background: radial-gradient(circle at 50% 50%, rgba(5,5,8,0.85) 30%, transparent 100%);
+          z-index: 1; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05); border-radius: inherit; pointer-events: none;
+        }
+        .view-container { position: relative; z-index: 10; }
+        .form-view { display: flex; flex-direction: column; animation: fadeInView 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes fadeInView { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        .header { margin-bottom: 28px; text-align: center; }
+        .decorative-dot {
+          width: 2.2em; height: 2.2em; margin: 0 auto 1em auto; border-radius: 50%;
+          border: 1px solid rgba(255,255,255,0.2); display: flex; justify-content: center; align-items: center;
+        }
+        .decorative-dot::after {
+          content: ""; width: 1.1em; height: 1.1em;
+          background-image: radial-gradient(circle at center, #ffffff 40%, transparent 50%);
+          background-size: 3.5px 3.5px;
+        }
+        .title { color: #ffffff; font-size: 22px; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 6px; }
+        .subtitle { color: rgba(255,255,255,0.6); font-size: 13px; }
+        .input-group { margin-bottom: 14px; position: relative; }
+        .input-field {
+          width: 100%; padding: 1.05em 1.2em; background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.10); border-radius: 12px; color: #ffffff;
+          font-size: 14px; outline: none; transition: all 0.3s; backdrop-filter: blur(10px);
+        }
+        .input-field::placeholder { color: rgba(255,255,255,0.4); }
+        .input-field:focus { background: rgba(255,255,255,0.07); border-color: rgba(232,255,134,0.5); box-shadow: 0 0 20px var(--input-focus-glow); transform: translateY(-1px); }
+        .btn-submit {
+          width: 100%; padding: 1em; background: #ffffff; color: #0d0f14;
+          border: 1px solid rgba(255,255,255,0.2); border-radius: 12px;
+          font-size: 14.5px; font-weight: 600; cursor: pointer;
+          transition: all 0.3s; margin-top: 8px;
+        }
+        .btn-submit:hover { background: #E8FF86; transform: translateY(-2px); box-shadow: 0 8px 20px var(--btn-hover-glow); }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+        .signup-prompt { margin-top: 20px; text-align: center; color: rgba(255,255,255,0.5); font-size: 13px; }
+        .toggle-link { color: #ffffff; font-weight: 600; margin-left: 6px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+        .toggle-link:hover { color: #E8FF86; }
+        .trust-row { margin-top: 18px; display: flex; align-items: center; justify-content: center; gap: 6px; color: rgba(255,255,255,0.4); font-size: 11px; }
+        .trust-dot { width: 6px; height: 6px; border-radius: 50%; background: #25D366; box-shadow: 0 0 8px rgba(37,211,102,0.6); }
+        .msg { margin-top: 14px; text-align: center; font-size: 12px; color: #E8FF86; min-height: 16px; line-height: 1.4; }
+      `}</style>
 
-  return(
-    <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] p-4 relative overflow-hidden">
-      <div className="absolute w- h- bg-[#00B050]/20 rounded-full blur- -top-56 -left-56 animate-pulse"></div>
-      <div className="absolute w- h- bg-[#00B050]/10 rounded-full blur- -bottom-56 -right-56 animate-pulse" style={{animationDelay:'1.2s'}}></div>
-      <div className={`bg-white p-8 rounded- shadow-[0_20px_80px_rgba(0,176,80,0.15)] w-full max-w- relative z-10 border border-white/20 ${shake?'animate-[shake_0.35s]':'animate-[up_0.6s]'}`}>
-        <style>{`@keyframes up{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}`}</style>
-        <div className="w-14 h-14 bg-gradient-to-br from-[#00B050] to-[#008a3e] rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-[#00B050]/20 animate-[float_3s_ease_infinite]">D</div>
-        <h1 className="mt-5 text- font-black tracking-tight leading-none">{mode==='login'?'Welcome back':'Join DukaanWhats'}</h1>
-        <p className="text- text-zinc-500 mt-2 mb-6 leading-snug">{mode==='login'?'Login to manage store. Email must be confirmed via blue link.':'Create free WhatsApp store. Confirmation email will have blue link to tap.'}</p>
-        <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email address" className="w-full border border-zinc-200 p-4 rounded-2xl text- bg-zinc-50 focus:bg-white focus:border-[#00B050] focus:ring-4 focus:ring-[#00B050]/10 outline-none transition-all"/>
-        <input value={pass} onChange={e=>setPass(e.target.value)} type="password" placeholder="Password (6+ chars)" className="w-full border border-zinc-200 p-4 rounded-2xl text- bg-zinc-50 focus:bg-white focus:border-[#00B050] focus:ring-4 focus:ring-[#00B050]/10 outline-none mt-3"/>
-        <button onClick={go} disabled={loading} className="w-full mt-5 bg-[#0a0a0a] text-white py-4 rounded-full font-bold text- hover:bg-black hover:scale-[1.02] active:scale-[0.97] transition-all disabled:opacity-40 flex justify-center gap-2 items-center">{loading&&<span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></span>}{mode==='login'?'Login →':'Create Account →'}</button>
-        {needResend&&<button onClick={resend} className="w-full mt-3 bg-[#00B050] text-white py-3 rounded-full font-bold text-xs">📧 Resend Confirmation Link</button>}
-        <div className="mt-6 text-center"><button onClick={()=>setMode(mode==='login'?'signup':'login')} className="text- font-bold">{mode==='login'?<>No account? <span className="text-[#00B050] underline">Create free</span></>:<>Have account? <span className="text-[#00B050] underline">Login</span></>}</button></div>
-        {msg&&<div className="mt-4 bg-zinc-900 text-white text- p-3.5 rounded-2xl text-center leading-snug animate-[up_0.3s]">{msg}</div>}
+      <div className="top-bar">
+        <Link href="/" className="logo-link" aria-label="DukaanWhats.pk Home">
+          <div className="logo-mark">D</div>
+          <div className="logo-text">DukaanWhats<span>.pk</span></div>
+        </Link>
+      </div>
+
+      <div className="stage">
+        <div className="login-wrapper">
+          <div className="login-card">
+            <div className="glow-blob blob-1" />
+            <div className="glow-blob blob-2" />
+            <div className="dark-overlay" />
+
+            <div className="view-container">
+              <div className="form-view">
+                <div className="header">
+                  <div className="decorative-dot" />
+                  <h1 className="title">{isSignup ? 'Create your store' : 'Welcome back'}</h1>
+                  <p className="subtitle">{isSignup ? 'Start selling on WhatsApp today' : 'Login to DukaanWhats.pk'}</p>
+                </div>
+
+                <form onSubmit={handleAuth}>
+                  {isSignup && (
+                    <div className="input-group">
+                      <input className="input-field" type="text" placeholder="Store name" value={storeName} onChange={e=>setStoreName(e.target.value)} required />
+                    </div>
+                  )}
+                  <div className="input-group">
+                    <input className="input-field" type="email" placeholder="Email address" value={email} onChange={e=>setEmail(e.target.value)} required autoComplete="email" />
+                  </div>
+                  <div className="input-group">
+                    <input className="input-field" type="password" placeholder={isSignup ? 'Create password' : 'Password'} value={password} onChange={e=>setPassword(e.target.value)} required autoComplete={isSignup ? 'new-password' : 'current-password'} />
+                  </div>
+
+                  <button type="submit" className="btn-submit" disabled={loading}>
+                    {loading ? 'Please wait...' : isSignup ? 'Create Store' : 'Log In'}
+                  </button>
+
+                  <p className="signup-prompt">
+                    {isSignup ? 'Already have store?' : "Don't have account?"}
+                    <span className="toggle-link" onClick={()=>{ setIsSignup(!isSignup); setMsg('') }}>
+                      {isSignup ? 'Login' : 'Create Store'}
+                    </span>
+                  </p>
+
+                  <div className="trust-row"><span className="trust-dot" />{isSignup ? 'No credit card • Free 14-day trial' : 'Secured via WhatsApp • 256-bit encrypted'}</div>
+                  <div className="msg">{msg}</div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  );
+  )
 }
