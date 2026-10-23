@@ -32,7 +32,34 @@ export default function Dashboard() {
       if (!session) { window.location.href = '/login'; return }
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { window.location.href = '/login'; return }
-      const { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+
+      // Try to get existing profile
+      let { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+
+      // Auto-create for Google/Apple OAuth users who don't have a profile yet
+      if (!prof) {
+        const metaName = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'My Store'
+        const baseSlug = metaName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 20) || `store-${user.id.slice(0,6)}`
+        let finalSlug = baseSlug
+        // Ensure unique slug
+        const { data: existing } = await supabase.from('profiles').select('id').eq('store_slug', baseSlug).single()
+        if (existing) finalSlug = `${baseSlug}-${Math.floor(Math.random()*900+100)}`
+
+        const newProfile = {
+          id: user.id,
+          business_name: metaName,
+          whatsapp_number: '',
+          store_slug: finalSlug,
+          store_theme: 'clothing-noor'
+        }
+        const { data: created, error: createError } = await supabase.from('profiles').insert(newProfile).select().single()
+        if (!createError && created) {
+          prof = created
+        } else {
+          console.error('Profile create error:', createError)
+        }
+      }
+
       if (prof) {
         setProfile(prof)
         setBusinessName(prof.business_name || '')
