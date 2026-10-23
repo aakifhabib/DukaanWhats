@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { STORE_THEMES, getTheme, ThemeCategory } from '@/lib/storeThemes'
+import { STORE_THEMES, getTheme, ThemeCategory, getAdvancedThemes } from '@/lib/storeThemes'
 
 type Profile = { id: string; business_name: string; whatsapp_number: string; store_slug: string; store_theme?: string }
 type Product = { id: string; name: string; price: number; image_url: string; image_urls?: string[]; user_id: string }
@@ -24,6 +24,7 @@ export default function Dashboard() {
   const [uploading, setUploading] = useState(false)
   const [copied, setCopied] = useState(false)
   const [filter, setFilter] = useState<ThemeCategory | 'all'>('all')
+  const [showAdvancedPanel, setShowAdvancedPanel] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
@@ -97,8 +98,9 @@ export default function Dashboard() {
 
   if (loading) return <div style={{minHeight:'100vh',background:'#F8F7F5',display:'flex',alignItems:'center',justifyContent:'center'}} className="text-[13px]">Loading store...</div>
 
-  const filtered = filter === 'all' ? STORE_THEMES : STORE_THEMES.filter(t => t.category === filter)
-  const currentTheme = getTheme(theme)
+  const standardThemes = STORE_THEMES.filter(t => t.category !== 'advanced')
+  const advancedThemes = getAdvancedThemes()
+  const filtered = filter === 'all' ? standardThemes : STORE_THEMES.filter(t => t.category === filter)
 
   return (
     <div style={{minHeight:'100vh',background:'#F8F7F5'}} className="text-zinc-900 pb-24">
@@ -118,54 +120,92 @@ export default function Dashboard() {
       <main className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div style={{borderRadius:20}} className="bg-white p-6 border"><div className="text-[11px] text-zinc-500 font-semibold uppercase tracking-widest">Products</div><div className="text-2xl font-bold mt-3">{products.length}</div></div>
-          <div style={{borderRadius:20}} className="bg-white p-6 border"><div className="text-[11px] text-zinc-500 font-semibold uppercase tracking-widest">Theme</div><div className="text-[14px] font-bold mt-3 flex items-center gap-2"><span>{currentTheme.badge}</span>{currentTheme.name}</div></div>
-          <div style={{borderRadius:20}} className="bg-black text-white p-6 flex flex-col justify-between"><div className="text-[11px] text-zinc-400 font-semibold uppercase tracking-widest">Store Link</div><div className="flex items-center justify-between mt-3 gap-2"><div className="text-[13px] font-medium truncate">/s/{slug}</div><button onClick={copyLink} style={{borderRadius:10}} className="shrink-0 h-8 px-3 bg-white/15 text-xs font-medium hover:bg-white/25">{copied ? '✓ Copied' : 'Copy'}</button></div></div>
+          <div style={{borderRadius:20}} className="bg-white p-6 border"><div className="text-[11px] text-zinc-500 font-semibold uppercase tracking-widest">Theme</div><div className="text-[14px] font-semibold mt-3">{getTheme(theme).name} • {getTheme(theme).badge}</div><div className="text-[11px] text-zinc-500 mt-1 capitalize">{getTheme(theme).category}</div></div>
+          <div style={{borderRadius:20}} className="bg-[#E8FF86] p-6 border border-black/10"><div className="text-[11px] text-black/60 font-semibold uppercase tracking-widest">Store Link</div><div className="text-[13px] font-medium mt-3 truncate">/s/{slug}</div></div>
         </div>
 
-        <div style={{borderRadius:20}} className="bg-white border overflow-hidden">
-          <div className="p-6 flex items-center justify-between border-b"><h2 className="font-semibold text-[14px]">Store Identity & Theme</h2>{saved && <span style={{borderRadius:999}} className="bg-green-50 text-green-700 border border-green-200 px-3 py-1 text-xs font-medium">Saved ✓</span>}</div>
-          <div className="p-6 space-y-6">
-            <div className="grid md:grid-cols-3 gap-4">
-              <div><label className="text-[13px] font-medium">Business Name</label><input value={businessName} onChange={e=>setBusinessName(e.target.value)} style={{borderRadius:12}} className="mt-2 w-full h-11 px-4 border bg-white focus:outline-none focus:ring-2 focus:ring-black text-[14px]" placeholder="Noor Fabrics" /></div>
-              <div><label className="text-[13px] font-medium">WhatsApp Number</label><input value={whatsapp} onChange={e=>setWhatsapp(e.target.value)} style={{borderRadius:12}} className="mt-2 w-full h-11 px-4 border bg-white focus:outline-none focus:ring-2 focus:ring-black text-[14px]" placeholder="923001234567" /></div>
-              <div><label className="text-[13px] font-medium">Store Slug</label><div className="mt-2 flex items-center gap-2"><span className="text-[13px] text-zinc-500">/s/</span><input value={slug} onChange={e=>setSlug(e.target.value)} style={{borderRadius:12}} className="flex-1 h-11 px-4 border bg-white focus:outline-none focus:ring-2 focus:ring-black text-[14px]" /></div></div>
+        <div style={{borderRadius:20}} className="bg-white p-6 border">
+          <h2 className="font-semibold text-[15px]">Store Settings</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <input placeholder="Business name" value={businessName} onChange={e=>setBusinessName(e.target.value)} style={{borderRadius:12}} className="h-11 px-4 border text-[14px]" />
+            <input placeholder="Store slug" value={slug} onChange={e=>setSlug(e.target.value)} style={{borderRadius:12}} className="h-11 px-4 border text-[14px]" />
+            <input placeholder="WhatsApp number" value={whatsapp} onChange={e=>setWhatsapp(e.target.value)} style={{borderRadius:12}} className="h-11 px-4 border text-[14px]" />
+          </div>
+
+          <div className="mt-8">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+              <label className="text-[13px] font-semibold">Choose Theme — {filtered.length} designs</label>
+              <div className="flex flex-wrap gap-1.5">
+                {(['all','food','clothing','tech','shoes','advanced'] as const).map(c => (
+                  <button key={c} onClick={()=>setFilter(c)} style={{borderRadius:999}} className={`h-7 px-3 text-[11px] font-medium capitalize border ${filter===c ? 'bg-black text-white border-black' : c==='advanced' ? 'bg-[#E8FF86] text-black border-black' : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50'}`}>{c}</button>
+                ))}
+              </div>
             </div>
 
-            <div>
-              <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-                <label className="text-[13px] font-semibold">Choose Theme — 8 Premium Niche Designs</label>
-                <div className="flex flex-wrap gap-1.5">
-                  {(['all','food','clothing','tech','shoes'] as const).map(c => (
-                    <button key={c} onClick={()=>setFilter(c)} style={{borderRadius:999}} className={`h-7 px-3 text-[11px] font-medium capitalize border ${filter===c ? 'bg-black text-white border-black' : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50'}`}>{c}</button>
-                  ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+              {filtered.map(t => {
+                const isActive = theme === t.id
+                return (
+                  <button key={t.id} onClick={()=>setTheme(t.id)} style={{borderRadius:16, background: t.colors.bg, borderColor: isActive ? '#E8FF86' : '#E5E7EB', borderWidth: isActive ? 2 : 1}} className={`relative text-left p-4 border overflow-hidden transition-all hover:scale-[1.01] ${isActive ? 'shadow-[0_0_20px_rgba(232,255,134,0.4)]' : 'hover:shadow-md'}`}>
+                    {isActive && <span style={{borderRadius:999}} className="absolute top-2 right-2 w-5 h-5 bg-[#E8FF86] text-black flex items-center justify-center text-[11px] font-bold">✓</span>}
+                    <div className="flex items-center gap-2 mb-2">
+                      <span style={{borderRadius:8, background: t.colors.card, borderColor: t.colors.accent}} className="w-8 h-8 border flex items-center justify-center text-[14px]">{t.badge}</span>
+                      <div><div style={{color: t.colors.text}} className="text-[13px] font-bold leading-none">{t.name}</div><div style={{color: t.colors.sub}} className="text-[10px] uppercase tracking-widest mt-1">{t.category}</div></div>
+                    </div>
+                    <div style={{borderRadius:10, background: t.colors.card}} className="h-16 border p-2 flex gap-1.5 overflow-hidden">
+                      <div style={{background: t.colors.accent, borderRadius:8}} className="w-12 h-full opacity-80" />
+                      <div className="flex-1 space-y-1.5">
+                        <div style={{background: t.colors.text, borderRadius:4}} className="h-2 w-3/4 opacity-20" />
+                        <div style={{background: t.colors.text, borderRadius:4}} className="h-2 w-1/2 opacity-10" />
+                        <div style={{background: t.colors.accent, borderRadius:6}} className="h-5 w-16 mt-1" />
+                      </div>
+                    </div>
+                    <div style={{color: t.colors.sub}} className="text-[11px] mt-2 leading-snug">{t.tagline}</div>
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* ADVANCED PANEL */}
+            <div style={{borderRadius:16}} className="mt-8 border-2 border-black bg-[#0A0A0A] p-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span style={{borderRadius:999}} className="bg-[#E8FF86] text-black text-[10px] font-bold px-2 py-1">ADVANCED</span>
+                  <span className="text-white font-semibold text-[14px]">Premium Minimal — 3 Sleek Designs</span>
                 </div>
+                <button onClick={()=>setShowAdvancedPanel(!showAdvancedPanel)} className="text-white/60 text-[12px]">{showAdvancedPanel ? 'Hide' : 'Show'}</button>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                {filtered.map(t => {
-                  const isActive = theme === t.id
-                  return (
-                    <button key={t.id} onClick={()=>setTheme(t.id)} style={{borderRadius:16, background: t.colors.bg, borderColor: isActive ? '#E8FF86' : '#E5E7EB', borderWidth: isActive ? 2 : 1}} className={`relative text-left p-4 border overflow-hidden transition-all hover:scale-[1.01] ${isActive ? 'shadow-[0_0_20px_rgba(232,255,134,0.4)]' : 'hover:shadow-md'}`}>
-                      {isActive && <span style={{borderRadius:999}} className="absolute top-2 right-2 w-5 h-5 bg-[#E8FF86] text-black flex items-center justify-center text-[11px] font-bold">✓</span>}
-                      <div className="flex items-center gap-2 mb-2">
-                        <span style={{borderRadius:8, background: t.colors.card, borderColor: t.colors.accent}} className="w-8 h-8 border flex items-center justify-center text-[14px]">{t.badge}</span>
-                        <div><div style={{color: t.colors.text}} className="text-[13px] font-bold leading-none">{t.name}</div><div style={{color: t.colors.sub}} className="text-[10px] uppercase tracking-widest mt-1">{t.category}</div></div>
-                      </div>
-                      <div style={{borderRadius:10, background: t.colors.card}} className="h-16 border p-2 flex gap-1.5 overflow-hidden">
-                        <div style={{background: t.colors.accent, borderRadius:8}} className="w-12 h-full opacity-80" />
-                        <div className="flex-1 space-y-1.5">
-                          <div style={{background: t.colors.text, borderRadius:4}} className="h-2 w-3/4 opacity-20" />
-                          <div style={{background: t.colors.text, borderRadius:4}} className="h-2 w-1/2 opacity-10" />
-                          <div style={{background: t.colors.accent, borderRadius:6}} className="h-5 w-16 mt-1" />
+              {showAdvancedPanel && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+                  {advancedThemes.map(t => {
+                    const isActive = theme === t.id
+                    return (
+                      <button key={t.id} onClick={()=>setTheme(t.id)} style={{borderRadius:16, background: t.colors.bg, borderColor: isActive ? '#E8FF86' : '#E5E7EB', borderWidth: isActive ? 2 : 1}} className={`relative text-left p-4 border overflow-hidden ${isActive ? 'shadow-[0_0_20px_rgba(232,255,134,0.4)]' : ''}`}>
+                        {isActive && <span style={{borderRadius:999}} className="absolute top-2 right-2 w-5 h-5 bg-[#E8FF86] text-black flex items-center justify-center text-[11px] font-bold">✓</span>}
+                        <span style={{borderRadius:999}} className="absolute top-2 right-2 mr-6 bg-black text-white text-[9px] px-2 py-0.5">ADVANCED</span>
+                        <div className="flex items-center gap-2 mb-2">
+                          <span style={{borderRadius:8, background: t.colors.card, borderColor: t.colors.accent}} className="w-8 h-8 border flex items-center justify-center text-[14px]">{t.badge}</span>
+                          <div><div style={{color: t.colors.text}} className="text-[13px] font-bold leading-none">{t.name}</div><div style={{color: t.colors.sub}} className="text-[10px] uppercase tracking-widest mt-1">advanced</div></div>
                         </div>
-                      </div>
-                      <div style={{color: t.colors.sub}} className="text-[11px] mt-2 leading-snug">{t.tagline}</div>
-                    </button>
-                  )
-                })}
-              </div>
+                        <div style={{borderRadius:10, background: t.colors.card}} className="h-16 border p-2 flex gap-1.5 overflow-hidden">
+                          <div style={{background: t.colors.accent, borderRadius:8}} className="w-12 h-full opacity-80" />
+                          <div className="flex-1 space-y-1.5">
+                            <div style={{background: t.colors.text, borderRadius:4}} className="h-2 w-3/4 opacity-20" />
+                            <div style={{background: t.colors.text, borderRadius:4}} className="h-2 w-1/2 opacity-10" />
+                          </div>
+                        </div>
+                        <div style={{color: t.colors.sub}} className="text-[11px] mt-2 leading-snug">{t.tagline} — sleek, not much over</div>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+              <div className="text-[11px] text-white/50 mt-3">These 3 are in category 'advanced' — quiet luxury, charcoal minimal, editorial. Select and Save Store & Theme to apply.</div>
+            </div>
 
-              <div className="flex justify-end pt-4"><button onClick={saveStore} style={{borderRadius:10}} className="h-11 px-6 bg-black text-white text-[13px] font-medium hover:bg-zinc-800">Save Store & Theme</button></div>
+            <div className="flex justify-end pt-4 gap-2">
+              {saved && <span className="h-11 px-4 flex items-center text-[12px] text-green-600 font-medium">✓ Saved!</span>}
+              <button onClick={saveStore} style={{borderRadius:10}} className="h-11 px-6 bg-black text-white text-[13px] font-medium hover:bg-zinc-800">Save Store & Theme</button>
             </div>
           </div>
         </div>
