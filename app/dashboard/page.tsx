@@ -6,6 +6,70 @@ import { useRouter } from 'next/navigation'
 import { STORE_THEMES, getTheme, ThemeCategory, getAdvancedThemes } from '@/lib/storeThemes'
 import { DukaanWhatsLoader } from '@/components/DukaanWhatsLoader'
 
+
+// --- CUSTOM PREMIUM ICONS - Created for DukaanWhats ---
+const UploadIcon = ({ className = "w-12 h-12" }: { className?: string }) => (
+  <div className={`${className} relative`}>
+    <div className="absolute inset-0 bg-black rounded-[14px] shadow-[0_8px_20px_rgba(0,0,0,0.15)]" />
+    <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-black rounded-[14px]" />
+    <div className="absolute inset-[1px] bg-black rounded-[13px] flex items-center justify-center">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="text-white">
+        <path d="M3 15.5V19.5C3 20.6 3.9 21.5 5 21.5H19C20.1 21.5 21 20.6 21 19.5V15.5" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" opacity="0.3"/>
+        <path d="M12 3.5V14.5" stroke="white" strokeWidth="1.6" strokeLinecap="round"/>
+        <path d="M8.5 7L12 3.5L15.5 7" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+        <circle cx="9" cy="12.5" r="1.2" fill="white" opacity="0.9"/>
+      </svg>
+    </div>
+    <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#E8FF86] rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(232,255,134,0.5)] border-2 border-white">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M12 5V19M5 12H19" stroke="black" strokeWidth="2.5" strokeLinecap="round"/></svg>
+    </div>
+  </div>
+)
+
+const GlassLockIcon = ({ size = 48, small = false }: { size?: number; small?: boolean }) => (
+  <div style={{ width: size, height: size }} className={`relative shrink-0 ${small ? '' : ''}`}>
+    {/* Glass base */}
+    <div className="absolute inset-0 rounded-[14px] bg-white/90 backdrop-blur-xl border border-black/[0.06] shadow-[0_8px_24px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,1)]" />
+    <div className="absolute inset-0 rounded-[14px] bg-gradient-to-br from-white via-white/80 to-zinc-50/90" />
+    {/* Inner highlight */}
+    <div className="absolute inset-[1px] rounded-[13px] bg-gradient-to-b from-white to-transparent opacity-80" />
+    {/* Lock icon */}
+    <div className="absolute inset-0 flex items-center justify-center">
+      <svg width={small ? 16 : 22} height={small ? 16 : 22} viewBox="0 0 24 24" fill="none">
+        <rect x="5" y="10" width="14" height="10" rx="3" fill="#0A0A0A" />
+        <path d="M8 10V7.5C8 5.3 9.8 3.5 12 3.5C14.2 3.5 16 5.3 16 7.5V10" stroke="#0A0A0A" strokeWidth="1.8" strokeLinecap="round" />
+        <circle cx="12" cy="15" r="1.6" fill="white" />
+        <path d="M12 16.6V18" stroke="white" strokeWidth="1.2" strokeLinecap="round" />
+        {/* glossy shine */}
+        <path d="M6.5 11.5C6.5 11.5 7.5 10.8 9.5 11" stroke="white" strokeWidth="1" strokeLinecap="round" opacity="0.25" />
+      </svg>
+    </div>
+    {/* Top gloss reflection */}
+    <div className="absolute top-[2px] left-[3px] right-[3px] h-[45%] rounded-t-[13px] bg-gradient-to-b from-white/90 to-transparent opacity-60 pointer-events-none" />
+  </div>
+)
+
+const GlassPremiumLock = ({ size = 56 }: { size?: number }) => (
+  <div style={{ width: size, height: size }} className="relative">
+    <div className="absolute inset-0 rounded-[16px] bg-[#0A0A0A] shadow-[0_12px_28px_rgba(0,0,0,0.22)]" />
+    <div className="absolute inset-0 rounded-[16px] bg-gradient-to-br from-zinc-800 to-black" />
+    <div className="absolute inset-[1px] rounded-[15px] bg-gradient-to-b from-white/[0.08] to-transparent" />
+    <div className="absolute inset-0 flex items-center justify-center">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <rect x="4.5" y="10.5" width="15" height="10" rx="3.5" fill="white" />
+        <path d="M8 10.5V7.8C8 5.4 9.9 3.5 12.2 3.5C14.5 3.5 16.4 5.4 16.4 7.8V10.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+        <circle cx="12" cy="15.5" r="1.5" fill="black" />
+        <path d="M12 17V18.5" stroke="black" strokeWidth="1.2" strokeLinecap="round" />
+      </svg>
+    </div>
+    <div className="absolute top-[3px] left-[4px] right-[4px] h-[40%] rounded-t-[15px] bg-gradient-to-b from-white/15 to-transparent pointer-events-none" />
+    <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#E8FF86] rounded-full border-2 border-black flex items-center justify-center">
+      <span className="text-[8px]">✦</span>
+    </div>
+  </div>
+)
+
+
 const TILL_ID = '984837533'
 
 type Profile = { id: string; business_name: string; whatsapp_number: string; store_slug: string; store_theme?: string; current_plan?: string }
@@ -164,7 +228,7 @@ export default function Dashboard() {
   const getDisplayPrice = (p: PlanDef) => billing==='monthly'?p.monthly:p.yearlyMonthly
 
   const CurrentPlanButton = () => (
-    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)] cursor-default select-none">
+    <div className="flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1 md:py-1.5 rounded-full border bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)] cursor-default select-none">
       <span className={`w-2 h-2 rounded-full animate-pulse ${isPremium?'bg-[#E8FF86] shadow-[0_0_8px_#E8FF86]':isAdvanced?'bg-black':'bg-zinc-400'}`}></span>
       <span className="text-[11px] font-black tracking-widest">{currentPlanDef.name.toUpperCase()}</span>
       <span className="text-[10px] opacity-60 font-mono hidden md:inline">• {productLimit===999999?'∞':productLimit} prod • {imageLimit===999999?'∞':imageLimit} img</span>
@@ -185,30 +249,30 @@ export default function Dashboard() {
         .glass-container .glass.selected::before { background: #0A0A0A; color: #fff; border-top: 1px solid rgba(255,255,255,0.1); }
         .glass-container .glass.selected .glass-preview-wrap { border-color: rgba(255,255,255,0.1); }
         .glass-lock-overlay { position: absolute; inset: 0; background: rgba(255,255,255,0.82); backdrop-filter: blur(18px) saturate(1.2); -webkit-backdrop-filter: blur(18px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; z-index: 10; border-radius: 24px; border: 1px solid rgba(0,0,0,0.06); }
-        .glass-lock-icon { width: 56px; height: 56px; background: #0A0A0A; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 22px; color: #fff; box-shadow: 0 12px 24px rgba(0,0,0,0.18); }
+        .glass-lock-icon { display:none; } /* replaced by GlassPremiumLock component */
         .glass-preview-wrap { width: 88%; height: 240px; border-radius: 16px; overflow: hidden; border: 1px solid rgba(0,0,0,0.06); display: flex; flex-direction: column; background: #F8F7F5; margin-top: 18px; transition: all 0.4s; }
         .glass-preview-header { height: 32px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; font-size: 9px; font-weight: 800; letter-spacing: 0.08em; }
         .glass-preview-body { flex:1; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
         /* --- SIMPLE PREMIUM CARDS FOR ADVANCED --- */
-        .adv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
-        .adv-card { width: 100%; height: 228px; border-radius: 20px; background: #fff; border: 1px solid #e4e4e7; display: flex; flex-direction: column; align-items: flex-start; padding: 16px; cursor: pointer; transition: all 0.25s ease; position: relative; overflow: hidden; text-align: left; }
+        .adv-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; } @media (min-width: 768px){ .adv-grid{ grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:16px; } }
+        .adv-card { width: 100%; height: 190px; border-radius: 16px; background: #fff; border: 1px solid #e4e4e7; display: flex; flex-direction: column; align-items: flex-start; padding: 12px; cursor: pointer; transition: all 0.25s ease; position: relative; overflow: hidden; text-align: left; } @media (min-width: 768px){ .adv-card{ height:228px; border-radius:20px; padding:16px; } }
         .adv-card:hover { transform: translateY(-4px); border-color: #0A0A0A; box-shadow: 0 12px 24px rgba(0,0,0,0.08); }
         .adv-card.selected { border: 2px solid #0A0A0A; box-shadow: 0 0 0 3px #E8FF86, 0 16px 32px rgba(0,0,0,0.1); transform: translateY(-4px); }
         .adv-card-lock-overlay { position: absolute; inset: 0; background: rgba(255,255,255,0.86); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; z-index: 5; border-radius: 20px; }
-        .adv-lock-icon { width: 36px; height: 36px; background: #fff; border: 1px solid #e4e4e7; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+        .adv-lock-icon { display:none; } /* replaced by GlassLockIcon component */
         /* --- TABS --- */
         .modern-tab-pill { position: relative; display: flex; background: #0A0A0A; border-radius: 999px; padding: 4px; gap: 2px; }
-        .modern-tab { height: 36px; padding: 0 18px; border-radius: 999px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 7px; white-space: nowrap; transition: all .25s; line-height: 1; }
+        .modern-tab { height: 32px; padding: 0 12px; border-radius: 999px; font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 6px; white-space: nowrap; transition: all .25s; line-height: 1; } @media (min-width: 768px){ .modern-tab{ height:36px; padding:0 18px; font-size:13px; gap:7px; } }
         .modern-tab-active { background: #FFFFFF; color: #0A0A0A; font-weight: 600; }
         .modern-tab-inactive { color: rgba(255,255,255,0.6); }
         .modern-tab-inactive:hover { color: #fff; }
-        .pro-glow-btn{position:relative;background:#E8FF86;color:#0A0A0A;border-radius:999px;height:36px;padding:0 18px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;white-space:nowrap; line-height: 1; border: 1px solid #E8FF86; box-shadow: 0 0 0 1px #E8FF86, 0 4px 16px rgba(232,255,134,0.3);}
+        .pro-glow-btn{position:relative;background:#E8FF86;color:#0A0A0A;border-radius:999px;height:32px;padding:0 12px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:6px;white-space:nowrap; line-height: 1; border: 1px solid #E8FF86; box-shadow: 0 0 0 1px #E8FF86, 0 4px 16px rgba(232,255,134,0.3);} @media (min-width: 768px){ .pro-glow-btn{ height:36px; padding:0 18px; font-size:13px; gap:8px; } }
         .pro-glow-btn.active{background:#0A0A0A;color:#E8FF86;border:1px solid #E8FF86;box-shadow:0 0 20px rgba(232,255,134,0.5)}
         .pro-dot{width:7px;height:7px;background:#0A0A0A;border-radius:999px;animation:proPulse 2s infinite}
         .pro-dot.active{background:#E8FF86}
         @keyframes proPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.25)}}
-        .billing-toggle{display:flex;background:#0A0A0A;border-radius:999px;padding:4px;gap:4px}
-        .billing-btn{height:32px;padding:0 16px;border-radius:999px;font-size:12px;font-weight:600;transition:all .25s;white-space:nowrap;line-height:1;display:flex;align-items:center;}
+        .billing-toggle{display:flex;background:#0A0A0A;border-radius:999px;padding:3px;gap:3px} @media (min-width:768px){ .billing-toggle{ padding:4px; gap:4px; } }
+        .billing-btn{height:28px;padding:0 10px;border-radius:999px;font-size:11px;font-weight:600;transition:all .25s;white-space:nowrap;line-height:1;display:flex;align-items:center;} @media (min-width:768px){ .billing-btn{ height:32px; padding:0 16px; font-size:12px; } }
         .billing-btn-active{background:#fff;color:#0A0A0A}
         .billing-btn-inactive{color:rgba(255,255,255,0.6)}
         .radio-container{--main-color:#0A0A0A;--total-radio:3;display:flex;flex-direction:column;position:relative;padding-left:1rem}
@@ -222,19 +286,19 @@ export default function Dashboard() {
       `}</style>
 
       <header className="bg-white border-b sticky top-0 z-30">
-        <div className="max-w-6xl mx-auto px-4 md:px-6 h-[64px] flex items-center justify-between gap-3">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 h-[56px] md:h-[64px] flex items-center justify-between gap-2 md:gap-3">
           <Link href="/" className="flex items-center gap-2.5 shrink-0"><div className="w-9 h-9 bg-black text-white flex items-center justify-center font-bold rounded-[10px] text-[14px]">D</div><span className="font-semibold tracking-tight text-[15px]">DukaanWhats.pk</span></Link>
           <div className="flex items-center gap-2 shrink-0">
             <CurrentPlanButton />
             <button onClick={copyLink} className="h-10 px-4 border bg-white rounded-[12px] text-[12px] font-medium hover:bg-zinc-50 transition-colors flex items-center justify-center leading-none">{copied?'Copied!':'Copy Link'}</button>
-            <Link href={slug ? `/s/${slug}` : '#'} target="_blank" className="h-10 px-5 bg-black text-white rounded-[12px] text-[12px] font-medium flex items-center justify-center leading-none hover:bg-zinc-900 transition-colors">View Store ↗</Link>
+            <Link href={slug ? `/s/${slug}` : '#'} target="_blank" className="h-8 md:h-10 px-3 md:px-5 bg-black text-white rounded-[10px] md:rounded-[12px] text-[11px] md:text-[12px] font-medium flex items-center justify-center leading-none hover:bg-zinc-900 transition-colors">View ↗</Link>
           </div>
         </div>
       </header>
 
       <div className="max-w-6xl mx-auto px-4 md:px-6 pt-6">
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-2 md:gap-3 flex-wrap">
+          <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
             <div className="modern-tab-pill">
               {[{ id: 'store', label: 'Store' },{ id: 'themes', label: 'Themes' },{ id: 'products', label: `Products ${products.length}/${productLimit===999999?'∞':productLimit}` }].map(t => (
                 <button key={t.id} onClick={()=>setActiveTab(t.id as any)} className={`modern-tab ${activeTab===t.id ? 'modern-tab-active' : 'modern-tab-inactive'}`}>{t.label}</button>
@@ -252,7 +316,7 @@ export default function Dashboard() {
             <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
               <div>
                 <h2 className="text-[16px] font-bold tracking-tight">Themes — <span className="font-normal text-zinc-500">Current: {currentPlanDef.name} • {currentPlanId==='basic'?'Only 3 Advanced unlocked, 5 locked + 3 Premium locked':currentPlanId==='advanced'?'All 8 Advanced unlocked, 3 Premium locked':'All unlocked ✓'}</span></h2>
-                <p className="text-[11px] text-zinc-500 mt-1.5">Basic = 3 Advanced + 0 Premium • Advanced = All 8 Advanced + 0 Premium • Premium = Everything unlocked</p>
+                
               </div>
             </div>
 
@@ -270,7 +334,7 @@ export default function Dashboard() {
                     <div className="w-9 h-full rounded-[8px]" style={{background:t.colors?.accent || '#000'}} />
                     <div className="flex-1 flex flex-col gap-1.5"><div className="h-2 w-3/4 bg-zinc-200 rounded-full" /><div className="h-2 w-1/2 bg-zinc-100 rounded-full" /><div className="mt-auto h-6 w-full bg-white border rounded-[8px]" /></div>
                   </div>
-                  {locked && <div className="adv-card-lock-overlay"><div className="adv-lock-icon">🔒</div><div className="text-[11px] font-bold tracking-widest">LOCKED</div><div className="text-[10px] text-zinc-500 text-center leading-tight">Basic allows 3/8<br/>Need Advanced</div><div className="mt-1 bg-black text-white text-[10px] px-3 h-7 rounded-full font-bold flex items-center">UPGRADE → Rs. 899</div></div>}
+                  {locked && <div className="adv-card-lock-overlay"><GlassLockIcon size={40} small /><div className="text-[11px] font-black tracking-widest mt-1">LOCKED</div><div className="text-[10px] text-zinc-500 text-center leading-tight">Basic 3/8<br/>Need Advanced</div><div className="mt-1.5 bg-black text-white text-[10px] px-3.5 h-7 rounded-full font-bold flex items-center shadow-[0_4px_12px_rgba(0,0,0,0.15)]">UPGRADE → Rs. 899</div></div>}
                   {!locked && <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-[#E8FF86] text-black text-[9px] px-2.5 h-5 rounded-full font-bold flex items-center">UNLOCKED ✓</div>}
                 </button>
               )})}
@@ -316,10 +380,10 @@ export default function Dashboard() {
                         {isActive && <div className="absolute top-4 right-4 w-7 h-7 bg-black text-white rounded-full flex items-center justify-center text-[12px] font-bold shadow-lg">✓</div>}
                         {locked && (
                           <div className="glass-lock-overlay">
-                            <div className="glass-lock-icon">🔒</div>
-                            <div className="text-black text-[12px] font-black tracking-widest">PREMIUM LOCKED</div>
-                            <div className="text-zinc-500 text-[10px] text-center leading-[1.4]">Basic: 0/3 Premium<br/>Advanced: 0/3 Premium<br/>Need Premium<br/>Rs. 2999/mo</div>
-                            <div className="mt-1 bg-black text-white text-[10px] font-bold px-4 h-8 rounded-full flex items-center">UPGRADE → PREMIUM</div>
+                            <GlassPremiumLock size={56} />
+                            <div className="text-black text-[12px] font-black tracking-widest mt-1">PREMIUM LOCKED</div>
+                            <div className="text-zinc-500 text-[10px] text-center leading-[1.4] font-medium">Basic: 0/3 • Advanced: 0/3<br/>Need Premium Rs. 2999/mo</div>
+                            <div className="mt-2 bg-black text-white text-[10px] font-bold px-4 h-8 rounded-full flex items-center shadow-[0_8px_20px_rgba(0,0,0,0.2)]">UPGRADE → PREMIUM</div>
                           </div>
                         )}
                       </div>
@@ -360,7 +424,38 @@ export default function Dashboard() {
           <div className="space-y-4">
             <div className="bg-white border rounded-[20px] overflow-hidden"><div className="p-5 border-b flex items-center justify-between flex-wrap gap-2"><h2 className="font-bold text-[14px]">Add Product — {products.length}/{productLimit===999999?'∞':productLimit}</h2>{products.length>=productLimit && <span className="text-[10px] px-3 h-6 rounded-full bg-red-50 text-red-600 border border-red-200 font-bold flex items-center">LIMIT REACHED</span>}</div>
               <div className="p-5 space-y-4">
-                <label className="border-2 border-dashed rounded-[16px] p-4 flex flex-col items-center justify-center cursor-pointer hover:bg-zinc-50 min-h-[120px] bg-zinc-50/30 transition-colors">{previews.length ? <div className="grid grid-cols-5 gap-2 w-full">{previews.map((src,i)=><img key={i} src={src} className="w-full h-[60px] object-cover rounded-[10px] border" />)}</div> : <div className="text-center"><div className="w-11 h-11 bg-black text-white flex items-center justify-center text-lg mx-auto rounded-[12px]">+</div><div className="mt-2 font-medium text-[13px]">Upload — Basic 1 image, Advanced 5, Premium Unlimited</div><div className="mt-1 text-[11px] text-zinc-500">Your plan {currentPlanId.toUpperCase()} allows {imageLimit===999999?'Unlimited':imageLimit} image{imageLimit!==1?'s':''} per product</div></div>}<input type="file" accept="image/*" multiple onChange={handleFile} className="hidden" /></label>
+                <label className="group relative border-2 border-dashed border-zinc-200 rounded-[20px] p-6 flex flex-col items-center justify-center cursor-pointer hover:border-black hover:bg-white transition-all min-h-[160px] bg-[#FCFCFA] overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-b from-white to-[#F8F7F5] opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative z-10 flex flex-col items-center">
+                  {previews.length ? (
+                    <div className="grid grid-cols-5 gap-2.5 w-full">
+                      {previews.map((src,i)=>(
+                        <div key={i} className="relative group/img">
+                          <img src={src} className="w-full h-[72px] object-cover rounded-[12px] border-2 border-white shadow-[0_2px_8px_rgba(0,0,0,0.06)] group-hover/img:shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-shadow" />
+                          <div className="absolute inset-0 rounded-[12px] bg-black/0 group-hover/img:bg-black/5 transition-colors" />
+                        </div>
+                      ))}
+                      <div className="h-[72px] rounded-[12px] border-2 border-dashed border-zinc-200 bg-white flex flex-col items-center justify-center gap-1 hover:border-black transition-colors">
+                        <span className="text-[16px]">+</span><span className="text-[9px] font-bold tracking-widest">ADD</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <UploadIcon />
+                      <div className="mt-4 text-center">
+                        <div className="font-bold text-[14px] tracking-tight">Drop images or click to upload</div>
+                        <div className="mt-1.5 flex items-center justify-center gap-2 text-[11px]">
+                          <span className="px-2.5 h-6 rounded-full bg-black text-white font-bold flex items-center">Basic 1</span>
+                          <span className="px-2.5 h-6 rounded-full bg-zinc-100 border font-bold flex items-center">Advanced 5</span>
+                          <span className="px-2.5 h-6 rounded-full bg-[#E8FF86] border border-black/5 font-bold flex items-center">Premium ∞</span>
+                        </div>
+                        <div className="mt-2 text-[11px] text-zinc-500">Your plan <b className="text-black">{currentPlanId.toUpperCase()}</b> allows <b className="text-black">{imageLimit===999999?'Unlimited':imageLimit}</b> image{imageLimit!==1?'s':''} per product • PNG, JPG, WEBP up to 5MB</div>
+                      </div>
+                    </>
+                  )}
+                  </div>
+                  <input type="file" accept="image/*" multiple onChange={handleFile} className="hidden" />
+                </label>
                 <div className="grid md:grid-cols-2 gap-3"><input placeholder="Product name" value={prodName} onChange={e=>setProdName(e.target.value)} className="w-full h-11 px-4 border rounded-[12px] bg-zinc-50/50 text-[13px] focus:bg-white focus:outline-none focus:border-black" /><input placeholder="Price Rs. 3500" type="number" value={prodPrice} onChange={e=>setProdPrice(e.target.value)} className="w-full h-11 px-4 border rounded-[12px] bg-zinc-50/50 text-[13px] focus:bg-white focus:outline-none focus:border-black" /></div>
                 <div className="flex justify-end"><button onClick={addProduct} disabled={uploading || products.length>=productLimit} className="h-11 px-7 bg-black text-white text-[13px] font-medium rounded-full disabled:opacity-40 hover:bg-zinc-900 transition-colors flex items-center justify-center leading-none">{uploading?'Uploading...':products.length>=productLimit?`Limit ${productLimit===999999?'∞':productLimit} — Upgrade`:`Add Product →`}</button></div>
               </div>
@@ -402,7 +497,7 @@ export default function Dashboard() {
                 </div>
                 {selectedPlan && selectedPlan.monthly>0 && (
                   <div className="rounded-[16px] border-2 border-black bg-[#FFFEF5] p-5">
-                    <div className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-[12px]">₨</div><div className="text-[13px] font-bold">Pay Rs. {billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} → Till {TILL_ID} ({billing})</div></div>
+                    <div className="flex items-center gap-1.5 md:gap-2 flex-wrap"><div className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-[12px]">₨</div><div className="text-[13px] font-bold">Pay Rs. {billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} → Till {TILL_ID} ({billing})</div></div>
                     <input value={txnId} onChange={e=>setTxnId(e.target.value)} placeholder={`Txn ID after paying Rs. ${billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} to Till ${TILL_ID}`} className="mt-4 w-full h-12 px-4 rounded-[12px] border-2 bg-white text-[12px] font-mono focus:outline-none focus:border-black"/>
                     <button onClick={handleBuyPlan} disabled={purchasing} className="mt-3 w-full h-12 bg-black text-white rounded-full font-bold text-[13px] flex items-center justify-center gap-2 hover:bg-zinc-900 transition-colors leading-none">{purchasing?'Submitting...':`I Paid Rs. ${billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} — Activate ${selectedPlan.name}`} <span className="w-5 h-5 bg-white text-black rounded-full flex items-center justify-center text-[10px]">↗</span></button>
                   </div>
