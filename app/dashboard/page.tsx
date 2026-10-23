@@ -23,7 +23,7 @@ export default function Dashboard() {
   const [previews, setPreviews] = useState<string[]>([])
   const [uploading, setUploading] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [filter, setFilter] = useState<ThemeCategory | 'all'>('all')
+  const [filter, setFilter] = useState<ThemeCategory | 'all' | string>('all')
   const router = useRouter()
 
   useEffect(() => {
@@ -83,7 +83,7 @@ export default function Dashboard() {
   const standardThemes = STORE_THEMES.filter(t => t.category !== 'advanced')
   const advancedThemes = getAdvancedThemes()
   // Upper grid NEVER shows advanced - only in glass panel
-  const filtered = filter === 'all' ? standardThemes : filter === 'advanced' ? [] : STORE_THEMES.filter(t => t.category === filter && t.category !== 'advanced')
+  const filtered = (filter as string) === 'all' ? standardThemes : (filter as string) === 'advanced' ? [] : STORE_THEMES.filter(t => (t.category as string) === (filter as string) && t.category !== 'advanced')
 
   return (
     <div style={{minHeight:'100vh',background:'#F8F7F5'}} className="text-zinc-900 pb-24">
