@@ -34,12 +34,13 @@ export default function Dashboard() {
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null)
   const [txnId, setTxnId] = useState('')
   const [purchasing, setPurchasing] = useState(false)
+  const [copiedTill, setCopiedTill] = useState(false)
   const router = useRouter()
 
   const plans: Plan[] = [
     { id: 'basic', name: 'Basic', price: 0, features: ['5 Products', '1 Image', 'COD Only'] },
     { id: 'advanced', name: 'Advanced', price: 499, features: ['50 Products', '5 Images', 'All Themes', 'Orders Dashboard'] },
-    { id: 'premium', name: 'Premium', price: 999, features: ['Unlimited', 'Glass Advanced', 'No Branding', 'Priority'] },
+    { id: 'premium', name: 'Premium', price: 999, features: ['Unlimited', 'Glass Advanced', 'No Branding', 'Priority Support'] },
   ]
 
   useEffect(() => {
@@ -52,7 +53,7 @@ export default function Dashboard() {
         let { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
         if (!prof) {
           const metaName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'My Store'
-          const baseSlug = metaName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0,20) || `store-${user.id.slice(0,6)}`
+          const baseSlug = metaName.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0,20) || `store-${user.id.slice(0,6)}`
           let finalSlug = baseSlug
           const { data: existing } = await supabase.from('profiles').select('id').eq('store_slug', baseSlug).maybeSingle()
           if (existing) finalSlug = `${baseSlug}-${Math.floor(Math.random()*900+100)}`
@@ -73,16 +74,17 @@ export default function Dashboard() {
 
   const saveStore = async () => {
     if (!profile) return; setSaving(true); setErrorMsg(null)
-    const cleanSlug = slug.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/^-+|-+$/g, '').replace(/--+/g, '-')
+    const cleanSlug = slug.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/--+/g, '-')
     const { data, error } = await supabase.from('profiles').upsert({ id: profile.id, business_name: businessName.trim(), whatsapp_number: whatsapp.trim(), store_slug: cleanSlug, store_theme: theme, updated_at: new Date().toISOString() }, { onConflict: 'id' }).select().single()
     if (error) setErrorMsg(error.message); else { setProfile(data); setSlug(cleanSlug); setSaved(true); setTimeout(()=>setSaved(false), 3000) }
     setSaving(false)
   }
-  const copyLink = async () => { if (!slug) { alert('Save first'); return }; await navigator.clipboard.writeText(`${window.location.origin}/s/${slug}`); setCopied(true); setTimeout(()=>setCopied(false), 2000) }
+  const copyLink = async () => { await navigator.clipboard.writeText(`${window.location.origin}/s/${slug}`); setCopied(true); setTimeout(()=>setCopied(false), 2000) }
+  const copyTill = async () => { await navigator.clipboard.writeText(TILL_ID); setCopiedTill(true); setTimeout(()=>setCopiedTill(false), 2000) }
   const logout = async () => { await supabase.auth.signOut(); router.push('/login') }
-  const handleFile = (e: any) => { const sel = Array.from(e.target.files || []) as File[]; if (sel.length>5){alert('Max 5'); return}; if (sel.some(f=>f.size>5*1024*1024)){alert('Max 5MB'); return}; setFiles(sel); setPreviews(sel.map(f=>URL.createObjectURL(f))) }
+  const handleFile = (e: any) => { const sel = Array.from(e.target.files || []) as File[]; if (sel.length>5){alert('Max 5'); return}; setFiles(sel); setPreviews(sel.map(f=>URL.createObjectURL(f))) }
   const uploadOne = async (file: File, userId: string) => {
-    const name = `${userId}/${Date.now()}_${Math.random().toString(36).slice(2)}_${file.name.replace(/[^a-zA-Z0-9.-]/g,'_')}`
+    const name = `${userId}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g,'_')}`
     const { error } = await supabase.storage.from('product-images').upload(name, file)
     if (error) throw error; return supabase.storage.from('product-images').getPublicUrl(name).data.publicUrl
   }
@@ -91,21 +93,17 @@ export default function Dashboard() {
     try{
       const { data: { user } } = await supabase.auth.getUser(); if (!user) throw new Error('Not logged in')
       const urls = []; for (const f of files){ urls.push(await uploadOne(f, user.id)) }
-      const { data, error } = await supabase.from('products').insert({ user_id: user.id, name: prodName.trim(), price: Number(prodPrice), image_url: urls[0], image_urls: urls }).select().single()
-      if (error && error.message.includes('image_urls')) {
-        const { data: fb } = await supabase.from('products').insert({ user_id: user.id, name: prodName.trim(), price: Number(prodPrice), image_url: urls[0] }).select().single()
-        if (fb) setProducts([fb, ...products])
-      } else if (data) setProducts([data, ...products])
-      setProdName(''); setProdPrice(''); setFiles([]); setPreviews([]); setActiveTab('products')
-    }catch(e:any){ setErrorMsg(e.message); alert(e.message) } setUploading(false)
+      const { data } = await supabase.from('products').insert({ user_id: user.id, name: prodName.trim(), price: Number(prodPrice), image_url: urls[0], image_urls: urls }).select().single()
+      if (data) setProducts([data, ...products]); setProdName(''); setProdPrice(''); setFiles([]); setPreviews([]); setActiveTab('products')
+    }catch(e:any){ setErrorMsg(e.message) } setUploading(false)
   }
   const deleteProduct = async (id: string) => { if (!confirm('Delete?')) return; await supabase.from('products').delete().eq('id', id); setProducts(products.filter(p=>p.id!==id)) }
   const handleBuyPlan = async () => {
-    if (!selectedPlan) return; if (selectedPlan.price===0){setSelectedPlan(null); return}; if (!txnId.trim()){alert('Enter Transaction ID after paying to Till '+TILL_ID); return}; setPurchasing(true)
+    if (!selectedPlan) return; if (selectedPlan.price===0){setSelectedPlan(null); return}; if (!txnId.trim()){alert('Enter Transaction ID'); return}; setPurchasing(true)
     try{
       const { data: { user } } = await supabase.auth.getUser(); if (!user) throw new Error('Not logged in')
       const { error } = await supabase.from('plan_payments').insert({ user_id: user.id, plan_id: selectedPlan.id, amount: selectedPlan.price, till_id: TILL_ID, txn_id: txnId.trim(), status: 'pending' })
-      if (error) throw error; alert(`Submitted! Till ${TILL_ID} - ${selectedPlan.name} - ${txnId}`); setSelectedPlan(null); setTxnId('')
+      if (error) throw error; alert(`Submitted! Till ${TILL_ID} - ${selectedPlan.name}`); setSelectedPlan(null); setTxnId('')
     }catch(e:any){alert(e.message)} setPurchasing(false)
   }
 
@@ -113,7 +111,7 @@ export default function Dashboard() {
 
   const standardThemes = STORE_THEMES.filter(t => t.category !== 'advanced')
   const advancedThemes = getAdvancedThemes()
-  const filtered = (filter as string) === 'all' ? standardThemes : (filter as string) === 'advanced' ? [] : STORE_THEMES.filter(t => (t.category as string) === (filter as string) && t.category !== 'advanced')
+  const filtered = (filter as string) === 'all' ? standardThemes : STORE_THEMES.filter(t => (t.category as string) === (filter as string) && t.category !== 'advanced')
 
   return (
     <div style={{minHeight:'100vh',background:'#F8F7F5'}} className="text-zinc-900 pb-24">
@@ -138,8 +136,13 @@ export default function Dashboard() {
         .modern-tab { position: relative; z-index: 1; height: 36px; padding: 0 18px; border-radius: 999px; font-size: 13px; font-weight: 500; letter-spacing: -0.01em; transition: all 0.4s cubic-bezier(0.16,1,0.3,1); display: flex; align-items: center; gap: 7px; white-space: nowrap; flex-shrink: 0; }
         .modern-tab-active { background: #FFFFFF; color: #0A0A0A; box-shadow: 0 2px 8px rgba(0,0,0,0.12), 0 1px 0 rgba(255,255,255,0.8) inset; font-weight: 600; }
         .modern-tab-inactive { color: rgba(255,255,255,0.6); }
-        .modern-tab-inactive:hover { color: rgba(255,255,255,0.9); background: rgba(255,255,255,0.06); }
-        .radio-container{--main-color:#E8FF86;--main-color-opacity:#E8FF861c;--total-radio:3;display:flex;flex-direction:column;position:relative;padding-left:1rem}
+        .pro-glow-btn{position:relative;background:#E8FF86;color:#0A0A0A;border-radius:999px;height:36px;padding:0 18px;font-size:13px;font-weight:700;letter-spacing:-0.01em;display:flex;align-items:center;gap:8px;box-shadow:0 0 0 1px #E8FF86,0 0 24px rgba(232,255,134,0.6),0 4px 16px rgba(232,255,134,0.3);transition:all .3s cubic-bezier(0.16,1,0.3,1);white-space:nowrap;flex-shrink:0}
+        .pro-glow-btn:hover{transform:translateY(-1px) scale(1.02);box-shadow:0 0 0 1px #E8FF86,0 0 32px rgba(232,255,134,0.8),0 8px 24px rgba(232,255,134,0.4)}
+        .pro-glow-btn.active{background:#0A0A0A;color:#E8FF86;border:1px solid #E8FF86;box-shadow:0 0 0 1px #E8FF86,0 0 28px rgba(232,255,134,0.7)}
+        .pro-dot{width:7px;height:7px;background:#0A0A0A;border-radius:999px;box-shadow:0 0 8px rgba(0,0,0,0.4);animation:proPulse 2s infinite}
+        .pro-dot.active{ background:#E8FF86; box-shadow:0 0 10px #E8FF86 }
+        @keyframes proPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.2);opacity:.8}}
+        .radio-container{--main-color:#E8FF86;--total-radio:3;display:flex;flex-direction:column;position:relative;padding-left:1rem}
         .radio-container input{appearance:none;position:absolute;opacity:0}
         .radio-container .glider-container{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(0deg,transparent 0%,rgba(20,20,20,0.15) 50%,transparent 100%);width:1px}
         .radio-container .glider{position:relative;height:calc(100% / var(--total-radio));width:100%;background:linear-gradient(0deg,transparent 0%,var(--main-color) 50%,transparent 100%);transition:transform .5s cubic-bezier(0.37,1.95,0.66,0.56)}
@@ -149,7 +152,7 @@ export default function Dashboard() {
         .radio-container input:nth-of-type(1):checked~.glider-container .glider{transform:translateY(0)}
         .radio-container input:nth-of-type(2):checked~.glider-container .glider{transform:translateY(100%)}
         .radio-container input:nth-of-type(3):checked~.glider-container .glider{transform:translateY(200%)}
-        @media (max-width: 768px) { .glass-container { min-height: 220px; } .glass-container .glass { width: 140px; height: 200px; margin: 0 -18px; } .neumorph-grid { grid-template-columns: repeat(2, 1fr); gap: 18px; padding: 24px 10px; } .card { width: 100%; max-width: 170px; height: 230px; border-radius: 36px; } .modern-tab { height: 32px; padding: 0 12px; font-size: 11px; } .modern-tab-pill{overflow-x:auto;max-width:100%} }
+        @media (max-width: 768px) { .glass-container { min-height: 220px; } .glass-container .glass { width: 140px; height: 200px; margin: 0 -18px; } .neumorph-grid { grid-template-columns: repeat(2, 1fr); gap: 18px; padding: 24px 10px; } .card { width: 100%; max-width: 170px; height: 230px; border-radius: 36px; } .modern-tab { height: 32px; padding: 0 14px; font-size: 12px; } .pro-glow-btn{height:32px;padding:0 14px;font-size:12px} }
       `}</style>
 
       <header className="bg-white border-b sticky top-0 z-30">
@@ -164,20 +167,141 @@ export default function Dashboard() {
       </header>
 
       <div className="max-w-6xl mx-auto px-3 md:px-6 pt-3 md:pt-6">
-        {errorMsg && <div style={{borderRadius:12}} className="mb-4 bg-red-50 border border-red-200 p-4 text-[12px] text-red-800"><div className="font-bold">Error</div><div className="mt-1">{errorMsg}</div></div>}
-        <div className="modern-tab-pill no-scrollbar">
-          {[
-            { id: 'store', label: 'Store', icon: '◧' },
-            { id: 'themes', label: 'Themes', icon: '◨' },
-            { id: 'products', label: `Products ${products.length}`, icon: '◫' },
-            { id: 'payments', label: `Till ${TILL_ID}`, icon: '⬡' },
-          ].map(t => (
-            <button key={t.id} onClick={()=>setActiveTab(t.id as any)} className={`modern-tab ${activeTab===t.id ? 'modern-tab-active' : 'modern-tab-inactive'}`}><span className="text-[13px]">{t.icon}</span>{t.label}</button>
-          ))}
+        {errorMsg && <div style={{borderRadius:12}} className="mb-4 bg-red-50 border border-red-200 p-4 text-[12px] text-red-800">{errorMsg}</div>}
+        <div className="flex items-center gap-2 md:gap-3 overflow-x-auto no-scrollbar">
+          <div className="modern-tab-pill no-scrollbar shrink-0">
+            {[
+              { id: 'store', label: 'Store', icon: '◧' },
+              { id: 'themes', label: 'Themes', icon: '◨' },
+              { id: 'products', label: `Products ${products.length}`, icon: '◫' },
+            ].map(t => (
+              <button key={t.id} onClick={()=>setActiveTab(t.id as any)} className={`modern-tab ${activeTab===t.id ? 'modern-tab-active' : 'modern-tab-inactive'}`}><span>{t.icon}</span>{t.label}</button>
+            ))}
+          </div>
+          {/* PRO GLOWING BUTTON - SEPARATE */}
+          <button onClick={()=>setActiveTab('payments')} className={`pro-glow-btn ${activeTab==='payments'?'active':''}`}>
+            <span className={`pro-dot ${activeTab==='payments'?'active':''}`}></span>
+            PRO • Till {TILL_ID}
+            <span className="text-[10px] opacity-60">↗</span>
+          </button>
         </div>
       </div>
 
       <main className="max-w-6xl mx-auto px-3 md:px-6 py-4 md:py-8 space-y-6">
+        {activeTab==='payments' && (
+          <div className="space-y-4">
+            {/* PREMIUM TILL HEADER */}
+            <div className="bg-white border rounded-[20px] md:rounded-[24px] p-5 md:p-8 overflow-hidden relative">
+              <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-[#E8FF86] opacity-[0.08] rounded-full blur-[80px] pointer-events-none"></div>
+              <div className="relative flex flex-wrap items-start justify-between gap-4">
+                <div className="flex items-center gap-3 md:gap-4 min-w-0">
+                  <div className="w-12 h-12 md:w-14 md:h-14 bg-[#0A0A0A] text-white rounded-[14px] flex items-center justify-center text-[20px] shrink-0 shadow-[0_8px_24px_rgba(0,0,0,0.15)]">⬡</div>
+                  <div className="min-w-0">
+                    <h2 className="font-black text-[16px] md:text-[20px] tracking-tight flex items-center gap-2">JazzCash Till ID Payment <span className="hidden md:inline-flex bg-[#E8FF86] text-black text-[9px] font-bold px-2 py-1 rounded-full tracking-widest">SECURE</span></h2>
+                    <p className="text-[11px] md:text-[12px] text-zinc-500 mt-1 flex items-center gap-2"><span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>Only verified method • Instant activation after verification</p>
+                  </div>
+                </div>
+                <div className="hidden md:flex items-center gap-2 text-[10px] text-zinc-400"><span className="px-2.5 py-1 rounded-full bg-zinc-100 border">Till ID: {TILL_ID}</span><span className="px-2.5 py-1 rounded-full bg-zinc-100 border">24/7 Support</span></div>
+              </div>
+
+              <div className="mt-6 md:mt-8 grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-4 md:gap-6">
+                {/* PREMIUM TILL CREDENTIALS CARD */}
+                <div className="relative rounded-[20px] overflow-hidden border border-[#1a1a2e] bg-[#0B0B1A] text-white p-5 md:p-6">
+                  <div className="absolute inset-0 opacity-80" style={{background:'radial-gradient(ellipse at 20% 0%, #1e1b8f 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, #4c1d95 0%, transparent 60%)'}}></div>
+                  <div className="relative z-10 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="text-[10px] tracking-[0.25em] uppercase opacity-40 font-bold">JAZZCASH BUSINESS TILL</div>
+                      <button onClick={copyTill} className="h-7 px-3 bg-white/10 hover:bg-white/15 border border-white/10 rounded-full text-[10px] font-medium transition">{copiedTill?'Copied!':'Copy ID'}</button>
+                    </div>
+                    
+                    <div className="bg-white/[0.06] border border-white/[0.08] rounded-[14px] p-4 backdrop-blur">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="text-[10px] uppercase tracking-widest opacity-50">Till ID Number</div>
+                          <div className="text-[28px] md:text-[32px] font-black tracking-[0.12em] mt-1 font-mono">{TILL_ID}</div>
+                          <div className="flex gap-1.5 mt-2">
+                            {TILL_ID.split('').map((d,i)=><div key={i} className="w-6 h-1 bg-[#E8FF86]/60 rounded-full"></div>)}
+                          </div>
+                        </div>
+                        <div className="w-8 h-8 rounded-full bg-[#E8FF86] text-black flex items-center justify-center font-bold text-[12px]">✓</div>
+                      </div>
+                      <div className="mt-4 grid grid-cols-2 gap-3 text-[11px]">
+                        <div className="bg-white/[0.05] rounded-[10px] p-2.5 border border-white/[0.06]"><div className="opacity-40 text-[9px] uppercase">Account Title</div><div className="font-semibold mt-1">DukaanWhats.pk</div></div>
+                        <div className="bg-white/[0.05] rounded-[10px] p-2.5 border border-white/[0.06]"><div className="opacity-40 text-[9px] uppercase">Network</div><div className="font-semibold mt-1">JazzCash • Till</div></div>
+                      </div>
+                    </div>
+
+                    <div className="bg-white rounded-[14px] p-3">
+                      <div className="flex items-center justify-between mb-2"><span className="text-[10px] font-bold text-black tracking-widest uppercase">Barcode</span><span className="text-[9px] text-zinc-500">Code128</span></div>
+                      <img src={`https://barcodeapi.org/api/code128/${TILL_ID}`} alt="Barcode" className="w-full h-[52px] object-contain"/>
+                      <div className="text-center text-[11px] tracking-[0.3em] mt-1.5 font-mono text-black font-black">{TILL_ID}</div>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <div className="bg-white rounded-[14px] p-2.5 flex-1 flex flex-col items-center">
+                        <img src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=JAZZCASH_TILL_${TILL_ID}`} alt="QR" className="w-[110px] h-[110px] md:w-[120px] md:h-[120px]"/>
+                        <div className="text-[9px] text-zinc-500 mt-1.5 uppercase tracking-widest font-bold">Scan in JazzCash</div>
+                      </div>
+                      <div className="flex-1 bg-white/[0.06] border border-white/[0.08] rounded-[14px] p-3 flex flex-col justify-center gap-2.5">
+                        <div className="text-[10px] font-bold uppercase tracking-widest opacity-60">How to Pay</div>
+                        <div className="space-y-2 text-[11px] leading-[1.3]"><div className="flex gap-2"><span className="w-5 h-5 rounded-full bg-[#E8FF86] text-black flex items-center justify-center text-[10px] font-bold shrink-0">1</span>Open JazzCash App</div><div className="flex gap-2"><span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold shrink-0">2</span>Business → Till ID → {TILL_ID}</div><div className="flex gap-2"><span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold shrink-0">3</span>Enter amount & pay</div></div>
+                        <div className="mt-1 h-px bg-white/10"></div>
+                        <div className="text-[10px] opacity-50">Copy Txn ID after payment</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* PREMIUM PLANS GLIDER */}
+                <div className="bg-[#FEFEFE] border border-zinc-200 rounded-[20px] md:rounded-[24px] p-5 md:p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-[12px] font-black tracking-[0.15em] uppercase">Choose Plan — Yellow Glider</h3>
+                    <span className="text-[10px] px-2.5 py-1 rounded-full bg-[#E8FF86] text-black font-bold tracking-widest">POPULAR</span>
+                  </div>
+                  <div className="mt-5 radio-container" style={{"--total-radio": plans.length} as any}>
+                    {plans.map(p=>(
+                      <div key={p.id} className="contents">
+                        <input type="radio" id={`plan-${p.id}`} name="plan-selector" checked={selectedPlan?.id===p.id} onChange={()=>setSelectedPlan(p)}/>
+                        <label htmlFor={`plan-${p.id}`} onClick={()=>setSelectedPlan(p)}>
+                          <div className="flex justify-between items-center">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-bold text-[14px]">{p.name}</span>
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold ${p.price===0?'bg-zinc-200 text-zinc-600':'bg-black text-white'}`}>Rs. {p.price}</span>
+                                {p.id==='advanced' && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#E8FF86] text-black font-bold">BEST VALUE</span>}
+                              </div>
+                              <div className="text-[11px] mt-1 opacity-60 leading-[1.3] truncate">{p.features.join(' • ')}</div>
+                            </div>
+                            <span className="ml-3 w-7 h-7 rounded-full bg-zinc-100 flex items-center justify-center text-[12px] shrink-0">→</span>
+                          </div>
+                        </label>
+                      </div>
+                    ))}
+                    <div className="glider-container"><div className="glider"></div></div>
+                  </div>
+
+                  {selectedPlan && selectedPlan.price>0 && (
+                    <div className="mt-6 rounded-[16px] border-2 border-black bg-[#FFFEF5] p-5 relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-20 h-20 bg-[#E8FF86] opacity-20 rounded-full blur-[20px]"></div>
+                      <div className="relative">
+                        <div className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-[12px]">₨</div><div className="text-[13px] font-black">Pay Rs. {selectedPlan.price} → Till {TILL_ID}</div></div>
+                        <div className="mt-1 text-[11px] text-zinc-500">Selected: <span className="font-bold text-black">{selectedPlan.name}</span> • Enter Txn ID after payment</div>
+                        <div className="mt-4 relative">
+                          <input value={txnId} onChange={e=>setTxnId(e.target.value)} placeholder={`e.g. 1234567890 - Txn ID from JazzCash`} className="w-full h-12 px-4 pr-12 rounded-[12px] border-2 border-zinc-200 bg-white text-[12px] font-mono focus:outline-none focus:border-black transition"/>
+                          <div className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-[#E8FF86] rounded-[8px] flex items-center justify-center text-[12px] font-bold">✓</div>
+                        </div>
+                        <button onClick={handleBuyPlan} disabled={purchasing} className="mt-3 w-full h-12 bg-black text-white rounded-full font-bold text-[13px] flex items-center justify-center gap-2 hover:bg-zinc-800 disabled:opacity-50 transition"><span>{purchasing?'Verifying...':`I Paid Rs. ${selectedPlan.price} to Till ${TILL_ID}`}</span><span className="w-5 h-5 bg-white text-black rounded-full flex items-center justify-center text-[12px]">↗</span></button>
+                        <div className="mt-2.5 flex items-center justify-center gap-1.5 text-[10px] text-zinc-400"><span className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></span>We verify in 15-30 mins • 100% Secure</div>
+                      </div>
+                    </div>
+                  )}
+                  {(!selectedPlan || selectedPlan.price===0) && <div className="mt-4 p-3 rounded-[12px] bg-zinc-50 border border-dashed text-[11px] text-zinc-500 text-center">Select Advanced or Premium to pay via Till {TILL_ID}</div>}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {activeTab==='store' && (
           <div style={{borderRadius:20}} className="bg-white p-5 md:p-7 border">
             <div className="flex items-center justify-between"><h2 className="font-semibold text-[15px] tracking-tight">Store Identity</h2>{saved && <span style={{borderRadius:999}} className="bg-[#E8FF86] text-black border px-3 py-1 text-[11px] font-bold">Saved ✓</span>}</div>
@@ -203,41 +327,6 @@ export default function Dashboard() {
           <div className="space-y-6">
             <div style={{borderRadius:20}} className="bg-white border overflow-hidden"><div className="p-4 md:p-6 border-b flex items-center justify-between"><h2 className="font-semibold text-[14px] md:text-[15px] tracking-tight">Add Product — up to 5 photos</h2><span className="text-[11px] px-2.5 py-1 rounded-full bg-zinc-100 border">{files.length}/5</span></div><div className="p-4 md:p-6 space-y-4"><label style={{borderRadius:16}} className="border-2 border-dashed p-4 flex flex-col items-center justify-center cursor-pointer hover:bg-zinc-50 transition min-h-[120px] bg-zinc-50/30">{previews.length ? <div className="grid grid-cols-5 gap-2 w-full">{previews.map((src,i)=><img key={i} src={src} style={{borderRadius:10}} className="w-full h-[60px] object-cover border" />)}</div> : <><div style={{borderRadius:12}} className="w-11 h-11 bg-black text-white flex items-center justify-center text-lg">+</div><div className="mt-2 font-medium text-[13px]">Upload photos</div></>}<input type="file" accept="image/*" multiple onChange={handleFile} className="hidden" /></label><div className="grid md:grid-cols-2 gap-3"><input placeholder="Product name" value={prodName} onChange={e=>setProdName(e.target.value)} style={{borderRadius:12}} className="w-full h-11 px-4 border bg-zinc-50/50 focus:bg-white text-[13px] focus:outline-none focus:border-black" /><input placeholder="Price Rs. 3500" type="number" value={prodPrice} onChange={e=>setProdPrice(e.target.value)} style={{borderRadius:12}} className="w-full h-11 px-4 border bg-zinc-50/50 focus:bg-white text-[13px] focus:outline-none focus:border-black" /></div><div className="flex justify-end"><button onClick={addProduct} disabled={uploading} style={{borderRadius:999}} className="h-11 px-7 bg-black text-white text-[13px] font-medium hover:bg-zinc-800 disabled:opacity-50">{uploading?'Uploading...':`Add Product ${files.length?`(${files.length})`:''} →`}</button></div></div></div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">{products.map(p => (<div key={p.id} style={{borderRadius:16}} className="bg-white border p-2.5 group relative"><img src={p.image_url} style={{borderRadius:10}} className="w-full h-32 object-cover bg-zinc-50" /><div className="mt-2"><div className="font-medium text-[12px] truncate">{p.name}</div><div className="text-[12px] font-bold">Rs. {p.price}</div></div><button onClick={()=>deleteProduct(p.id)} className="absolute top-2 right-2 w-6 h-6 bg-white shadow border rounded-full flex items-center justify-center text-[10px]">✕</button></div>))}</div>
-          </div>
-        )}
-
-        {activeTab==='payments' && (
-          <div style={{borderRadius:20}} className="bg-white p-4 md:p-8 border">
-            <div className="flex items-center gap-3"><div style={{borderRadius:14}} className="w-10 h-10 md:w-14 md:h-14 bg-black text-white flex items-center justify-center text-[16px] md:text-[20px] shrink-0">⬡</div><div className="min-w-0"><h2 className="font-bold text-[14px] md:text-[18px] tracking-tight">Till ID Payments — Only Method</h2><p className="text-[11px] md:text-[12px] text-zinc-500">Till {TILL_ID} • Barcode + QR with glider plans</p></div></div>
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-[380px_1fr] gap-6">
-              <div className="rounded-[16px] md:rounded-[20px] p-4 md:p-6 text-center text-white relative overflow-hidden shrink-0" style={{background:'linear-gradient(180deg,#1a0a5e 0%,#0d117a 40%,#07052e 100%)'}}>
-                <div className="text-[9px] tracking-[0.25em] uppercase opacity-50">JAZZCASH TILL ID</div>
-                <div className="text-[28px] md:text-[32px] font-black tracking-[0.15em] mt-1">{TILL_ID}</div>
-                <div className="mt-4 bg-white rounded-[12px] p-2.5 md:p-3"><img src={`https://barcodeapi.org/api/code128/${TILL_ID}`} alt="Barcode" className="w-full h-[48px] md:h-[60px] object-contain"/><div className="text-[10px] tracking-[0.3em] mt-1 font-mono text-black font-bold">{TILL_ID}</div></div>
-                <div className="mt-3 md:mt-4 bg-white rounded-[14px] p-2.5 md:p-3 inline-block"><img src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=JAZZCASH_TILL_${TILL_ID}`} alt="QR" className="w-[140px] h-[140px] md:w-[160px] md:h-[160px]"/></div>
-              </div>
-              <div className="bg-[#F8F7F5] border border-zinc-200 rounded-[16px] md:rounded-[20px] p-4 md:p-5">
-                <h3 className="text-[11px] font-bold tracking-widest uppercase text-zinc-400 mb-3">Select Plan — Yellow Glider</h3>
-                <div className="radio-container" style={{"--total-radio": plans.length} as any}>
-                  {plans.map(p=>(
-                    <div key={p.id} className="contents">
-                      <input type="radio" id={`plan-${p.id}`} name="plan-selector" checked={selectedPlan?.id===p.id} onChange={()=>setSelectedPlan(p)}/>
-                      <label htmlFor={`plan-${p.id}`} onClick={()=>setSelectedPlan(p)}>
-                        <div className="flex justify-between items-center"><div className="min-w-0"><div className="flex items-center gap-2 flex-wrap"><span className="font-bold text-[13px]">{p.name}</span><span className="text-[10px] px-2 py-0.5 rounded-full bg-black text-white font-mono">Rs. {p.price}</span></div><div className="text-[11px] mt-1 opacity-60 leading-[1.3] truncate">{p.features.join(' • ')}</div></div><span className="ml-2 text-[14px] opacity-30 shrink-0">→</span></div>
-                      </label>
-                    </div>
-                  ))}
-                  <div className="glider-container"><div className="glider"></div></div>
-                </div>
-                {selectedPlan && selectedPlan.price>0 && (
-                  <div className="mt-4 rounded-[14px] border bg-[#FFFEF5] border-[#F5E6A0] p-4">
-                    <div className="text-[12px] font-bold">Pay Rs. {selectedPlan.price} → Till {TILL_ID}</div>
-                    <input value={txnId} onChange={e=>setTxnId(e.target.value)} placeholder={`Txn ID after paying Rs. ${selectedPlan.price}`} className="mt-2.5 w-full h-11 px-3.5 rounded-[12px] border bg-white text-[12px] font-mono focus:outline-none focus:border-black"/>
-                    <button onClick={handleBuyPlan} disabled={purchasing} className="mt-2.5 w-full h-11 bg-black text-white rounded-full font-medium text-[12px] disabled:opacity-50">{purchasing?'Submitting...':`I Paid to Till ${TILL_ID}`}</button>
-                  </div>
-                )}
-              </div>
-            </div>
           </div>
         )}
       </main>
