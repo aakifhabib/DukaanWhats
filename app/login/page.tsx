@@ -4,6 +4,8 @@ import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
+const PROD_URL = 'https://dukaan-whats.vercel.app'
+
 export default function LoginPage() {
   const [mode, setMode] = useState<'login' | 'signup' | 'forgot'>('login')
   const [email, setEmail] = useState('')
@@ -41,11 +43,11 @@ export default function LoginPage() {
         setTimeout(() => router.push('/dashboard'), 900)
       } else if (mode === 'forgot') {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/reset-password`
+          redirectTo: `${PROD_URL}/reset-password`
         })
         if (error) throw error
         setSuccess(true)
-        setMsg('Check your email — reset link sent!')
+        setMsg('Check your email — reset link sent! (expires in 1 hour)')
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
