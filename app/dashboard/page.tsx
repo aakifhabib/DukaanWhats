@@ -24,7 +24,6 @@ export default function Dashboard() {
   const [uploading, setUploading] = useState(false)
   const [copied, setCopied] = useState(false)
   const [filter, setFilter] = useState<ThemeCategory | 'all'>('all')
-  const [showAdvancedPanel, setShowAdvancedPanel] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
@@ -102,8 +101,104 @@ export default function Dashboard() {
   const advancedThemes = getAdvancedThemes()
   const filtered = filter === 'all' ? standardThemes : STORE_THEMES.filter(t => t.category === filter)
 
+  // icons for glass
+  const icons: Record<string, string> = {
+    'sleek-beige': '○',
+    'sleek-dark': '●',
+    'sleek-editorial': '—'
+  }
+
   return (
     <div style={{minHeight:'100vh',background:'#F8F7F5'}} className="text-zinc-900 pb-24">
+      <style>{`
+        .glass-container {
+          position: relative;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 260px;
+          padding: 20px 0 40px;
+        }
+        .glass-container .glass {
+          position: relative;
+          width: 190px;
+          height: 220px;
+          background: linear-gradient(rgba(255,255,255,0.15), transparent);
+          border: 1px solid rgba(255,255,255,0.2);
+          box-shadow: 0 25px 25px rgba(0,0,0,0.25);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          flex-direction: column;
+          transition: 0.5s;
+          border-radius: 16px;
+          margin: 0 -35px;
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          transform: rotate(calc(var(--r) * 1deg));
+          cursor: pointer;
+          overflow: hidden;
+        }
+        .glass-container:hover .glass {
+          transform: rotate(0deg);
+          margin: 0 12px;
+        }
+        .glass-container .glass::before {
+          content: attr(data-text);
+          position: absolute;
+          bottom: 0;
+          width: 100%;
+          height: 44px;
+          background: rgba(255,255,255,0.08);
+          border-top: 1px solid rgba(255,255,255,0.1);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          color: #fff;
+          font-size: 12px;
+          font-weight: 600;
+          letter-spacing: 0.04em;
+        }
+        .glass-container .glass .glass-icon {
+          font-size: 2.6em;
+          color: #fff;
+          filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+          margin-top: -18px;
+        }
+        .glass-container .glass .glass-tagline {
+          font-size: 10px;
+          color: rgba(255,255,255,0.6);
+          margin-top: 8px;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+        }
+        .glass-container .glass.selected {
+          background: linear-gradient(rgba(232,255,134,0.25), rgba(255,255,255,0.05));
+          border: 2px solid #E8FF86;
+          box-shadow: 0 25px 35px rgba(0,0,0,0.35), 0 0 30px rgba(232,255,134,0.25);
+          transform: rotate(0deg) translateY(-10px) scale(1.05);
+          margin: 0 12px;
+          z-index: 10;
+        }
+        .glass-container .glass.selected::before {
+          background: #E8FF86;
+          color: #000;
+          font-weight: 700;
+        }
+        @media (max-width: 768px) {
+          .glass-container .glass {
+            width: 110px;
+            height: 150px;
+            margin: 0 -15px;
+          }
+          .glass-container:hover .glass {
+            margin: 0 6px;
+          }
+          .glass-container .glass .glass-icon { font-size: 1.8em; margin-top: -10px; }
+          .glass-container .glass::before { height: 32px; font-size: 9px; }
+        }
+      `}</style>
+
       <header className="bg-white border-b sticky top-0 z-20">
         <div className="max-w-6xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between gap-3">
           <Link href="/" className="flex items-center gap-2 shrink-0">
@@ -137,7 +232,7 @@ export default function Dashboard() {
               <label className="text-[13px] font-semibold">Choose Theme — {filtered.length} designs</label>
               <div className="flex flex-wrap gap-1.5">
                 {(['all','food','clothing','tech','shoes','advanced'] as const).map(c => (
-                  <button key={c} onClick={()=>setFilter(c)} style={{borderRadius:999}} className={`h-7 px-3 text-[11px] font-medium capitalize border ${filter===c ? 'bg-black text-white border-black' : c==='advanced' ? 'bg-[#E8FF86] text-black border-black' : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50'}`}>{c}</button>
+                  <button key={c} onClick={()=>setFilter(c)} style={{borderRadius:999}} className={`h-7 px-3 text-[11px] font-medium capitalize border ${filter===c ? 'bg-black text-white border-black' : c==='advanced' ? 'bg-[#0A0A0A] text-white border-black' : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50'}`}>{c}</button>
                 ))}
               </div>
             </div>
@@ -166,45 +261,50 @@ export default function Dashboard() {
               })}
             </div>
 
-            {/* ADVANCED PANEL */}
-            <div style={{borderRadius:16}} className="mt-8 border-2 border-black bg-[#0A0A0A] p-5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span style={{borderRadius:999}} className="bg-[#E8FF86] text-black text-[10px] font-bold px-2 py-1">ADVANCED</span>
-                  <span className="text-white font-semibold text-[14px]">Premium Minimal — 3 Sleek Designs</span>
+            {/* GLASS ADVANCED PANEL */}
+            <div style={{borderRadius:20}} className="mt-10 overflow-hidden border-2 border-black relative">
+              <div className="absolute inset-0 bg-[#0d0f14]" />
+              <div className="absolute inset-0 opacity-40" style={{background: 'radial-gradient(circle at 30% 20%, #E8FF86 0%, transparent 40%), radial-gradient(circle at 80% 80%, #7000ff 0%, transparent 50%)'}} />
+              <div className="relative p-6 md:p-8">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <span style={{borderRadius:999}} className="bg-[#E8FF86] text-black text-[10px] font-bold px-3 py-1 tracking-widest">ADVANCED</span>
+                    <span className="text-white font-semibold text-[15px]">Glass Select — 3 Minimal Themes</span>
+                    <span className="text-white/40 text-[11px] hidden md:inline">Hover to spread • Click to select</span>
+                  </div>
+                  <div className="text-white/50 text-[11px]">Selected: <span className="text-[#E8FF86] font-bold">{getTheme(theme).name}</span></div>
                 </div>
-                <button onClick={()=>setShowAdvancedPanel(!showAdvancedPanel)} className="text-white/60 text-[12px]">{showAdvancedPanel ? 'Hide' : 'Show'}</button>
-              </div>
-              {showAdvancedPanel && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
-                  {advancedThemes.map(t => {
+
+                <div className="glass-container mt-2">
+                  {advancedThemes.map((t, i) => {
+                    const r = [-18, 0, 18][i] || 0
                     const isActive = theme === t.id
                     return (
-                      <button key={t.id} onClick={()=>setTheme(t.id)} style={{borderRadius:16, background: t.colors.bg, borderColor: isActive ? '#E8FF86' : '#E5E7EB', borderWidth: isActive ? 2 : 1}} className={`relative text-left p-4 border overflow-hidden ${isActive ? 'shadow-[0_0_20px_rgba(232,255,134,0.4)]' : ''}`}>
-                        {isActive && <span style={{borderRadius:999}} className="absolute top-2 right-2 w-5 h-5 bg-[#E8FF86] text-black flex items-center justify-center text-[11px] font-bold">✓</span>}
-                        <span style={{borderRadius:999}} className="absolute top-2 right-2 mr-6 bg-black text-white text-[9px] px-2 py-0.5">ADVANCED</span>
-                        <div className="flex items-center gap-2 mb-2">
-                          <span style={{borderRadius:8, background: t.colors.card, borderColor: t.colors.accent}} className="w-8 h-8 border flex items-center justify-center text-[14px]">{t.badge}</span>
-                          <div><div style={{color: t.colors.text}} className="text-[13px] font-bold leading-none">{t.name}</div><div style={{color: t.colors.sub}} className="text-[10px] uppercase tracking-widest mt-1">advanced</div></div>
-                        </div>
-                        <div style={{borderRadius:10, background: t.colors.card}} className="h-16 border p-2 flex gap-1.5 overflow-hidden">
-                          <div style={{background: t.colors.accent, borderRadius:8}} className="w-12 h-full opacity-80" />
-                          <div className="flex-1 space-y-1.5">
-                            <div style={{background: t.colors.text, borderRadius:4}} className="h-2 w-3/4 opacity-20" />
-                            <div style={{background: t.colors.text, borderRadius:4}} className="h-2 w-1/2 opacity-10" />
-                          </div>
-                        </div>
-                        <div style={{color: t.colors.sub}} className="text-[11px] mt-2 leading-snug">{t.tagline} — sleek, not much over</div>
-                      </button>
+                      <div
+                        key={t.id}
+                        className={`glass ${isActive ? 'selected' : ''}`}
+                        data-text={t.name}
+                        style={{'--r': r} as any}
+                        onClick={() => setTheme(t.id)}
+                      >
+                        <div className="glass-icon">{icons[t.id] || t.badge}</div>
+                        <div className="glass-tagline">{t.tagline}</div>
+                        {isActive && <div className="absolute top-3 right-3 w-5 h-5 bg-[#E8FF86] rounded-full flex items-center justify-center text-[10px] font-bold text-black">✓</div>}
+                      </div>
                     )
                   })}
                 </div>
-              )}
-              <div className="text-[11px] text-white/50 mt-3">These 3 are in category 'advanced' — quiet luxury, charcoal minimal, editorial. Select and Save Store & Theme to apply.</div>
+
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {advancedThemes.map(t => (
+                    <div key={t.id} className={`text-[10px] px-3 py-1.5 rounded-full border ${theme===t.id ? 'bg-[#E8FF86] text-black border-[#E8FF86] font-bold' : 'bg-white/10 text-white/60 border-white/10'}`}>{t.badge} {t.name} — {t.tagline}</div>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            <div className="flex justify-end pt-4 gap-2">
-              {saved && <span className="h-11 px-4 flex items-center text-[12px] text-green-600 font-medium">✓ Saved!</span>}
+            <div className="flex justify-end pt-6 gap-2">
+              {saved && <span className="h-11 px-4 flex items-center text-[12px] text-green-600 font-medium">✓ Saved! {getTheme(theme).name} applied</span>}
               <button onClick={saveStore} style={{borderRadius:10}} className="h-11 px-6 bg-black text-white text-[13px] font-medium hover:bg-zinc-800">Save Store & Theme</button>
             </div>
           </div>
