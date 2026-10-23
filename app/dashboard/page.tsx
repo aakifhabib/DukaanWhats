@@ -218,18 +218,111 @@ export default function Dashboard() {
 
           <div className="mt-8">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-3"><label className="text-[13px] font-semibold">Choose Theme — {filter==='advanced' ? 'see below ↓' : `${filtered.length} designs`}</label><div className="flex flex-wrap gap-1.5">{(['all','food','clothing','tech','shoes'] as const).map(c => (<button key={c} onClick={()=>setFilter(c)} style={{borderRadius:999}} className={`h-7 px-3 text-[11px] font-medium capitalize border ${filter===c ? 'bg-black text-white border-black' : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50'}`}>{c}</button>))}<button onClick={()=>{setFilter('advanced'); document.getElementById('advanced-glass')?.scrollIntoView({behavior:'smooth'})}} style={{borderRadius:999}} className={`h-7 px-3 text-[11px] font-medium capitalize border ${filter==='advanced' ? 'bg-black text-white border-black' : 'bg-[#0A0A0A] text-white border-black hover:bg-zinc-800'}`}>advanced ↓</button></div></div>
+            <style>{`
+              .neumorph-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+                gap: 32px;
+                padding: 40px 20px;
+                background: #e0e0e0;
+                border-radius: 24px;
+              }
+              .card {
+                width: 190px;
+                height: 254px;
+                border-radius: 50px;
+                background: #e0e0e0;
+                box-shadow: 20px 20px 60px #bebebe, -20px -20px 60px #ffffff;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 22px 16px 18px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                position: relative;
+                border: none;
+                text-align: left;
+                margin: 0 auto;
+              }
+              .card:hover {
+                box-shadow: 12px 12px 40px #bebebe, -12px -12px 40px #ffffff;
+                transform: translateY(-4px);
+              }
+              .card.selected {
+                background: #e0e0e0;
+                box-shadow: inset 10px 10px 20px #bebebe, inset -10px -10px 20px #ffffff, 0 0 0 2px #E8FF86, 0 8px 24px rgba(232,255,134,0.3);
+                transform: translateY(-6px);
+              }
+              .card .card-icon {
+                width: 54px;
+                height: 54px;
+                border-radius: 18px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 22px;
+                box-shadow: inset 4px 4px 8px #bebebe, inset -4px -4px 8px #ffffff;
+                margin-bottom: 12px;
+              }
+              .card .card-preview {
+                width: 100%;
+                height: 78px;
+                border-radius: 18px;
+                background: #e0e0e0;
+                box-shadow: inset 6px 6px 12px #bebebe, inset -6px -6px 12px #ffffff;
+                padding: 8px;
+                display: flex;
+                gap: 6px;
+                overflow: hidden;
+              }
+              .card .card-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+              }
+              @media (max-width: 640px) {
+                .neumorph-grid { grid-template-columns: repeat(2, 1fr); gap: 18px; padding: 24px 10px; }
+                .card { width: 100%; max-width: 170px; height: 230px; border-radius: 36px; }
+              }
+            `}</style>
+
             {filter === 'advanced' ? (
               <div className="text-center py-8 bg-zinc-50 rounded-[16px] border border-dashed"><div className="text-[13px] font-medium">Advanced themes are below in the glass panel ↓</div><div className="text-[11px] text-zinc-500 mt-1">Hover to spread, click to select the 3 minimal designs</div></div>
             ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="neumorph-grid">
               {filtered.map(t => {
                 const isActive = theme === t.id
                 return (
-                  <button key={t.id} onClick={()=>setTheme(t.id)} style={{borderRadius:16, background: t.colors.bg, borderColor: isActive ? '#E8FF86' : '#E5E7EB', borderWidth: isActive ? 2 : 1}} className={`relative text-left p-4 border overflow-hidden transition-all hover:scale-[1.01] ${isActive ? 'shadow-[0_0_20px_rgba(232,255,134,0.4)]' : 'hover:shadow-md'}`}>
-                    {isActive && <span style={{borderRadius:999}} className="absolute top-2 right-2 w-5 h-5 bg-[#E8FF86] text-black flex items-center justify-center text-[11px] font-bold">✓</span>}
-                    <div className="flex items-center gap-2 mb-2"><span style={{borderRadius:8, background: t.colors.card, borderColor: t.colors.accent}} className="w-8 h-8 border flex items-center justify-center text-[14px]">{t.badge}</span><div><div style={{color: t.colors.text}} className="text-[13px] font-bold leading-none">{t.name}</div><div style={{color: t.colors.sub}} className="text-[10px] uppercase tracking-widest mt-1">{t.category}</div></div></div>
-                    <div style={{borderRadius:10, background: t.colors.card}} className="h-16 border p-2 flex gap-1.5 overflow-hidden"><div style={{background: t.colors.accent, borderRadius:8}} className="w-12 h-full opacity-80" /><div className="flex-1 space-y-1.5"><div style={{background: t.colors.text, borderRadius:4}} className="h-2 w-3/4 opacity-20" /><div style={{background: t.colors.text, borderRadius:4}} className="h-2 w-1/2 opacity-10" /><div style={{background: t.colors.accent, borderRadius:6}} className="h-5 w-16 mt-1" /></div></div>
-                    <div style={{color: t.colors.sub}} className="text-[11px] mt-2 leading-snug">{t.tagline}</div>
+                  <button key={t.id} onClick={()=>setTheme(t.id)} className={`card ${isActive ? 'selected' : ''}`}>
+                    {isActive && <span style={{position:'absolute', top:14, right:18, width:22, height:22, borderRadius:999, background:'#E8FF86', display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:700, color:'#000', boxShadow:'0 2px 8px rgba(0,0,0,0.15)'}}>✓</span>}
+                    
+                    <div className="card-icon" style={{background: t.colors.bg, color: t.colors.text, border: `1px solid ${t.colors.border}20`}}>{t.badge}</div>
+                    
+                    <div style={{textAlign:'center', marginBottom:10}}>
+                      <div style={{fontSize:13, fontWeight:800, color:'#2d2d2d', letterSpacing:'-0.01em'}}>{t.name}</div>
+                      <div style={{fontSize:9, fontWeight:600, color:'#8a8a8a', letterSpacing:'0.08em', marginTop:2, textTransform:'uppercase'}}>{t.category} • {t.tagline.split(' ').slice(0,2).join(' ')}</div>
+                    </div>
+
+                    <div className="card-preview">
+                      <div style={{width:36, height:'100%', borderRadius:12, background: t.colors.accent, opacity:0.9, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:3}}>
+                        <div style={{width:18, height:18, borderRadius:6, background:'rgba(255,255,255,0.3)'}} />
+                        <div style={{width:22, height:3, borderRadius:2, background:'rgba(255,255,255,0.5)'}} />
+                      </div>
+                      <div style={{flex:1, display:'flex', flexDirection:'column', gap:5}}>
+                        <div style={{display:'flex', gap:3}}><div className="card-dot" style={{background:t.colors.text, opacity:0.15}} /><div className="card-dot" style={{background:t.colors.accent, opacity:0.6}} /><div className="card-dot" style={{background:t.colors.text, opacity:0.08}} /></div>
+                        <div style={{height:4, borderRadius:3, background:t.colors.text, opacity:0.12, width:'80%'}} />
+                        <div style={{height:4, borderRadius:3, background:t.colors.text, opacity:0.08, width:'60%'}} />
+                        <div style={{marginTop:'auto', display:'flex', gap:4}}>
+                          <div style={{flex:1, height:22, borderRadius:8, background:t.colors.card, border:`1px solid ${t.colors.border}40`}} />
+                          <div style={{flex:1, height:22, borderRadius:8, background:t.colors.bg, border:`1px solid ${t.colors.border}40`}} />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{marginTop:12, display:'flex', gap:6, alignItems:'center'}}>
+                      <div style={{width:28, height:12, borderRadius:20, background: t.colors.bg, border:`1px solid ${t.colors.border}50`, boxShadow:`inset 2px 2px 4px #bebebe60`}}><div style={{width:10, height:10, borderRadius:999, background:t.colors.accent, margin:'1px', transition:'all 0.3s'}} /></div>
+                      <span style={{fontSize:8, color:'#9a9a9a', letterSpacing:'0.06em', fontWeight:600}}>THEME</span>
+                    </div>
                   </button>
                 )
               })}
