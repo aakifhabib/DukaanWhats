@@ -5,7 +5,23 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { STORE_THEMES, getTheme, ThemeCategory, getAdvancedThemes } from '@/lib/storeThemes'
 
-type Profile = { id: string; business_name: string; whatsapp_number: string; store_slug: string; store_theme?: string }
+type Profile = { 
+  id: string; 
+  business_name: string; 
+  whatsapp_number: string; 
+  store_slug: string; 
+  store_theme?: string;
+  payment_cod_enabled?: boolean;
+  payment_jazzcash_enabled?: boolean;
+  payment_jazzcash_number?: string;
+  payment_jazzcash_title?: string;
+  payment_easypaisa_enabled?: boolean;
+  payment_easypaisa_number?: string;
+  payment_easypaisa_title?: string;
+  payment_bank_enabled?: boolean;
+  payment_bank_details?: string;
+  delivery_charges?: number;
+}
 type Product = { id: string; name: string; price: number; image_url: string; image_urls?: string[]; user_id: string }
 
 export default function Dashboard() {
@@ -24,6 +40,17 @@ export default function Dashboard() {
   const [uploading, setUploading] = useState(false)
   const [copied, setCopied] = useState(false)
   const [filter, setFilter] = useState<ThemeCategory | 'all' | string>('all')
+  // Payment states - FREE 0% fees
+  const [codEnabled, setCodEnabled] = useState(true)
+  const [jazzEnabled, setJazzEnabled] = useState(false)
+  const [jazzNumber, setJazzNumber] = useState('')
+  const [jazzTitle, setJazzTitle] = useState('')
+  const [easyEnabled, setEasyEnabled] = useState(false)
+  const [easyNumber, setEasyNumber] = useState('')
+  const [easyTitle, setEasyTitle] = useState('')
+  const [bankEnabled, setBankEnabled] = useState(false)
+  const [bankDetails, setBankDetails] = useState('')
+  const [deliveryCharges, setDeliveryCharges] = useState(0)
   const router = useRouter()
 
   useEffect(() => {
@@ -32,40 +59,33 @@ export default function Dashboard() {
       if (!session) { window.location.href = '/login'; return }
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { window.location.href = '/login'; return }
-
-      // Try to get existing profile
       let { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-
-      // Auto-create for Google/Apple OAuth users who don't have a profile yet
       if (!prof) {
         const metaName = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'My Store'
         const baseSlug = metaName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 20) || `store-${user.id.slice(0,6)}`
         let finalSlug = baseSlug
-        // Ensure unique slug
         const { data: existing } = await supabase.from('profiles').select('id').eq('store_slug', baseSlug).single()
         if (existing) finalSlug = `${baseSlug}-${Math.floor(Math.random()*900+100)}`
-
-        const newProfile = {
-          id: user.id,
-          business_name: metaName,
-          whatsapp_number: '',
-          store_slug: finalSlug,
-          store_theme: 'clothing-noor'
-        }
+        const newProfile = { id: user.id, business_name: metaName, whatsapp_number: '', store_slug: finalSlug, store_theme: 'clothing-noor', payment_cod_enabled: true }
         const { data: created, error: createError } = await supabase.from('profiles').insert(newProfile).select().single()
-        if (!createError && created) {
-          prof = created
-        } else {
-          console.error('Profile create error:', createError)
-        }
+        if (!createError && created) { prof = created } else { console.error('Profile create error:', createError) }
       }
-
       if (prof) {
         setProfile(prof)
         setBusinessName(prof.business_name || '')
         setWhatsapp(prof.whatsapp_number || '')
         setSlug(prof.store_slug || '')
         setTheme(prof.store_theme || 'clothing-noor')
+        setCodEnabled(prof.payment_cod_enabled ?? true)
+        setJazzEnabled(prof.payment_jazzcash_enabled ?? false)
+        setJazzNumber(prof.payment_jazzcash_number || '')
+        setJazzTitle(prof.payment_jazzcash_title || '')
+        setEasyEnabled(prof.payment_easypaisa_enabled ?? false)
+        setEasyNumber(prof.payment_easypaisa_number || '')
+        setEasyTitle(prof.payment_easypaisa_title || '')
+        setBankEnabled(prof.payment_bank_enabled ?? false)
+        setBankDetails(prof.payment_bank_details || '')
+        setDeliveryCharges(prof.delivery_charges || 0)
         const { data: prods } = await supabase.from('products').select('*').eq('user_id', prof.id).order('created_at', { ascending: false })
         if (prods) setProducts(prods)
       }
@@ -80,7 +100,17 @@ export default function Dashboard() {
       business_name: businessName,
       whatsapp_number: whatsapp,
       store_slug: slug.toLowerCase().replace(/[^a-z0-9-]/g, '-'),
-      store_theme: theme
+      store_theme: theme,
+      payment_cod_enabled: codEnabled,
+      payment_jazzcash_enabled: jazzEnabled,
+      payment_jazzcash_number: jazzNumber,
+      payment_jazzcash_title: jazzTitle,
+      payment_easypaisa_enabled: easyEnabled,
+      payment_easypaisa_number: easyNumber,
+      payment_easypaisa_title: easyTitle,
+      payment_bank_enabled: bankEnabled,
+      payment_bank_details: bankDetails,
+      delivery_charges: Number(deliveryCharges) || 0
     }).eq('id', profile.id)
     if (!error) { setSaved(true); setTimeout(()=>setSaved(false), 2500) }
     else { alert(error.message) }
@@ -109,116 +139,25 @@ export default function Dashboard() {
 
   const standardThemes = STORE_THEMES.filter(t => t.category !== 'advanced')
   const advancedThemes = getAdvancedThemes()
-  // Upper grid NEVER shows advanced - only in glass panel
   const filtered = (filter as string) === 'all' ? standardThemes : (filter as string) === 'advanced' ? [] : STORE_THEMES.filter(t => (t.category as string) === (filter as string) && t.category !== 'advanced')
 
   return (
     <div style={{minHeight:'100vh',background:'#F8F7F5'}} className="text-zinc-900 pb-24">
       <style>{`
-        .glass-container {
-          position: relative;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          min-height: 340px;
-          padding: 30px 0 50px;
-          gap: 0;
-        }
-        .glass-container .glass {
-          position: relative;
-          width: 260px;
-          height: 300px;
-          background: linear-gradient(rgba(255,255,255,0.12), rgba(255,255,255,0.02));
-          border: 1px solid rgba(255,255,255,0.15);
-          box-shadow: 0 25px 45px rgba(0,0,0,0.35);
-          display: flex;
-          justify-content: flex-start;
-          align-items: center;
-          flex-direction: column;
-          transition: 0.6s cubic-bezier(0.23,1,0.32,1);
-          border-radius: 18px;
-          margin: 0 -55px;
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
-          transform: rotate(calc(var(--r) * 1deg));
-          cursor: pointer;
-          overflow: hidden;
-          padding-top: 14px;
-        }
-        .glass-container:hover .glass {
-          transform: rotate(0deg);
-          margin: 0 18px;
-        }
-        .glass-container .glass::before {
-          content: attr(data-text);
-          position: absolute;
-          bottom: 0;
-          width: 100%;
-          height: 46px;
-          background: rgba(255,255,255,0.06);
-          border-top: 1px solid rgba(255,255,255,0.12);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          color: #fff;
-          font-size: 12px;
-          font-weight: 700;
-          letter-spacing: 0.06em;
-        }
-        .glass-container .glass.selected {
-          background: linear-gradient(rgba(232,255,134,0.22), rgba(255,255,255,0.04));
-          border: 2px solid #E8FF86;
-          box-shadow: 0 30px 50px rgba(0,0,0,0.45), 0 0 40px rgba(232,255,134,0.25);
-          transform: rotate(0deg) translateY(-14px) scale(1.06);
-          margin: 0 18px;
-          z-index: 20;
-        }
-        .glass-container .glass.selected::before {
-          background: #E8FF86;
-          color: #000;
-        }
-        .glass-preview-wrap {
-          width: 92%;
-          height: 208px;
-          border-radius: 12px;
-          overflow: hidden;
-          border: 1px solid rgba(255,255,255,0.15);
-          box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-          display: flex;
-          flex-direction: column;
-          background: #fff;
-          pointer-events: none;
-        }
-        .glass-preview-header {
-          height: 26px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 0 8px;
-          font-size: 7px;
-          font-weight: 700;
-          letter-spacing: 0.04em;
-        }
-        .glass-preview-body {
-          flex: 1;
-          padding: 8px;
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-        }
-        @media (max-width: 768px) {
-          .glass-container { min-height: 220px; }
-          .glass-container .glass {
-            width: 140px;
-            height: 200px;
-            margin: 0 -18px;
-          }
-          .glass-container:hover .glass { margin: 0 8px; }
-          .glass-container .glass.selected { margin: 0 8px; transform: rotate(0deg) translateY(-8px) scale(1.05); }
-          .glass-preview-wrap { height: 130px; }
-          .glass-preview-header { height: 18px; font-size: 6px; }
-          .glass-preview-body { padding: 5px; gap: 4px; }
-        }
+        .glass-container { position: relative; display: flex; justify-content: center; align-items: center; min-height: 340px; padding: 30px 0 50px; gap: 0; }
+        .glass-container .glass { position: relative; width: 260px; height: 300px; background: linear-gradient(rgba(255,255,255,0.12), rgba(255,255,255,0.02)); border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 25px 45px rgba(0,0,0,0.35); display: flex; justify-content: flex-start; align-items: center; flex-direction: column; transition: 0.6s cubic-bezier(0.23,1,0.32,1); border-radius: 18px; margin: 0 -55px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); transform: rotate(calc(var(--r) * 1deg)); cursor: pointer; overflow: hidden; padding-top: 14px; }
+        .glass-container:hover .glass { transform: rotate(0deg); margin: 0 18px; }
+        .glass-container .glass::before { content: attr(data-text); position: absolute; bottom: 0; width: 100%; height: 46px; background: rgba(255,255,255,0.06); border-top: 1px solid rgba(255,255,255,0.12); display: flex; justify-content: center; align-items: center; color: #fff; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; }
+        .glass-container .glass.selected { background: linear-gradient(rgba(232,255,134,0.22), rgba(255,255,255,0.04)); border: 2px solid #E8FF86; box-shadow: 0 30px 50px rgba(0,0,0,0.45), 0 0 40px rgba(232,255,134,0.25); transform: rotate(0deg) translateY(-14px) scale(1.06); margin: 0 18px; z-index: 20; }
+        .glass-container .glass.selected::before { background: #E8FF86; color: #000; }
+        .glass-preview-wrap { width: 92%; height: 208px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 8px 20px rgba(0,0,0,0.25); display: flex; flex-direction: column; background: #fff; pointer-events: none; }
+        .glass-preview-header { height: 26px; display: flex; align-items: center; justify-content: space-between; padding: 0 8px; font-size: 7px; font-weight: 700; letter-spacing: 0.04em; }
+        .glass-preview-body { flex: 1; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+        .toggle { width: 40px; height: 24px; border-radius: 999px; position: relative; cursor: pointer; transition: all 0.2s; }
+        .toggle.on { background: #111; } .toggle.off { background: #e5e7eb; }
+        .toggle-dot { width: 18px; height: 18px; border-radius: 999px; background: white; position: absolute; top: 3px; transition: all 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        .toggle.on .toggle-dot { left: 19px; } .toggle.off .toggle-dot { left: 3px; }
+        @media (max-width: 768px) { .glass-container { min-height: 220px; } .glass-container .glass { width: 140px; height: 200px; margin: 0 -18px; } .glass-container:hover .glass { margin: 0 8px; } .glass-container .glass.selected { margin: 0 8px; transform: rotate(0deg) translateY(-8px) scale(1.05); } .glass-preview-wrap { height: 130px; } }
       `}</style>
 
       <header className="bg-white border-b sticky top-0 z-20">
@@ -242,197 +181,88 @@ export default function Dashboard() {
             <input placeholder="Store slug" value={slug} onChange={e=>setSlug(e.target.value)} style={{borderRadius:12}} className="h-11 px-4 border text-[14px]" />
             <input placeholder="WhatsApp number" value={whatsapp} onChange={e=>setWhatsapp(e.target.value)} style={{borderRadius:12}} className="h-11 px-4 border text-[14px]" />
           </div>
+          <div className="mt-4">
+            <label className="text-[12px] font-medium text-zinc-600">Delivery Charges (Rs.) - 0 for free delivery</label>
+            <input type="number" value={deliveryCharges} onChange={e=>setDeliveryCharges(Number(e.target.value))} style={{borderRadius:12}} className="mt-2 w-full md:w-[200px] h-11 px-4 border text-[14px]" placeholder="0" />
+          </div>
 
           <div className="mt-8">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-3"><label className="text-[13px] font-semibold">Choose Theme — {filter==='advanced' ? 'see below ↓' : `${filtered.length} designs`}</label><div className="flex flex-wrap gap-1.5">{(['all','food','clothing','tech','shoes'] as const).map(c => (<button key={c} onClick={()=>setFilter(c)} style={{borderRadius:999}} className={`h-7 px-3 text-[11px] font-medium capitalize border ${filter===c ? 'bg-black text-white border-black' : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50'}`}>{c}</button>))}<button onClick={()=>{setFilter('advanced'); document.getElementById('advanced-glass')?.scrollIntoView({behavior:'smooth'})}} style={{borderRadius:999}} className={`h-7 px-3 text-[11px] font-medium capitalize border ${filter==='advanced' ? 'bg-black text-white border-black' : 'bg-[#0A0A0A] text-white border-black hover:bg-zinc-800'}`}>advanced ↓</button></div></div>
             <style>{`
-              .neumorph-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-                gap: 32px;
-                padding: 40px 20px;
-                background: #e0e0e0;
-                border-radius: 24px;
-              }
-              .card {
-                width: 190px;
-                height: 254px;
-                border-radius: 50px;
-                background: #e0e0e0;
-                box-shadow: 20px 20px 60px #bebebe, -20px -20px 60px #ffffff;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                padding: 22px 16px 18px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                position: relative;
-                border: none;
-                text-align: left;
-                margin: 0 auto;
-              }
-              .card:hover {
-                box-shadow: 12px 12px 40px #bebebe, -12px -12px 40px #ffffff;
-                transform: translateY(-4px);
-              }
-              .card.selected {
-                background: #e0e0e0;
-                box-shadow: inset 10px 10px 20px #bebebe, inset -10px -10px 20px #ffffff, 0 0 0 2px #E8FF86, 0 8px 24px rgba(232,255,134,0.3);
-                transform: translateY(-6px);
-              }
-              .card .card-icon {
-                width: 54px;
-                height: 54px;
-                border-radius: 18px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 22px;
-                box-shadow: inset 4px 4px 8px #bebebe, inset -4px -4px 8px #ffffff;
-                margin-bottom: 12px;
-              }
-              .card .card-preview {
-                width: 100%;
-                height: 78px;
-                border-radius: 18px;
-                background: #e0e0e0;
-                box-shadow: inset 6px 6px 12px #bebebe, inset -6px -6px 12px #ffffff;
-                padding: 8px;
-                display: flex;
-                gap: 6px;
-                overflow: hidden;
-              }
-              .card .card-dot {
-                width: 8px;
-                height: 8px;
-                border-radius: 50%;
-              }
-              @media (max-width: 640px) {
-                .neumorph-grid { grid-template-columns: repeat(2, 1fr); gap: 18px; padding: 24px 10px; }
-                .card { width: 100%; max-width: 170px; height: 230px; border-radius: 36px; }
-              }
+              .neumorph-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 32px; padding: 40px 20px; background: #e0e0e0; border-radius: 24px; }
+              .card { width: 190px; height: 254px; border-radius: 50px; background: #e0e0e0; box-shadow: 20px 20px 60px #bebebe, -20px -20px 60px #ffffff; display: flex; flex-direction: column; align-items: center; padding: 22px 16px 18px; cursor: pointer; transition: all 0.3s ease; position: relative; border: none; text-align: left; margin: 0 auto; }
+              .card:hover { box-shadow: 12px 12px 40px #bebebe, -12px -12px 40px #ffffff; transform: translateY(-4px); }
+              .card.selected { background: #e0e0e0; box-shadow: inset 10px 10px 20px #bebebe, inset -10px -10px 20px #ffffff, 0 0 0 2px #E8FF86, 0 8px 24px rgba(232,255,134,0.3); transform: translateY(-6px); }
             `}</style>
 
             {filter === 'advanced' ? (
-              <div className="text-center py-8 bg-zinc-50 rounded-[16px] border border-dashed"><div className="text-[13px] font-medium">Advanced themes are below in the glass panel ↓</div><div className="text-[11px] text-zinc-500 mt-1">Hover to spread, click to select the 3 minimal designs</div></div>
+              <div className="text-center py-8 bg-zinc-50 rounded-[16px] border border-dashed"><div className="text-[13px] font-medium">Advanced themes are below in the glass panel ↓</div></div>
             ) : (
             <div className="neumorph-grid">
               {filtered.map(t => {
                 const isActive = theme === t.id
                 return (
                   <button key={t.id} onClick={()=>setTheme(t.id)} className={`card ${isActive ? 'selected' : ''}`}>
-                    {isActive && <span style={{position:'absolute', top:14, right:18, width:22, height:22, borderRadius:999, background:'#E8FF86', display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:700, color:'#000', boxShadow:'0 2px 8px rgba(0,0,0,0.15)'}}>✓</span>}
-                    
-                    <div className="card-icon" style={{background: t.colors.bg, color: t.colors.text, border: `1px solid ${t.colors.border}20`}}>{t.badge}</div>
-                    
-                    <div style={{textAlign:'center', marginBottom:10}}>
-                      <div style={{fontSize:13, fontWeight:800, color:'#2d2d2d', letterSpacing:'-0.01em'}}>{t.name}</div>
-                      <div style={{fontSize:9, fontWeight:600, color:'#8a8a8a', letterSpacing:'0.08em', marginTop:2, textTransform:'uppercase'}}>{t.category} • {t.tagline.split(' ').slice(0,2).join(' ')}</div>
-                    </div>
-
-                    <div className="card-preview">
-                      <div style={{width:36, height:'100%', borderRadius:12, background: t.colors.accent, opacity:0.9, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:3}}>
-                        <div style={{width:18, height:18, borderRadius:6, background:'rgba(255,255,255,0.3)'}} />
-                        <div style={{width:22, height:3, borderRadius:2, background:'rgba(255,255,255,0.5)'}} />
-                      </div>
-                      <div style={{flex:1, display:'flex', flexDirection:'column', gap:5}}>
-                        <div style={{display:'flex', gap:3}}><div className="card-dot" style={{background:t.colors.text, opacity:0.15}} /><div className="card-dot" style={{background:t.colors.accent, opacity:0.6}} /><div className="card-dot" style={{background:t.colors.text, opacity:0.08}} /></div>
-                        <div style={{height:4, borderRadius:3, background:t.colors.text, opacity:0.12, width:'80%'}} />
-                        <div style={{height:4, borderRadius:3, background:t.colors.text, opacity:0.08, width:'60%'}} />
-                        <div style={{marginTop:'auto', display:'flex', gap:4}}>
-                          <div style={{flex:1, height:22, borderRadius:8, background:t.colors.card, border:`1px solid ${t.colors.border}40`}} />
-                          <div style={{flex:1, height:22, borderRadius:8, background:t.colors.bg, border:`1px solid ${t.colors.border}40`}} />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div style={{marginTop:12, display:'flex', gap:6, alignItems:'center'}}>
-                      <div style={{width:28, height:12, borderRadius:20, background: t.colors.bg, border:`1px solid ${t.colors.border}50`, boxShadow:`inset 2px 2px 4px #bebebe60`}}><div style={{width:10, height:10, borderRadius:999, background:t.colors.accent, margin:'1px', transition:'all 0.3s'}} /></div>
-                      <span style={{fontSize:8, color:'#9a9a9a', letterSpacing:'0.06em', fontWeight:600}}>THEME</span>
-                    </div>
+                    {isActive && <span style={{position:'absolute', top:14, right:18, width:22, height:22, borderRadius:999, background:'#E8FF86', display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:700, color:'#000'}}>✓</span>}
+                    <div style={{width:54, height:54, borderRadius:18, display:'flex', alignItems:'center', justifyContent:'center', fontSize:22, background: t.colors.bg, border:`1px solid ${t.colors.border}20`, marginBottom:12}}>{t.badge}</div>
+                    <div style={{textAlign:'center', marginBottom:10}}><div style={{fontSize:13, fontWeight:800, color:'#2d2d2d'}}>{t.name}</div><div style={{fontSize:9, fontWeight:600, color:'#8a8a8a', marginTop:2, textTransform:'uppercase'}}>{t.category}</div></div>
+                    <div style={{width:'100%', height:78, borderRadius:18, background: '#e0e0e0', boxShadow: 'inset 6px 6px 12px #bebebe, inset -6px -6px 12px #ffffff', padding: 8, display:'flex', gap:6}}><div style={{width:36, height:'100%', borderRadius:12, background: t.colors.accent, opacity:0.9}} /><div style={{flex:1}}><div style={{height:4, borderRadius:3, background:t.colors.text, opacity:0.12, width:'80%'}} /><div style={{height:4, borderRadius:3, background:t.colors.text, opacity:0.08, width:'60%', marginTop:6}} /></div></div>
                   </button>
                 )
               })}
             </div>
             )}
 
-            {/* GLASS ADVANCED PANEL WITH 3 STORE PREVIEWS - ONLY PLACE FOR ADVANCED THEMES */}
             <div id="advanced-glass" style={{borderRadius:20}} className="mt-10 overflow-hidden border-2 border-black relative">
               <div className="absolute inset-0 bg-[#0c0e13]" />
-              <div className="absolute inset-0 opacity-50" style={{background: 'radial-gradient(circle at 20% 10%, #E8FF86 0%, transparent 35%), radial-gradient(circle at 85% 85%, #7c3aed 0%, transparent 45%), radial-gradient(circle at 50% 50%, #ffffff08 0%, transparent 60%)'}} />
+              <div className="absolute inset-0 opacity-50" style={{background: 'radial-gradient(circle at 20% 10%, #E8FF86 0%, transparent 35%), radial-gradient(circle at 85% 85%, #7c3aed 0%, transparent 45%)'}} />
               <div className="relative p-6 md:p-8">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-3"><span style={{borderRadius:999}} className="bg-[#E8FF86] text-black text-[10px] font-bold px-3 py-1 tracking-widest">ADVANCED</span><span className="text-white font-semibold text-[15px]">Glass Store Previews — Hover to Explore</span></div>
-                  <div className="text-white/40 text-[11px] hidden md:inline">Hover spreads • Click selects • Save to apply</div>
-                </div>
-
+                <div className="flex items-center gap-3"><span style={{borderRadius:999}} className="bg-[#E8FF86] text-black text-[10px] font-bold px-3 py-1 tracking-widest">ADVANCED</span><span className="text-white font-semibold text-[15px]">Glass Store Previews</span></div>
                 <div className="glass-container mt-1">
                   {advancedThemes.map((t, i) => {
                     const r = [-18, 0, 18][i] || 0
                     const isActive = theme === t.id
                     return (
                       <div key={t.id} className={`glass ${isActive ? 'selected' : ''}`} data-text={t.name} style={{'--r': r} as any} onClick={() => setTheme(t.id)}>
-                        {/* MINI STORE PREVIEW INSIDE GLASS */}
                         <div className="glass-preview-wrap">
-                          {/* Header */}
-                          <div className="glass-preview-header" style={{background: t.colors.bg, color: t.colors.text, borderBottom: `1px solid ${t.colors.border}`}}>
-                            <span style={{fontWeight: 800}}>{t.id === 'sleek-beige' ? 'SLEEK' : t.id === 'sleek-dark' ? 'DARK' : 'EDITORIAL'}</span>
-                            <span style={{opacity: 0.6, fontSize: 6}}>●●●</span>
-                          </div>
-                          {/* Body - different per theme */}
-                          <div className="glass-preview-body" style={{background: t.colors.bg}}>
-                            {t.id === 'sleek-beige' && (
-                              <>
-                                <div style={{height: 28, borderRadius: 6, background: t.colors.card, border: `1px solid ${t.colors.border}`, display: 'flex', alignItems: 'center', gap: 6, padding: '0 6px'}}>
-                                  <div style={{width: 18, height: 18, borderRadius: 4, background: t.colors.accent}} />
-                                  <div><div style={{width: 32, height: 4, borderRadius: 2, background: t.colors.text, opacity: 0.2}} /><div style={{width: 20, height: 3, borderRadius: 2, background: t.colors.text, opacity: 0.1, marginTop: 3}} /></div>
-                                </div>
-                                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5, flex: 1}}>
-                                  {[1,2,3,4].map(k=><div key={k} style={{borderRadius: 6, background: t.colors.card, border: `1px solid ${t.colors.border}`, padding: 4}}><div style={{height: 20, borderRadius: 4, background: '#f3f3f3'}} /><div style={{height: 3, borderRadius: 2, background: t.colors.text, opacity: 0.15, marginTop: 4, width: '70%'}} /><div style={{height: 3, borderRadius: 2, background: t.colors.text, opacity: 0.08, marginTop: 2, width: '50%'}} /></div>)}
-                                </div>
-                              </>
-                            )}
-                            {t.id === 'sleek-dark' && (
-                              <>
-                                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}><div style={{width: 30, height: 4, borderRadius: 2, background: t.colors.text, opacity: 0.3}} /><div style={{width: 14, height: 10, borderRadius: 4, background: t.colors.accent}} /></div>
-                                <div style={{flex: 1, borderRadius: 8, background: t.colors.card, border: `1px solid ${t.colors.border}`, padding: 6, display: 'flex', flexDirection: 'column', gap: 5}}>
-                                  <div style={{height: 42, borderRadius: 6, background: 'linear-gradient(135deg, #2a2a2a, #1a1a1a)'}} />
-                                  <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 4}}>{[1,2,3].map(k=><div key={k} style={{height: 24, borderRadius: 4, background: t.colors.bg, border: `1px solid ${t.colors.border}`}} />)}</div>
-                                </div>
-                                <div style={{height: 12, borderRadius: 5, background: t.colors.text, opacity: 0.9, display: 'flex', alignItems: 'center', justifyContent: 'center', color: t.colors.bg, fontSize: 5, fontWeight: 700}}>ORDER VIA WHATSAPP</div>
-                              </>
-                            )}
-                            {t.id === 'sleek-editorial' && (
-                              <>
-                                <div style={{display: 'flex', gap: 6, flex: 1}}>
-                                  <div style={{flex: 1.2, display: 'flex', flexDirection: 'column', gap: 5}}><div style={{height: 16, display: 'flex', flexDirection: 'column', gap: 2}}><div style={{height: 3, width: '80%', background: t.colors.text, opacity: 0.8, borderRadius: 2}} /><div style={{height: 3, width: '60%', background: t.colors.text, opacity: 0.2, borderRadius: 2}} /><div style={{height: 2, width: '90%', background: t.colors.text, opacity: 0.1, borderRadius: 2, marginTop: 2}} /></div><div style={{flex: 1, borderRadius: 6, background: t.colors.card, border: `1px solid ${t.colors.border}`, padding: 4}}><div style={{height: '100%', borderRadius: 4, background: '#eee'}} /></div></div>
-                                  <div style={{flex: 1, display: 'flex', flexDirection: 'column', gap: 4}}>{[1,2].map(k=><div key={k} style={{flex: 1, borderRadius: 6, background: t.colors.card, border: `1px solid ${t.colors.border}`, padding: 4}}><div style={{height: 18, borderRadius: 4, background: '#f5f5f5'}} /><div style={{height: 2, background: t.colors.text, opacity: 0.15, marginTop: 4, borderRadius: 2, width: '60%'}} /></div>)}</div>
-                                </div>
-                              </>
-                            )}
-                          </div>
+                          <div className="glass-preview-header" style={{background: t.colors.bg, color: t.colors.text}}><span>{t.id === 'sleek-beige' ? 'SLEEK' : t.id === 'sleek-dark' ? 'DARK' : 'EDITORIAL'}</span></div>
+                          <div className="glass-preview-body" style={{background: t.colors.bg}}><div style={{height:28, borderRadius:6, background: t.colors.card, border: `1px solid ${t.colors.border}`}} /><div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:5, flex:1}}>{[1,2].map(k=><div key={k} style={{borderRadius:6, background: t.colors.card, border: `1px solid ${t.colors.border}`}} />)}</div></div>
                         </div>
-
-                        <div style={{marginTop: 8, display: 'flex', alignItems: 'center', gap: 6}}>
-                          <span style={{width: 20, height: 20, borderRadius: 6, background: t.colors.card, border: `1px solid rgba(255,255,255,0.2)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10}}>{t.badge}</span>
-                          <span style={{fontSize: 10, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.06em'}} className="uppercase">{t.tagline}</span>
-                        </div>
-                        {isActive && <div className="absolute top-3 right-3 w-5 h-5 bg-[#E8FF86] rounded-full flex items-center justify-center text-[10px] font-bold text-black shadow-lg">✓</div>}
+                        {isActive && <div className="absolute top-3 right-3 w-5 h-5 bg-[#E8FF86] rounded-full flex items-center justify-center text-[10px] font-bold text-black">✓</div>}
                       </div>
                     )
                   })}
                 </div>
-
-                <div className="flex flex-wrap gap-2 mt-1 justify-center">
-                  {advancedThemes.map(t => (
-                    <div key={t.id} className={`text-[10px] px-3 py-1.5 rounded-full border transition-all ${theme===t.id ? 'bg-[#E8FF86] text-black border-[#E8FF86] font-bold shadow-[0_0_12px_rgba(232,255,134,0.3)]' : 'bg-white/10 text-white/60 border-white/10'}`}>{t.badge} {t.name}</div>
-                  ))}
-                </div>
               </div>
             </div>
-
-            <div className="flex justify-end pt-6 gap-2">{saved && <span className="h-11 px-4 flex items-center text-[12px] text-green-600 font-medium">✓ Saved! {getTheme(theme).name} applied</span>}<button onClick={saveStore} style={{borderRadius:10}} className="h-11 px-6 bg-black text-white text-[13px] font-medium hover:bg-zinc-800">Save Store & Theme</button></div>
           </div>
+        </div>
+
+        {/* PAYMENT METHODS - FREE 0% FEES - PAKISTAN READY */}
+        <div style={{borderRadius:20}} className="bg-white border overflow-hidden">
+          <div className="p-6 border-b flex items-center justify-between">
+            <div><h2 className="font-semibold text-[15px]">Payment Methods — 100% Free, No Gateway</h2><p className="text-[12px] text-zinc-500 mt-1">COD + JazzCash/Easypaisa manual — perfect for Pakistan, 0% fees</p></div>
+            <span className="text-[10px] bg-green-50 text-green-700 border border-green-200 px-3 py-1 rounded-full font-medium">0% FEES</span>
+          </div>
+          <div className="p-6 space-y-6">
+            <div className="flex items-start justify-between gap-4 pb-6 border-b">
+              <div className="flex gap-3"><div className="w-10 h-10 rounded-[10px] bg-zinc-900 text-white flex items-center justify-center text-[16px]">💵</div><div><div className="font-medium text-[14px]">Cash on Delivery (COD)</div><div className="text-[12px] text-zinc-500 mt-1">Most popular in Pakistan — customer pays on delivery</div></div></div>
+              <div className={`toggle ${codEnabled ? 'on' : 'off'}`} onClick={()=>setCodEnabled(!codEnabled)}><div className="toggle-dot" /></div>
+            </div>
+            <div className="pb-6 border-b">
+              <div className="flex items-start justify-between gap-4 mb-3"><div className="flex gap-3"><div className="w-10 h-10 rounded-[10px] bg-[#FF6B00] text-white flex items-center justify-center text-[11px] font-bold">JAZZ</div><div><div className="font-medium text-[14px]">JazzCash</div><div className="text-[12px] text-zinc-500 mt-1">Manual transfer to your JazzCash</div></div></div><div className={`toggle ${jazzEnabled ? 'on' : 'off'}`} onClick={()=>setJazzEnabled(!jazzEnabled)}><div className="toggle-dot" /></div></div>
+              {jazzEnabled && <div className="ml-[52px] grid md:grid-cols-2 gap-3"><input placeholder="JazzCash Number: 0300XXXXXXX" value={jazzNumber} onChange={e=>setJazzNumber(e.target.value)} style={{borderRadius:12}} className="h-11 px-4 border text-[14px]" /><input placeholder="Title: e.g. Aakif Habib" value={jazzTitle} onChange={e=>setJazzTitle(e.target.value)} style={{borderRadius:12}} className="h-11 px-4 border text-[14px]" /></div>}
+            </div>
+            <div className="pb-6 border-b">
+              <div className="flex items-start justify-between gap-4 mb-3"><div className="flex gap-3"><div className="w-10 h-10 rounded-[10px] bg-[#00A651] text-white flex items-center justify-center text-[11px] font-bold">EASY</div><div><div className="font-medium text-[14px]">Easypaisa</div><div className="text-[12px] text-zinc-500 mt-1">Manual transfer to your Easypaisa</div></div></div><div className={`toggle ${easyEnabled ? 'on' : 'off'}`} onClick={()=>setEasyEnabled(!easyEnabled)}><div className="toggle-dot" /></div></div>
+              {easyEnabled && <div className="ml-[52px] grid md:grid-cols-2 gap-3"><input placeholder="Easypaisa Number: 0300XXXXXXX" value={easyNumber} onChange={e=>setEasyNumber(e.target.value)} style={{borderRadius:12}} className="h-11 px-4 border text-[14px]" /><input placeholder="Title: e.g. Aakif Habib" value={easyTitle} onChange={e=>setEasyTitle(e.target.value)} style={{borderRadius:12}} className="h-11 px-4 border text-[14px]" /></div>}
+            </div>
+            <div className="">
+              <div className="flex items-start justify-between gap-4 mb-3"><div className="flex gap-3"><div className="w-10 h-10 rounded-[10px] bg-[#1e3a8a] text-white flex items-center justify-center text-[14px]">🏦</div><div><div className="font-medium text-[14px]">Bank / SadaPay / NayaPay</div><div className="text-[12px] text-zinc-500 mt-1">IBAN transfer — free for all banks</div></div></div><div className={`toggle ${bankEnabled ? 'on' : 'off'}`} onClick={()=>setBankEnabled(!bankEnabled)}><div className="toggle-dot" /></div></div>
+              {bankEnabled && <div className="ml-[52px]"><textarea placeholder="Example: Bank: Meezan Bank, IBAN: PK00MEZN0000XXXX, Title: Aakif Habib" value={bankDetails} onChange={e=>setBankDetails(e.target.value)} style={{borderRadius:12}} className="w-full min-h-[80px] p-4 border text-[14px] resize-none" /></div>}
+            </div>
+          </div>
+          <div className="px-6 pb-6 flex justify-end gap-2">{saved && <span className="h-11 px-4 flex items-center text-[12px] text-green-600 font-medium">✓ Saved! {getTheme(theme).name} + payments saved</span>}<button onClick={saveStore} style={{borderRadius:10}} className="h-11 px-6 bg-black text-white text-[13px] font-medium hover:bg-zinc-800">Save Store, Theme & Payments</button></div>
         </div>
 
         <div style={{borderRadius:20}} className="bg-white border overflow-hidden">
