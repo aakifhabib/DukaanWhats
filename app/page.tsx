@@ -61,6 +61,19 @@ export default function LandingPage() {
             <span className="hidden md:inline-flex ml-3 rounded-[8px] bg-[#E8FF86] px-2 py-[2px] text-[11px] font-medium tracking-wide">LIVE</span>
           </Link>
           <nav className="flex items-center gap-2">
+
+      {/* Variant 1 - Dark Pill + Lime Arrow - Header */}
+      <Link href="/pricing" className="group relative hidden md:inline-flex items-center gap-[10px] rounded-full bg-[#0A0A0A] pl-[18px] pr-[6px] py-[6px] text-[13px] font-[550] tracking-[-0.01em] text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]" style={{boxShadow:'inset 0 1px 0 rgba(255,255,255,0.08)'}}>
+        <span className="absolute inset-[2px] rounded-full bg-[#E8FF86] origin-left scale-x-[0.08] scale-y-[0.36] group-hover:scale-100 transition-transform duration-[520ms] ease-[cubic-bezier(0.16,1,0.3,1)]" />
+        <span className="relative z-10 flex items-center gap-[10px]">
+          <span className="h-[8px] w-[8px] rounded-full bg-[#E8FF86] group-hover:bg-[#0A0A0A] transition-colors" />
+          <span className="pr-1 group-hover:text-[#0A0A0A] transition-colors">Pricing</span>
+        </span>
+        <span className="relative z-10 grid h-[28px] w-[28px] place-items-center rounded-full bg-white/[0.08] group-hover:bg-[#0A0A0A] transition-colors">
+          <span className="text-[12px] transition-all group-hover:rotate-45 group-hover:text-[#E8FF86]">↗</span>
+        </span>
+      </Link>
+
             <Link href="/s/premiumstore" className="hidden md:inline-flex h-10 items-center rounded-[10px] border border-black/10 bg-white px-5 text-[13px] font-medium hover:bg-black hover:text-white">View Demo</Link>
             <button onClick={handleCreate} className="inline-flex h-10 items-center justify-center rounded-[10px] bg-black px-5 text-[13px] font-medium text-white hover:scale-[1.02] active:scale-[0.98]">{loggedIn ? 'Go to Dashboard' : 'Create Store'}</button>
           </nav>
@@ -85,16 +98,18 @@ export default function LandingPage() {
               No app downloads. No commission. Just paste your products, get a link, and take orders directly on WhatsApp.
             </p>
 
+
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <button onClick={handleCreate} className="group inline-flex h-[48px] items-center justify-center gap-2 rounded-[12px] bg-black px-7 text-[15px] font-medium text-white shadow-[0_8px_20px_-8px_rgba(0,0,0,0.5)] transition hover:scale-[1.01] active:scale-[0.99]">
                 {loggedIn ? 'Open Dashboard' : 'Create Store — Free'}
                 <span className="grid h-6 w-6 place-items-center rounded-[8px] bg-white/15 text-white">→</span>
               </button>
-              <Link href="/s/premiumstore" className="inline-flex h-[48px] items-center gap-2 rounded-[12px] border border-black/10 bg-white px-6 text-[14px] font-medium">
-                <span className="grid h-6 w-6 place-items-center rounded-[8px] bg-black text-white text-[10px]">▶</span>
-                See how it works
+              <Link href="/pricing" className="group inline-flex h-[48px] items-center gap-3 rounded-full bg-[#E8FF86] pl-2 pr-7 text-[14px] font-[600] tracking-[-0.01em] text-black transition-all hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_0_1px_rgba(0,0,0,0.06),0_8px_20px_-8px_rgba(232,255,134,0.6)]">
+                <span className="grid h-[36px] w-[36px] place-items-center rounded-full bg-black text-[#E8FF86] text-[14px] transition-transform group-hover:rotate-[-12deg]">○</span>
+                <span className="flex items-center gap-1.5">Pricing <span className="transition-transform group-hover:translate-x-0.5">↗</span></span>
               </Link>
             </div>
+
 
             <div className="mt-8 flex items-center gap-3">
               <div className="flex -space-x-2">
@@ -191,15 +206,23 @@ export default function LandingPage() {
                 <h2 className="mt-6 max-w-[560px] text-[38px] font-bold leading-[0.9] tracking-[-0.04em] md:text-[64px]">Ready to sell<br/>on WhatsApp?</h2>
                 <p className="mt-4 max-w-[420px] text-[16px] leading-[1.5] text-zinc-300">Create your store in 30 seconds. No app, no fees, no excuses. Your customers are already on WhatsApp.</p>
               </div>
-              <div className="md:text-right">
-                <button onClick={handleCreate} className="group inline-flex h-[56px] items-center justify-center gap-2 rounded-[12px] bg-white px-8 text-[16px] font-semibold text-black shadow-[0_10px_30px_-10px_rgba(255,255,255,0.4)] transition hover:scale-[1.02] active:scale-[0.98]">
-                  {loggedIn ? 'Open Dashboard' : 'Create Store — Free'}
-                  <span className="grid h-6 w-6 place-items-center rounded-[8px] bg-black text-white">→</span>
-                </button>
-                <div className="mt-3 flex items-center justify-center gap-2 text-[12px] text-zinc-400 md:justify-end">
+
+              <div className="md:text-right flex flex-col items-end gap-3">
+                <div className="flex flex-wrap gap-3">
+                  <Link href="/pricing" className="group inline-flex h-[56px] items-center gap-3 rounded-full bg-[#E8FF86] pl-2 pr-8 text-[15px] font-[700] tracking-[-0.01em] text-black transition-all hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_0_1px_rgba(0,0,0,0.06),0_14px_30px_-10px_rgba(232,255,134,0.8)]">
+                    <span className="grid h-[44px] w-[44px] place-items-center rounded-full bg-black text-[#E8FF86] text-[18px] transition-transform group-hover:rotate-[-12deg] group-hover:scale-110">●</span>
+                    <span className="flex items-center gap-2">See Pricing <span className="grid h-6 w-6 place-items-center rounded-full bg-black/10 text-[12px] transition-transform group-hover:translate-x-0.5 group-hover:rotate-45">↗</span></span>
+                  </Link>
+                  <button onClick={handleCreate} className="group inline-flex h-[56px] items-center justify-center gap-2 rounded-[12px] bg-white px-8 text-[16px] font-semibold text-black shadow-[0_10px_30px_-10px_rgba(255,255,255,0.4)] transition hover:scale-[1.02] active:scale-[0.98]">
+                    {loggedIn ? 'Open Dashboard' : 'Create Store — Free'}
+                    <span className="grid h-6 w-6 place-items-center rounded-[8px] bg-black text-white">→</span>
+                  </button>
+                </div>
+                <div className="mt-1 flex items-center justify-center gap-2 text-[12px] text-zinc-400 md:justify-end">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#25D366]" /> Takes 30 seconds • No card required
                 </div>
               </div>
+
             </div>
           </div>
         </section>
