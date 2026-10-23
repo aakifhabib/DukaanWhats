@@ -82,7 +82,8 @@ export default function Dashboard() {
 
   const standardThemes = STORE_THEMES.filter(t => t.category !== 'advanced')
   const advancedThemes = getAdvancedThemes()
-  const filtered = filter === 'all' ? standardThemes : STORE_THEMES.filter(t => t.category === filter)
+  // Upper grid NEVER shows advanced - only in glass panel
+  const filtered = filter === 'all' ? standardThemes : filter === 'advanced' ? [] : STORE_THEMES.filter(t => t.category === filter && t.category !== 'advanced')
 
   return (
     <div style={{minHeight:'100vh',background:'#F8F7F5'}} className="text-zinc-900 pb-24">
@@ -216,7 +217,10 @@ export default function Dashboard() {
           </div>
 
           <div className="mt-8">
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-3"><label className="text-[13px] font-semibold">Choose Theme — {filtered.length} designs</label><div className="flex flex-wrap gap-1.5">{(['all','food','clothing','tech','shoes','advanced'] as const).map(c => (<button key={c} onClick={()=>setFilter(c)} style={{borderRadius:999}} className={`h-7 px-3 text-[11px] font-medium capitalize border ${filter===c ? 'bg-black text-white border-black' : c==='advanced' ? 'bg-[#0A0A0A] text-white border-black' : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50'}`}>{c}</button>))}</div></div>
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-3"><label className="text-[13px] font-semibold">Choose Theme — {filter==='advanced' ? 'see below ↓' : `${filtered.length} designs`}</label><div className="flex flex-wrap gap-1.5">{(['all','food','clothing','tech','shoes'] as const).map(c => (<button key={c} onClick={()=>setFilter(c)} style={{borderRadius:999}} className={`h-7 px-3 text-[11px] font-medium capitalize border ${filter===c ? 'bg-black text-white border-black' : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50'}`}>{c}</button>))}<button onClick={()=>{setFilter('advanced'); document.getElementById('advanced-glass')?.scrollIntoView({behavior:'smooth'})}} style={{borderRadius:999}} className={`h-7 px-3 text-[11px] font-medium capitalize border ${filter==='advanced' ? 'bg-black text-white border-black' : 'bg-[#0A0A0A] text-white border-black hover:bg-zinc-800'}`}>advanced ↓</button></div></div>
+            {filter === 'advanced' ? (
+              <div className="text-center py-8 bg-zinc-50 rounded-[16px] border border-dashed"><div className="text-[13px] font-medium">Advanced themes are below in the glass panel ↓</div><div className="text-[11px] text-zinc-500 mt-1">Hover to spread, click to select the 3 minimal designs</div></div>
+            ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
               {filtered.map(t => {
                 const isActive = theme === t.id
@@ -230,9 +234,10 @@ export default function Dashboard() {
                 )
               })}
             </div>
+            )}
 
-            {/* GLASS ADVANCED PANEL WITH 3 STORE PREVIEWS */}
-            <div style={{borderRadius:20}} className="mt-10 overflow-hidden border-2 border-black relative">
+            {/* GLASS ADVANCED PANEL WITH 3 STORE PREVIEWS - ONLY PLACE FOR ADVANCED THEMES */}
+            <div id="advanced-glass" style={{borderRadius:20}} className="mt-10 overflow-hidden border-2 border-black relative">
               <div className="absolute inset-0 bg-[#0c0e13]" />
               <div className="absolute inset-0 opacity-50" style={{background: 'radial-gradient(circle at 20% 10%, #E8FF86 0%, transparent 35%), radial-gradient(circle at 85% 85%, #7c3aed 0%, transparent 45%), radial-gradient(circle at 50% 50%, #ffffff08 0%, transparent 60%)'}} />
               <div className="relative p-6 md:p-8">
