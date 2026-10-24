@@ -70,6 +70,22 @@ const GlassPremiumLock = ({ size = 56 }: { size?: number }) => (
 )
 
 
+
+const AnalyticsIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none">
+    <rect x="3" y="12" width="4" height="8" rx="1.5" fill="currentColor" />
+    <rect x="10" y="8" width="4" height="12" rx="1.5" fill="currentColor" opacity="0.7" />
+    <rect x="17" y="4" width="4" height="16" rx="1.5" fill="currentColor" opacity="0.4" />
+  </svg>
+)
+
+const LiveDot = () => (
+  <span className="relative flex h-2 w-2">
+    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#E8FF86] opacity-75"></span>
+    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#E8FF86]"></span>
+  </span>
+)
+
 const TILL_ID = '984837533'
 
 type Profile = { id: string; business_name: string; whatsapp_number: string; store_slug: string; store_theme?: string; current_plan?: string }
@@ -95,7 +111,7 @@ export default function Dashboard() {
   const [uploading, setUploading] = useState(false)
   const [copied, setCopied] = useState(false)
   const [filter, setFilter] = useState<ThemeCategory | 'all' | string>('all')
-  const [activeTab, setActiveTab] = useState<'store'|'themes'|'products'|'payments'>('themes')
+  const [activeTab, setActiveTab] = useState<'store'|'themes'|'products'|'analytics'|'payments'>('themes')
   const [selectedPlan, setSelectedPlan] = useState<PlanDef | null>(null)
   const [billing, setBilling] = useState<Billing>('monthly')
   const [txnId, setTxnId] = useState('')
@@ -300,8 +316,12 @@ export default function Dashboard() {
         <div className="flex items-center justify-between gap-2 md:gap-3 flex-wrap">
           <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
             <div className="modern-tab-pill">
-              {[{ id: 'store', label: 'Store' },{ id: 'themes', label: 'Themes' },{ id: 'products', label: `Products ${products.length}/${productLimit===999999?'∞':productLimit}` }].map(t => (
-                <button key={t.id} onClick={()=>setActiveTab(t.id as any)} className={`modern-tab ${activeTab===t.id ? 'modern-tab-active' : 'modern-tab-inactive'}`}>{t.label}</button>
+              {[{ id: 'store', label: 'Store' },{ id: 'themes', label: 'Themes' },{ id: 'products', label: `Products ${products.length}/${productLimit===999999?'∞':productLimit}` },{ id: 'analytics', label: 'Analytics', premium: true }].map((t:any) => (
+                <button key={t.id} onClick={()=>setActiveTab(t.id as any)} className={`modern-tab ${activeTab===t.id ? 'modern-tab-active' : 'modern-tab-inactive'} ${t.premium && !isPremium ? 'gap-1.5' : ''}`}>
+                  {t.label}
+                  {t.premium && !isPremium && <span className="ml-0.5 w-4 h-4 rounded-full bg-white/15 flex items-center justify-center"><svg width="8" height="8" viewBox="0 0 24 24" fill="none"><rect x="4" y="10" width="16" height="10" rx="2" fill="white"/><path d="M8 10V7C8 5 10 3 12 3C14 3 16 5 16 7V10" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg></span>}
+                  {t.premium && isPremium && <LiveDot />}
+                </button>
               ))}
             </div>
             <button onClick={()=>setActiveTab('payments')} className={`pro-glow-btn ${activeTab==='payments'?'active':''}`}><span className={`pro-dot ${activeTab==='payments'?'active':''}`}></span>PRO • Till {TILL_ID}</button>
@@ -463,6 +483,242 @@ export default function Dashboard() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">{products.map(p => (<div key={p.id} className="bg-white border rounded-[16px] p-2.5 group relative hover:border-black transition-colors"><img src={p.image_url} className="w-full h-32 object-cover rounded-[12px] bg-zinc-50" /><div className="mt-2 px-1"><div className="font-medium text-[12px] truncate">{p.name}</div><div className="text-[12px] font-bold">Rs. {p.price}</div></div><button onClick={()=>deleteProduct(p.id)} className="absolute top-2 right-2 w-7 h-7 bg-white shadow border rounded-full flex items-center justify-center text-[10px] hover:bg-black hover:text-white transition-colors">✕</button></div>))}</div>
           </div>
         )}
+
+        
+        {activeTab==='analytics' && (
+          <div className="space-y-4">
+            {/* Locked for non-premium */}
+            {!isPremium ? (
+              <div className="relative bg-white border-2 border-black rounded-[24px] overflow-hidden min-h-[640px]">
+                {/* Background analytics mock - blurred */}
+                <div className="absolute inset-0 p-6 md:p-8 blur-[14px] opacity-40 pointer-events-none select-none">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[
+                      { label: 'Total Views', value: '12.4k', change: '+23%' },
+                      { label: 'WhatsApp Clicks', value: '1,842', change: '+18%' },
+                      { label: 'Orders Started', value: '324', change: '+12%' },
+                      { label: 'Revenue Est.', value: 'Rs. 184k', change: '+31%' },
+                    ].map((s,i)=>(
+                      <div key={i} className="bg-[#F8F7F5] border rounded-[16px] p-4">
+                        <div className="text-[11px] uppercase tracking-widest text-zinc-500 font-bold">{s.label}</div>
+                        <div className="text-[22px] font-black mt-1">{s.value}</div>
+                        <div className="text-[11px] text-green-600 font-bold mt-1">{s.change}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-6 grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-4">
+                    <div className="bg-[#F8F7F5] border rounded-[20px] p-5 h-[260px]">
+                      <div className="h-4 w-24 bg-zinc-200 rounded-full" />
+                      <div className="mt-6 flex items-end gap-2 h-[180px]">
+                        {[40,65,35,85,55,90,70,45,75,60,80,50].map((h,i)=><div key={i} className="flex-1 bg-black rounded-t-[8px]" style={{height: `${h}%`}} />)}
+                      </div>
+                    </div>
+                    <div className="bg-[#F8F7F5] border rounded-[20px] p-5 h-[260px]">
+                      <div className="h-4 w-20 bg-zinc-200 rounded-full" />
+                      <div className="mt-6 space-y-3">
+                        {[85,60,45,30].map((w,i)=><div key={i} className="flex items-center gap-3"><div className="w-8 h-8 rounded-[10px] bg-zinc-200" /><div className="flex-1"><div className="h-3 bg-zinc-200 rounded-full" style={{width: `${w}%`}} /><div className="h-2 bg-zinc-100 rounded-full mt-2 w-1/2" /></div></div>)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Glass Lock Overlay */}
+                <div className="absolute inset-0 bg-white/75 backdrop-blur-[20px] flex flex-col items-center justify-center p-6 text-center">
+                  <div className="relative">
+                    <GlassPremiumLock size={72} />
+                    <div className="absolute -bottom-1 -right-1 bg-black text-white text-[9px] font-black px-2 h-5 rounded-full flex items-center tracking-widest">PREMIUM</div>
+                  </div>
+                  <h3 className="mt-6 text-[22px] md:text-[26px] font-black tracking-tight leading-none">Live Analytics is Premium Only</h3>
+                  <p className="mt-3 text-[13px] text-zinc-500 max-w-[360px] leading-[1.5]">You promised your users live analytics — this is it. Track store views, WhatsApp clicks, top products, and revenue in real-time. Basic and Advanced plans can't access this.</p>
+                  
+                  <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-3 w-full max-w-[520px]">
+                    <div className="bg-[#F8F7F5] border rounded-[14px] p-3.5 text-left">
+                      <div className="w-8 h-8 rounded-[10px] bg-black text-white flex items-center justify-center"><AnalyticsIcon className="w-4 h-4" /></div>
+                      <div className="mt-2.5 font-bold text-[12px]">Real-time Views</div>
+                      <div className="text-[11px] text-zinc-500 mt-1 leading-[1.3]">Every store visit tracked live</div>
+                    </div>
+                    <div className="bg-[#F8F7F5] border rounded-[14px] p-3.5 text-left">
+                      <div className="w-8 h-8 rounded-[10px] bg-black text-white flex items-center justify-center">↗</div>
+                      <div className="mt-2.5 font-bold text-[12px]">WhatsApp Funnel</div>
+                      <div className="text-[11px] text-zinc-500 mt-1 leading-[1.3]">Clicks → Orders → Revenue</div>
+                    </div>
+                    <div className="bg-[#F8F7F5] border rounded-[14px] p-3.5 text-left">
+                      <div className="w-8 h-8 rounded-[10px] bg-[#E8FF86] text-black flex items-center justify-center font-black text-[12px]">₨</div>
+                      <div className="mt-2.5 font-bold text-[12px]">Top Products</div>
+                      <div className="text-[11px] text-zinc-500 mt-1 leading-[1.3]">Know what sells best</div>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 flex flex-col md:flex-row items-center gap-3">
+                    <button onClick={()=>setActiveTab('payments')} className="h-11 px-7 bg-black text-white rounded-full text-[13px] font-bold flex items-center gap-2 hover:bg-zinc-900 transition-colors">
+                      Upgrade to Premium — Rs. 2999/mo
+                      <span className="w-5 h-5 bg-white text-black rounded-full flex items-center justify-center text-[10px]">↗</span>
+                    </button>
+                    <span className="text-[11px] text-zinc-500 font-medium">Till {TILL_ID} • Yearly Rs. 2499/mo (-22%) • Live + No watermark</span>
+                  </div>
+
+                  <div className="mt-8 flex items-center gap-2 text-[10px] font-bold tracking-widest">
+                    <span className="px-2.5 h-6 rounded-full bg-black text-white flex items-center">Basic 0% Analytics</span>
+                    <span className="px-2.5 h-6 rounded-full bg-zinc-100 border flex items-center">Advanced 0% Analytics</span>
+                    <span className="px-2.5 h-6 rounded-full bg-[#E8FF86] border border-black/5 flex items-center">Premium 100% Live</span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              // Premium unlocked analytics
+              <div className="space-y-4">
+                {/* Header */}
+                <div className="bg-black text-white rounded-[24px] p-6 md:p-7 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#E8FF86] opacity-[0.08] rounded-full blur-[80px] pointer-events-none" />
+                  <div className="absolute inset-0 opacity-30" style={{background: 'radial-gradient(ellipse at 20% 0%, #222 0%, transparent 60%)'}} />
+                  <div className="relative flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-white text-black rounded-[14px] flex items-center justify-center"><AnalyticsIcon className="w-6 h-6" /></div>
+                      <div>
+                        <div className="flex items-center gap-2.5"><h2 className="font-black text-[20px] tracking-tight">Live Analytics</h2><span className="flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-[#E8FF86] text-black text-[10px] font-black tracking-widest"><LiveDot /> LIVE</span><span className="px-2.5 h-6 rounded-full bg-white/10 border border-white/10 text-[10px] font-bold tracking-widest">PREMIUM UNLOCKED ✓</span></div>
+                        <p className="text-[11px] text-white/60 mt-1">Real-time • No watermark • {products.length} products tracked</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-9 px-3 rounded-full bg-white/10 border border-white/10 text-[11px] font-medium flex items-center gap-2"><span className="w-2 h-2 bg-[#E8FF86] rounded-full animate-pulse" />Store: {slug || 'your-store'} • Live</div>
+                      <div className="h-9 px-3 rounded-full bg-white text-black text-[11px] font-bold flex items-center">Last 7 days</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stats */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  {[
+                    { label: 'Total Views', value: '12,483', sub: 'Unique visitors', change: '+23.4%', up: true, icon: '◧' },
+                    { label: 'WhatsApp Clicks', value: '1,842', sub: '87.2% CTR', change: '+18.1%', up: true, icon: '↗' },
+                    { label: 'Orders Started', value: '324', sub: '17.6% conversion', change: '+12.3%', up: true, icon: '◫' },
+                    { label: 'Est. Revenue', value: 'Rs. 184,500', sub: 'Avg Rs. 569 / order', change: '+31.2%', up: true, icon: '₨' },
+                  ].map((s,i)=>(
+                    <div key={i} className="bg-white border rounded-[20px] p-5 relative overflow-hidden group hover:border-black transition-colors">
+                      <div className="flex items-start justify-between">
+                        <div className="w-9 h-9 rounded-[12px] bg-[#F8F7F5] border flex items-center justify-center text-[14px] font-bold">{s.icon}</div>
+                        <span className={`px-2 h-6 rounded-full text-[10px] font-black flex items-center gap-1 ${s.up ? 'bg-[#E8FF86] text-black' : 'bg-red-100 text-red-600'}`}>{s.up ? '↗' : '↘'} {s.change}</span>
+                      </div>
+                      <div className="mt-4">
+                        <div className="text-[11px] font-bold tracking-widest uppercase text-zinc-500">{s.label}</div>
+                        <div className="text-[24px] font-black tracking-tight mt-1">{s.value}</div>
+                        <div className="text-[11px] text-zinc-500 mt-1">{s.sub}</div>
+                      </div>
+                      <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-black opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Charts */}
+                <div className="grid grid-cols-1 lg:grid-cols-[1.7fr_1fr] gap-3">
+                  {/* Views chart */}
+                  <div className="bg-white border rounded-[20px] p-5 md:p-6">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold text-[13px] tracking-tight">Views & Clicks — Last 7 Days</h3>
+                      <div className="flex items-center gap-3 text-[10px] font-bold tracking-widest">
+                        <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-black" />Views</span>
+                        <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#E8FF86] border border-black/10" />WhatsApp Clicks</span>
+                      </div>
+                    </div>
+                    <div className="mt-6 h-[200px] flex items-end gap-[10px]">
+                      {[
+                        { v: 60, c: 32 },
+                        { v: 85, c: 48 },
+                        { v: 55, c: 28 },
+                        { v: 95, c: 62 },
+                        { v: 70, c: 44 },
+                        { v: 110, c: 78 },
+                        { v: 88, c: 52 },
+                      ].map((d,i)=>(
+                        <div key={i} className="flex-1 flex flex-col items-center gap-2 group/bar">
+                          <div className="w-full flex gap-1 items-end justify-center h-[160px]">
+                            <div className="flex-1 bg-black rounded-t-[10px] group-hover/bar:bg-zinc-900 transition-colors" style={{height: `${d.v}%`}} />
+                            <div className="flex-1 bg-[#E8FF86] border border-black/5 rounded-t-[10px] group-hover/bar:bg-[#e0f07a] transition-colors" style={{height: `${d.c}%`}} />
+                          </div>
+                          <span className="text-[10px] font-bold text-zinc-500">{['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i]}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Top products + Funnel */}
+                  <div className="space-y-3">
+                    <div className="bg-white border rounded-[20px] p-5">
+                      <h3 className="font-bold text-[13px] tracking-tight">Top Products by WhatsApp Clicks</h3>
+                      <div className="mt-4 space-y-3">
+                        {(products.length ? products.slice(0,4) : [{ id:'1', name:'Noor Lawn Suit', price:3500, image_url:'https://picsum.photos/100' }, { id:'2', name:'Gul Ahmed Cotton', price:2800, image_url:'https://picsum.photos/101' }, { id:'3', name:'Khaadi Khaddar', price:4200, image_url:'https://picsum.photos/102' }]).map((p:any, i:number)=>(
+                          <div key={p.id} className="flex items-center gap-3 group">
+                            <div className="w-10 h-10 rounded-[12px] bg-[#F8F7F5] border overflow-hidden flex items-center justify-center font-bold text-[11px]">{i+1}</div>
+                            <img src={p.image_url} className="w-10 h-10 rounded-[10px] object-cover border bg-zinc-50" />
+                            <div className="flex-1 min-w-0">
+                              <div className="text-[12px] font-bold truncate">{p.name}</div>
+                              <div className="text-[11px] text-zinc-500">Rs. {p.price} • {Math.floor(Math.random()*60+20)} clicks</div>
+                            </div>
+                            <div className="w-14 h-2 rounded-full bg-[#F8F7F5] border overflow-hidden"><div className="h-full bg-black rounded-full" style={{width: `${85 - i*15}%`}} /></div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="bg-black text-white rounded-[20px] p-5 relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-[#E8FF86] opacity-[0.12] rounded-full blur-[30px]" />
+                      <h3 className="font-bold text-[12px] tracking-widest uppercase relative">Conversion Funnel</h3>
+                      <div className="mt-4 space-y-2.5 relative">
+                        {[
+                          { label: 'Store Views', value: '12,483', pct: '100%' },
+                          { label: 'Product Views', value: '4,821', pct: '38.6%' },
+                          { label: 'WhatsApp Clicks', value: '1,842', pct: '14.7%' },
+                          { label: 'Orders Started', value: '324', pct: '2.6%' },
+                        ].map((f,i)=>(
+                          <div key={i} className="flex items-center gap-3">
+                            <div className="w-6 h-6 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-[10px] font-bold">{i+1}</div>
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between"><span className="text-[12px] font-medium">{f.label}</span><span className="text-[11px] font-mono opacity-60">{f.pct}</span></div>
+                              <div className="mt-1 h-1.5 rounded-full bg-white/10 overflow-hidden"><div className="h-full bg-[#E8FF86]" style={{width: f.pct}} /></div>
+                            </div>
+                            <span className="text-[12px] font-black">{f.value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom row */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="bg-white border rounded-[20px] p-5">
+                    <div className="text-[11px] font-black tracking-widest uppercase text-zinc-500">Device Breakdown</div>
+                    <div className="mt-4 flex items-center gap-4">
+                      <div className="w-16 h-16 rounded-full border-[6px] border-black border-r-[#E8FF86] border-b-[#E8FF86] flex items-center justify-center font-black text-[11px]">78%</div>
+                      <div className="space-y-2 text-[11px]">
+                        <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-black" />Mobile 78%</div>
+                        <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#E8FF86] border" />Desktop 18%</div>
+                        <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-zinc-200" />Other 4%</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-white border rounded-[20px] p-5">
+                    <div className="text-[11px] font-black tracking-widest uppercase text-zinc-500">Traffic Source</div>
+                    <div className="mt-4 space-y-2.5">
+                      {[{s:'Direct Link', p:'62%'}, {s:'WhatsApp Status', p:'24%'}, {s:'Instagram Bio', p:'14%'}].map((t,i)=><div key={i} className="flex items-center justify-between text-[12px]"><span className="font-medium">{t.s}</span><span className="font-mono text-[11px] bg-[#F8F7F5] border px-2 h-6 rounded-full flex items-center">{t.p}</span></div>)}
+                    </div>
+                  </div>
+                  <div className="bg-[#E8FF86] border border-black/5 rounded-[20px] p-5 relative overflow-hidden">
+                    <div className="absolute -right-6 -top-6 w-24 h-24 bg-black/5 rounded-full" />
+                    <div className="relative">
+                      <div className="w-9 h-9 rounded-[12px] bg-black text-white flex items-center justify-center font-bold">✦</div>
+                      <div className="mt-3 font-black text-[13px] tracking-tight">Premium Analytics Live</div>
+                      <div className="text-[11px] mt-1 leading-[1.4] opacity-70">You unlocked everything: no watermark, live views, funnel, top products, device & source tracking. This is what you promised users.</div>
+                      <div className="mt-3 h-8 px-3 rounded-full bg-black text-white text-[11px] font-bold flex items-center w-fit">Watermark OFF • Live ON ✓</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab==='payments' && (
 
         {activeTab==='payments' && (
           <div className="bg-white border rounded-[24px] p-6 md:p-8 overflow-hidden relative">
