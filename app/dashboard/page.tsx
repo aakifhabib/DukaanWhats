@@ -79,6 +79,8 @@ export default function Dashboard() {
   const [copiedTill, setCopiedTill] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [myPayments, setMyPayments] = useState<any[]>([])
+  const [showStatusModal, setShowStatusModal] = useState<null | {type:'approved'|'rejected', payment:any}>(null)
+  const [justSubmitted, setJustSubmitted] = useState<any>(null)
   const router = useRouter()
 
   const plans: PlanDef[] = [
@@ -134,7 +136,30 @@ export default function Dashboard() {
           if (prods) setProducts(prods)
           // Fetch user's payments
           const { data: pays } = await supabase.from('plan_payments').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
-          if (pays) setMyPayments(pays)
+          if (pays) {
+            setMyPayments(pays)
+            // Check if any payment was just approved/rejected since last visit - show popup once
+            const lastSeenId = localStorage.getItem('dw_last_seen_payment')
+            const latest = pays[0]
+            if (latest && latest.id !== lastSeenId) {
+              if (latest.status === 'approved' || latest.status === 'rejected') {
+                setShowStatusModal({ type: latest.status, payment: latest })
+                localStorage.setItem('dw_last_seen_payment', latest.id)
+              } else if (latest.status === 'pending') {
+                // For pending, just mark as seen but don't show modal yet
+                localStorage.setItem('dw_last_seen_payment_pending', latest.id)
+              }
+            } else if (latest && latest.status !== 'pending') {
+              // If latest is approved/rejected and we haven't shown modal for this status change, check status change
+              const lastStatus = localStorage.getItem('dw_last_seen_status_'+latest.id)
+              if (lastStatus !== latest.status && (latest.status === 'approved' || latest.status === 'rejected')) {
+                setShowStatusModal({ type: latest.status, payment: latest })
+                localStorage.setItem('dw_last_seen_status_'+latest.id, latest.status)
+              }
+            }
+            // Store latest status
+            if (latest) localStorage.setItem('dw_last_seen_status_'+latest.id, latest.status)
+          }
         }
       } catch (e: any) { setErrorMsg(e.message) }
       setTimeout(()=>setLoading(false), 700)
@@ -537,22 +562,39 @@ export default function Dashboard() {
 
         {activeTab==='payments' && (
           <div className="bg-white border rounded-[24px] p-6 md:p-8 overflow-hidden relative">
-            {/* User's Pending Payments */}
+            {/* User's Payments - Premium Inline Status */}
             {myPayments.length > 0 && (
-              <div className="mb-6 rounded-[16px] border-2 border-black bg-[#FFFEF5] p-4">
-                <div className="flex items-center gap-2 mb-3"><span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse" /><span className="font-black text-[13px]">Your Payments — Status</span><span className="ml-auto text-[11px] bg-black text-white px-2.5 h-6 rounded-full flex items-center">{myPayments.filter((p:any)=>p.status==='pending').length} pending</span></div>
-                <div className="space-y-2">
+              <div className="mb-6 rounded-[20px] border bg-white p-4 md:p-5">
+                <div className="flex items-center gap-2.5 mb-3">
+                  <div className="w-8 h-8 bg-black text-white rounded-[10px] flex items-center justify-center text-[12px]">₨</div>
+                  <span className="font-black text-[13px] tracking-tight">Your Payments</span>
+                  {myPayments.filter((p:any)=>p.status==='pending').length > 0 && <span className="ml-auto flex items-center gap-1.5 text-[11px] bg-yellow-50 border border-yellow-200 text-yellow-700 px-2.5 h-7 rounded-full font-bold"><span className="w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse" />{myPayments.filter((p:any)=>p.status==='pending').length} Pending</span>}
+                  {myPayments.filter((p:any)=>p.status==='pending').length === 0 && myPayments.filter((p:any)=>p.status==='approved').length > 0 && <span className="ml-auto text-[11px] bg-green-50 border border-green-200 text-green-700 px-2.5 h-7 rounded-full font-bold flex items-center gap-1">✓ Active</span>}
+                </div>
+                <div className="space-y-2.5">
                   {myPayments.slice(0,5).map((p:any)=>(
-                    <div key={p.id} className="flex items-center justify-between gap-2 bg-white border rounded-[12px] p-3">
-                      <div className="flex items-center gap-3">
-                        <span className={`h-6 px-2.5 rounded-full text-[10px] font-black flex items-center ${p.status==='pending'?'bg-yellow-100 text-yellow-700 border border-yellow-200':p.status==='approved'?'bg-green-100 text-green-700 border border-green-200':'bg-red-100 text-red-700 border border-red-200'}`}>{p.status.toUpperCase()}</span>
-                        <span className="text-[12px] font-bold">{p.plan_id.toUpperCase()} • Rs. {p.amount}</span>
-                        <span className="font-mono text-[11px] bg-zinc-50 border px-2 py-0.5 rounded">{p.txn_id}</span>
+                    <div key={p.id} className="group flex items-center justify-between gap-3 bg-[#F8F7F5] border rounded-[14px] p-3.5 hover:bg-white transition-colors">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <span className={`shrink-0 h-7 px-3 rounded-full text-[10px] font-black tracking-widest flex items-center border ${p.status==='pending'?'bg-yellow-100 text-yellow-700 border-yellow-200':p.status==='approved'?'bg-black text-white border-black':'bg-red-50 text-red-600 border-red-200'}`}>{p.status==='pending'?'⏳ PENDING':p.status==='approved'?'✓ APPROVED':'✕ REJECTED'}</span>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2"><span className="text-[13px] font-black">{p.plan_id.toUpperCase()}</span><span className="text-[12px] font-bold text-zinc-600">Rs. {p.amount}</span></div>
+                          <div className="flex items-center gap-2 mt-1"><span className="font-mono text-[11px] bg-white border px-2 py-0.5 rounded-[8px]">{p.txn_id}</span><span className="text-[10px] text-zinc-500 hidden md:inline">{new Date(p.created_at).toLocaleDateString()} • {p.till_id && `Till ${p.till_id}`}</span></div>
+                        </div>
                       </div>
-                      <div className="text-[11px] text-zinc-500">{new Date(p.created_at).toLocaleDateString()} {p.status==='pending' && '• Verifying...'}</div>
+                      <div className="shrink-0 text-right">
+                        {p.status==='pending' && <div className="text-[11px] font-medium text-zinc-500">Verifying...<br/><span className="text-[10px]">~1 hour</span></div>}
+                        {p.status==='approved' && <div className="text-[11px] font-black text-green-600">Active<br/><span className="text-[10px] font-medium text-zinc-500">Unlocked</span></div>}
+                        {p.status==='rejected' && <div className="text-[11px] font-black text-red-600">Rejected<br/><span className="text-[10px] font-medium text-zinc-500">Contact support</span></div>}
+                      </div>
                     </div>
                   ))}
                 </div>
+                {justSubmitted && justSubmitted.status==='pending' && (
+                  <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-[12px] p-3 flex items-start gap-2.5">
+                    <span className="w-6 h-6 bg-yellow-100 border border-yellow-200 rounded-full flex items-center justify-center text-[12px] shrink-0">⏳</span>
+                    <div><div className="text-[12px] font-bold text-yellow-800">Payment submitted — Pending verification</div><div className="text-[11px] text-yellow-700/80 mt-0.5 leading-[1.4]">We are verifying Txn ID <span className="font-mono bg-white px-1 py-0.5 rounded border">{justSubmitted.txn_id}</span> in JazzCash App. You will get WhatsApp notification within 1 hour.</div></div>
+                  </div>
+                )}
               </div>
             )}
             <div className="flex flex-wrap items-start justify-between gap-4">
@@ -600,7 +642,58 @@ export default function Dashboard() {
           </div>
         )}
       </main>
-      {errorMsg && <div className="fixed bottom-4 right-4 bg-red-600 text-white px-4 py-2 rounded-full text-[12px] shadow-lg">{errorMsg}</div>}
+              {errorMsg && <div className="fixed bottom-4 right-4 bg-red-600 text-white px-4 py-2 rounded-full text-[12px] shadow-lg">{errorMsg}</div>}
+
+        {/* Approval / Rejection Popup - Shows on first open after admin action */}
+        {showStatusModal && (
+          <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white rounded-[28px] w-full max-w-[380px] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.3)] animate-[scaleIn_0.4s_cubic-bezier(0.23,1,0.32,1)]">
+              {showStatusModal.type === 'approved' ? (
+                <>
+                  <div className="bg-black text-white p-8 text-center relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-black" />
+                    <div className="relative">
+                      <div className="w-16 h-16 bg-[#E8FF86] rounded-full flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(232,255,134,0.5)]"><span className="text-[28px]">✓</span></div>
+                      <h2 className="font-black text-[22px] mt-4 tracking-tight">Payment Approved!</h2>
+                      <p className="text-[13px] text-white/60 mt-1">Your store is now Premium</p>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <div className="bg-[#F8F7F5] border rounded-[14px] p-4">
+                      <div className="flex justify-between items-center"><span className="text-[11px] text-zinc-500 font-bold tracking-widest uppercase">Plan</span><span className="text-[13px] font-black">{showStatusModal.payment.plan_id.toUpperCase()} • Rs. {showStatusModal.payment.amount}</span></div>
+                      <div className="flex justify-between items-center mt-2"><span className="text-[11px] text-zinc-500 font-bold tracking-widest uppercase">Txn ID</span><span className="font-mono text-[12px] bg-white border px-2 py-1 rounded-[8px]">{showStatusModal.payment.txn_id}</span></div>
+                    </div>
+                    <div className="mt-4 space-y-2 text-[12px]">
+                      <div className="flex items-center gap-2"><span className="w-5 h-5 bg-black text-white rounded-full flex items-center justify-center text-[10px]">✓</span> Unlimited products & images unlocked</div>
+                      <div className="flex items-center gap-2"><span className="w-5 h-5 bg-black text-white rounded-full flex items-center justify-center text-[10px]">✓</span> All 11 themes + No watermark</div>
+                      <div className="flex items-center gap-2"><span className="w-5 h-5 bg-black text-white rounded-full flex items-center justify-center text-[10px]">✓</span> Live analytics enabled</div>
+                    </div>
+                    <button onClick={()=>setShowStatusModal(null)} className="mt-6 w-full h-12 bg-black text-white rounded-full font-bold text-[13px] hover:bg-zinc-900">Continue to Dashboard →</button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="bg-[#FFFBF0] p-8 text-center border-b">
+                    <div className="w-16 h-16 bg-red-50 border border-red-200 rounded-full flex items-center justify-center mx-auto"><span className="text-[24px]">✕</span></div>
+                    <h2 className="font-black text-[20px] mt-4 tracking-tight">Payment Rejected</h2>
+                    <p className="text-[12px] text-zinc-500 mt-1">Please check Txn ID and try again</p>
+                  </div>
+                  <div className="p-6">
+                    <div className="bg-[#F8F7F5] border rounded-[14px] p-4">
+                      <div className="flex justify-between items-center"><span className="text-[11px] text-zinc-500 font-bold tracking-widest uppercase">Plan</span><span className="text-[13px] font-black">{showStatusModal.payment.plan_id.toUpperCase()} • Rs. {showStatusModal.payment.amount}</span></div>
+                      <div className="flex justify-between items-center mt-2"><span className="text-[11px] text-zinc-500 font-bold tracking-widest uppercase">Txn ID</span><span className="font-mono text-[12px] bg-white border px-2 py-1 rounded-[8px]">{showStatusModal.payment.txn_id}</span></div>
+                    </div>
+                    <p className="mt-4 text-[12px] text-zinc-600 leading-[1.5]">Your Txn ID could not be verified in JazzCash Till <b>{TILL_ID}</b>. Please ensure you paid correct amount and Txn ID is correct, then resubmit.</p>
+                    <button onClick={()=>setShowStatusModal(null)} className="mt-6 w-full h-12 bg-black text-white rounded-full font-bold text-[13px]">Try Again →</button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        <style>{`@keyframes scaleIn { from { transform: scale(0.9); opacity: 0 } to { transform: scale(1); opacity: 1 } }`}</style>
+      </div>
     </div>
   )
 }
