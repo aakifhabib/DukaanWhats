@@ -56,7 +56,7 @@ function Gallery({ images, themeId, productId, storeSlug, ownerId, onProductView
   )
 }
 
-function ProductCard({ p, onAdd, onOpen, themeId, storeSlug, ownerId, track }: { p: any; onAdd: (p: any) => void; onOpen: (p: any) => void; themeId: string; storeSlug?: string; ownerId?: string; track: (type: string, productId?: string) => void }) {
+function ProductCard({ p, onAdd, onOpen, themeId, storeSlug, ownerId, track }: { p: any; onAdd: (p: any, qty?: number) => void; onOpen: (p: any) => void; themeId: string; storeSlug?: string; ownerId?: string; track: (type: string, productId?: string) => void }) {
   const theme = getTheme(themeId)
   const images = p.image_urls && p.image_urls.length>0 ? p.image_urls : [p.image_url].filter(Boolean)
   const isDark = ['clothing-street','tech-electro','sleek-dark'].includes(themeId)
@@ -69,7 +69,7 @@ function ProductCard({ p, onAdd, onOpen, themeId, storeSlug, ownerId, track }: {
   const handleAdd = (e: any) => {
     e.stopPropagation()
     track('product_view', p.id)
-    onAdd(p, 1)
+    onAdd(p)
   }
   const handleCardClick = () => {
     onOpen(p)
@@ -155,10 +155,12 @@ export default function StorePage({ params }: { params: Promise<{ slug: string }
     resolveParams().then(load)
   }, [params])
 
-  const addToCart = (p: any, quantity: number = 1, size?: string, color?: string) => { 
+  const addToCart = (p: any, quantity: any = 1, size?: string, color?: string) => {
+    const qtyNum = typeof quantity === 'number' ? quantity : 1
+ 
     track('product_view', p.id)
-    const cartItem = { ...p, cartQty: quantity, selectedSize: size, selectedColor: color }
-    const items = Array(quantity).fill(0).map(()=>cartItem)
+    const cartItem = { ...p, cartQty: qtyNum, selectedSize: size, selectedColor: color }
+    const items = Array(qtyNum).fill(0).map(()=>cartItem)
     setCart([...cart, ...items]); 
     setShowCart(true)
     setSelectedProduct(null)
