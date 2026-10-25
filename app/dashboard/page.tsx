@@ -161,21 +161,19 @@ export default function Dashboard() {
   const productLimit = currentPlanDef.products
   const imageLimit = currentPlanDef.imagesPerProduct
 
-  // --- PREMIUM THEMES MERGED INTO GLASS (USER REQUEST) ---
+  // --- GLASS MERGED: 3 sleek + 3 premium = 6 glass themes ---
   const PREMIUM_NEW_IDS = ['spike-premium','shoe-app-premium','trenzo-luxury']
-  const advancedGlassRaw = getAdvancedThemes() // Sleek Beige, Dark, Editorial (old glass)
-  const premiumNewRaw = getPremiumThemes() // Spike, Shoe App, Trenzo
-  const premiumThemes = [...advancedGlassRaw, ...premiumNewRaw] // ALL GLASS = 3 sleek + 3 new = 6 glass themes
+  const advancedGlassRaw = getAdvancedThemes()
+  const premiumNewRaw = getPremiumThemes()
+  const premiumThemes = [...advancedGlassRaw, ...premiumNewRaw]
   const premiumIds = premiumThemes.map(t=>t.id)
-  
-  // Advanced themes (non-glass)
   const allAdvancedRaw = STORE_THEMES.filter(t => (t.category as string) === 'advanced' && !advancedGlassRaw.map(x=>x.id).includes(t.id))
   const advancedThemesList = allAdvancedRaw.length >= 5 ? allAdvancedRaw.slice(0,8) : [...allAdvancedRaw, ...STORE_THEMES.filter(t=> (t.category as string) === 'clothing' || (t.category as string) === 'tech').slice(0, 8 - allAdvancedRaw.length)]
   const finalAdvancedList = advancedThemesList.length ? advancedThemesList.slice(0,8) : STORE_THEMES.filter(t=>!premiumIds.includes(t.id)).slice(0,8)
   const basicAllowedAdvancedIds = finalAdvancedList.slice(0,3).map(t=>t.id)
 
   const isPremiumTheme = (t: any) => premiumIds.includes(t.id) || PREMIUM_NEW_IDS.includes(t.id) || (t.category as string) === 'premium' || (t as any).tier === 'premium'
-  const isAdvancedTheme = (t: any) => !isPremiumTheme(t) && (finalAdvancedList.some(a=>a.id===t.id) || (t.category as string) === 'advanced')
+  const isAdvancedTheme = (t: any) => !isPremiumTheme(t) && (finalAdvancedList.some((a:any)=>a.id===t.id) || (t.category as string) === 'advanced')
   const isThemeLocked = (t: any) => {
     if (isPremium) return false
     if (isPremiumTheme(t)) return true
@@ -185,6 +183,9 @@ export default function Dashboard() {
     }
     return false
   }
+
+  const GLASS_TILTS = [-12, 9, -10, 11, -8, 13, -14, 7]
+
 
   useEffect(() => {
     const init = async () => {
@@ -394,7 +395,7 @@ export default function Dashboard() {
     <div style={{minHeight:'100vh',background:'#F8F7F5'}} className="text-zinc-900 pb-24 antialiased overflow-x-clip max-w-[100vw]">
       <style>{`
         .no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none} html,body{overflow-x:hidden;max-width:100vw} *{box-sizing:border-box;min-width:0}
-        .glass-container { position: relative; display: flex; justify-content: flex-start; align-items: center; min-height: 420px; padding: 40px 24px 60px 40px; gap: 0; overflow-x: auto; overflow-y: visible; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; } .glass-container::-webkit-scrollbar{height:6px} .glass-container::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.12);border-radius:999px} .glass-container::-webkit-scrollbar-track{background:transparent} @media (max-width: 768px){ .glass-container { justify-content: flex-start; overflow-x: auto; padding: 20px 16px 40px 16px; min-height: 360px; } }
+        .glass-container { position: relative; display: flex; justify-content: flex-start; align-items: center; min-height: 420px; padding: 40px 24px 60px 40px; gap: 0; overflow-x: auto; overflow-y: visible; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; } .glass-container::-webkit-scrollbar{height:6px} .glass-container::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.12);border-radius:999px} @media (max-width: 768px){ .glass-container { padding: 20px 16px 40px 16px; min-height: 360px; } }
         .glass-container .glass { position: relative; width: 280px; height: 360px; flex-shrink: 0; background: rgba(255,255,255,0.85); border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 20px 50px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,1) inset; display: flex; justify-content: flex-start; align-items: center; flex-direction: column; transition: all 0.6s cubic-bezier(0.23,1,0.32,1); border-radius: 24px; margin: 0 -40px; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); transform: rotate(calc(var(--r) * 1deg)) translateY(0); cursor: pointer; overflow: hidden; }
         .glass-container .glass:hover { transform: rotate(0deg) translateY(-14px) scale(1.06); margin: 0 24px; box-shadow: 0 32px 80px rgba(0,0,0,0.14), 0 0 0 1px rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.12); z-index: 10; background: #fff; }
         .glass-container .glass::before { content: attr(data-text); position: absolute; bottom: 0; width: 100%; height: 52px; background: #fff; border-top: 1px solid rgba(0,0,0,0.06); display: flex; justify-content: center; align-items: center; color: #0A0A0A; font-size: 12px; font-weight: 700; letter-spacing: -0.01em; }
@@ -501,10 +502,10 @@ export default function Dashboard() {
                 <span className="bg-white border text-[11px] px-3 py-1.5 rounded-full font-medium">{currentPlanId==='premium'?'All 3 Premium Unlocked ✓':`Locked for ${currentPlanId.toUpperCase()} — Need Premium Rs. 2999/mo`}</span>
               </div>
               <div className="bg-[#F8F7F5] relative">
-                <div className="absolute top-4 right-6 hidden md:flex items-center gap-2 text-[10px] mono text-black/30"><span>← Scroll to see all {premiumThemes.length} Glass →</span><span className="w-12 h-[2px] bg-black/10 rounded-full relative overflow-hidden"><span className="absolute inset-y-0 left-0 w-1/2 bg-black/30 animate-[shine_1.5s_linear_infinite]"/></span></div>
+                <div className="absolute top-3 right-5 hidden md:flex items-center gap-2 text-[10px] mono text-black/30"><span>← Scroll to see all {premiumThemes.length} Glass →</span></div>
                 <div className="glass-container">
                   {premiumThemes.map((t,i)=>{
-                    const tilts=[-12,9,-10,11,-8,13,-14,7]; const r= isActive ? 0 : (tilts[i % tilts.length]); 
+                    const r = isActive ? 0 : (GLASS_TILTS[i % GLASS_TILTS.length]); 
                     const isActive=theme===t.id; 
                     const locked=isThemeLocked(t); 
                     return (
@@ -566,17 +567,10 @@ export default function Dashboard() {
           </div>
         )}
 
-
-      {/* PREMIUM THEME EDITOR - USERS CAN EDIT PREMIUM THEMES */}
-      {activeTab==='themes' && profile && (
-        <PremiumThemeEditor 
-          profile={{...profile, premium_custom: premiumCustom}} 
-          onSave={(data:any)=>{ setPremiumCustom(data); setProfile({...profile, premium_custom: data} as any) }} 
-        />
-      )}
-
+        {activeTab==='themes' && profile && (
+          <PremiumThemeEditor profile={{...profile, premium_custom: premiumCustom}} onSave={(d:any)=>{ setPremiumCustom(d); setProfile({...profile, premium_custom: d} as any) }} />
+        )}
         {activeTab==='products' && (
-
           <div className="space-y-4">
             <div className="bg-white border rounded-[20px] p-5 md:p-6">
               <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
