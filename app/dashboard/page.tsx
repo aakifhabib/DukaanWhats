@@ -6,7 +6,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { STORE_THEMES, getTheme, ThemeCategory, getAdvancedThemes, getPremiumThemes, getStandardThemes } from '@/lib/storeThemes'
 import { DukaanWhatsLoader } from '@/components/DukaanWhatsLoader'
-import { PremiumThemeEditor } from '@/components/PremiumThemeEditor'
+import dynamic from 'next/dynamic'
+const PremiumThemeEditor = dynamic(() => import('@/components/PremiumThemeEditor').then(m=>m.PremiumThemeEditor ? m : {default: () => null}).catch(()=>({default: () => null})), { ssr: false }) as any
 
 // --- CUSTOM PREMIUM ICONS ---
 const UploadIcon = ({ className = "w-12 h-12" }: { className?: string }) => (
@@ -150,8 +151,8 @@ export default function Dashboard() {
 
   const plans: PlanDef[] = [
     { id: 'basic', name: 'Basic', monthly: 0, yearlyMonthly: 0, yearlyTotal: 0, products: 5, imagesPerProduct: 1, advancedAllowed: 3, premiumAllowed: 0, stores: 1, features: ['5 Products', '1 Image / product', '3 Advanced Themes', '0 Premium (Glass)', 'COD Only', 'Watermark'] },
-    { id: 'advanced', name: 'Advanced', monthly: 899, yearlyMonthly: 699, yearlyTotal: 8388, products: 25, imagesPerProduct: 5, advancedAllowed: 8, premiumAllowed: 0, stores: 3, features: ['25 Products', '5 Images / product', 'All 8 Advanced Themes', '0 Premium Glass (locked)', 'Orders Dashboard'] },
-    { id: 'premium', name: 'Premium', monthly: 2999, yearlyMonthly: 2499, yearlyTotal: 29988, products: 999999, imagesPerProduct: 999999, advancedAllowed: 'all', premiumAllowed: 'all', stores: 999999, features: ['Unlimited Products', 'Unlimited Images', 'Every Theme (8 Advanced + 3 Premium)', 'No Watermark', 'Live Analytics'] },
+    { id: 'advanced', name: 'Advanced', monthly: 899, yearlyMonthly: 699, yearlyTotal: 8388, products: 25, imagesPerProduct: 5, advancedAllowed: 8, premiumAllowed: 0, stores: 3, features: ['25 Products', '5 Images / product', 'All 8 Standard Themes', '0 Glass Collection (locked)', 'Orders Dashboard'] },
+    { id: 'premium', name: 'Premium', monthly: 2999, yearlyMonthly: 2499, yearlyTotal: 29988, products: 999999, imagesPerProduct: 999999, advancedAllowed: 'all', premiumAllowed: 'all', stores: 999999, features: ['Unlimited Products', 'Unlimited Images', 'Every Theme (8 Standard + 10 Glass Collection)', 'No Watermark', 'Live Analytics'] },
   ]
 
   const currentPlanId = (profile?.current_plan || 'basic') as 'basic'|'advanced'|'premium'
@@ -161,15 +162,11 @@ export default function Dashboard() {
   const productLimit = currentPlanDef.products
   const imageLimit = currentPlanDef.imagesPerProduct
 
-  // --- GLASS MERGED: 3 sleek + 3 premium = 6 glass themes ---
-  const PREMIUM_NEW_IDS = ['spike-premium','shoe-app-premium','trenzo-luxury']
-  const advancedGlassRaw = getAdvancedThemes()
-  const premiumNewRaw = getPremiumThemes()
-  const premiumThemes = [...advancedGlassRaw, ...premiumNewRaw]
+  // --- GLASS: 10 themes (3 sleek + 7 new premium) ALL IN GLASS COLLECTION ---
+  const PREMIUM_NEW_IDS = ['jordan-jumpman','ecom-green','car-rental','plantify','slick-sole','dangila','yellow-minimal','spike-premium','shoe-app-premium','trenzo-luxury']
+  const premiumThemes = getAdvancedThemes() // 10 glass themes
   const premiumIds = premiumThemes.map(t=>t.id)
-  const allAdvancedRaw = STORE_THEMES.filter(t => (t.category as string) === 'advanced' && !advancedGlassRaw.map(x=>x.id).includes(t.id))
-  const advancedThemesList = allAdvancedRaw.length >= 5 ? allAdvancedRaw.slice(0,8) : [...allAdvancedRaw, ...STORE_THEMES.filter(t=> (t.category as string) === 'clothing' || (t.category as string) === 'tech').slice(0, 8 - allAdvancedRaw.length)]
-  const finalAdvancedList = advancedThemesList.length ? advancedThemesList.slice(0,8) : STORE_THEMES.filter(t=>!premiumIds.includes(t.id)).slice(0,8)
+  const finalAdvancedList = STORE_THEMES.filter(t=>t.tier==='standard').slice(0,8) // 8 standard free themes
   const basicAllowedAdvancedIds = finalAdvancedList.slice(0,3).map(t=>t.id)
 
   const isPremiumTheme = (t: any) => premiumIds.includes(t.id) || PREMIUM_NEW_IDS.includes(t.id) || (t.category as string) === 'premium' || (t as any).tier === 'premium'
@@ -184,7 +181,7 @@ export default function Dashboard() {
     return false
   }
 
-  const GLASS_TILTS = [-12, 9, -10, 11, -8, 13, -14, 7]
+  const GLASS_TILTS = [-12, 9, -10, 11, -8, 13, -14, 7, -11, 10, 12, -9] // 10 varied tilts for glass
 
 
   useEffect(() => {
@@ -242,7 +239,7 @@ export default function Dashboard() {
   const handleThemeClick = (t: any) => {
     if (isThemeLocked(t)) {
       if (isPremiumTheme(t)) {
-        alert(`🔒 Premium Glass Locked\nBasic: 0/3 Premium\nAdvanced: 0/3 Premium\nNeed Premium — Till ${TILL_ID} Rs. 2999/mo\n\nThis glass animation theme is Premium only.`)
+        alert(`🔒 Premium Glass Locked\nBasic: 0/10 Glass\nAdvanced: 0/10 Glass\nNeed Premium — Till ${TILL_ID} Rs. 2999/mo\n\nThis glass animation theme is Premium only.`)
         setActiveTab('payments'); return
       }
       alert(`🔒 Advanced Theme Locked\nBasic allows 3/8 Advanced\nThis theme needs Advanced — Till ${TILL_ID} Rs. 899/mo\n\nUpgrade to unlock all 8 Advanced themes.`)
@@ -498,8 +495,8 @@ export default function Dashboard() {
 
             <div className="mt-10 rounded-[24px] border-2 border-black overflow-hidden bg-white">
               <div className="p-6 md:p-7 border-b bg-[#F8F7F5] flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-3"><span className="bg-black text-white text-[10px] font-bold px-3 py-1.5 rounded-full tracking-widest">3 PREMIUM THEMES</span><span className="font-bold text-[14px] tracking-tight">Glass Collection — Premium Only</span></div>
-                <span className="bg-white border text-[11px] px-3 py-1.5 rounded-full font-medium">{currentPlanId==='premium'?'All 3 Premium Unlocked ✓':`Locked for ${currentPlanId.toUpperCase()} — Need Premium Rs. 2999/mo`}</span>
+                <div className="flex items-center gap-3"><span className="bg-black text-white text-[10px] font-bold px-3 py-1.5 rounded-full tracking-widest">10 GLASS THEMES</span><span className="font-bold text-[14px] tracking-tight">Glass Collection — Premium Only (3 sleek + 7 new premium)</span></div>
+                <span className="bg-white border text-[11px] px-3 py-1.5 rounded-full font-medium">{currentPlanId==='premium'?'All 10 Glass Unlocked ✓':`Locked for ${currentPlanId.toUpperCase()} — Need Premium Rs. 2999/mo`}</span>
               </div>
               <div className="bg-[#F8F7F5] relative">
                 <div className="absolute top-3 right-5 hidden md:flex items-center gap-2 text-[10px] mono text-black/30"><span>← Scroll to see all {premiumThemes.length} Glass →</span></div>
@@ -526,7 +523,7 @@ export default function Dashboard() {
                           <div className="glass-lock-overlay">
                             <GlassPremiumLock size={56} />
                             <div className="text-black text-[12px] font-black tracking-widest mt-1">PREMIUM LOCKED</div>
-                            <div className="text-zinc-500 text-[10px] text-center leading-[1.4] font-medium">Basic: 0/3 • Advanced: 0/3<br/>Need Premium Rs. 2999/mo</div>
+                            <div className="text-zinc-500 text-[10px] text-center leading-[1.4] font-medium">Basic: 0/10 • Advanced: 0/10<br/>Need Premium Rs. 2999/mo</div>
                             <div className="mt-2 bg-black text-white text-[10px] font-bold px-4 h-8 rounded-full flex items-center shadow-[0_8px_20px_rgba(0,0,0,0.2)]">UPGRADE → PREMIUM</div>
                           </div>
                         )}
