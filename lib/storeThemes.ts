@@ -1,192 +1,213 @@
-export type ThemeCategory = 'standard' | 'premium' | 'advanced';
+export type ThemeCategory = 'standard' | 'advanced' | 'premium' | 'basic';
 export type ThemeLang = 'EN' | 'UR';
-export type ThemeId = 
-  // 8 Standard: 3 Urdu + 5 English
-  | 'urdu-bazaar' | 'urdu-boutique' | 'urdu-super'
-  | 'std-clean' | 'std-grid' | 'std-market' | 'std-bold' | 'std-classic'
-  // 5 Premium: 3 existing updated to English + 2 new from your designs
-  | 'premium-bazaar' | 'premium-minimal' | 'premium-pro' | 'premium-spike' | 'premium-trenzo' | 'premium-minimal-app';
 
-export interface ThemeConfig {
-  id: ThemeId;
+export interface ThemeDef {
+  id: string;
   name: string;
   nameUrdu?: string;
   category: ThemeCategory;
   lang: ThemeLang;
   price: string;
   description: string;
-  previewColor: string;
-  isPremium: boolean;
-  features: string[];
+  isPremium?: boolean;
+  colors: { accent: string; bg: string; text: string; card: string };
+  badge: string;
+  preview: string;
+  features?: string[];
 }
 
-export const storeThemes: Record<ThemeId, ThemeConfig> = {
-  // STANDARD - URDU (3)
-  'urdu-bazaar': {
+export const STORE_THEMES: ThemeDef[] = [
+  // ===== 8 STANDARD THEMES: 3 URDU + 5 ENGLISH =====
+  // URDU STANDARD (3) - category advanced to show in 8 advanced slot
+  {
     id: 'urdu-bazaar',
     name: 'Urdu Bazaar',
     nameUrdu: 'اردو بازار',
-    category: 'standard',
+    category: 'advanced',
     lang: 'UR',
     price: 'Free',
-    description: 'Daraz style with Urdu labels - نیا کلیکشن، کارٹ',
-    previewColor: '#00B050',
-    isPremium: false,
-    features: ['Urdu labels', 'COD', '2-col grid']
+    description: 'داراز طرز - اردو لیبلز کے ساتھ',
+    colors: { accent: '#00B050', bg: '#F8F7F5', text: '#111', card: '#FFFFFF' },
+    badge: 'اردو',
+    preview: '#00B050',
+    features: ['Urdu labels', 'COD', 'Bazaar']
   },
-  'urdu-boutique': {
+  {
     id: 'urdu-boutique',
     name: 'Urdu Boutique',
     nameUrdu: 'اردو بوتیک',
-    category: 'standard',
+    category: 'advanced',
     lang: 'UR',
     price: 'Free',
-    description: 'خواتین کلیکشن - Elegant boutique Urdu',
-    previewColor: '#E91E63',
-    isPremium: false,
-    features: ['Urdu headings', 'Elegant', 'Lookbook']
+    description: 'خواتین کلیکشن - خوبصورت بوتیک',
+    colors: { accent: '#E91E63', bg: '#FFF5F7', text: '#111', card: '#FFFFFF' },
+    badge: 'بوتیک',
+    preview: '#E91E63',
+    features: ['Urdu boutique', 'Elegant']
   },
-  'urdu-super': {
+  {
     id: 'urdu-super',
     name: 'Urdu Super',
     nameUrdu: 'اردو سپر',
-    category: 'standard',
+    category: 'advanced',
     lang: 'UR',
     price: 'Free',
-    description: 'Supermarket style Urdu - everyday bazaar',
-    previewColor: '#FF9800',
-    isPremium: false,
-    features: ['Grocery style', 'Urdu categories', 'Fast']
+    description: 'سپر سٹور - روزانہ بازار',
+    colors: { accent: '#FF9800', bg: '#FFF8F0', text: '#111', card: '#FFFFFF' },
+    badge: 'سپر',
+    preview: '#FF9800',
+    features: ['Super Urdu', 'Fast']
   },
-  // STANDARD - ENGLISH (5)
-  'std-clean': {
-    id: 'std-clean',
-    name: 'Clean',
-    category: 'standard',
+  // ENGLISH STANDARD (5) - makes total 8 advanced
+  {
+    id: 'clothing-noor',
+    name: 'Noor - Clean',
+    category: 'advanced',
     lang: 'EN',
     price: 'Free',
-    description: 'Shopify clean - minimal white, big whitespace',
-    previewColor: '#FFFFFF',
-    isPremium: false,
-    features: ['Minimal', 'Whitespace', 'Shopify style']
+    description: 'Shopify clean minimal - white space',
+    colors: { accent: '#111111', bg: '#FAFAF8', text: '#111', card: '#FFFFFF' },
+    badge: 'CLEAN',
+    preview: '#111111',
+    features: ['Minimal', 'Clean']
   },
-  'std-grid': {
+  {
     id: 'std-grid',
     name: 'Grid',
-    category: 'standard',
+    category: 'advanced',
     lang: 'EN',
     price: 'Free',
-    description: 'Instagram shop 2-col grid, quick add',
-    previewColor: '#F5F5F5',
-    isPremium: false,
-    features: ['2-col grid', 'Quick add', 'Instagram']
+    description: 'Instagram 2-col grid',
+    colors: { accent: '#00B050', bg: '#F5F5F5', text: '#111', card: '#FFFFFF' },
+    badge: 'GRID',
+    preview: '#F5F5F5',
+    features: ['2-col', 'Instagram']
   },
-  'std-market': {
+  {
     id: 'std-market',
     name: 'Market',
-    category: 'standard',
+    category: 'advanced',
     lang: 'EN',
     price: 'Free',
-    description: 'Etsy marketplace with ratings & reviews',
-    previewColor: '#8B5CF6',
-    isPremium: false,
-    features: ['Ratings', 'Reviews', 'Marketplace']
+    description: 'Etsy marketplace with ratings',
+    colors: { accent: '#8B5CF6', bg: '#F8F5FF', text: '#111', card: '#FFFFFF' },
+    badge: 'MARKET',
+    preview: '#8B5CF6',
+    features: ['Ratings', 'Market']
   },
-  'std-bold': {
-    id: 'std-bold',
-    name: 'Bold',
-    category: 'standard',
+  {
+    id: 'clothing-street',
+    name: 'Bold Street',
+    category: 'advanced',
     lang: 'EN',
     price: 'Free',
-    description: 'Streetwear - bold typography, black & neon',
-    previewColor: '#111111',
-    isPremium: false,
-    features: ['Bold type', 'Streetwear', 'Black']
+    description: 'Streetwear bold - black & neon',
+    colors: { accent: '#CCFF00', bg: '#0A0A0A', text: '#FFF', card: '#181818' },
+    badge: 'BOLD',
+    preview: '#0A0A0A',
+    features: ['Bold', 'Streetwear']
   },
-  'std-classic': {
+  {
     id: 'std-classic',
     name: 'Classic',
-    category: 'standard',
+    category: 'advanced',
     lang: 'EN',
     price: 'Free',
-    description: 'Traditional header/footer ecom',
-    previewColor: '#3B82F6',
-    isPremium: false,
-    features: ['Header nav', 'Footer', 'Classic']
+    description: 'Classic header/footer',
+    colors: { accent: '#3B82F6', bg: '#FFFFFF', text: '#111', card: '#FFFFFF' },
+    badge: 'CLASSIC',
+    preview: '#3B82F6',
+    features: ['Header', 'Footer']
   },
-  // PREMIUM - 3 EXISTING UPDATED TO ENGLISH (kept as-is but polished)
-  'premium-bazaar': {
-    id: 'premium-bazaar',
-    name: 'Bazaar Pro',
+
+  // ===== 5 PREMIUM THEMES: 3 EXISTING UPDATED TO ENGLISH + 2 NEW SLEEK (actually 3 new from your refs = 6 total) =====
+  // Keep your existing 3 premium - updated to English sleek
+  {
+    id: 'sleek-dark',
+    name: 'Sleek Dark',
     category: 'premium',
     lang: 'EN',
     price: 'Rs.999/mo',
-    description: 'Premium Daraz with animations, stock bars, trust badges',
-    previewColor: '#00B050',
+    description: 'Premium dark luxury - updated English',
     isPremium: true,
-    features: ['Animations', 'Stock bars', 'Trust badges', 'Fast delivery']
+    colors: { accent: '#FFFFFF', bg: '#0A0A0A', text: '#FFF', card: '#181818' },
+    badge: 'PREMIUM',
+    preview: '#0A0A0A',
+    features: ['Dark luxury', 'Glass', 'Premium']
   },
-  'premium-minimal': {
-    id: 'premium-minimal',
-    name: 'Minimal Pro',
+  {
+    id: 'sleek-beige',
+    name: 'Sleek Beige',
     category: 'premium',
     lang: 'EN',
     price: 'Rs.999/mo',
-    description: 'Premium boutique lookbook - luxury editorial',
-    previewColor: '#FAFAF8',
+    description: 'Premium beige minimal - updated English',
     isPremium: true,
-    features: ['Lookbook', 'Editorial', 'Luxury']
+    colors: { accent: '#111111', bg: '#F8F6F1', text: '#111', card: '#FFFFFF' },
+    badge: 'BEIGE',
+    preview: '#F8F6F1',
+    features: ['Beige', 'Minimal', 'Premium']
   },
-  'premium-pro': {
-    id: 'premium-pro',
-    name: 'Superstore Pro',
+  {
+    id: 'sleek-editorial',
+    name: 'Sleek Editorial',
     category: 'premium',
     lang: 'EN',
     price: 'Rs.999/mo',
-    description: 'Sidebar filters + verified badges + mega menu',
-    previewColor: '#18181B',
+    description: 'Premium editorial - updated English',
     isPremium: true,
-    features: ['Filters', 'Verified', 'Mega menu']
+    colors: { accent: '#111111', bg: '#FFFFFF', text: '#111', card: '#FFFFFF' },
+    badge: 'EDITORIAL',
+    preview: '#111111',
+    features: ['Editorial', 'Serif']
   },
-  // PREMIUM - 2 NEW SLEEK DESIGNS FROM YOUR REFERENCES
-  'premium-spike': {
+  // ===== 3 NEW PREMIUM SLEEK FROM YOUR 3 REFERENCE IMAGES =====
+  {
     id: 'premium-spike',
     name: 'Spike Editorial',
-    category: 'advanced',
+    category: 'premium',
     lang: 'EN',
     price: 'Rs.1999/mo',
-    description: 'NEW - Bold editorial like your SPIKE ref - curved LAWN text, Top Brands, Collections grid, parallax',
-    previewColor: '#000000',
+    description: 'NEW - SPIKE ref copy - bold editorial, curved LAWN text, Top Brands, Collections grid, parallax animations',
     isPremium: true,
-    features: ['Curved text', 'Parallax', 'Editorial', 'Brand row', 'Collections']
+    colors: { accent: '#000000', bg: '#FFFFFF', text: '#000', card: '#FFFFFF' },
+    badge: 'SPIKE',
+    preview: '#000000',
+    features: ['Curved text LAWN', 'Parallax', 'Top Brands', 'Collections', 'Animations']
   },
-  'premium-trenzo': {
+  {
     id: 'premium-trenzo',
     name: 'Trenzo Luxe',
-    category: 'advanced',
+    category: 'premium',
     lang: 'EN',
     price: 'Rs.1999/mo',
-    description: 'NEW - Luxury black like your TRENZO ref - oval image, floating reviews, brand marquee',
-    previewColor: '#0A0A0A',
+    description: 'NEW - TRENZO ref copy - black luxury, oval capsule image, floating review cards, brand marquee',
     isPremium: true,
-    features: ['Black luxury', 'Oval image', 'Floating reviews', 'Brand marquee', 'Gold accents']
+    colors: { accent: '#D4AF37', bg: '#0A0A0A', text: '#FFF', card: '#181818' },
+    badge: 'LUXE',
+    preview: '#0A0A0A',
+    features: ['Black luxury', 'Oval image', 'Floating reviews', 'Marquee', 'Gold']
   },
-  'premium-minimal-app': {
+  {
     id: 'premium-minimal-app',
     name: 'Minimal App',
-    category: 'advanced',
+    category: 'premium',
     lang: 'EN',
     price: 'Rs.1999/mo',
-    description: 'NEW - Mobile app like your shoe app ref - color dots, size, BLACK FRIDAY banner, pastel cards',
-    previewColor: '#7C3AED',
+    description: 'NEW - Shoe app ref copy - vertical color dots, size selector, EID SALE banner, pastel cards, 3-screen app UI',
     isPremium: true,
-    features: ['App UI', 'Color swatches', 'Size selector', 'Pastel cards', 'EID SALE banner']
+    colors: { accent: '#7C3AED', bg: '#E9E7FF', text: '#111', card: '#FFFFFF' },
+    badge: 'APP',
+    preview: '#7C3AED',
+    features: ['App UI', 'Color dots', 'Size selector', 'Pastel cards', 'EID banner']
   }
-};
+];
 
-export const getThemesByCategory = (cat: ThemeCategory) => Object.values(storeThemes).filter(t => t.category === cat);
-export const getThemesByLang = (lang: ThemeLang) => Object.values(storeThemes).filter(t => t.lang === lang);
-export const getStandardThemes = () => Object.values(storeThemes).filter(t => t.category === 'standard');
-export const getPremiumThemes = () => Object.values(storeThemes).filter(t => t.isPremium);
-export const getUrduThemes = () => getThemesByLang('UR');
-export const getEnglishThemes = () => getThemesByLang('EN');
+export const getTheme = (id: string) => STORE_THEMES.find(t => t.id === id) || STORE_THEMES[0];
+export const getAdvancedThemes = () => STORE_THEMES.filter(t => t.category === 'premium' || t.isPremium);
+export const getStandardThemes = () => STORE_THEMES.filter(t => !t.isPremium && t.category !== 'premium');
+export const getUrduThemes = () => STORE_THEMES.filter(t => t.lang === 'UR');
+export const getEnglishThemes = () => STORE_THEMES.filter(t => t.lang === 'EN');
+
+// Legacy exports for compatibility
+export const storeThemes = STORE_THEMES.reduce((acc, t) => ({ ...acc, [t.id]: t }), {} as any);
