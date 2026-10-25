@@ -472,7 +472,7 @@ export default function Dashboard() {
                 <button key={t.id} onClick={()=>handleThemeClick(t)} className={`adv-card ${isActive?'selected':''}`}>
                   {isActive && <span className="absolute top-3 right-3 w-6 h-6 bg-black text-white rounded-full flex items-center justify-center text-[11px] font-bold">✓</span>}
                   <div className="flex items-center gap-3 w-full">
-                    <div className="w-10 h-10 rounded-[10px] flex items-center justify-center text-[16px] shrink-0" style={{background:t.colors?.bg || '#F4F4F5'}}>{t.badge || '◧'}</div>
+                    <div className="w-10 h-10 rounded-[10px] flex items-center justify-center text-[16px] shrink-0" style={{background:t.colors?.bg || '#F4F4F5'}}>{t.name?.[0] || '◧'}</div>
                     <div className="min-w-0 flex-1"><div className="text-[13px] font-bold truncate tracking-tight">{t.name}</div><div className="text-[10px] text-zinc-500 uppercase tracking-widest font-medium mt-0.5">ADVANCED</div></div>
                   </div>
                   <div className="mt-4 w-full h-[88px] rounded-[12px] bg-[#F8F7F5] border border-zinc-100 p-2 flex gap-2">
@@ -490,7 +490,7 @@ export default function Dashboard() {
               {filteredStandard.slice(0,6).map(t => { const isActive = theme===t.id; return (
                 <button key={t.id} onClick={()=>handleThemeClick(t)} className={`adv-card ${isActive?'selected':''} !h-[200px]`}>
                   {isActive && <span className="absolute top-3 right-3 w-6 h-6 bg-black text-white rounded-full flex items-center justify-center text-[11px] font-bold">✓</span>}
-                  <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-[10px] bg-zinc-100 flex items-center justify-center text-[16px]">{t.badge || '◧'}</div><div><div className="text-[13px] font-bold">{t.name}</div><div className="text-[10px] text-zinc-500 uppercase tracking-widest">{t.category}</div></div></div>
+                  <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-[10px] bg-zinc-100 flex items-center justify-center text-[16px]">{t.name?.[0] || '◧'}</div><div><div className="text-[13px] font-bold">{t.name}</div><div className="text-[10px] text-zinc-500 uppercase tracking-widest">{t.category}</div></div></div>
                   <div className="mt-4 w-full h-[68px] rounded-[12px] bg-[#F8F7F5] border" />
                 </button>
               )})}
