@@ -7,9 +7,19 @@ type Product = { id: string; name: string; price: number; image_url: string; ima
 
 function Gallery({ images, themeId, productId, storeSlug, ownerId, onProductView }: { images: string[]; themeId: string; productId?: string; storeSlug?: string; ownerId?: string; onProductView?: (id: string) => void }) {
   const [idx, setIdx] = useState(0)
+  const [isHovering, setIsHovering] = useState(false)
   const safe = Math.min(idx, images.length - 1)
   const isEditorial = themeId === 'sleek-editorial'
   const isDark = ['clothing-street','tech-electro','sleek-dark'].includes(themeId)
+
+  // Premium hover: auto slide one by one when hovering
+  useEffect(() => {
+    if (!isHovering || images.length <= 1) return
+    const interval = setInterval(() => {
+      setIdx(prev => (prev + 1) % images.length)
+    }, 650)
+    return () => clearInterval(interval)
+  }, [isHovering, images.length])
   
   useEffect(() => {
     if (productId && storeSlug && onProductView) {
@@ -18,20 +28,28 @@ function Gallery({ images, themeId, productId, storeSlug, ownerId, onProductView
   }, [safe])
 
   return (
-    <div className="relative">
-      <div className={`overflow-hidden ${isEditorial ? 'rounded-[16px] aspect-[3/4]' : 'rounded-[12px] h-48'} bg-zinc-50`}>
-        <img src={images[safe]} className="w-full h-full object-cover" alt="" />
+    <div className="relative group/gallery" onMouseEnter={()=>setIsHovering(true)} onMouseLeave={()=>{setIsHovering(false);}}>
+      <div className={`overflow-hidden ${isEditorial ? 'rounded-[16px] aspect-[3/4]' : 'rounded-[14px] h-52'} bg-zinc-50 relative`}>
+        <img src={images[safe]} className="w-full h-full object-cover transition-transform duration-700 group-hover/gallery:scale-[1.03]" alt="" />
+        {images.length > 1 && isHovering && (
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
+        )}
       </div>
       {images.length > 1 && !isEditorial && (
         <>
-          <button onClick={() => setIdx((safe - 1 + images.length) % images.length)} style={{borderRadius:999}} className={`absolute top-1/2 -translate-y-1/2 left-2 w-7 h-7 flex items-center justify-center text-[14px] shadow border ${isDark ? 'bg-[#222] text-white border-white/10' : 'bg-white/90 text-black border-zinc-200'}`}>‹</button>
-          <button onClick={() => setIdx((safe + 1) % images.length)} style={{borderRadius:999}} className={`absolute top-1/2 -translate-y-1/2 right-2 w-7 h-7 flex items-center justify-center text-[14px] shadow border ${isDark ? 'bg-[#222] text-white border-white/10' : 'bg-white/90 text-black border-zinc-200'}`}>›</button>
-          <span style={{borderRadius:999}} className="absolute top-2 left-2 bg-black/70 text-white text-[10px] px-2 py-0.5 font-medium">{safe+1}/{images.length}</span>
+          <button onClick={() => setIdx((safe - 1 + images.length) % images.length)} style={{borderRadius:999}} className={`absolute top-1/2 -translate-y-1/2 left-2 w-8 h-8 flex items-center justify-center text-[16px] shadow-lg border backdrop-blur-md transition-all ${isDark ? 'bg-[#222]/90 text-white border-white/10' : 'bg-white/90 text-black border-zinc-200'} opacity-0 group-hover/gallery:opacity-100`}>‹</button>
+          <button onClick={() => setIdx((safe + 1) % images.length)} style={{borderRadius:999}} className={`absolute top-1/2 -translate-y-1/2 right-2 w-8 h-8 flex items-center justify-center text-[16px] shadow-lg border backdrop-blur-md transition-all ${isDark ? 'bg-[#222]/90 text-white border-white/10' : 'bg-white/90 text-black border-zinc-200'} opacity-0 group-hover/gallery:opacity-100`}>›</button>
+          <span style={{borderRadius:999}} className="absolute top-2.5 left-2.5 bg-black/75 backdrop-blur-md text-white text-[10px] px-2.5 py-1 font-bold tracking-widest flex items-center gap-1.5">
+            {safe+1}/{images.length} {isHovering && <span className="w-1 h-1 bg-[#E8FF86] rounded-full animate-pulse" />}
+          </span>
+          <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1.5 rounded-full">
+            {images.map((_,i)=><div key={i} className={`h-1 rounded-full transition-all duration-500 ${i===safe ? 'w-5 bg-white' : 'w-1.5 bg-white/40'}`} />)}
+          </div>
         </>
       )}
       {images.length > 1 && (
-        <div className={`flex gap-1.5 mt-2 overflow-x-auto pb-1 ${isEditorial ? 'justify-center' : ''}`}>
-          {images.map((u,i)=><button key={i} onClick={()=>setIdx(i)} style={{borderRadius: isEditorial ? 6 : 10}} className={`${isEditorial ? 'w-8 h-10' : 'w-11 h-11'} overflow-hidden border-2 flex-shrink-0 ${i===safe ? 'border-black' : 'border-zinc-200'}`}><img src={u} className="w-full h-full object-cover" alt="" /></button>)}
+        <div className={`flex gap-1.5 mt-3 overflow-x-auto pb-1 scrollbar-hide ${isEditorial ? 'justify-center' : ''}`}>
+          {images.map((u,i)=><button key={i} onClick={()=>setIdx(i)} style={{borderRadius: isEditorial ? 6 : 10}} className={`${isEditorial ? 'w-9 h-11' : 'w-12 h-12'} overflow-hidden border-2 flex-shrink-0 transition-all ${i===safe ? 'border-black scale-105' : 'border-zinc-200 opacity-70 hover:opacity-100'}`}><img src={u} className="w-full h-full object-cover" alt="" /></button>)}
         </div>
       )}
     </div>
