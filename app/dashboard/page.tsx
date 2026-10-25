@@ -402,7 +402,7 @@ export default function Dashboard() {
               <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <h2 className="font-bold text-[15px] tracking-tight">Add Product — {products.length}/{productLimit===999999?'∞':productLimit} • Limit {productLimit===999999?'∞':productLimit}</h2>
                 <div className="flex items-center gap-2">
-                  <span className={`px-2.5 h-6 rounded-full text-[10px] font-bold flex items-center ${products.length>=productLimit?'bg-red-500 text-white':productLimit===999999?'bg-[#E8FF86] text-black':'bg-black text-white'}`}>{products.length>=productLimit?'LIMIT REACHED':`${productLimit===999999?'∞':productLimit-product.length} left`}</span>
+                  <span className={`px-2.5 h-6 rounded-full text-[10px] font-bold flex items-center ${products.length>=productLimit?'bg-red-500 text-white':productLimit===999999?'bg-[#E8FF86] text-black':'bg-black text-white'}`}>{products.length>=productLimit?'LIMIT REACHED':`${productLimit===999999?'∞':productLimit-products.length} left`}</span>
                   <CurrentPlanButton />
                 </div>
               </div>
