@@ -8,7 +8,6 @@ type Product = { id: string; name: string; price: number; image_url: string; ima
 function Gallery({ images, themeId, productId, storeSlug, ownerId, onProductView }: { images: string[]; themeId: string; productId?: string; storeSlug?: string; ownerId?: string; onProductView?: (id: string) => void }) {
   const [idx, setIdx] = useState(0)
   const [isHovering, setIsHovering] = useState(false)
-  const hoverDirRef = useRef(1)
   const safe = Math.min(idx, images.length - 1)
   const isEditorial = themeId === 'sleek-editorial'
   const isDark = ['clothing-street','tech-electro','sleek-dark'].includes(themeId)
@@ -17,12 +16,7 @@ function Gallery({ images, themeId, productId, storeSlug, ownerId, onProductView
   useEffect(() => {
     if (!isHovering || images.length <= 1) return
     const interval = setInterval(() => {
-      setIdx(prev => {
-        const next = prev + hoverDirRef.current
-        if (next >= images.length - 1) { hoverDirRef.current = -1; return images.length - 1 }
-        if (next <= 0) { hoverDirRef.current = 1; return 0 }
-        return next
-      })
+      setIdx(prev => (prev + 1) % images.length)
     }, 650)
     return () => clearInterval(interval)
   }, [isHovering, images.length])
