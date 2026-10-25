@@ -78,6 +78,7 @@ export default function Dashboard() {
   const [purchasing, setPurchasing] = useState(false)
   const [copiedTill, setCopiedTill] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [myPayments, setMyPayments] = useState<any[]>([])
   const router = useRouter()
 
   const plans: PlanDef[] = [
@@ -131,6 +132,9 @@ export default function Dashboard() {
           setProfile(prof); setBusinessName(prof.business_name || ''); setWhatsapp(prof.whatsapp_number || ''); setSlug(prof.store_slug || ''); setTheme(prof.store_theme || 'clothing-noor')
           const { data: prods } = await supabase.from('products').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
           if (prods) setProducts(prods)
+          // Fetch user's payments
+          const { data: pays } = await supabase.from('plan_payments').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
+          if (pays) setMyPayments(pays)
         }
       } catch (e: any) { setErrorMsg(e.message) }
       setTimeout(()=>setLoading(false), 700)
@@ -202,7 +206,11 @@ export default function Dashboard() {
     try{
       const { data: { user } } = await supabase.auth.getUser(); if (!user) throw new Error('Not logged in')
       const { error } = await supabase.from('plan_payments').insert({ user_id: user.id, plan_id: selectedPlan.id, amount, till_id: TILL_ID, txn_id: txnId.trim(), status: 'pending', billing_cycle: billing })
-      if (error) throw error; alert(`Submitted! Till ${TILL_ID} - ${selectedPlan.name} (${billing}) Rs. ${amount}`); setSelectedPlan(null); setTxnId('')
+      if (error) throw error;
+      // Refresh payments list
+      const { data: pays } = await supabase.from('plan_payments').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
+      if (pays) setMyPayments(pays)
+      alert(`✅ Submitted! Till ${TILL_ID} - ${selectedPlan.name} (${billing}) Rs. ${amount}\n\nYour payment is now PENDING. We will verify Txn ID in JazzCash App and approve within 1 hour. You will get WhatsApp notification.`); setSelectedPlan(null); setTxnId('')
     }catch(e:any){alert(e.message)} setPurchasing(false)
   }
 
@@ -529,6 +537,24 @@ export default function Dashboard() {
 
         {activeTab==='payments' && (
           <div className="bg-white border rounded-[24px] p-6 md:p-8 overflow-hidden relative">
+            {/* User's Pending Payments */}
+            {myPayments.length > 0 && (
+              <div className="mb-6 rounded-[16px] border-2 border-black bg-[#FFFEF5] p-4">
+                <div className="flex items-center gap-2 mb-3"><span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse" /><span className="font-black text-[13px]">Your Payments — Status</span><span className="ml-auto text-[11px] bg-black text-white px-2.5 h-6 rounded-full flex items-center">{myPayments.filter((p:any)=>p.status==='pending').length} pending</span></div>
+                <div className="space-y-2">
+                  {myPayments.slice(0,5).map((p:any)=>(
+                    <div key={p.id} className="flex items-center justify-between gap-2 bg-white border rounded-[12px] p-3">
+                      <div className="flex items-center gap-3">
+                        <span className={`h-6 px-2.5 rounded-full text-[10px] font-black flex items-center ${p.status==='pending'?'bg-yellow-100 text-yellow-700 border border-yellow-200':p.status==='approved'?'bg-green-100 text-green-700 border border-green-200':'bg-red-100 text-red-700 border border-red-200'}`}>{p.status.toUpperCase()}</span>
+                        <span className="text-[12px] font-bold">{p.plan_id.toUpperCase()} • Rs. {p.amount}</span>
+                        <span className="font-mono text-[11px] bg-zinc-50 border px-2 py-0.5 rounded">{p.txn_id}</span>
+                      </div>
+                      <div className="text-[11px] text-zinc-500">{new Date(p.created_at).toLocaleDateString()} {p.status==='pending' && '• Verifying...'}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="flex items-center gap-4"><div className="w-12 h-12 bg-black text-white rounded-[14px] flex items-center justify-center text-[18px]">⬡</div><div><h2 className="font-black text-[18px] tracking-tight">Pricing — Till ID {TILL_ID} — Current: {currentPlanDef.name}</h2><p className="text-[11px] text-zinc-500 mt-0.5">Pay to JazzCash Till & submit Txn ID</p></div></div>
               <div className="flex items-center gap-2">
