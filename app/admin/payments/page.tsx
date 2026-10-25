@@ -6,8 +6,8 @@ const TILL_ID = '984837533'
 
 // --- CHANGE THIS TO YOUR EMAIL ---
 const ALLOWED_ADMINS = [
-  'akdropship20@gmail.com', // Add your admin emails here
-  'nexusdeals235@@gmail.com'
+  'aakif.habib.90@gmail.com', // Add your admin emails here
+  'nexusdeals235@gmail.com'
 ]
 
 // Optional: Add a secret admin password as extra protection
