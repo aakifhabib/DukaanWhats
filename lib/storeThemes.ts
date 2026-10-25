@@ -27,7 +27,7 @@ export const STORE_THEMES: StoreTheme[] = [
   { id: 'sleek-dark', name: 'Sleek Dark', category: 'advanced', niche: 'advanced', badge: '●', tagline: 'Midnight minimal', tier: 'advanced', colors: { bg: '#0F0F0F', text: '#FAFAF8', card: '#1A1A1A', border: '#2A2A2A', accent: '#FFFFFF', sub: '#6B7280' } },
   { id: 'sleek-editorial', name: 'Editorial', category: 'advanced', niche: 'advanced', badge: '—', tagline: 'Curated essentials', tier: 'advanced', colors: { bg: '#FFFFFF', text: '#111111', card: '#F8F8F6', border: '#E5E5E3', accent: '#111111', sub: '#737373' } },
 
-  // ADVANCED GLASS THEMES - 7 NEW PREMIUM (your 7 references) - ALL ADDED TO GLASS THEMES
+  // ADVANCED GLASS THEMES - 7 NEW PREMIUM
   { id: 'jordan-jumpman', name: 'Jumpman Pro', category: 'advanced', niche: 'shoes', badge: 'JORDAN', tagline: 'Jump man Basketball • 2021 PF', tier: 'advanced', colors: { bg: '#0A0A0A', text: '#FFFFFF', card: '#141414', border: '#222222', accent: '#FF0033', sub: '#8A8A8A' } },
   { id: 'ecom-green', name: 'Ecom Green', category: 'advanced', niche: 'tech', badge: 'Ecom', tagline: 'Full Design Templates • FREE', tier: 'advanced', colors: { bg: '#E8F5E9', text: '#0F0F0F', card: '#FFFFFF', border: '#C8E6C9', accent: '#00C853', sub: '#4CAF50' } },
   { id: 'car-rental', name: 'Car Rental Pro', category: 'advanced', niche: 'tech', badge: 'Cars', tagline: 'Experience the road like never before', tier: 'advanced', colors: { bg: '#5B3CF6', text: '#FFFFFF', card: '#FFFFFF', border: '#7C5CFF', accent: '#FF8C00', sub: '#A78BFA' } },
