@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { RealAnalytics } from '@/components/RealAnalytics'
 import Link from 'next/link'
@@ -58,13 +58,19 @@ type PlanDef = { id: 'basic'|'advanced'|'premium'; name: string; monthly: number
 const PremiumProductCard = ({ p, onEdit, onDelete, themeId, imageLimit }: { p: any; onEdit: (p:any)=>void; onDelete: (id:string)=>void; themeId: string; imageLimit: number }) => {
   const [hoverIdx, setHoverIdx] = useState(0)
   const [isHovering, setIsHovering] = useState(false)
+  const hoverDirRef = useRef(1)
   const images = (() => { if (p.image_urls && Array.isArray(p.image_urls) && p.image_urls.length>0) return p.image_urls; if (typeof p.image_urls==='string'){try{const pa=JSON.parse(p.image_urls); if(Array.isArray(pa)) return pa}catch{} return [p.image_urls]} if(p.image_url) return [p.image_url]; return [] })()
   
   useEffect(() => {
     if (!isHovering || images.length <= 1) return
     const interval = setInterval(() => {
-      setHoverIdx(prev => (prev + 1) % images.length)
-    }, 600) // Premium feel: 600ms per image
+      setHoverIdx(prev => {
+        const next = prev + hoverDirRef.current
+        if (next >= images.length - 1) { hoverDirRef.current = -1; return images.length - 1 }
+        if (next <= 0) { hoverDirRef.current = 1; return 0 }
+        return next
+      })
+    }, 1200)
     return () => clearInterval(interval)
   }, [isHovering, images.length])
 
