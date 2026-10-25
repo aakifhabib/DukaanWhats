@@ -394,7 +394,7 @@ export default function Dashboard() {
     <div style={{minHeight:'100vh',background:'#F8F7F5'}} className="text-zinc-900 pb-24 antialiased overflow-x-clip max-w-[100vw]">
       <style>{`
         .no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none} html,body{overflow-x:hidden;max-width:100vw} *{box-sizing:border-box;min-width:0}
-        .glass-container { position: relative; display: flex; justify-content: center; align-items: center; min-height: 400px; padding: 40px 0 60px; gap: 0; overflow-x: visible; } @media (max-width: 768px){ .glass-container { justify-content: flex-start; overflow-x: auto; padding: 20px 16px 40px 16px; min-height: 340px; } .glass-container::-webkit-scrollbar{display:none} .glass-container{ -ms-overflow-style:none; scrollbar-width:none; } }
+        .glass-container { position: relative; display: flex; justify-content: flex-start; align-items: center; min-height: 420px; padding: 40px 24px 60px 40px; gap: 0; overflow-x: auto; overflow-y: visible; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; } .glass-container::-webkit-scrollbar{height:6px} .glass-container::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.12);border-radius:999px} .glass-container::-webkit-scrollbar-track{background:transparent} @media (max-width: 768px){ .glass-container { justify-content: flex-start; overflow-x: auto; padding: 20px 16px 40px 16px; min-height: 360px; } }
         .glass-container .glass { position: relative; width: 280px; height: 360px; flex-shrink: 0; background: rgba(255,255,255,0.85); border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 20px 50px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,1) inset; display: flex; justify-content: flex-start; align-items: center; flex-direction: column; transition: all 0.6s cubic-bezier(0.23,1,0.32,1); border-radius: 24px; margin: 0 -40px; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); transform: rotate(calc(var(--r) * 1deg)) translateY(0); cursor: pointer; overflow: hidden; }
         .glass-container .glass:hover { transform: rotate(0deg) translateY(-14px) scale(1.06); margin: 0 24px; box-shadow: 0 32px 80px rgba(0,0,0,0.14), 0 0 0 1px rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.12); z-index: 10; background: #fff; }
         .glass-container .glass::before { content: attr(data-text); position: absolute; bottom: 0; width: 100%; height: 52px; background: #fff; border-top: 1px solid rgba(0,0,0,0.06); display: flex; justify-content: center; align-items: center; color: #0A0A0A; font-size: 12px; font-weight: 700; letter-spacing: -0.01em; }
@@ -500,14 +500,15 @@ export default function Dashboard() {
                 <div className="flex items-center gap-3"><span className="bg-black text-white text-[10px] font-bold px-3 py-1.5 rounded-full tracking-widest">3 PREMIUM THEMES</span><span className="font-bold text-[14px] tracking-tight">Glass Collection — Premium Only</span></div>
                 <span className="bg-white border text-[11px] px-3 py-1.5 rounded-full font-medium">{currentPlanId==='premium'?'All 3 Premium Unlocked ✓':`Locked for ${currentPlanId.toUpperCase()} — Need Premium Rs. 2999/mo`}</span>
               </div>
-              <div className="bg-[#F8F7F5]">
+              <div className="bg-[#F8F7F5] relative">
+                <div className="absolute top-4 right-6 hidden md:flex items-center gap-2 text-[10px] mono text-black/30"><span>← Scroll to see all {premiumThemes.length} Glass →</span><span className="w-12 h-[2px] bg-black/10 rounded-full relative overflow-hidden"><span className="absolute inset-y-0 left-0 w-1/2 bg-black/30 animate-[shine_1.5s_linear_infinite]"/></span></div>
                 <div className="glass-container">
                   {premiumThemes.map((t,i)=>{
-                    const r=[-14,0,14][i]||0; 
+                    const tilts=[-12,9,-10,11,-8,13,-14,7]; const r= isActive ? 0 : (tilts[i % tilts.length]); 
                     const isActive=theme===t.id; 
                     const locked=isThemeLocked(t); 
                     return (
-                      <div key={t.id} className={`glass ${isActive?'selected':''}`} data-text={t.name} style={{'--r':r} as any} onClick={()=>handleThemeClick(t)}>
+                      <div key={t.id} className={`glass ${isActive?'selected':''}`} data-text={t.name} style={{'--r':r, scrollSnapAlign:'start'} as any} onClick={()=>handleThemeClick(t)}>
                         <div className="glass-preview-wrap">
                           <div className="glass-preview-header" style={{background:t.colors?.bg || '#fff', color:t.colors?.text || '#000'}}>
                             <span className="tracking-widest">{t.id.slice(0,14).toUpperCase()} • PREMIUM</span>
