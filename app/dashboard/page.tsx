@@ -570,18 +570,35 @@ export default function Dashboard() {
                 <label className="group relative border-2 border-dashed border-zinc-200 rounded-[20px] p-6 flex flex-col items-center justify-center cursor-pointer hover:border-black hover:bg-white transition-all min-h-[160px] bg-[#FCFCFA] overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-b from-white to-[#F8F7F5] opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative z-10 flex flex-col items-center">
+                <div className="border-2 border-dashed border-zinc-200 rounded-[20px] p-5 bg-[#FCFCFA]">
                   {previews.length ? (
-                    <div className="grid grid-cols-5 gap-2.5 w-full">
-                      {previews.map((src,i)=>(
-                        <div key={i} className="relative group/img">
-                          <img src={src} className="w-full h-[72px] object-cover rounded-[12px] border-2 border-white shadow-[0_2px_8px_rgba(0,0,0,0.06)] group-hover/img:shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-shadow" />
-                        </div>
-                      ))}
-                      <div className="h-[72px] rounded-[12px] border-2 border-dashed border-zinc-200 bg-white flex flex-col items-center justify-center gap-1 hover:border-black transition-colors">
-                        <span className="text-[16px]">+</span><span className="text-[9px] font-bold tracking-widest">ADD</span>
+                    <>
+                      <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
+                        {previews.map((src,i)=>(
+                          <div key={i} className="relative group/img">
+                            <img src={src} className="w-full h-[90px] object-cover rounded-[12px] border-2 border-white shadow" />
+                            <button type="button" onClick={()=>removeFileAt(i)} className="absolute -top-2 -right-2 w-6 h-6 bg-black text-white rounded-full flex items-center justify-center text-[10px] opacity-0 group-hover/img:opacity-100 transition-opacity">✕</button>
+                            <div className="absolute bottom-1 left-1 bg-black/70 text-white text-[9px] px-1.5 py-0.5 rounded-full">{i+1}</div>
+                          </div>
+                        ))}
+                        {previews.length < (imageLimit===999999?20:imageLimit) && (
+                          <label className="h-[90px] rounded-[12px] border-2 border-dashed border-zinc-300 bg-white flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-black">
+                            <span className="text-[18px]">+</span><span className="text-[9px] font-bold">ADD MORE</span>
+                            <input type="file" accept="image/*" multiple onChange={handleFile} className="hidden" />
+                          </label>
+                        )}
                       </div>
-                    </div>
+                      <div className="mt-3 flex items-center justify-between">
+                        <span className="text-[11px] text-zinc-500">{previews.length} / {imageLimit===999999?'∞ (up to 20)':imageLimit} images • Hover to preview auto-slides in store</span>
+                        <label className="text-[11px] bg-black text-white px-3 h-7 rounded-full font-bold flex items-center cursor-pointer">
+                          + Add Images
+                          <input type="file" accept="image/*" multiple onChange={handleFile} className="hidden" />
+                        </label>
+                      </div>
+                    </>
                   ) : (
+                    <label className="group relative flex flex-col items-center justify-center cursor-pointer min-h-[120px]">
+                  
                     <>
                       <UploadIcon />
                       <div className="mt-4 text-center">
@@ -592,12 +609,33 @@ export default function Dashboard() {
                           <span className="px-2.5 h-6 rounded-full bg-[#E8FF86] border border-black/5 font-bold flex items-center">Premium ∞</span>
                         </div>
                         <div className="mt-2 text-[11px] text-zinc-500">Your plan <b className="text-black">{currentPlanId.toUpperCase()}</b> allows <b className="text-black">{imageLimit===999999?'Unlimited':imageLimit}</b> image{imageLimit!==1?'s':''} per product • PNG, JPG, WEBP up to 5MB</div>
+                      <div className="mt-4 text-center">
+                        <div className="font-bold text-[14px] tracking-tight">Drop images or click to upload</div>
+                        <div className="mt-1.5 flex items-center justify-center gap-2 text-[11px]">
+                          <span className="px-2.5 h-6 rounded-full bg-black text-white font-bold flex items-center">Basic 1</span>
+                          <span className="px-2.5 h-6 rounded-full bg-zinc-100 border font-bold flex items-center">Advanced 5</span>
+                          <span className="px-2.5 h-6 rounded-full bg-[#E8FF86] border border-black/5 font-bold flex items-center">Premium ∞</span>
+                        </div>
+                        <div className="mt-2 text-[11px] text-zinc-500">Your plan <b className="text-black">{currentPlanId.toUpperCase()}</b> allows <b className="text-black">{imageLimit===999999?'Unlimited':imageLimit}</b> images per product • Hover auto-slides</div>
                       </div>
-                    </>
+                    </label>
+                    <input type="file" accept="image/*" multiple onChange={handleFile} className="hidden" />
+                  ) : (
+                    <label className="group relative flex flex-col items-center justify-center cursor-pointer min-h-[120px]">
+                      <UploadIcon />
+                      <div className="mt-4 text-center">
+                        <div className="font-bold text-[14px] tracking-tight">Drop images or click to upload</div>
+                        <div className="mt-1.5 flex items-center justify-center gap-2 text-[11px]">
+                          <span className="px-2.5 h-6 rounded-full bg-black text-white font-bold flex items-center">Basic 1</span>
+                          <span className="px-2.5 h-6 rounded-full bg-zinc-100 border font-bold flex items-center">Advanced 5</span>
+                          <span className="px-2.5 h-6 rounded-full bg-[#E8FF86] border border-black/5 font-bold flex items-center">Premium ∞</span>
+                        </div>
+                        <div className="mt-2 text-[11px] text-zinc-500">Your plan <b className="text-black">{currentPlanId.toUpperCase()}</b> allows <b className="text-black">{imageLimit===999999?'Unlimited':imageLimit}</b> images per product • Hover auto-slides</div>
+                      </div>
+                      <input type="file" accept="image/*" multiple onChange={handleFile} className="hidden" />
+                    </label>
                   )}
                   </div>
-                  <input type="file" accept="image/*" multiple onChange={handleFile} className="hidden" />
-                </label>
                 <div className="grid md:grid-cols-2 gap-3">
                   <input placeholder="Product name *" value={prodName} onChange={e=>setProdName(e.target.value)} className="w-full h-11 px-4 border rounded-[12px] bg-zinc-50/50 text-[13px] focus:bg-white focus:outline-none focus:border-black" />
                   <input placeholder="Price Rs. 3500 *" type="number" value={prodPrice} onChange={e=>setProdPrice(e.target.value)} className="w-full h-11 px-4 border rounded-[12px] bg-zinc-50/50 text-[13px] focus:bg-white focus:outline-none focus:border-black" />
