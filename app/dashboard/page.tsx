@@ -505,9 +505,9 @@ export default function Dashboard() {
                 <div className="absolute top-3 right-5 hidden md:flex items-center gap-2 text-[10px] mono text-black/30"><span>← Scroll to see all {premiumThemes.length} Glass →</span></div>
                 <div className="glass-container">
                   {premiumThemes.map((t,i)=>{
+                    const isActive=theme===t.id;
+                    const locked=isThemeLocked(t);
                     const r = isActive ? 0 : (GLASS_TILTS[i % GLASS_TILTS.length]); 
-                    const isActive=theme===t.id; 
-                    const locked=isThemeLocked(t); 
                     return (
                       <div key={t.id} className={`glass ${isActive?'selected':''}`} data-text={t.name} style={{'--r':r, scrollSnapAlign:'start'} as any} onClick={()=>handleThemeClick(t)}>
                         <div className="glass-preview-wrap">
