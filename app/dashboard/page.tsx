@@ -161,9 +161,13 @@ export default function Dashboard() {
 
   const premiumThemes = getAdvancedThemes()
   const premiumIds = premiumThemes.map(t=>t.id)
+  // NEW: 8 Standard = 3 Urdu + 5 English (all category advanced), 6 Premium = category premium
   const allAdvancedRaw = STORE_THEMES.filter(t => (t.category as string) === 'advanced' && !premiumIds.includes(t.id))
-  const advancedThemesList = allAdvancedRaw.length >= 8 ? allAdvancedRaw.slice(0,8) : [...allAdvancedRaw, ...STORE_THEMES.filter(t=>!premiumIds.includes(t.id) && (t.category as string)!=='premium').slice(0, 8 - allAdvancedRaw.length)]
-  const finalAdvancedList = advancedThemesList.length ? advancedThemesList : STORE_THEMES.filter(t=>!premiumIds.includes(t.id)).slice(0,8)
+  // Ensure we have 8 standard: 3 Urdu + 5 English
+  const urduThemes = STORE_THEMES.filter(t => (t as any).lang === 'UR')
+  const englishStandard = STORE_THEMES.filter(t => (t as any).lang === 'EN' && (t.category as string) === 'advanced')
+  const advancedThemesList = [...urduThemes, ...englishStandard].slice(0,8)
+  const finalAdvancedList = advancedThemesList.length ? advancedThemesList : allAdvancedRaw.slice(0,8)
   const basicAllowedAdvancedIds = finalAdvancedList.slice(0,3).map(t=>t.id)
 
   const isPremiumTheme = (t: any) => premiumIds.includes(t.id) || (t.category as string) === 'premium' || (t as any).isPremium
