@@ -12,11 +12,12 @@ function Gallery({ images, themeId, productId, storeSlug, ownerId, onProductView
   const isEditorial = themeId === 'sleek-editorial'
   const isDark = ['clothing-street','tech-electro','sleek-dark'].includes(themeId)
 
+  // Premium hover: auto slide one by one when hovering
   useEffect(() => {
     if (!isHovering || images.length <= 1) return
     const interval = setInterval(() => {
       setIdx(prev => (prev + 1) % images.length)
-    }, 400)
+    }, 650)
     return () => clearInterval(interval)
   }, [isHovering, images.length])
   
@@ -28,29 +29,27 @@ function Gallery({ images, themeId, productId, storeSlug, ownerId, onProductView
 
   return (
     <div className="relative group/gallery" onMouseEnter={()=>setIsHovering(true)} onMouseLeave={()=>{setIsHovering(false);}}>
-      <div className={`overflow-hidden ${isEditorial ? 'rounded-[16px] aspect-[3/4]' : 'rounded-[16px] h-56'} bg-zinc-50 relative`}>
-        <img src={images[safe]} className="w-full h-full object-cover transition-transform duration-700 group-hover/gallery:scale-[1.08]" alt="" />
-        {images.length > 1 && (
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover/gallery:opacity-100 transition-opacity" />
+      <div className={`overflow-hidden ${isEditorial ? 'rounded-[16px] aspect-[3/4]' : 'rounded-[14px] h-52'} bg-zinc-50 relative`}>
+        <img src={images[safe]} className="w-full h-full object-cover transition-transform duration-700 group-hover/gallery:scale-[1.03]" alt="" />
+        {images.length > 1 && isHovering && (
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
         )}
       </div>
-      {images.length > 1 && (
+      {images.length > 1 && !isEditorial && (
         <>
-          <button onClick={(e)=>{e.stopPropagation(); setIdx((safe - 1 + images.length) % images.length)}} style={{borderRadius:999}} className={`absolute top-1/2 -translate-y-1/2 left-2.5 w-8 h-8 flex items-center justify-center text-[18px] shadow-xl border backdrop-blur-xl transition-all ${isDark ? 'bg-black/60 text-white border-white/10' : 'bg-white/90 text-black border-zinc-200'} opacity-0 group-hover/gallery:opacity-100`}>‹</button>
-          <button onClick={(e)=>{e.stopPropagation(); setIdx((safe + 1) % images.length)}} style={{borderRadius:999}} className={`absolute top-1/2 -translate-y-1/2 right-2.5 w-8 h-8 flex items-center justify-center text-[18px] shadow-xl border backdrop-blur-xl transition-all ${isDark ? 'bg-black/60 text-white border-white/10' : 'bg-white/90 text-black border-zinc-200'} opacity-0 group-hover/gallery:opacity-100`}>›</button>
-          <span style={{borderRadius:999}} className="absolute top-3 left-3 bg-black/80 backdrop-blur text-white text-[11px] px-3 py-1.5 font-black tracking-widest flex items-center gap-2">
-            {safe+1}/{images.length} {isHovering && <span className="w-1.5 h-1.5 bg-[#E8FF86] rounded-full animate-pulse" />}
-            {isHovering && <span className="text-[9px] ml-1 opacity-80">AUTO HOVER</span>}
+          <button onClick={() => setIdx((safe - 1 + images.length) % images.length)} style={{borderRadius:999}} className={`absolute top-1/2 -translate-y-1/2 left-2 w-8 h-8 flex items-center justify-center text-[16px] shadow-lg border backdrop-blur-md transition-all ${isDark ? 'bg-[#222]/90 text-white border-white/10' : 'bg-white/90 text-black border-zinc-200'} opacity-0 group-hover/gallery:opacity-100`}>‹</button>
+          <button onClick={() => setIdx((safe + 1) % images.length)} style={{borderRadius:999}} className={`absolute top-1/2 -translate-y-1/2 right-2 w-8 h-8 flex items-center justify-center text-[16px] shadow-lg border backdrop-blur-md transition-all ${isDark ? 'bg-[#222]/90 text-white border-white/10' : 'bg-white/90 text-black border-zinc-200'} opacity-0 group-hover/gallery:opacity-100`}>›</button>
+          <span style={{borderRadius:999}} className="absolute top-2.5 left-2.5 bg-black/75 backdrop-blur-md text-white text-[10px] px-2.5 py-1 font-bold tracking-widest flex items-center gap-1.5">
+            {safe+1}/{images.length} {isHovering && <span className="w-1 h-1 bg-[#E8FF86] rounded-full animate-pulse" />}
           </span>
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 bg-black/70 backdrop-blur px-3 py-2 rounded-full">
-            {images.slice(0,8).map((_,i)=><div key={i} className={`h-1.5 rounded-full transition-all duration-500 ${i===safe ? 'w-6 bg-white' : 'w-1.5 bg-white/40'}`} />)}
-            {images.length > 8 && <span className="text-[9px] text-white ml-1">+{images.length-8}</span>}
+          <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1.5 rounded-full">
+            {images.map((_,i)=><div key={i} className={`h-1 rounded-full transition-all duration-500 ${i===safe ? 'w-5 bg-white' : 'w-1.5 bg-white/40'}`} />)}
           </div>
         </>
       )}
       {images.length > 1 && (
-        <div className={`flex gap-2 mt-3 overflow-x-auto pb-1 scrollbar-hide ${isEditorial ? 'justify-center' : ''}`}>
-          {images.map((u,i)=><button key={i} onClick={(e)=>{e.stopPropagation(); setIdx(i)}} style={{borderRadius: isEditorial ? 8 : 12}} className={`${isEditorial ? 'w-10 h-12' : 'w-14 h-14'} overflow-hidden border-2 flex-shrink-0 transition-all ${i===safe ? 'border-black scale-110 shadow-lg' : 'border-zinc-200 opacity-60 hover:opacity-100'}`}><img src={u} className="w-full h-full object-cover" alt="" /></button>)}
+        <div className={`flex gap-1.5 mt-3 overflow-x-auto pb-1 scrollbar-hide ${isEditorial ? 'justify-center' : ''}`}>
+          {images.map((u,i)=><button key={i} onClick={()=>setIdx(i)} style={{borderRadius: isEditorial ? 6 : 10}} className={`${isEditorial ? 'w-9 h-11' : 'w-12 h-12'} overflow-hidden border-2 flex-shrink-0 transition-all ${i===safe ? 'border-black scale-105' : 'border-zinc-200 opacity-70 hover:opacity-100'}`}><img src={u} className="w-full h-full object-cover" alt="" /></button>)}
         </div>
       )}
     </div>
