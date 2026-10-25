@@ -8,7 +8,7 @@ type Product = { id: string; name: string; price: number; image_url: string; ima
 function Gallery({ images, themeId, productId, storeSlug, ownerId, onProductView }: { images: string[]; themeId: string; productId?: string; storeSlug?: string; ownerId?: string; onProductView?: (id: string) => void }) {
   const [idx, setIdx] = useState(0)
   const [isHovering, setIsHovering] = useState(false)
-  const safe = Math.min(idx, images.length - 1)
+  const safe = Math.min(Math.max(0, idx), Math.max(0, images.length - 1))
   const isEditorial = themeId === 'sleek-editorial'
   const isDark = ['clothing-street','tech-electro','sleek-dark'].includes(themeId)
 
@@ -17,7 +17,7 @@ function Gallery({ images, themeId, productId, storeSlug, ownerId, onProductView
     if (!isHovering || images.length <= 1) return
     const interval = setInterval(() => {
       setIdx(prev => (prev + 1) % images.length)
-    }, 650)
+    }, 1800)
     return () => clearInterval(interval)
   }, [isHovering, images.length])
   
@@ -28,9 +28,9 @@ function Gallery({ images, themeId, productId, storeSlug, ownerId, onProductView
   }, [safe])
 
   return (
-    <div className="relative group/gallery" onMouseEnter={()=>setIsHovering(true)} onMouseLeave={()=>{setIsHovering(false);}}>
+    <div className="relative group/gallery" onMouseEnter={()=>setIsHovering(true)} onMouseLeave={()=>setIsHovering(false)}>
       <div className={`overflow-hidden ${isEditorial ? 'rounded-[16px] aspect-[3/4]' : 'rounded-[14px] h-52'} bg-zinc-50 relative`}>
-        <img src={images[safe]} className="w-full h-full object-cover transition-transform duration-700 group-hover/gallery:scale-[1.03]" alt="" />
+        <img key={images[safe]} src={images[safe]} className="w-full h-full object-cover transition-all duration-700 ease-out group-hover/gallery:scale-[1.03] animate-[fadeIn_0.6s_ease]" alt="" />
         {images.length > 1 && isHovering && (
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
         )}
