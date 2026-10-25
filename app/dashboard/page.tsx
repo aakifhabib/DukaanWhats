@@ -122,6 +122,12 @@ export default function Dashboard() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [prodName, setProdName] = useState('')
   const [prodPrice, setProdPrice] = useState('')
+  const [prodDesc, setProdDesc] = useState('')
+  const [prodCategory, setProdCategory] = useState('General')
+  const [prodStock, setProdStock] = useState('100')
+  const [prodSizes, setProdSizes] = useState('')
+  const [prodColors, setProdColors] = useState('')
+  const [prodOrigPrice, setProdOrigPrice] = useState('')
   const [files, setFiles] = useState<File[]>([])
   const [previews, setPreviews] = useState<string[]>([])
   const [uploading, setUploading] = useState(false)
@@ -290,8 +296,8 @@ export default function Dashboard() {
     setProdDesc(p.description || ''); 
     setProdCategory(p.category || 'General'); 
     setProdStock(String(p.stock || 100)); 
-    setProdSizes((p.sizes || []).join(', ')); 
-    setProdColors((p.colors || []).join(', ')); 
+    setProdSizes(Array.isArray(p.sizes) ? p.sizes.join(', ') : p.sizes || ''); 
+    setProdColors(Array.isArray(p.colors) ? p.colors.join(', ') : p.colors || ''); 
     setProdOrigPrice(p.original_price ? String(p.original_price) : ''); 
     setPreviews(p.image_urls && p.image_urls.length ? p.image_urls : [p.image_url]); 
     setFiles([]); 
