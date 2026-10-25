@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { STORE_THEMES, getTheme, ThemeCategory, getAdvancedThemes, getPremiumThemes, getStandardThemes } from '@/lib/storeThemes'
 import { DukaanWhatsLoader } from '@/components/DukaanWhatsLoader'
+import { PremiumThemeEditor } from '@/components/PremiumThemeEditor'
 
 // --- CUSTOM PREMIUM ICONS ---
 const UploadIcon = ({ className = "w-12 h-12" }: { className?: string }) => (
@@ -49,7 +50,6 @@ const AnalyticsIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
 const LiveDot = () => (<span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#E8FF86] opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-[#E8FF86]"></span></span>)
 
 const TILL_ID = '984837533'
-const PREMIUM_NEW_IDS = ['spike-premium','shoe-app-premium','trenzo-luxury']
 type Profile = { id: string; business_name: string; whatsapp_number: string; store_slug: string; store_theme?: string; current_plan?: string }
 type Product = { id: string; name: string; price: number; image_url: string; image_urls?: string[]; user_id: string }
 type Billing = 'monthly' | 'yearly'
@@ -113,6 +113,7 @@ const PremiumProductCard = ({ p, onEdit, onDelete, themeId, imageLimit }: { p: a
 
 export default function Dashboard() {
   const [profile, setProfile] = useState<Profile | null>(null)
+  const [premiumCustom, setPremiumCustom] = useState<any>({})
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -160,15 +161,21 @@ export default function Dashboard() {
   const productLimit = currentPlanDef.products
   const imageLimit = currentPlanDef.imagesPerProduct
 
-  const premiumThemes = getAdvancedThemes()
+  // --- PREMIUM THEMES MERGED INTO GLASS (USER REQUEST) ---
+  const PREMIUM_NEW_IDS = ['spike-premium','shoe-app-premium','trenzo-luxury']
+  const advancedGlassRaw = getAdvancedThemes() // Sleek Beige, Dark, Editorial (old glass)
+  const premiumNewRaw = getPremiumThemes() // Spike, Shoe App, Trenzo
+  const premiumThemes = [...advancedGlassRaw, ...premiumNewRaw] // ALL GLASS = 3 sleek + 3 new = 6 glass themes
   const premiumIds = premiumThemes.map(t=>t.id)
-  const allAdvancedRaw = STORE_THEMES.filter(t => (t.category as string) === 'advanced' && !premiumIds.includes(t.id))
-  const advancedThemesList = allAdvancedRaw.length >= 8 ? allAdvancedRaw.slice(0,8) : [...allAdvancedRaw, ...STORE_THEMES.filter(t=>!premiumIds.includes(t.id) && (t.category as string)!=='premium').slice(0, 8 - allAdvancedRaw.length)]
-  const finalAdvancedList = advancedThemesList.length ? advancedThemesList : STORE_THEMES.filter(t=>!premiumIds.includes(t.id)).slice(0,8)
+  
+  // Advanced themes (non-glass)
+  const allAdvancedRaw = STORE_THEMES.filter(t => (t.category as string) === 'advanced' && !advancedGlassRaw.map(x=>x.id).includes(t.id))
+  const advancedThemesList = allAdvancedRaw.length >= 5 ? allAdvancedRaw.slice(0,8) : [...allAdvancedRaw, ...STORE_THEMES.filter(t=> (t.category as string) === 'clothing' || (t.category as string) === 'tech').slice(0, 8 - allAdvancedRaw.length)]
+  const finalAdvancedList = advancedThemesList.length ? advancedThemesList.slice(0,8) : STORE_THEMES.filter(t=>!premiumIds.includes(t.id)).slice(0,8)
   const basicAllowedAdvancedIds = finalAdvancedList.slice(0,3).map(t=>t.id)
 
-  const isPremiumTheme = (t: any) => premiumIds.includes(t.id) || (t.category as string) === 'premium' || (t as any).isPremium
-  const isAdvancedTheme = (t: any) => !isPremiumTheme(t) && finalAdvancedList.some(a=>a.id===t.id) || (t.category as string) === 'advanced'
+  const isPremiumTheme = (t: any) => premiumIds.includes(t.id) || PREMIUM_NEW_IDS.includes(t.id) || (t.category as string) === 'premium' || (t as any).tier === 'premium'
+  const isAdvancedTheme = (t: any) => !isPremiumTheme(t) && (finalAdvancedList.some(a=>a.id===t.id) || (t.category as string) === 'advanced')
   const isThemeLocked = (t: any) => {
     if (isPremium) return false
     if (isPremiumTheme(t)) return true
@@ -195,7 +202,7 @@ export default function Dashboard() {
           prof = created || newProfile as any
         }
         if (prof) {
-          setProfile(prof); setBusinessName(prof.business_name || ''); setWhatsapp(prof.whatsapp_number || ''); setSlug(prof.store_slug || ''); setTheme(prof.store_theme || 'clothing-noor')
+          setProfile(prof); setBusinessName(prof.business_name || ''); setWhatsapp(prof.whatsapp_number || ''); setSlug(prof.store_slug || ''); setTheme(prof.store_theme || 'clothing-noor'); setPremiumCustom((prof as any).premium_custom || {})
           const { data: prods } = await supabase.from('products').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
           if (prods) setProducts(prods)
           // Fetch user's payments
@@ -234,10 +241,10 @@ export default function Dashboard() {
   const handleThemeClick = (t: any) => {
     if (isThemeLocked(t)) {
       if (isPremiumTheme(t)) {
-        alert(`🔒 Premium Locked: ${t.name}\nBasic: 0/3 Premium\nAdvanced: 0/3 Premium\nNeed Premium — Till ${TILL_ID} Rs. 2999/mo\n\nThis is premium animated theme with all buttons working.`)
+        alert(`🔒 Premium Glass Locked\nBasic: 0/3 Premium\nAdvanced: 0/3 Premium\nNeed Premium — Till ${TILL_ID} Rs. 2999/mo\n\nThis glass animation theme is Premium only.`)
         setActiveTab('payments'); return
       }
-      alert(`🔒 Advanced Locked: ${t.name}\nBasic allows 3/8 Advanced\nNeed Advanced — Till ${TILL_ID} Rs. 899/mo\n\nUpgrade to unlock all 8 Advanced themes.`)
+      alert(`🔒 Advanced Theme Locked\nBasic allows 3/8 Advanced\nThis theme needs Advanced — Till ${TILL_ID} Rs. 899/mo\n\nUpgrade to unlock all 8 Advanced themes.`)
       setActiveTab('payments'); return
     }
     setTheme(t.id)
@@ -246,7 +253,7 @@ export default function Dashboard() {
   const saveStore = async () => {
     if (!profile) return; setSaving(true)
     try {
-      const { error } = await supabase.from('profiles').update({ business_name: businessName.trim(), whatsapp_number: whatsapp.trim(), store_slug: slug.trim(), store_theme: theme }).eq('id', profile.id)
+      const { error } = await supabase.from('profiles').update({ business_name: businessName.trim(), whatsapp_number: whatsapp.trim(), store_slug: slug.trim(), store_theme: theme, premium_custom: premiumCustom }).eq('id', profile.id)
       if (error) throw error; setSaved(true); setTimeout(()=>setSaved(false), 2500)
     } catch (e: any) { setErrorMsg(e.message) } setSaving(false)
   }
@@ -558,7 +565,17 @@ export default function Dashboard() {
           </div>
         )}
 
+
+      {/* PREMIUM THEME EDITOR - USERS CAN EDIT PREMIUM THEMES */}
+      {activeTab==='themes' && profile && (
+        <PremiumThemeEditor 
+          profile={{...profile, premium_custom: premiumCustom}} 
+          onSave={(data:any)=>{ setPremiumCustom(data); setProfile({...profile, premium_custom: data} as any) }} 
+        />
+      )}
+
         {activeTab==='products' && (
+
           <div className="space-y-4">
             <div className="bg-white border rounded-[20px] p-5 md:p-6">
               <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
@@ -628,51 +645,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        
-        {activeTab==='themes' && (
-          <div className="mt-6">
-            {/* PREMIUM NEW - 3 ANIMATED THEMES */}
-            <div className="mb-8">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 bg-black text-white rounded-[12px] flex items-center justify-center font-black text-[14px]">✦</div>
-                <div>
-                  <div className="font-black text-[15px] tracking-tight">Premium Animated — New</div>
-                  <div className="text-[11px] text-zinc-500">Spike • Shoe App • Trenzo — All buttons working • Cart + WhatsApp + Gallery + Animations</div>
-                </div>
-                <span className="ml-auto bg-[#E8FF86] text-black text-[10px] px-3 h-6 rounded-full font-bold flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-black rounded-full animate-pulse"/>PREMIUM ONLY</span>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {getPremiumThemes().map((t:any)=>{
-                  const locked = isThemeLocked(t)
-                  const selected = theme === t.id
-                  return (
-                    <button key={t.id} onClick={()=>handleThemeClick(t)} className={`relative text-left rounded-[22px] border-2 p-4 overflow-hidden transition-all duration-300 ${selected?'border-black shadow-[0_0_0_3px_#E8FF86,0_20px_40px_-10px_rgba(0,0,0,0.2)] scale-[1.02]':'border-zinc-200 hover:border-black hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.15)] hover:-translate-y-1'} bg-white group`}>
-                      {locked && <div className="absolute inset-0 bg-white/90 backdrop-blur-xl flex flex-col items-center justify-center z-20 rounded-[20px] gap-2"><div className="w-12 h-12 bg-black text-white rounded-full grid place-items-center text-[16px] shadow-lg">🔒</div><span className="text-[11px] font-black tracking-widest">PREMIUM Rs.2999</span><span className="text-[10px] text-zinc-500">Till {TILL_ID} • Animated</span></div>}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2.5"><span className="w-9 h-9 bg-black text-white rounded-[11px] grid place-items-center text-[12px] font-black tracking-widest">{t.badge.slice(0,6)}</span><span className="font-black text-[13px] tracking-tight">{t.name}</span></div>
-                        {selected && <span className="w-6 h-6 bg-black text-white rounded-full grid place-items-center text-[10px]">✓</span>}
-                      </div>
-                      <div className="mt-2.5 text-[11px] text-zinc-500 leading-[1.4]">{t.tagline}</div>
-                      <div className="mt-3 h-[110px] rounded-[14px] bg-[#F8F7F5] border border-black/5 p-2 overflow-hidden relative">
-                        {t.id==='spike-premium' && <div className="w-full h-full bg-white rounded-[10px] border grid place-items-center relative overflow-hidden"><div className="absolute -right-2 top-0 bottom-0 w-8 bg-black text-white/20 text-[18px] font-black grid place-items-center [writing-mode:vertical-rl]">ADIDAS</div><div className="text-[10px] font-bold">The journey<br/>begins with<br/>perfect pair</div></div>}
-                        {t.id==='shoe-app-premium' && <div className="w-full h-full bg-[#F2F0FF] rounded-[10px] border p-1.5 flex gap-1.5"><div className="w-1/2 bg-white rounded-[8px] border p-1"><div className="w-full h-12 bg-[#F8F7FF] rounded-[6px]"/><div className="mt-1 h-1.5 bg-black rounded-full w-2/3"/></div><div className="w-1/2 space-y-1"><div className="h-10 bg-[#1a1aff] rounded-[8px]"/><div className="grid grid-cols-2 gap-1"><div className="h-8 bg-white rounded-[6px] border"/><div className="h-8 bg-white rounded-[6px] border"/></div></div></div>}
-                        {t.id==='trenzo-luxury' && <div className="w-full h-full bg-[#0A0A0A] rounded-[10px] border border-white/10 p-2 flex gap-2"><div className="flex-1"><div className="text-[8px] text-white font-serif leading-[1.1]">A reflection<br/>of personal<br/>styling</div></div><div className="w-[50px] h-full rounded-[30px] bg-[#1a1a1a] border border-white/10"/></div>}
-                      </div>
-                      <div className="mt-3 flex items-center gap-2 flex-wrap">
-                        <span className="text-[10px] bg-black text-white px-2.5 py-1 rounded-full font-bold flex items-center gap-1"><span className="w-1 h-1 bg-[#E8FF86] rounded-full animate-pulse"/>Animations</span>
-                        <span className="text-[10px] bg-[#F8F7F5] border px-2 py-1 rounded-full">Cart ✓</span>
-                        <span className="text-[10px] bg-[#F8F7F5] border px-2 py-1 rounded-full">WA ✓</span>
-                      </div>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          </div>
-        )}
-
         {activeTab==='analytics' && (
-
           <div>
             {!profile ? <div className="p-8 text-center">Loading...</div> : currentPlanId === 'premium' ? (
               <RealAnalytics userId={profile!.id} currentPlanId={currentPlanId} />
