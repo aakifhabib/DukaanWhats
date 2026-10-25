@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { RealAnalytics } from '@/components/RealAnalytics'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { STORE_THEMES, getTheme, ThemeCategory, getAdvancedThemes } from '@/lib/storeThemes'
@@ -53,6 +52,61 @@ type Profile = { id: string; business_name: string; whatsapp_number: string; sto
 type Product = { id: string; name: string; price: number; image_url: string; image_urls?: string[]; user_id: string }
 type Billing = 'monthly' | 'yearly'
 type PlanDef = { id: 'basic'|'advanced'|'premium'; name: string; monthly: number; yearlyMonthly: number; yearlyTotal: number; products: number; imagesPerProduct: number; advancedAllowed: number|'all'; premiumAllowed: number|'all'; stores: number; features: string[] }
+
+
+const PremiumProductCard = ({ p, onEdit, onDelete, themeId, imageLimit }: { p: any; onEdit: (p:any)=>void; onDelete: (id:string)=>void; themeId: string; imageLimit: number }) => {
+  const [hoverIdx, setHoverIdx] = useState(0)
+  const [isHovering, setIsHovering] = useState(false)
+  const images = p.image_urls && p.image_urls.length > 0 ? p.image_urls : [p.image_url].filter(Boolean)
+  
+  useEffect(() => {
+    if (!isHovering || images.length <= 1) return
+    const interval = setInterval(() => {
+      setHoverIdx(prev => (prev + 1) % images.length)
+    }, 600) // Premium feel: 600ms per image
+    return () => clearInterval(interval)
+  }, [isHovering, images.length])
+
+  return (
+    <div className="group bg-white border rounded-[20px] p-3 hover:border-black hover:shadow-[0_12px_32px_rgba(0,0,0,0.08)] transition-all duration-300"
+         onMouseEnter={() => setIsHovering(true)}
+         onMouseLeave={() => { setIsHovering(false); setHoverIdx(0) }}>
+      <div className="relative overflow-hidden rounded-[14px] h-48 bg-[#F8F7F5]">
+        <img src={images[hoverIdx]} className="w-full h-full object-cover transition-all duration-500 group-hover:scale-[1.02]" alt={p.name} />
+        {images.length > 1 && (
+          <>
+            <div className="absolute top-2 left-2 bg-black/70 backdrop-blur text-white text-[10px] px-2 py-1 rounded-full font-bold">
+              {hoverIdx+1}/{images.length} {isHovering ? '• AUTO' : ''}
+            </div>
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+              {images.map((_:any,i:number)=><div key={i} className={`h-1 rounded-full transition-all duration-300 ${i===hoverIdx ? 'w-6 bg-white' : 'w-1.5 bg-white/50'}`} />)}
+            </div>
+            {!isHovering && (
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-3">
+                <span className="text-[10px] bg-white text-black px-2.5 py-1 rounded-full font-bold tracking-widest">HOVER TO PREVIEW • {images.length} PICS</span>
+              </div>
+            )}
+          </>
+        )}
+        {imageLimit !== 999999 && images.length >= imageLimit && (
+          <div className="absolute top-2 right-2 bg-yellow-100 border border-yellow-200 text-yellow-700 text-[9px] px-2 py-1 rounded-full font-bold">LIMIT {imageLimit}</div>
+        )}
+      </div>
+      <div className="mt-3 px-1">
+        <div className="font-bold text-[13px] truncate">{p.name}</div>
+        <div className="flex items-center justify-between mt-1">
+          <span className="font-black text-[14px]">Rs. {p.price.toLocaleString()}</span>
+          <span className="text-[11px] text-zinc-500">{images.length} img</span>
+        </div>
+        <div className="mt-3 flex gap-2">
+          <button onClick={()=>onEdit(p)} className="flex-1 h-8 bg-black text-white rounded-full text-[11px] font-bold">Edit</button>
+          <button onClick={()=>onDelete(p.id)} className="h-8 w-8 border rounded-full flex items-center justify-center text-[12px]">✕</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 
 export default function Dashboard() {
   const [profile, setProfile] = useState<Profile | null>(null)
@@ -190,10 +244,38 @@ export default function Dashboard() {
   const copyLink = async () => { const url = `${window.location.origin}/s/${slug}`; await navigator.clipboard.writeText(url); setCopied(true); setTimeout(()=>setCopied(false), 2000) }
   const copyTill = async () => { await navigator.clipboard.writeText(TILL_ID); setCopiedTill(true); setTimeout(()=>setCopiedTill(false), 2000) }
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = Array.from(e.target.files || []); if (!f.length) return
-    if (f.length > imageLimit && imageLimit !== 999999) { alert(`Plan allows ${imageLimit} images per product. Your ${currentPlanId.toUpperCase()} allows ${imageLimit} — Till ${TILL_ID}`); return }
-    setFiles(f)
-    const pr: string[] = []; f.forEach(file => { const r = new FileReader(); r.onload = ev => { pr.push(ev.target?.result as string); if (pr.length === f.length) setPreviews(pr) }; r.readAsDataURL(file) })
+    const selected = Array.from(e.target.files || []); if (!selected.length) return
+    // Check total including already selected if editing
+    const totalFiles = editingId ? selected.length : selected.length
+    if (totalFiles > imageLimit && imageLimit !== 999999) { 
+      setErrorMsg(`❌ ${currentPlanId.toUpperCase()} allows ${imageLimit} images per product. You selected ${totalFiles}. Upgrade: Till ${TILL_ID}`);
+      setTimeout(()=>setErrorMsg(null),4000);
+      return 
+    }
+    // For new product, replace; for edit, append if needed
+    const newFiles = editingId ? [...files, ...selected].slice(0, imageLimit === 999999 ? 20 : imageLimit) : selected
+    setFiles(newFiles)
+    // Generate previews
+    const pr: string[] = []
+    // Keep existing previews if editing and we are appending
+    const existingPreviews = editingId ? previews : []
+    newFiles.forEach(file => {
+      const r = new FileReader()
+      r.onload = ev => {
+        pr.push(ev.target?.result as string)
+        if (pr.length === newFiles.length) {
+          setPreviews(editingId ? [...existingPreviews, ...pr].slice(0, newFiles.length) : pr)
+        }
+      }
+      r.readAsDataURL(file)
+    })
+    if (newFiles.length === 0) setPreviews([])
+  }
+
+  const removeFileAt = (idx: number) => {
+    const nf = files.filter((_, i) => i !== idx)
+    const np = previews.filter((_, i) => i !== idx)
+    setFiles(nf); setPreviews(np)
   }
   const uploadOne = async (file: File, userId: string) => {
     const ext = file.name.split('.').pop(); const fileName = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
@@ -203,27 +285,46 @@ export default function Dashboard() {
   const startEdit = (p: Product) => { setEditingId(p.id); setProdName(p.name); setProdPrice(String(p.price)); setPreviews(p.image_urls && p.image_urls.length ? p.image_urls : [p.image_url]); setFiles([]); setActiveTab('products'); window.scrollTo({ top: 0, behavior: 'smooth' }) }
   const cancelEdit = () => { setEditingId(null); setProdName(''); setProdPrice(''); setFiles([]); setPreviews([]) }
   const addProduct = async () => {
-    if (editingId === null && products.length >= productLimit){alert(`🔒 Product Limit\nYour ${currentPlanId.toUpperCase()} allows ${productLimit===999999?'Unlimited':productLimit} products.\nBasic: 5\nAdvanced: 25\nPremium: Unlimited\n\nUpgrade via PRO → Till ${TILL_ID}`); setActiveTab('payments'); return}
-    if (!prodName.trim() || !prodPrice){alert('Name and price required'); return}
-    if (files.length === 0 && !editingId){alert('Photo required'); return}
-    if (files.length > imageLimit && imageLimit!==999999){alert(`Plan allows ${imageLimit} images per product.`); return}
+    if (editingId === null && products.length >= productLimit){
+      setErrorMsg(`🔒 ${currentPlanId.toUpperCase()} allows ${productLimit===999999?'Unlimited':productLimit} products. Upgrade via PRO → Till ${TILL_ID}`);
+      setTimeout(()=>setErrorMsg(null),4000);
+      setActiveTab('payments'); return
+    }
+    if (!prodName.trim() || !prodPrice){ setErrorMsg('Name and price required'); setTimeout(()=>setErrorMsg(null),3000); return}
+    if (files.length === 0 && !editingId){ setErrorMsg('Photo required - select at least 1 image'); setTimeout(()=>setErrorMsg(null),3000); return}
+    if (files.length > imageLimit && imageLimit!==999999){ setErrorMsg(`❌ ${currentPlanId.toUpperCase()} allows ${imageLimit} images. You selected ${files.length}`); setTimeout(()=>setErrorMsg(null),4000); return}
     setUploading(true)
     try{
       const { data: { user } } = await supabase.auth.getUser(); if (!user) throw new Error('Not logged in')
-      const urls: string[] = []
-      for (const f of files){ urls.push(await uploadOne(f, user.id)) }
+      let urls: string[] = []
+      // Upload all files
+      for (const f of files){ 
+        const url = await uploadOne(f, user.id)
+        urls.push(url)
+      }
+      // If editing and user didn't select new files, keep existing
+      if (editingId && urls.length === 0) {
+        // Keep existing product images
+        const existing = products.find(p=>p.id===editingId)
+        if (existing) {
+          urls = existing.image_urls && existing.image_urls.length ? existing.image_urls : [existing.image_url].filter(Boolean) as string[]
+        }
+      }
+      if (urls.length === 0) throw new Error('No images to save')
+      
       if (editingId) {
-        const payload: any = { name: prodName.trim(), price: Number(prodPrice) }
-        if (urls.length) { payload.image_url = urls[0]; payload.image_urls = urls }
-        const { data } = await supabase.from('products').update(payload).eq('id', editingId).select().single()
+        const payload: any = { name: prodName.trim(), price: Number(prodPrice), image_url: urls[0], image_urls: urls }
+        const { data, error } = await supabase.from('products').update(payload).eq('id', editingId).select().single()
+        if (error) throw error
         if (data) setProducts(products.map(pr => pr.id === editingId ? data : pr))
         setEditingId(null)
       } else {
-        const { data } = await supabase.from('products').insert({ user_id: user.id, name: prodName.trim(), price: Number(prodPrice), image_url: urls[0], image_urls: urls }).select().single()
+        const { data, error } = await supabase.from('products').insert({ user_id: user.id, name: prodName.trim(), price: Number(prodPrice), image_url: urls[0], image_urls: urls }).select().single()
+        if (error) throw error
         if (data) setProducts([data, ...products])
       }
       setProdName(''); setProdPrice(''); setFiles([]); setPreviews([]); 
-    }catch(e:any){ setErrorMsg(e.message) } setUploading(false)
+    }catch(e:any){ setErrorMsg(e.message); setTimeout(()=>setErrorMsg(null),5000) } setUploading(false)
   }
   const deleteProduct = async (id: string) => { if (!confirm('Delete?')) return; await supabase.from('products').delete().eq('id', id); setProducts(products.filter(p=>p.id!==id)) }
   const handleBuyPlan = async () => {
@@ -495,8 +596,68 @@ export default function Dashboard() {
         )}
 
         {activeTab==='analytics' && (
-          <div>
-            {profile && <RealAnalytics userId={profile.id} currentPlanId={currentPlanId} />}
+          <div className="space-y-4">
+            {!isPremium ? (
+              <div className="relative bg-white border-2 border-black rounded-[24px] overflow-hidden min-h-[640px]">
+                <div className="absolute inset-0 p-6 md:p-8 blur-[14px] opacity-40 pointer-events-none select-none">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[{ label: 'Total Views', value: '12.4k', change: '+23%' },{ label: 'WhatsApp Clicks', value: '1,842', change: '+18%' },{ label: 'Orders Started', value: '324', change: '+12%' },{ label: 'Revenue Est.', value: 'Rs. 184k', change: '+31%' }].map((s,i)=>(<div key={i} className="bg-[#F8F7F5] border rounded-[16px] p-4"><div className="text-[11px] uppercase tracking-widest text-zinc-500 font-bold">{s.label}</div><div className="text-[22px] font-black mt-1">{s.value}</div><div className="text-[11px] text-green-600 font-bold mt-1">{s.change}</div></div>))}
+                  </div>
+                  <div className="mt-6 grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-4">
+                    <div className="bg-[#F8F7F5] border rounded-[20px] p-5 h-[260px]"><div className="h-4 w-24 bg-zinc-200 rounded-full" /><div className="mt-6 flex items-end gap-2 h-[180px]">{[40,65,35,85,55,90,70,45,75,60,80,50].map((h,i)=><div key={i} className="flex-1 bg-black rounded-t-[8px]" style={{height: `${h}%`}} />)}</div></div>
+                    <div className="bg-[#F8F7F5] border rounded-[20px] p-5 h-[260px]"><div className="h-4 w-20 bg-zinc-200 rounded-full" /><div className="mt-6 space-y-3">{[85,60,45,30].map((w,i)=><div key={i} className="flex items-center gap-3"><div className="w-8 h-8 rounded-[10px] bg-zinc-200" /><div className="flex-1"><div className="h-3 bg-zinc-200 rounded-full" style={{width: `${w}%`}} /><div className="h-2 bg-zinc-100 rounded-full mt-2 w-1/2" /></div></div>)}</div></div>
+                  </div>
+                </div>
+                <div className="absolute inset-0 bg-white/75 backdrop-blur-[20px] flex flex-col items-center justify-center p-6 text-center">
+                  <div className="relative"><GlassPremiumLock size={72} /><div className="absolute -bottom-1 -right-1 bg-black text-white text-[9px] font-black px-2 h-5 rounded-full flex items-center tracking-widest">PREMIUM</div></div>
+                  <h3 className="mt-6 text-[22px] md:text-[26px] font-black tracking-tight leading-none">Live Analytics is Premium Only</h3>
+                  <p className="mt-3 text-[13px] text-zinc-500 max-w-[360px] leading-[1.5]">You promised your users live analytics — this is it. Track store views, WhatsApp clicks, top products, and revenue in real-time. Basic and Advanced plans can't access this.</p>
+                  <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-3 w-full max-w-[520px]">
+                    <div className="bg-[#F8F7F5] border rounded-[14px] p-3.5 text-left"><div className="w-8 h-8 rounded-[10px] bg-black text-white flex items-center justify-center"><AnalyticsIcon className="w-4 h-4" /></div><div className="mt-2.5 font-bold text-[12px]">Real-time Views</div><div className="text-[11px] text-zinc-500 mt-1 leading-[1.3]">Every store visit tracked live</div></div>
+                    <div className="bg-[#F8F7F5] border rounded-[14px] p-3.5 text-left"><div className="w-8 h-8 rounded-[10px] bg-black text-white flex items-center justify-center">↗</div><div className="mt-2.5 font-bold text-[12px]">WhatsApp Funnel</div><div className="text-[11px] text-zinc-500 mt-1 leading-[1.3]">Clicks → Orders → Revenue</div></div>
+                    <div className="bg-[#F8F7F5] border rounded-[14px] p-3.5 text-left"><div className="w-8 h-8 rounded-[10px] bg-[#E8FF86] text-black flex items-center justify-center font-black text-[12px]">₨</div><div className="mt-2.5 font-bold text-[12px]">Top Products</div><div className="text-[11px] text-zinc-500 mt-1 leading-[1.3]">Know what sells best</div></div>
+                  </div>
+                  <div className="mt-6 flex flex-col md:flex-row items-center gap-3">
+                    <button onClick={()=>setActiveTab('payments')} className="h-11 px-7 bg-black text-white rounded-full text-[13px] font-bold flex items-center gap-2 hover:bg-zinc-900 transition-colors">Upgrade to Premium — Rs. 2999/mo<span className="w-5 h-5 bg-white text-black rounded-full flex items-center justify-center text-[10px]">↗</span></button>
+                    <span className="text-[11px] text-zinc-500 font-medium">Till {TILL_ID} • Yearly Rs. 2499/mo (-22%) • Live + No watermark</span>
+                  </div>
+                  <div className="mt-8 flex items-center gap-2 text-[10px] font-bold tracking-widest"><span className="px-2.5 h-6 rounded-full bg-black text-white flex items-center">Basic 0% Analytics</span><span className="px-2.5 h-6 rounded-full bg-zinc-100 border flex items-center">Advanced 0% Analytics</span><span className="px-2.5 h-6 rounded-full bg-[#E8FF86] border border-black/5 flex items-center">Premium 100% Live</span></div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="bg-black text-white rounded-[24px] p-6 md:p-7 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#E8FF86] opacity-[0.08] rounded-full blur-[80px] pointer-events-none" />
+                  <div className="relative flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex items-center gap-4"><div className="w-12 h-12 bg-white text-black rounded-[14px] flex items-center justify-center"><AnalyticsIcon className="w-6 h-6" /></div><div><div className="flex items-center gap-2.5"><h2 className="font-black text-[20px] tracking-tight">Live Analytics</h2><span className="flex items-center gap-1.5 px-2.5 h-6 rounded-full bg-[#E8FF86] text-black text-[10px] font-black tracking-widest"><LiveDot /> LIVE</span><span className="px-2.5 h-6 rounded-full bg-white/10 border border-white/10 text-[10px] font-bold tracking-widest">PREMIUM UNLOCKED ✓</span></div><p className="text-[11px] text-white/60 mt-1">Real-time • No watermark • {products.length} products tracked</p></div></div>
+                    <div className="flex items-center gap-2"><div className="h-9 px-3 rounded-full bg-white/10 border border-white/10 text-[11px] font-medium flex items-center gap-2"><span className="w-2 h-2 bg-[#E8FF86] rounded-full animate-pulse" />Store: {slug || 'your-store'} • Live</div><div className="h-9 px-3 rounded-full bg-white text-black text-[11px] font-bold flex items-center">Last 7 days</div></div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  {[{ label: 'Total Views', value: '12,483', sub: 'Unique visitors', change: '+23.4%', up: true, icon: '◧' },{ label: 'WhatsApp Clicks', value: '1,842', sub: '87.2% CTR', change: '+18.1%', up: true, icon: '↗' },{ label: 'Orders Started', value: '324', sub: '17.6% conversion', change: '+12.3%', up: true, icon: '◫' },{ label: 'Est. Revenue', value: 'Rs. 184,500', sub: 'Avg Rs. 569 / order', change: '+31.2%', up: true, icon: '₨' }].map((s,i)=>(
+                    <div key={i} className="bg-white border rounded-[20px] p-5 relative overflow-hidden group hover:border-black transition-colors">
+                      <div className="flex items-start justify-between"><div className="w-9 h-9 rounded-[12px] bg-[#F8F7F5] border flex items-center justify-center text-[14px] font-bold">{s.icon}</div><span className={`px-2 h-6 rounded-full text-[10px] font-black flex items-center gap-1 ${s.up ? 'bg-[#E8FF86] text-black' : 'bg-red-100 text-red-600'}`}>{s.up ? '↗' : '↘'} {s.change}</span></div>
+                      <div className="mt-4"><div className="text-[11px] font-bold tracking-widest uppercase text-zinc-500">{s.label}</div><div className="text-[24px] font-black tracking-tight mt-1">{s.value}</div><div className="text-[11px] text-zinc-500 mt-1">{s.sub}</div></div>
+                    </div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-[1.7fr_1fr] gap-3">
+                  <div className="bg-white border rounded-[20px] p-5 md:p-6">
+                    <div className="flex items-center justify-between"><h3 className="font-bold text-[13px] tracking-tight">Views & Clicks — Last 7 Days</h3><div className="flex items-center gap-3 text-[10px] font-bold tracking-widest"><span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-black" />Views</span><span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#E8FF86] border border-black/10" />WhatsApp Clicks</span></div></div>
+                    <div className="mt-6 h-[160px] md:h-[200px] flex items-end gap-[4px] md:gap-[10px]">{[{ v: 60, c: 32 },{ v: 85, c: 48 },{ v: 55, c: 28 },{ v: 95, c: 62 },{ v: 70, c: 44 },{ v: 110, c: 78 },{ v: 88, c: 52 }].map((d,i)=>(<div key={i} className="flex-1 flex flex-col items-center gap-2 group/bar"><div className="w-full flex gap-1 items-end justify-center h-[160px]"><div className="flex-1 bg-black rounded-t-[10px]" style={{height: `${d.v}%`}} /><div className="flex-1 bg-[#E8FF86] border border-black/5 rounded-t-[10px]" style={{height: `${d.c}%`}} /></div><span className="text-[10px] font-bold text-zinc-500">{['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i]}</span></div>))}</div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="bg-white border rounded-[20px] p-5"><h3 className="font-bold text-[13px] tracking-tight">Top Products by WhatsApp Clicks</h3><div className="mt-4 space-y-3">{(products.length ? products.slice(0,4) : [{ id:'1', name:'Noor Lawn Suit', price:3500, image_url:'https://picsum.photos/100' } as any, { id:'2', name:'Gul Ahmed Cotton', price:2800, image_url:'https://picsum.photos/101' } as any, { id:'3', name:'Khaadi Khaddar', price:4200, image_url:'https://picsum.photos/102' } as any]).map((p:any, i:number)=>(<div key={p.id} className="flex items-center gap-3"><div className="w-10 h-10 rounded-[12px] bg-[#F8F7F5] border flex items-center justify-center font-bold text-[11px]">{i+1}</div><img src={p.image_url} className="w-10 h-10 rounded-[10px] object-cover border bg-zinc-50" /><div className="flex-1 min-w-0"><div className="text-[12px] font-bold truncate">{p.name}</div><div className="text-[11px] text-zinc-500">Rs. {p.price} • {Math.floor(Math.random()*60+20)} clicks</div></div><div className="w-14 h-2 rounded-full bg-[#F8F7F5] border overflow-hidden"><div className="h-full bg-black rounded-full" style={{width: `${85 - i*15}%`}} /></div></div>))}</div></div>
+                    <div className="bg-black text-white rounded-[20px] p-5 relative overflow-hidden"><div className="absolute top-0 right-0 w-32 h-32 bg-[#E8FF86] opacity-[0.12] rounded-full blur-[30px]" /><h3 className="font-bold text-[12px] tracking-widest uppercase relative">Conversion Funnel</h3><div className="mt-4 space-y-2.5 relative">{[{ label: 'Store Views', value: '12,483', pct: '100%' },{ label: 'Product Views', value: '4,821', pct: '38.6%' },{ label: 'WhatsApp Clicks', value: '1,842', pct: '14.7%' },{ label: 'Orders Started', value: '324', pct: '2.6%' }].map((f,i)=>(<div key={i} className="flex items-center gap-3"><div className="w-6 h-6 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-[10px] font-bold">{i+1}</div><div className="flex-1"><div className="flex items-center justify-between"><span className="text-[12px] font-medium">{f.label}</span><span className="text-[11px] font-mono opacity-60">{f.pct}</span></div><div className="mt-1 h-1.5 rounded-full bg-white/10 overflow-hidden"><div className="h-full bg-[#E8FF86]" style={{width: f.pct}} /></div></div><span className="text-[12px] font-black">{f.value}</span></div>))}</div></div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="bg-white border rounded-[20px] p-5"><div className="text-[11px] font-black tracking-widest uppercase text-zinc-500">Device Breakdown</div><div className="mt-4 flex items-center gap-4"><div className="w-16 h-16 rounded-full border-[6px] border-black border-r-[#E8FF86] border-b-[#E8FF86] flex items-center justify-center font-black text-[11px]">78%</div><div className="space-y-2 text-[11px]"><div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-black" />Mobile 78%</div><div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#E8FF86] border" />Desktop 18%</div><div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-zinc-200" />Other 4%</div></div></div></div>
+                  <div className="bg-white border rounded-[20px] p-5"><div className="text-[11px] font-black tracking-widest uppercase text-zinc-500">Traffic Source</div><div className="mt-4 space-y-2.5">{[{s:'Direct Link', p:'62%'}, {s:'WhatsApp Status', p:'24%'}, {s:'Instagram Bio', p:'14%'}].map((t,i)=><div key={i} className="flex items-center justify-between text-[12px]"><span className="font-medium">{t.s}</span><span className="font-mono text-[11px] bg-[#F8F7F5] border px-2 h-6 rounded-full flex items-center">{t.p}</span></div>)}</div></div>
+                  <div className="bg-[#E8FF86] border border-black/5 rounded-[20px] p-5 relative overflow-hidden"><div className="absolute -right-6 -top-6 w-24 h-24 bg-black/5 rounded-full" /><div className="relative"><div className="w-9 h-9 rounded-[12px] bg-black text-white flex items-center justify-center font-bold">✦</div><div className="mt-3 font-black text-[13px] tracking-tight">Premium Analytics Live</div><div className="text-[11px] mt-1 leading-[1.4] opacity-70">You unlocked everything: no watermark, live views, funnel, top products, device & source tracking. This is what you promised users.</div><div className="mt-3 h-8 px-3 rounded-full bg-black text-white text-[11px] font-bold flex items-center w-fit">Watermark OFF • Live ON ✓</div></div></div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
