@@ -1,4 +1,4 @@
-export type ThemeCategory = 'food' | 'clothing' | 'tech' | 'shoes' | 'sleek' | 'advanced'
+export type ThemeCategory = 'food' | 'clothing' | 'tech' | 'shoes' | 'sleek' | 'advanced' | 'premium'
 export type StoreTheme = {
   id: string
   name: string
@@ -6,7 +6,7 @@ export type StoreTheme = {
   niche: ThemeCategory
   badge: string
   tagline: string
-  tier?: 'standard' | 'advanced'
+  tier?: 'standard' | 'advanced' | 'premium'
   colors: { bg: string; text: string; card: string; border: string; accent: string; sub?: string }
 }
 export type Theme = StoreTheme
@@ -20,15 +20,20 @@ export const STORE_THEMES: StoreTheme[] = [
   { id: 'tech-electro', name: 'Electro Hub', category: 'tech', niche: 'tech', badge: '💻', tagline: 'Future tech', tier: 'standard', colors: { bg: '#0F1117', text: '#E2E8F0', card: '#1A1D27', border: '#2D3748', accent: '#3B82F6', sub: '#94A3B8' } },
   { id: 'shoes-street', name: 'Street Kicks', category: 'shoes', niche: 'shoes', badge: '👟', tagline: 'Hype footwear', tier: 'standard', colors: { bg: '#FFF5F5', text: '#1A0E0E', card: '#FFFFFF', border: '#FFCFCF', accent: '#FF1A1A', sub: '#71717A' } },
   { id: 'shoes-leather', name: 'Leather Craft', category: 'shoes', niche: 'shoes', badge: '🤎', tagline: 'Handmade premium', tier: 'standard', colors: { bg: '#FDF8F0', text: '#2C1810', card: '#FFFFFF', border: '#E8D5C4', accent: '#D4A574', sub: '#8C6B4A' } },
-  // MOVED TO ADVANCED CATEGORY
   { id: 'sleek-beige', name: 'Sleek Beige', category: 'advanced', niche: 'advanced', badge: '○', tagline: 'Quiet minimal luxury', tier: 'advanced', colors: { bg: '#FAF9F6', text: '#0F0F0F', card: '#FFFFFF', border: '#E8E4DF', accent: '#111111', sub: '#9CA3AF' } },
   { id: 'sleek-dark', name: 'Sleek Dark', category: 'advanced', niche: 'advanced', badge: '●', tagline: 'Midnight minimal', tier: 'advanced', colors: { bg: '#0F0F0F', text: '#FAFAF8', card: '#1A1A1A', border: '#2A2A2A', accent: '#FFFFFF', sub: '#6B7280' } },
   { id: 'sleek-editorial', name: 'Editorial', category: 'advanced', niche: 'advanced', badge: '—', tagline: 'Curated essentials', tier: 'advanced', colors: { bg: '#FFFFFF', text: '#111111', card: '#F8F8F6', border: '#E5E5E3', accent: '#111111', sub: '#737373' } },
+  // PREMIUM - NEW BASED ON YOUR 3 REFERENCES
+  { id: 'spike-premium', name: 'Spike Pro', category: 'premium', niche: 'shoes', badge: 'ADIDAS', tagline: 'The journey begins with perfect pair', tier: 'premium', colors: { bg: '#FFFFFF', text: '#0A0A0A', card: '#FFFFFF', border: '#E5E5E5', accent: '#0A0A0A', sub: '#71717A' } },
+  { id: 'shoe-app-premium', name: 'Shoe App Pro', category: 'premium', niche: 'shoes', badge: '✦', tagline: 'Shoe Details • Black Friday • For You', tier: 'premium', colors: { bg: '#F2F0FF', text: '#0A0A0A', card: '#FFFFFF', border: '#E8E8FF', accent: '#7C3AED', sub: '#6B7280' } },
+  { id: 'trenzo-luxury', name: 'Trenzo Luxury', category: 'premium', niche: 'clothing', badge: 'TRENZO', tagline: 'A reflection of personal styling', tier: 'premium', colors: { bg: '#0A0A0A', text: '#FFFFFF', card: '#181818', border: '#222222', accent: '#FFFFFF', sub: '#A1A1AA' } },
 ]
 
 export function getTheme(id: string): StoreTheme {
   return STORE_THEMES.find(t => t.id === id) || STORE_THEMES[2]
 }
 export const getThemesByCategory = (cat: ThemeCategory) => STORE_THEMES.filter(t => t.category === cat)
-export const getStandardThemes = () => STORE_THEMES.filter(t => t.tier !== 'advanced')
+export const getStandardThemes = () => STORE_THEMES.filter(t => t.tier === 'standard')
 export const getAdvancedThemes = () => STORE_THEMES.filter(t => t.category === 'advanced')
+export const getPremiumThemes = () => STORE_THEMES.filter(t => t.tier === 'premium')
+export const getAllThemes = () => STORE_THEMES
