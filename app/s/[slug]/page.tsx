@@ -5,11 +5,18 @@ import { getTheme } from '@/lib/storeThemes'
 
 type Product = { id: string; name: string; price: number; image_url: string; image_urls?: string[] }
 
-function Gallery({ images, themeId }: { images: string[]; themeId: string }) {
+function Gallery({ images, themeId, productId, storeSlug, ownerId, onProductView }: { images: string[]; themeId: string; productId?: string; storeSlug?: string; ownerId?: string; onProductView?: (id: string) => void }) {
   const [idx, setIdx] = useState(0)
   const safe = Math.min(idx, images.length - 1)
   const isEditorial = themeId === 'sleek-editorial'
   const isDark = ['clothing-street','tech-electro','sleek-dark'].includes(themeId)
+  
+  useEffect(() => {
+    if (productId && storeSlug && onProductView) {
+      onProductView(productId)
+    }
+  }, [safe])
+
   return (
     <div className="relative">
       <div className={`overflow-hidden ${isEditorial ? 'rounded-[16px] aspect-[3/4]' : 'rounded-[12px] h-48'} bg-zinc-50`}>
@@ -31,7 +38,7 @@ function Gallery({ images, themeId }: { images: string[]; themeId: string }) {
   )
 }
 
-function ProductCard({ p, onAdd, themeId }: { p: Product; onAdd: (p: Product) => void; themeId: string }) {
+function ProductCard({ p, onAdd, themeId, storeSlug, ownerId, track }: { p: Product; onAdd: (p: Product) => void; themeId: string; storeSlug?: string; ownerId?: string; track: (type: string, productId?: string) => void }) {
   const theme = getTheme(themeId)
   const images = p.image_urls && p.image_urls.length>0 ? p.image_urls : [p.image_url].filter(Boolean)
   const isDark = ['clothing-street','tech-electro','sleek-dark'].includes(themeId)
@@ -40,13 +47,18 @@ function ProductCard({ p, onAdd, themeId }: { p: Product; onAdd: (p: Product) =>
   const cardBase = isDark ? 'bg-[#181818] border-white/10 text-white' : isSleekBeige ? 'bg-white border-zinc-100' : 'bg-white border-zinc-200'
   const btnBg = themeId === 'food-spice' ? '#FF6B35' : themeId === 'food-organic' ? '#87A878' : themeId === 'clothing-street' ? '#CCFF00' : themeId === 'tech-electro' ? '#3B82F6' : themeId === 'shoes-street' ? '#FF1A1A' : themeId === 'sleek-dark' ? '#fff' : theme.colors.accent
   const btnColor = themeId === 'clothing-street' || themeId === 'sleek-dark' ? '#000' : '#fff'
-  if (isEditorial) {
-    return <div className="group bg-transparent flex flex-col"><Gallery images={images} themeId={themeId} /><div className="mt-4"><div className="font-serif text-[14px] tracking-wide">{p.name}</div><div className="text-[11px] tracking-[0.14em] text-zinc-500 mt-1">RS. {p.price.toLocaleString()}</div><button onClick={()=>onAdd(p)} className="mt-3 text-[11px] tracking-[0.14em] underline underline-offset-4 hover:text-black text-zinc-700">ADD TO CART —</button></div></div>
+  
+  const handleAdd = () => {
+    track('product_view', p.id)
+    onAdd(p)
   }
-  return <div style={{borderRadius: isSleekBeige || themeId.startsWith('sleek-') ? 16 : 20}} className={`border p-3 flex flex-col hover:shadow-lg ${cardBase}`}><Gallery images={images} themeId={themeId} /><div className="mt-3 flex-1"><div className={`font-medium text-[13px] truncate ${isDark?'text-white':'text-zinc-900'}`}>{p.name}</div><div className={`font-bold text-[14px] mt-1 ${isDark?'text-white':'text-zinc-900'}`}>Rs. {p.price.toLocaleString()}</div></div><button onClick={()=>onAdd(p)} style={{borderRadius: themeId.startsWith('sleek-')?10:12, background: btnBg, color: btnColor}} className="mt-3 w-full h-10 text-[13px] font-medium">Add — {theme.badge}</button></div>
+
+  if (isEditorial) {
+    return <div className="group bg-transparent flex flex-col"><Gallery images={images} themeId={themeId} productId={p.id} storeSlug={storeSlug} ownerId={ownerId} onProductView={(id)=>track('product_view', id)} /><div className="mt-4"><div className="font-serif text-[14px] tracking-wide">{p.name}</div><div className="text-[11px] tracking-[0.14em] text-zinc-500 mt-1">RS. {p.price.toLocaleString()}</div><button onClick={handleAdd} className="mt-3 text-[11px] tracking-[0.14em] underline underline-offset-4 hover:text-black text-zinc-700">ADD TO CART —</button></div></div>
+  }
+  return <div style={{borderRadius: isSleekBeige || themeId.startsWith('sleek-') ? 16 : 20}} className={`border p-3 flex flex-col hover:shadow-lg ${cardBase}`}><Gallery images={images} themeId={themeId} productId={p.id} storeSlug={storeSlug} ownerId={ownerId} onProductView={(id)=>track('product_view', id)} /><div className="mt-3 flex-1"><div className={`font-medium text-[13px] truncate ${isDark?'text-white':'text-zinc-900'}`}>{p.name}</div><div className={`font-bold text-[14px] mt-1 ${isDark?'text-white':'text-zinc-900'}`}>Rs. {p.price.toLocaleString()}</div></div><button onClick={handleAdd} style={{borderRadius: themeId.startsWith('sleek-')?10:12, background: btnBg, color: btnColor}} className="mt-3 w-full h-10 text-[13px] font-medium">Add — {theme.badge}</button></div>
 }
 
-// FIXED: Next.js 14 async params + robust slug lookup = no more 404
 export default function StorePage({ params }: { params: Promise<{ slug: string }> | { slug: string } }) {
   const [rawSlug, setRawSlug] = useState('')
   const [profile, setProfile] = useState<any>(null)
@@ -57,9 +69,24 @@ export default function StorePage({ params }: { params: Promise<{ slug: string }
   const [customerAddress, setCustomerAddress] = useState('')
   const [loading, setLoading] = useState(true)
 
+  const track = async (event_type: string, product_id?: string) => {
+    try {
+      if (!profile?.store_slug) return
+      await fetch('/api/analytics/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          store_slug: profile.store_slug,
+          store_owner_id: profile.id,
+          event_type,
+          product_id: product_id || null
+        })
+      })
+    } catch (e) {}
+  }
+
   useEffect(() => {
     const resolveParams = async () => {
-      // Handle both Promise (Next 14) and object (Next 13) params
       const resolved = params instanceof Promise ? await params : params
       const slugValue = (resolved as any)?.slug || ''
       setRawSlug(slugValue)
@@ -69,7 +96,6 @@ export default function StorePage({ params }: { params: Promise<{ slug: string }
       if (!slugValue) { setLoading(false); return }
       const clean = decodeURIComponent(slugValue).toLowerCase().trim().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'')
       let prof = null
-      // Try exact match first, then case-insensitive, then partial
       const attempts = [
         () => supabase.from('profiles').select('*').eq('store_slug', clean).maybeSingle(),
         () => supabase.from('profiles').select('*').eq('store_slug', slugValue).maybeSingle(),
@@ -86,14 +112,36 @@ export default function StorePage({ params }: { params: Promise<{ slug: string }
       const { data: prods } = await supabase.from('products').select('*').eq('user_id', prof.id).order('created_at', { ascending: false })
       if (prods) setProducts(prods)
       setLoading(false)
+      
+      // REAL TRACKING: Store view
+      setTimeout(() => {
+        fetch('/api/analytics/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            store_slug: prof.store_slug,
+            store_owner_id: prof.id,
+            event_type: 'store_view'
+          })
+        }).catch(()=>{})
+      }, 500)
     }
     resolveParams().then(load)
   }, [params])
 
-  const addToCart = (p: Product) => { setCart([...cart, p]); setShowCart(true) }
+  const addToCart = (p: Product) => { 
+    track('product_view', p.id)
+    setCart([...cart, p]); 
+    setShowCart(true) 
+  }
   const removeFromCart = (i: number) => setCart(cart.filter((_, idx) => idx !== i))
+  
   const orderWhatsApp = () => {
     if (!profile) return
+    // Track WhatsApp click - REAL LEAD
+    cart.forEach(p => track('whatsapp_click', p.id))
+    if (cart.length === 0) track('whatsapp_click')
+    
     const total = cart.reduce((s,p)=>s+p.price,0)
     const lines = cart.map(p=>`• ${p.name} - Rs. ${p.price}`).join('%0A')
     const msg = `Hi ${profile.business_name}!%0A%0AOrder:%0A${lines}%0A%0ATotal: Rs. ${total}%0AName: ${customerName}%0AAddress: ${customerAddress}`
@@ -119,7 +167,7 @@ export default function StorePage({ params }: { params: Promise<{ slug: string }
       </header>
       <main className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">
         <div style={{borderRadius: isSleek ? 16 : 20}} className={`border p-6 mb-6 flex items-center justify-between ${isDark ? 'bg-white/[0.04] border-white/10' : 'bg-white border-zinc-200'}`}><div className="flex items-center gap-4"><div style={{borderRadius:12}} className="w-14 h-14 flex items-center justify-center text-[22px] border">{theme.badge}</div><div><h1 className="text-[20px] font-bold">{profile.business_name}</h1><p className="text-[13px] opacity-60 mt-1">{theme.tagline} • {products.length} items • /s/{profile.store_slug}</p></div></div></div>
-        <div className={isEditorial ? 'grid grid-cols-1 md:grid-cols-3 gap-12' : 'grid grid-cols-2 md:grid-cols-4 gap-4'}>{products.map(p=> <ProductCard key={p.id} p={p} onAdd={addToCart} themeId={themeId} />)}</div>
+        <div className={isEditorial ? 'grid grid-cols-1 md:grid-cols-3 gap-12' : 'grid grid-cols-2 md:grid-cols-4 gap-4'}>{products.map(p=> <ProductCard key={p.id} p={p} onAdd={addToCart} themeId={themeId} storeSlug={profile.store_slug} ownerId={profile.id} track={track} />)}</div>
         {products.length === 0 && <div className="py-20 text-center"><div className="text-[40px] mb-4">{theme.badge}</div><div>No products yet</div><div className="text-[12px] opacity-50 mt-2">Add products from dashboard</div></div>}
       </main>
       {showCart && (
