@@ -223,11 +223,11 @@ export default function Dashboard() {
   )
 
   return (
-    <div style={{minHeight:'100vh',background:'#F8F7F5'}} className="text-zinc-900 pb-24 antialiased">
+    <div style={{minHeight:'100vh',background:'#F8F7F5'}} className="text-zinc-900 pb-24 antialiased overflow-x-clip max-w-[100vw]">
       <style>{`
-        .no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
-        .glass-container { position: relative; display: flex; justify-content: center; align-items: center; min-height: 400px; padding: 40px 0 60px; gap: 0; }
-        .glass-container .glass { position: relative; width: 280px; height: 360px; background: rgba(255,255,255,0.85); border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 20px 50px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,1) inset; display: flex; justify-content: flex-start; align-items: center; flex-direction: column; transition: all 0.6s cubic-bezier(0.23,1,0.32,1); border-radius: 24px; margin: 0 -40px; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); transform: rotate(calc(var(--r) * 1deg)) translateY(0); cursor: pointer; overflow: hidden; }
+        .no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none} html,body{overflow-x:hidden;max-width:100vw} *{box-sizing:border-box;min-width:0}
+        .glass-container { position: relative; display: flex; justify-content: center; align-items: center; min-height: 400px; padding: 40px 0 60px; gap: 0; overflow-x: visible; } @media (max-width: 768px){ .glass-container { justify-content: flex-start; overflow-x: auto; padding: 20px 16px 40px 16px; min-height: 340px; } .glass-container::-webkit-scrollbar{display:none} .glass-container{ -ms-overflow-style:none; scrollbar-width:none; } }
+        .glass-container .glass { position: relative; width: 280px; height: 360px; flex-shrink: 0; background: rgba(255,255,255,0.85); border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 20px 50px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,1) inset; display: flex; justify-content: flex-start; align-items: center; flex-direction: column; transition: all 0.6s cubic-bezier(0.23,1,0.32,1); border-radius: 24px; margin: 0 -40px; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); transform: rotate(calc(var(--r) * 1deg)) translateY(0); cursor: pointer; overflow: hidden; }
         .glass-container .glass:hover { transform: rotate(0deg) translateY(-14px) scale(1.06); margin: 0 24px; box-shadow: 0 32px 80px rgba(0,0,0,0.14), 0 0 0 1px rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.12); z-index: 10; background: #fff; }
         .glass-container .glass::before { content: attr(data-text); position: absolute; bottom: 0; width: 100%; height: 52px; background: #fff; border-top: 1px solid rgba(0,0,0,0.06); display: flex; justify-content: center; align-items: center; color: #0A0A0A; font-size: 12px; font-weight: 700; letter-spacing: -0.01em; }
         .glass-container .glass.selected { background: #0A0A0A; border: 2px solid #0A0A0A; transform: rotate(0deg) translateY(-18px) scale(1.08); margin: 0 26px; z-index: 20; box-shadow: 0 32px 80px rgba(0,0,0,0.22), 0 0 0 4px #E8FF86; }
@@ -260,35 +260,36 @@ export default function Dashboard() {
         @media (max-width: 768px) { .glass-container .glass { width: 200px; height: 280px; margin: 0 -24px; } .glass-container { min-height: 340px; padding: 20px 0 40px; } }
       `}</style>
 
-      <header className="bg-white border-b sticky top-0 z-30">
-        <div className="max-w-6xl mx-auto px-4 md:px-6 h-[56px] md:h-[64px] flex items-center justify-between gap-2 md:gap-3">
-          <Link href="/" className="flex items-center gap-2.5 shrink-0"><div className="w-9 h-9 bg-black text-white flex items-center justify-center font-bold rounded-[10px] text-[14px]">D</div><span className="font-semibold tracking-tight text-[15px] hidden md:inline">DukaanWhats.pk</span></Link>
-          <div className="flex-1 flex justify-center">
-            <div className="flex items-center gap-1.5 md:gap-2">
+            <header className="bg-white border-b sticky top-0 z-30 overflow-hidden">
+        <div className="max-w-6xl mx-auto px-3 md:px-6">
+          <div className="flex items-center justify-between h-[48px] md:h-[64px] gap-2">
+            <a href="/" className="flex items-center gap-2 md:gap-2.5 shrink-0"><div className="w-8 h-8 md:w-9 md:h-9 bg-black text-white flex items-center justify-center font-bold rounded-[10px] text-[13px] md:text-[14px]">D</div><span className="font-semibold tracking-tight text-[13px] md:text-[15px]">DukaanWhats.pk</span></a>
+            <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
+              <CurrentPlanButton />
+              <Link href={slug ? `/s/${slug}` : '#'} target="_blank" className="h-8 md:h-10 px-2.5 md:px-5 bg-black text-white rounded-[10px] md:rounded-[12px] text-[10px] md:text-[12px] font-medium flex items-center justify-center leading-none hover:bg-zinc-900">View ↗</Link>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 md:gap-2 pb-2.5 md:pb-0 overflow-x-auto no-scrollbar -mx-3 px-3 md:mx-0 md:px-0 md:justify-center md:h-[40px]">
+            <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
               {[
                 { id: 'store', label: 'Store' },
                 { id: 'themes', label: 'Themes' },
                 { id: 'products', label: `Products ${products.length}/${productLimit===999999?'∞':productLimit}` },
                 { id: 'analytics', label: 'Analytics', premium: true },
               ].map((t:any) => (
-                <button key={t.id} onClick={()=>setActiveTab(t.id as any)} className={`modern-tab ${activeTab===t.id ? 'modern-tab-active' : 'modern-tab-inactive'}`}>
+                <button key={t.id} onClick={()=>setActiveTab(t.id as any)} className={`modern-tab shrink-0 ${activeTab===t.id ? 'modern-tab-active' : 'modern-tab-inactive'}`}>
                   {t.label}
                   {t.premium && !isPremium && <span className="ml-0.5 w-4 h-4 rounded-full bg-black/10 flex items-center justify-center"><svg width="8" height="8" viewBox="0 0 24 24" fill="none"><rect x="4" y="10" width="16" height="10" rx="2" fill="currentColor"/><path d="M8 10V7C8 5 10 3 12 3C14 3 16 5 16 7V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg></span>}
                   {t.premium && isPremium && <LiveDot />}
                 </button>
               ))}
-              <button onClick={()=>setActiveTab('payments')} className={`pro-glow-btn ${activeTab==='payments'?'active':''}`}><span className={`pro-dot ${activeTab==='payments'?'active':''}`}></span>PRO • Till {TILL_ID}</button>
+              <button onClick={()=>setActiveTab('payments')} className={`pro-glow-btn shrink-0 ${activeTab==='payments'?'active':''}`}><span className={`pro-dot ${activeTab==='payments'?'active':''}`}></span>PRO</button>
             </div>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <CurrentPlanButton />
-            <button onClick={copyLink} className="hidden md:flex h-10 px-4 border bg-white rounded-[12px] text-[12px] font-medium hover:bg-zinc-50 transition-colors items-center justify-center leading-none">{copied?'Copied!':'Copy Link'}</button>
-            <Link href={slug ? `/s/${slug}` : '#'} target="_blank" className="h-8 md:h-10 px-3 md:px-5 bg-black text-white rounded-[10px] md:rounded-[12px] text-[11px] md:text-[12px] font-medium flex items-center justify-center leading-none hover:bg-zinc-900 transition-colors">View ↗</Link>
           </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 md:px-6 py-6 space-y-6">
+      <main className="max-w-6xl mx-auto px-3 md:px-6 py-4 md:py-6 space-y-4 md:space-y-6 w-full max-w-full">
         {activeTab==='themes' && (
           <div className="bg-white border rounded-[20px] p-5 md:p-7">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
@@ -509,7 +510,7 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 lg:grid-cols-[1.7fr_1fr] gap-3">
                   <div className="bg-white border rounded-[20px] p-5 md:p-6">
                     <div className="flex items-center justify-between"><h3 className="font-bold text-[13px] tracking-tight">Views & Clicks — Last 7 Days</h3><div className="flex items-center gap-3 text-[10px] font-bold tracking-widest"><span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-black" />Views</span><span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#E8FF86] border border-black/10" />WhatsApp Clicks</span></div></div>
-                    <div className="mt-6 h-[200px] flex items-end gap-[10px]">{[{ v: 60, c: 32 },{ v: 85, c: 48 },{ v: 55, c: 28 },{ v: 95, c: 62 },{ v: 70, c: 44 },{ v: 110, c: 78 },{ v: 88, c: 52 }].map((d,i)=>(<div key={i} className="flex-1 flex flex-col items-center gap-2 group/bar"><div className="w-full flex gap-1 items-end justify-center h-[160px]"><div className="flex-1 bg-black rounded-t-[10px]" style={{height: `${d.v}%`}} /><div className="flex-1 bg-[#E8FF86] border border-black/5 rounded-t-[10px]" style={{height: `${d.c}%`}} /></div><span className="text-[10px] font-bold text-zinc-500">{['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i]}</span></div>))}</div>
+                    <div className="mt-6 h-[160px] md:h-[200px] flex items-end gap-[4px] md:gap-[10px]">{[{ v: 60, c: 32 },{ v: 85, c: 48 },{ v: 55, c: 28 },{ v: 95, c: 62 },{ v: 70, c: 44 },{ v: 110, c: 78 },{ v: 88, c: 52 }].map((d,i)=>(<div key={i} className="flex-1 flex flex-col items-center gap-2 group/bar"><div className="w-full flex gap-1 items-end justify-center h-[160px]"><div className="flex-1 bg-black rounded-t-[10px]" style={{height: `${d.v}%`}} /><div className="flex-1 bg-[#E8FF86] border border-black/5 rounded-t-[10px]" style={{height: `${d.c}%`}} /></div><span className="text-[10px] font-bold text-zinc-500">{['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i]}</span></div>))}</div>
                   </div>
                   <div className="space-y-3">
                     <div className="bg-white border rounded-[20px] p-5"><h3 className="font-bold text-[13px] tracking-tight">Top Products by WhatsApp Clicks</h3><div className="mt-4 space-y-3">{(products.length ? products.slice(0,4) : [{ id:'1', name:'Noor Lawn Suit', price:3500, image_url:'https://picsum.photos/100' } as any, { id:'2', name:'Gul Ahmed Cotton', price:2800, image_url:'https://picsum.photos/101' } as any, { id:'3', name:'Khaadi Khaddar', price:4200, image_url:'https://picsum.photos/102' } as any]).map((p:any, i:number)=>(<div key={p.id} className="flex items-center gap-3"><div className="w-10 h-10 rounded-[12px] bg-[#F8F7F5] border flex items-center justify-center font-bold text-[11px]">{i+1}</div><img src={p.image_url} className="w-10 h-10 rounded-[10px] object-cover border bg-zinc-50" /><div className="flex-1 min-w-0"><div className="text-[12px] font-bold truncate">{p.name}</div><div className="text-[11px] text-zinc-500">Rs. {p.price} • {Math.floor(Math.random()*60+20)} clicks</div></div><div className="w-14 h-2 rounded-full bg-[#F8F7F5] border overflow-hidden"><div className="h-full bg-black rounded-full" style={{width: `${85 - i*15}%`}} /></div></div>))}</div></div>
