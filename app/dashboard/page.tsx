@@ -628,8 +628,8 @@ export default function Dashboard() {
 
         {activeTab==='analytics' && (
           <div>
-            {currentPlanId === 'premium' ? (
-              <RealAnalytics userId={profile.id} currentPlanId={currentPlanId} />
+            {!profile ? <div className="p-8 text-center">Loading...</div> : currentPlanId === 'premium' ? (
+              <RealAnalytics userId={profile!.id} currentPlanId={currentPlanId} />
             ) : (
               <div className="relative">
                 <div className="bg-white border rounded-[24px] p-8 text-center relative">
@@ -639,7 +639,7 @@ export default function Dashboard() {
                   <button onClick={()=>setActiveTab('payments')} className="mt-5 h-10 px-6 bg-black text-white rounded-full text-[12px] font-bold">Upgrade to Premium →</button>
                 </div>
                 <div className="mt-4 opacity-30 blur-[8px] pointer-events-none select-none">
-                  <RealAnalytics userId={profile.id} currentPlanId={'premium'} />
+                  <RealAnalytics userId={profile!.id} currentPlanId={'premium'} />
                 </div>
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="w-20 h-20 bg-black rounded-full flex items-center justify-center shadow-[0_16px_48px_rgba(0,0,0,0.3)]">
