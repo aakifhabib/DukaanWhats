@@ -226,17 +226,16 @@ export default function Dashboard() {
   }
   const deleteProduct = async (id: string) => { if (!confirm('Delete?')) return; await supabase.from('products').delete().eq('id', id); setProducts(products.filter(p=>p.id!==id)) }
   const handleBuyPlan = async () => {
-    if (!selectedPlan) return; if (selectedPlan.monthly===0){setSelectedPlan(null); return}; if (!txnId.trim()){alert('Enter Transaction ID'); return}; setPurchasing(true)
+    if (!selectedPlan) return; if (selectedPlan.monthly===0){setSelectedPlan(null); return}; if (!txnId.trim()){setErrorMsg('Enter Transaction ID'); setTimeout(()=>setErrorMsg(null),3000); return}; setPurchasing(true)
     const amount = billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal
     try{
       const { data: { user } } = await supabase.auth.getUser(); if (!user) throw new Error('Not logged in')
-      const { error } = await supabase.from('plan_payments').insert({ user_id: user.id, plan_id: selectedPlan.id, amount, till_id: TILL_ID, txn_id: txnId.trim(), status: 'pending', billing_cycle: billing })
+      const { error } = await supabase.from('plan_payments').insert({ user_id: user.id, plan_id: selectedPlan.id, amount, till_id: TILL_ID, txn_id: txnId.trim(), status: 'pending' })
       if (error) throw error;
-      // Refresh payments list
       const { data: pays } = await supabase.from('plan_payments').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
-      if (pays) setMyPayments(pays)
-      alert(`✅ Submitted! Till ${TILL_ID} - ${selectedPlan.name} (${billing}) Rs. ${amount}\n\nYour payment is now PENDING. We will verify Txn ID in JazzCash App and approve within 1 hour. You will get WhatsApp notification.`); setSelectedPlan(null); setTxnId('')
-    }catch(e:any){alert(e.message)} setPurchasing(false)
+      if (pays) { setMyPayments(pays); if (pays[0]) setJustSubmitted(pays[0]) }
+      setSelectedPlan(null); setTxnId('')
+    }catch(e:any){ setErrorMsg(e.message); setTimeout(()=>setErrorMsg(null),4000) } setPurchasing(false)
   }
 
   if (loading) return <DukaanWhatsLoader message="Loading your store..." />
@@ -642,58 +641,42 @@ export default function Dashboard() {
           </div>
         )}
       </main>
-              {errorMsg && <div className="fixed bottom-4 right-4 bg-red-600 text-white px-4 py-2 rounded-full text-[12px] shadow-lg">{errorMsg}</div>}
+      {errorMsg && <div className="fixed bottom-4 right-4 bg-red-600 text-white px-4 py-2 rounded-full text-[12px] shadow-lg">{errorMsg}</div>}
 
-        {/* Approval / Rejection Popup - Shows on first open after admin action */}
-        {showStatusModal && (
-          <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white rounded-[28px] w-full max-w-[380px] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.3)] animate-[scaleIn_0.4s_cubic-bezier(0.23,1,0.32,1)]">
-              {showStatusModal.type === 'approved' ? (
-                <>
-                  <div className="bg-black text-white p-8 text-center relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-black" />
-                    <div className="relative">
-                      <div className="w-16 h-16 bg-[#E8FF86] rounded-full flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(232,255,134,0.5)]"><span className="text-[28px]">✓</span></div>
-                      <h2 className="font-black text-[22px] mt-4 tracking-tight">Payment Approved!</h2>
-                      <p className="text-[13px] text-white/60 mt-1">Your store is now Premium</p>
-                    </div>
+      {showStatusModal && (
+        <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-[28px] w-full max-w-[380px] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
+            {showStatusModal.type === 'approved' ? (
+              <div>
+                <div className="bg-black text-white p-8 text-center">
+                  <div className="w-16 h-16 bg-[#E8FF86] rounded-full flex items-center justify-center mx-auto"><span className="text-[28px]">✓</span></div>
+                  <h2 className="font-black text-[22px] mt-4">Payment Approved!</h2>
+                  <p className="text-[13px] text-white/60 mt-1">Your store is now {showStatusModal.payment.plan_id.toUpperCase()}</p>
+                </div>
+                <div className="p-6">
+                  <div className="bg-[#F8F7F5] border rounded-[14px] p-4">
+                    <div className="flex justify-between"><span className="text-[11px] text-zinc-500">Plan</span><span className="text-[13px] font-black">{showStatusModal.payment.plan_id.toUpperCase()} • Rs. {showStatusModal.payment.amount}</span></div>
+                    <div className="flex justify-between mt-2"><span className="text-[11px] text-zinc-500">Txn ID</span><span className="font-mono text-[12px] bg-white border px-2 py-1 rounded-[8px]">{showStatusModal.payment.txn_id}</span></div>
                   </div>
-                  <div className="p-6">
-                    <div className="bg-[#F8F7F5] border rounded-[14px] p-4">
-                      <div className="flex justify-between items-center"><span className="text-[11px] text-zinc-500 font-bold tracking-widest uppercase">Plan</span><span className="text-[13px] font-black">{showStatusModal.payment.plan_id.toUpperCase()} • Rs. {showStatusModal.payment.amount}</span></div>
-                      <div className="flex justify-between items-center mt-2"><span className="text-[11px] text-zinc-500 font-bold tracking-widest uppercase">Txn ID</span><span className="font-mono text-[12px] bg-white border px-2 py-1 rounded-[8px]">{showStatusModal.payment.txn_id}</span></div>
-                    </div>
-                    <div className="mt-4 space-y-2 text-[12px]">
-                      <div className="flex items-center gap-2"><span className="w-5 h-5 bg-black text-white rounded-full flex items-center justify-center text-[10px]">✓</span> Unlimited products & images unlocked</div>
-                      <div className="flex items-center gap-2"><span className="w-5 h-5 bg-black text-white rounded-full flex items-center justify-center text-[10px]">✓</span> All 11 themes + No watermark</div>
-                      <div className="flex items-center gap-2"><span className="w-5 h-5 bg-black text-white rounded-full flex items-center justify-center text-[10px]">✓</span> Live analytics enabled</div>
-                    </div>
-                    <button onClick={()=>setShowStatusModal(null)} className="mt-6 w-full h-12 bg-black text-white rounded-full font-bold text-[13px] hover:bg-zinc-900">Continue to Dashboard →</button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="bg-[#FFFBF0] p-8 text-center border-b">
-                    <div className="w-16 h-16 bg-red-50 border border-red-200 rounded-full flex items-center justify-center mx-auto"><span className="text-[24px]">✕</span></div>
-                    <h2 className="font-black text-[20px] mt-4 tracking-tight">Payment Rejected</h2>
-                    <p className="text-[12px] text-zinc-500 mt-1">Please check Txn ID and try again</p>
-                  </div>
-                  <div className="p-6">
-                    <div className="bg-[#F8F7F5] border rounded-[14px] p-4">
-                      <div className="flex justify-between items-center"><span className="text-[11px] text-zinc-500 font-bold tracking-widest uppercase">Plan</span><span className="text-[13px] font-black">{showStatusModal.payment.plan_id.toUpperCase()} • Rs. {showStatusModal.payment.amount}</span></div>
-                      <div className="flex justify-between items-center mt-2"><span className="text-[11px] text-zinc-500 font-bold tracking-widest uppercase">Txn ID</span><span className="font-mono text-[12px] bg-white border px-2 py-1 rounded-[8px]">{showStatusModal.payment.txn_id}</span></div>
-                    </div>
-                    <p className="mt-4 text-[12px] text-zinc-600 leading-[1.5]">Your Txn ID could not be verified in JazzCash Till <b>{TILL_ID}</b>. Please ensure you paid correct amount and Txn ID is correct, then resubmit.</p>
-                    <button onClick={()=>setShowStatusModal(null)} className="mt-6 w-full h-12 bg-black text-white rounded-full font-bold text-[13px]">Try Again →</button>
-                  </div>
-                </>
-              )}
-            </div>
+                  <button onClick={()=>setShowStatusModal(null)} className="mt-6 w-full h-12 bg-black text-white rounded-full font-bold text-[13px]">Continue →</button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div className="bg-[#FFFBF0] p-8 text-center border-b">
+                  <div className="w-16 h-16 bg-red-50 border border-red-200 rounded-full flex items-center justify-center mx-auto"><span className="text-[24px]">✕</span></div>
+                  <h2 className="font-black text-[20px] mt-4">Payment Rejected</h2>
+                  <p className="text-[12px] text-zinc-500 mt-1">Check Txn ID and try again</p>
+                </div>
+                <div className="p-6">
+                  <p className="text-[12px] text-zinc-600">Txn ID could not be verified in Till {TILL_ID}. Please ensure correct amount and ID.</p>
+                  <button onClick={()=>setShowStatusModal(null)} className="mt-6 w-full h-12 bg-black text-white rounded-full font-bold text-[13px]">Try Again →</button>
+                </div>
+              </div>
+            )}
           </div>
-        )}
-
-        <style>{`@keyframes scaleIn { from { transform: scale(0.9); opacity: 0 } to { transform: scale(1); opacity: 1 } }`}</style>
-      </div>
+        </div>
+      )}
     </div>
   )
 }
