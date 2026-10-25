@@ -6,12 +6,12 @@ const TILL_ID = '984837533'
 
 // --- CHANGE THIS TO YOUR EMAIL ---
 const ALLOWED_ADMINS = [
-  'aakif.habib.90@gmail.com', // Add your admin emails here
-  'your-email@gmail.com'
+  'akdropship20@gmail.com', // Add your admin emails here
+  'nexusdeals235@@gmail.com'
 ]
 
 // Optional: Add a secret admin password as extra protection
-const ADMIN_PASSWORD = 'DukaanWhats@2024Admin' // Change this to your own strong password
+const ADMIN_PASSWORD = 'Malik@235' // Change this to your own strong password
 
 type Payment = {
   id: string
