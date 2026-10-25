@@ -71,9 +71,10 @@ const PremiumProductCard = ({ p, onEdit, onDelete, themeId, imageLimit }: { p: a
   return (
     <div className="group bg-white border rounded-[20px] p-3 hover:border-black hover:shadow-[0_12px_32px_rgba(0,0,0,0.08)] transition-all duration-300"
          onMouseEnter={() => setIsHovering(true)}
-         onMouseLeave={() => { setIsHovering(false); setHoverIdx(0) }}>
+         onMouseLeave={() => setIsHovering(false)}>
       <div className="relative overflow-hidden rounded-[14px] h-48 bg-[#F8F7F5]">
-        <img src={images[hoverIdx]} className="w-full h-full object-cover transition-all duration-500 group-hover:scale-[1.02]" alt={p.name} />
+        {images.length > 1 && <img src={images[(hoverIdx - 1 + images.length) % images.length]} className="absolute inset-0 w-full h-full object-cover opacity-0" alt="" />}
+        <img src={images[hoverIdx]} className="w-full h-full object-cover transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] group-hover:scale-[1.03]" alt={p.name} />
         {images.length > 1 && (
           <>
             <div className="absolute top-2 left-2 bg-black/70 backdrop-blur text-white text-[10px] px-2 py-1 rounded-full font-bold">
