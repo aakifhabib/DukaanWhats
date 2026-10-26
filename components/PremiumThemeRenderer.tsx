@@ -30,7 +30,6 @@ const THEMES: Record<string, React.ComponentType<any>> = {
   'slick-sole': SlickSoleTheme,
   'dangila': DangilaTheme,
   'yellow-minimal': YellowMinimalTheme,
-  // legacy aliases from your old 3
   'spike-premium': JordanJumpmanTheme,
   'shoe-app-premium': SlickSoleTheme,
   'trenzo-luxury': DangilaTheme,
@@ -38,19 +37,17 @@ const THEMES: Record<string, React.ComponentType<any>> = {
 
 export function PremiumThemeRenderer({ themeId, ...props }: Props) {
   const Comp = THEMES[themeId]
-  
   if (!Comp) {
     return (
       <div className="min-h-screen grid place-items-center bg-[#F8F7F5] p-6">
         <div className="text-center">
-          <div className="text- text-zinc-500">Theme not found</div>
-          <div className="font-mono text- font-black mt-1">{themeId}</div>
-          <div className="text- mt-4">Available: {Object.keys(THEMES).join(', ')}</div>
+          <div className="text- tracking-widest text-zinc-500">THEME NOT FOUND</div>
+          <div className="font-mono font-black text- mt-2">{themeId}</div>
+          <div className="text- mt-4 text-zinc-400">Available: {Object.keys(THEMES).join(', ')}</div>
         </div>
       </div>
     )
   }
-  
   return <Comp {...props} />
 }
 
