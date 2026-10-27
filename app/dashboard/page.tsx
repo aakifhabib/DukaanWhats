@@ -470,16 +470,16 @@ export default function Dashboard() {
   ] as any[]
 
   return (
-    <div className="min-h-screen w-full relative bg-black text-white selection:bg-white selection:text-black">
-      {/* GREEN BLACK ANIMATED BACKGROUND - CANNOT BE PURGED */}
+    <div className="min-h-screen w-full relative bg-[#F8F7F5] text-zinc-900 selection:bg-black selection:text-white">
+            {/* ANALYTICS COLOURS BACKGROUND - MATCHES REAL ANALYTICS PALETTE */}
       <div className="fixed inset-0 z-0 overflow-hidden">
-        <div className="absolute inset-0 bg-[#050A06]" />
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0A1F14] via-[#050A06] to-black" />
-        <div className="absolute rounded-full blur-[60px] will-change-transform" style={{ width:'700px', height:'700px', left:'-10%', top:'-15%', background:'radial-gradient(circle, rgba(34,197,94,0.45) 0%, rgba(16,185,129,0.22) 40%, transparent 75%)', animation:'blob1 14s ease-in-out infinite' }} />
-        <div className="absolute rounded-full blur-[70px] will-change-transform" style={{ width:'800px', height:'800px', right:'-15%', top:'10%', background:'radial-gradient(circle, rgba(16,185,129,0.38) 0%, rgba(5,150,105,0.18) 45%, transparent 75%)', animation:'blob2 18s ease-in-out infinite' }} />
-        <div className="absolute rounded-full blur-[80px] will-change-transform" style={{ width:'900px', height:'900px', left:'20%', bottom:'-30%', background:'radial-gradient(circle, rgba(74,222,128,0.32) 0%, rgba(34,197,94,0.15) 50%, transparent 75%)', animation:'blob3 22s ease-in-out infinite' }} />
-        <div className="absolute rounded-full blur-[50px] will-change-transform" style={{ width:'500px', height:'500px', left:'55%', top:'35%', background:'radial-gradient(circle, rgba(187,247,208,0.22) 0%, rgba(34,197,94,0.10) 60%, transparent 80%)', animation:'blob4 11s ease-in-out infinite' }} />
-        <div className="absolute rounded-full blur-[40px] will-change-transform" style={{ width:'320px', height:'320px', left:'70%', bottom:'15%', background:'radial-gradient(circle, rgba(34,197,94,0.55) 0%, transparent 70%)', animation:'blobFast 8s ease-in-out infinite' }} />
+        <div className="absolute inset-0 bg-[#F8F7F5]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-white via-[#F8F7F5] to-[#F2F0EB]" />
+        <div className="absolute rounded-full blur-[60px] will-change-transform" style={{ width:'700px', height:'700px', left:'-10%', top:'-15%', background:'radial-gradient(circle, rgba(232,255,134,0.42) 0%, rgba(232,255,134,0.14) 40%, transparent 75%)', animation:'blob1 14s ease-in-out infinite' }} />
+        <div className="absolute rounded-full blur-[70px] will-change-transform" style={{ width:'800px', height:'800px', right:'-15%', top:'10%', background:'radial-gradient(circle, rgba(0,0,0,0.06) 0%, rgba(0,0,0,0.02) 45%, transparent 75%)', animation:'blob2 18s ease-in-out infinite' }} />
+        <div className="absolute rounded-full blur-[80px] will-change-transform" style={{ width:'900px', height:'900px', left:'20%', bottom:'-30%', background:'radial-gradient(circle, rgba(74,222,128,0.32) 0%, rgba(232,255,134,0.32) 50%, transparent 75%)', animation:'blob3 22s ease-in-out infinite' }} />
+        <div className="absolute rounded-full blur-[50px] will-change-transform" style={{ width:'500px', height:'500px', left:'55%', top:'35%', background:'radial-gradient(circle, rgba(187,247,208,0.22) 0%, rgba(232,255,134,0.32) 60%, transparent 80%)', animation:'blob4 11s ease-in-out infinite' }} />
+        <div className="absolute rounded-full blur-[40px] will-change-transform" style={{ width:'320px', height:'320px', left:'70%', bottom:'15%', background:'radial-gradient(circle, rgba(232,255,134,0.32) 0%, transparent 70%)', animation:'blobFast 8s ease-in-out infinite' }} />
       </div>
 
       <style>{`
@@ -498,7 +498,7 @@ export default function Dashboard() {
         /* === ELEGANT BUTTONS + BUBBLE EFFECT === */
         @keyframes elegantBubble { 0%{transform:translate(0,0) scale(0.3); opacity:0.9} 50%{opacity:0.6} 100%{transform:translate(var(--tx), var(--ty)) scale(1.3); opacity:0} }
         @keyframes elegantRipple { 0%{transform:translate(-50%,-50%) scale(0); opacity:0.5} 100%{transform:translate(-50%,-50%) scale(4); opacity:0} }
-        .elegant-bubble{ position:absolute; border-radius:50%; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95) 0%, rgba(232,255,134,0.7) 40%, rgba(255,255,255,0.15) 100%); box-shadow: 0 0 8px rgba(255,255,255,0.6), inset -2px -2px 4px rgba(255,255,255,0.8); pointer-events:none; z-index:20; animation: elegantBubble 0.9s cubic-bezier(0.2,0.8,0.2,1) forwards; }
+        .elegant-bubble{ position:absolute; border-radius:50%; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.98) 0%, rgba(232,255,134,0.85) 35%, rgba(0,0,0,0.08) 100%); box-shadow: 0 0 10px rgba(232,255,134,0.4), inset -2px -2px 4px rgba(255,255,255,0.9); pointer-events:none; z-index:20; animation: elegantBubble 0.9s cubic-bezier(0.2,0.8,0.2,1) forwards; }
         .elegant-ripple{ position:absolute; width:12px; height:12px; border-radius:50%; background: radial-gradient(circle, rgba(255,255,255,0.45) 0%, transparent 70%); pointer-events:none; transform:translate(-50%,-50%); animation: elegantRipple 0.6s ease-out forwards; z-index:10; }
 
         .btn-elegant{ position:relative; overflow:hidden; isolation:isolate; transition: all 0.4s cubic-bezier(0.2,0.8,0.2,1); }
@@ -521,13 +521,13 @@ export default function Dashboard() {
           box-shadow: inset 0 1.2px 1px rgba(255,255,255,1), 0 16px 36px rgba(255,255,255,0.32), 0 8px 20px rgba(0,0,0,0.12);
         }
         .btn-elegant-glass{
-          background: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 100%);
+          background: linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.76) 50%, rgba(255,255,255,0.64) 100%);
           backdrop-filter: blur(24px) saturate(180%);
           -webkit-backdrop-filter: blur(24px) saturate(180%);
-          border: 1px solid rgba(255,255,255,0.22);
-          border-top-color: rgba(255,255,255,0.38);
-          box-shadow: inset 0 1px 0.8px rgba(255,255,255,0.52), 0 8px 20px rgba(0,0,0,0.18);
-          color: white;
+          border: 1px solid rgba(0,0,0,0.08);
+          border-top-color: rgba(255,255,255,0.9);
+          box-shadow: inset 0 1px 0.8px rgba(255,255,255,1), 0 8px 20px rgba(0,0,0,0.06);
+          color: #111;
         }
         .btn-elegant-glass:hover{
           background: linear-gradient(180deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.09) 100%);
@@ -550,19 +550,19 @@ export default function Dashboard() {
 
         /* === TRUE FLOATING LIQUID GLASS FROM YOUR WEBP === */
         .liquid-glass{
-          background: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 100%);
+          background: linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.78) 50%, rgba(255,255,255,0.68) 100%);
           backdrop-filter: blur(40px) saturate(180%) brightness(1.08);
           -webkit-backdrop-filter: blur(40px) saturate(180%) brightness(1.08);
-          border: 0.8px solid rgba(255,255,255,0.22);
-          border-top-color: rgba(255,255,255,0.42);
-          border-left-color: rgba(255,255,255,0.28);
+          border: 0.8px solid rgba(0,0,0,0.08);
+          border-top-color: rgba(255,255,255,0.95);
+          border-left-color: rgba(255,255,255,0.8);
           box-shadow:
-            inset 0 1px 0.8px rgba(255,255,255,0.60),
-            inset 0 -0.5px 0.5px rgba(255,255,255,0.12),
-            inset 1px 0 0.5px rgba(255,255,255,0.18),
-            0 12px 32px rgba(0,0,0,0.22),
-            0 4px 12px rgba(0,0,0,0.14),
-            0 0 0 0.5px rgba(255,255,255,0.08);
+            inset 0 1px 0.8px rgba(255,255,255,1),
+            inset 0 -0.5px 0.5px rgba(0,0,0,0.04),
+            inset 1px 0 0.5px rgba(255,255,255,0.9),
+            0 12px 32px rgba(0,0,0,0.08),
+            0 4px 12px rgba(0,0,0,0.06),
+            0 0 0 0.5px rgba(0,0,0,0.06);
           position:relative;
           overflow:hidden;
         }
@@ -590,20 +590,20 @@ export default function Dashboard() {
           box-shadow: inset 0 1px 0.5px rgba(255,255,255,0.50), 0 4px 16px rgba(0,0,0,0.18);
         }
         .liquid-glass-card{
-          background: linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 100%);
+          background: linear-gradient(180deg, rgba(255,255,255,0.88) 0%, rgba(255,255,255,0.72) 100%);
           backdrop-filter: blur(36px) saturate(170%) brightness(1.06);
           -webkit-backdrop-filter: blur(36px) saturate(170%) brightness(1.06);
-          border: 1px solid rgba(255,255,255,0.16);
-          border-top-color: rgba(255,255,255,0.30);
-          box-shadow: inset 0 1px 0.8px rgba(255,255,255,0.42), 0 16px 48px rgba(0,0,0,0.28);
+          border: 1px solid rgba(0,0,0,0.06);
+          border-top-color: rgba(255,255,255,0.95);
+          box-shadow: inset 0 1px 0.8px rgba(255,255,255,1), 0 16px 48px rgba(0,0,0,0.08);
         }
         .liquid-nav{
-          background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.05) 100%);
+          background: linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.78) 100%);
           backdrop-filter: blur(48px) saturate(190%) brightness(1.06);
           -webkit-backdrop-filter: blur(48px) saturate(190%) brightness(1.06);
-          border: 1px solid rgba(255,255,255,0.20);
-          border-top-color: rgba(255,255,255,0.38);
-          box-shadow: inset 0 1.2px 0.8px rgba(255,255,255,0.50), 0 20px 60px rgba(0,0,0,0.35);
+          border: 1px solid rgba(0,0,0,0.06);
+          border-top-color: rgba(255,255,255,0.95);
+          box-shadow: inset 0 1.2px 0.8px rgba(255,255,255,1), 0 20px 60px rgba(0,0,0,0.08);
         }
         .liquid-nav-btn{
           width: 48px; height: 48px; border-radius: 16px;
@@ -714,7 +714,7 @@ export default function Dashboard() {
             <div className="flex items-center gap-3">
               <div className="md:hidden w-8 h-8 rounded-[12px] liquid-glass flex items-center justify-center font-bold">D</div>
               <div className="leading-tight">
-                <div className="font-semibold text-[14px] tracking-tight">DukaanWhats.pk</div>
+                <div className="font-semibold text-[14px] tracking-tight text-zinc-900">DukaanWhats.pk</div>
                 <div className="text-[10px] text-white/40 tracking-wide">FLOATING LIQUID OS • {theme}</div>
               </div>
               <div className="hidden md:flex ml-4"><CurrentPlanButton /></div>
