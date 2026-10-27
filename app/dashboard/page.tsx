@@ -8,16 +8,16 @@ import { STORE_THEMES, getTheme, ThemeCategory, getAdvancedThemes, getPremiumThe
 import { DukaanWhatsLoader } from '@/components/DukaanWhatsLoader'
 import { PremiumThemeEditor } from '@/components/PremiumThemeEditor'
 
-// --- ICONS (same logic, new style) ---
+// --- CUSTOM PREMIUM ICONS (PRESERVED) ---
 const UploadIcon = ({ className = "w-12 h-12" }: { className?: string }) => (
   <div className={`${className} relative`}>
-    <div className="absolute inset-0 bg-[#0A0A0A] rounded-[14px] shadow-[0_8px_20px_rgba(0,0,0,0.15)]" />
+    <div className="absolute inset-0 bg-black rounded-[14px] shadow-[0_8px_20px_rgba(0,0,0,0.15)]" />
     <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-black rounded-[14px]" />
     <div className="absolute inset-[1px] bg-black rounded-[13px] flex items-center justify-center">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 15.5V19.5C3 20.6 3.9 21.5 5 21.5H19C20.1 21.5 21 20.6 21 19.5V15.5" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" opacity="0.3"/><path d="M12 3.5V14.5" stroke="white" strokeWidth="1.6" strokeLinecap="round"/><path d="M8.5 7L12 3.5L15.5 7" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><circle cx="9" cy="12.5" r="1.2" fill="white" opacity="0.9"/></svg>
     </div>
-    <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#E8FF86] rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(167,139,250,0.5)] border-2 border-white">
-      <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M12 5V19M5 12H19" stroke="white" strokeWidth="2.5" strokeLinecap="round"/></svg>
+    <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#E8FF86] rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(232,255,134,0.5)] border-2 border-white">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M12 5V19M5 12H19" stroke="black" strokeWidth="2.5" strokeLinecap="round"/></svg>
     </div>
   </div>
 )
@@ -29,6 +29,7 @@ const GlassLockIcon = ({ size = 40 }: { size?: number }) => (
     <div className="absolute inset-0 flex items-center justify-center">
       <svg width={size>40?22:16} height={size>40?22:16} viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="10" rx="3" fill="#0A0A0A" /><path d="M8 10V7.5C8 5.3 9.8 3.5 12 3.5C14.2 3.5 16 5.3 16 7.5V10" stroke="#0A0A0A" strokeWidth="1.8" strokeLinecap="round" /><circle cx="12" cy="15" r="1.6" fill="white" /><path d="M12 16.6V18" stroke="white" strokeWidth="1.2" strokeLinecap="round" /></svg>
     </div>
+    <div className="absolute top-[2px] left-[3px] right-[3px] h-[45%] rounded-t-[13px] bg-gradient-to-b from-white/90 to-transparent opacity-60 pointer-events-none" />
   </div>
 )
 const GlassPremiumLock = ({ size = 56 }: { size?: number }) => (
@@ -39,6 +40,8 @@ const GlassPremiumLock = ({ size = 56 }: { size?: number }) => (
     <div className="absolute inset-0 flex items-center justify-center">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="4.5" y="10.5" width="15" height="10" rx="3.5" fill="white" /><path d="M8 10.5V7.8C8 5.4 9.9 3.5 12.2 3.5C14.5 3.5 16.4 5.4 16.4 7.8V10.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" /><circle cx="12" cy="15.5" r="1.5" fill="black" /><path d="M12 17V18.5" stroke="black" strokeWidth="1.2" strokeLinecap="round" /></svg>
     </div>
+    <div className="absolute top-[3px] left-[4px] right-[4px] h-[40%] rounded-t-[15px] bg-gradient-to-b from-white/15 to-transparent pointer-events-none" />
+    <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#E8FF86] rounded-full border-2 border-black flex items-center justify-center"><span className="text-[8px]">✦</span></div>
   </div>
 )
 const AnalyticsIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
@@ -52,6 +55,7 @@ type Product = { id: string; name: string; price: number; image_url: string; ima
 type Billing = 'monthly' | 'yearly'
 type PlanDef = { id: 'basic'|'advanced'|'premium'; name: string; monthly: number; yearlyMonthly: number; yearlyTotal: number; products: number; imagesPerProduct: number; advancedAllowed: number|'all'; premiumAllowed: number|'all'; stores: number; features: string[] }
 
+
 const PremiumProductCard = ({ p, onEdit, onDelete, themeId, imageLimit }: { p: any; onEdit: (p:any)=>void; onDelete: (id:string)=>void; themeId: string; imageLimit: number }) => {
   const [hoverIdx, setHoverIdx] = useState(0)
   const [isHovering, setIsHovering] = useState(false)
@@ -62,25 +66,34 @@ const PremiumProductCard = ({ p, onEdit, onDelete, themeId, imageLimit }: { p: a
     return () => clearInterval(interval)
   }, [isHovering, images.length])
   return (
-    <div className="group bg-[#FCFBF9]/90 backdrop-blur border border-white/10 rounded-[24px] p-3 hover:bg-white hover:border-black/10 hover:shadow-[0_16px_40px_rgba(0,0,0,0.06)] transition-all duration-300"
+    <div className="group liquid-card rounded-[22px] p-3 hover:border-white/30 transition-all duration-300"
          onMouseEnter={() => setIsHovering(true)} onMouseLeave={() => setIsHovering(false)}>
-      <div className="relative overflow-hidden rounded-[18px] h-48 bg-[#F5F1ED]">
-        <img src={images[hoverIdx]} className="w-full h-full object-cover transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] group-hover:scale-[1.03]" alt={p.name} />
-        {images.length > 1 && (
+      <div className="relative overflow-hidden rounded-[16px] h-48 bg-white/[0.06]">
+        {images.length>0 ? (
           <>
-            <div className="absolute top-2 left-2 bg-black/60 backdrop-blur text-white text-[10px] px-2.5 py-1 rounded-full font-bold">{hoverIdx+1}/{images.length} {isHovering ? '• AUTO' : ''}</div>
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">{images.map((_:any,i:number)=><div key={i} className={`h-1 rounded-full transition-all duration-300 ${i===hoverIdx ? 'w-6 bg-white' : 'w-1.5 bg-white/5'}`} />)}</div>
+            <img src={images[hoverIdx % images.length]} className="w-full h-full object-cover transition-all duration-500" />
+            {images.length>1 && <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">{images.map((_:any,i:number)=><span key={i} className={`h-1 rounded-full transition-all ${i===hoverIdx?'w-4 bg-white':'w-1.5 bg-white/40'}`} />)}</div>}
           </>
+        ) : <div className="w-full h-full flex items-center justify-center text-white/40 text-[12px]">No image</div>}
+        {imageLimit !== 999999 && images.length >= imageLimit && (
+          <div className="absolute top-2 right-2 bg-yellow-300/90 backdrop-blur text-black text-[9px] px-2 py-1 rounded-full font-bold">LIMIT {imageLimit}</div>
         )}
       </div>
       <div className="mt-3 px-1">
-        <div className="font-bold text-[13px] truncate tracking-tight">{p.name}</div>
-        <div className="flex items-center justify-between mt-1"><span className="font-black text-[14px]">Rs. {p.price.toLocaleString()}</span><span className="text-[11px] text-white/50 bg-white px-2 py-0.5 rounded-full border">{images.length} img</span></div>
-        <div className="mt-3 flex gap-2"><button onClick={()=>onEdit(p)} className="flex-1 h-8 bg-[#0A0A0A] text-white rounded-full text-[11px] font-bold hover:bg-zinc-800">Edit</button><button onClick={()=>onDelete(p.id)} className="h-8 w-8 bg-white border rounded-full flex items-center justify-center text-[12px] hover:bg-zinc-50">✕</button></div>
+        <div className="font-bold text-[13px] truncate text-white">{p.name}</div>
+        <div className="flex items-center justify-between mt-1">
+          <span className="font-black text-[14px] text-white">Rs. {p.price.toLocaleString()}</span>
+          <span className="text-[11px] text-white/50">{images.length} img</span>
+        </div>
+        <div className="mt-3 flex gap-2">
+          <button onClick={()=>onEdit(p)} className="flex-1 h-8 bg-white text-black rounded-full text-[11px] font-bold hover:bg-white/90">Edit</button>
+          <button onClick={()=>onDelete(p.id)} className="h-8 w-8 border border-white/20 bg-white/10 rounded-full flex items-center justify-center text-[12px] text-white hover:bg-white/20">✕</button>
+        </div>
       </div>
     </div>
   )
 }
+
 
 export default function Dashboard() {
   const [profile, setProfile] = useState<Profile | null>(null)
@@ -120,9 +133,9 @@ export default function Dashboard() {
   const router = useRouter()
 
   const plans: PlanDef[] = [
-    { id: 'basic', name: 'Basic', monthly: 0, yearlyMonthly: 0, yearlyTotal: 0, products: 5, imagesPerProduct: 1, advancedAllowed: 3, premiumAllowed: 0, stores: 1, features: ['5 Products', '1 Image / Product', '3 Advanced Themes', '1 Store'] },
-    { id: 'advanced', name: 'Advanced', monthly: 899, yearlyMonthly: 699, yearlyTotal: 8388, products: 25, imagesPerProduct: 5, advancedAllowed: 8, premiumAllowed: 0, stores: 3, features: ['25 Products', '5 Images / Product', 'All Advanced Themes', '3 Stores'] },
-    { id: 'premium', name: 'Premium', monthly: 2999, yearlyMonthly: 2499, yearlyTotal: 29988, products: 999999, imagesPerProduct: 999999, advancedAllowed: 'all', premiumAllowed: 'all', stores: 999999, features: ['Unlimited Products', 'Unlimited Images', 'All Themes incl. Glass Premium', 'Unlimited Stores', 'Analytics'] },
+    { id: 'basic', name: 'Basic', monthly: 0, yearlyMonthly: 0, yearlyTotal: 0, products: 5, imagesPerProduct: 1, advancedAllowed: 3, premiumAllowed: 0, stores: 1, features: ['5 Products', '1 Image / product', '3 Advanced Themes', '0 Premium (Glass)', 'COD Only', 'Watermark'] },
+    { id: 'advanced', name: 'Advanced', monthly: 899, yearlyMonthly: 699, yearlyTotal: 8388, products: 25, imagesPerProduct: 5, advancedAllowed: 8, premiumAllowed: 0, stores: 3, features: ['25 Products', '5 Images / product', 'All 8 Advanced Themes', '0 Premium Glass (locked)', 'Orders Dashboard'] },
+    { id: 'premium', name: 'Premium', monthly: 2999, yearlyMonthly: 2499, yearlyTotal: 29988, products: 999999, imagesPerProduct: 999999, advancedAllowed: 'all', premiumAllowed: 'all', stores: 999999, features: ['Unlimited Products', 'Unlimited Images', 'Every Theme (8 Advanced + 3 Premium)', 'No Watermark', 'Live Analytics'] },
   ]
 
   const currentPlanId = (profile?.current_plan || 'basic') as 'basic'|'advanced'|'premium'
@@ -132,24 +145,31 @@ export default function Dashboard() {
   const productLimit = currentPlanDef.products
   const imageLimit = currentPlanDef.imagesPerProduct
 
+  // --- GLASS MERGED: 3 sleek + 3 premium = 6 glass themes --- PRESERVED EXACTLY
   const PREMIUM_NEW_IDS = ['spike-premium','shoe-app-premium','trenzo-luxury']
   const advancedGlassRaw = getAdvancedThemes()
   const premiumNewRaw = getPremiumThemes()
   const premiumThemes = [...advancedGlassRaw, ...premiumNewRaw]
   const premiumIds = premiumThemes.map(t=>t.id)
   const allAdvancedRaw = STORE_THEMES.filter(t => (t.category as string) === 'advanced' && !advancedGlassRaw.map(x=>x.id).includes(t.id))
-  const advancedThemesList = allAdvancedRaw.length >= 5 ? allAdvancedRaw.slice(0,8) : [...allAdvancedRaw, ...STORE_THEMES.filter(t=> (t.category as string) === 'clothing' || (t.category as string) === 'elegance')]
+  const advancedThemesList = allAdvancedRaw.length >= 5 ? allAdvancedRaw.slice(0,8) : [...allAdvancedRaw, ...STORE_THEMES.filter(t=> (t.category as string) === 'clothing' || (t.category as string) === 'tech').slice(0, 8 - allAdvancedRaw.length)]
   const finalAdvancedList = advancedThemesList.length ? advancedThemesList.slice(0,8) : STORE_THEMES.filter(t=>!premiumIds.includes(t.id)).slice(0,8)
   const basicAllowedAdvancedIds = finalAdvancedList.slice(0,3).map(t=>t.id)
+
   const isPremiumTheme = (t: any) => premiumIds.includes(t.id) || PREMIUM_NEW_IDS.includes(t.id) || (t.category as string) === 'premium' || (t as any).tier === 'premium'
   const isAdvancedTheme = (t: any) => !isPremiumTheme(t) && (finalAdvancedList.some((a:any)=>a.id===t.id) || (t.category as string) === 'advanced')
   const isThemeLocked = (t: any) => {
     if (isPremium) return false
     if (isPremiumTheme(t)) return true
-    if (isAdvancedTheme(t)) { if (isAdvanced) return false; return !basicAllowedAdvancedIds.includes(t.id) }
+    if (isAdvancedTheme(t)) {
+      if (isAdvanced) return false
+      return !basicAllowedAdvancedIds.includes(t.id)
+    }
     return false
   }
+
   const GLASS_TILTS = [-12, 9, -10, 11, -8, 13, -14, 7]
+
 
   useEffect(() => {
     const init = async () => {
@@ -200,8 +220,12 @@ export default function Dashboard() {
 
   const handleThemeClick = (t: any) => {
     if (isThemeLocked(t)) {
-      if (isPremiumTheme(t)) { alert(`🔒 Premium Glass Locked\nNeed Premium — Till ${TILL_ID} Rs. 2999/mo`); setActiveTab('payments'); return }
-      alert(`🔒 Advanced Theme Locked\nNeed Advanced — Till ${TILL_ID} Rs. 899/mo`); setActiveTab('payments'); return
+      if (isPremiumTheme(t)) {
+        alert(`🔒 Premium Glass Locked\nBasic: 0/3 Premium\nAdvanced: 0/3 Premium\nNeed Premium — Till ${TILL_ID} Rs. 2999/mo\n\nThis glass animation theme is Premium only.`)
+        setActiveTab('payments'); return
+      }
+      alert(`🔒 Advanced Theme Locked\nBasic allows 3/8 Advanced\nThis theme needs Advanced — Till ${TILL_ID} Rs. 899/mo\n\nUpgrade to unlock all 8 Advanced themes.`)
+      setActiveTab('payments'); return
     }
     setTheme(t.id)
   }
@@ -217,460 +241,620 @@ export default function Dashboard() {
   const copyTill = async () => { await navigator.clipboard.writeText(TILL_ID); setCopiedTill(true); setTimeout(()=>setCopiedTill(false), 2000) }
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = Array.from(e.target.files || []); if (!selected.length) return
-    const totalFiles = selected.length
-    if (totalFiles > imageLimit && imageLimit !== 999999) { setErrorMsg(`❌ ${currentPlanId.toUpperCase()} allows ${imageLimit} images per product.`); setTimeout(()=>setErrorMsg(null),4000); return }
+    const totalFiles = editingId ? selected.length : selected.length
+    if (totalFiles > imageLimit && imageLimit !== 999999) { 
+      setErrorMsg(`❌ ${currentPlanId.toUpperCase()} allows ${imageLimit} images per product. You selected ${totalFiles}. Upgrade: Till ${TILL_ID}`);
+      setTimeout(()=>setErrorMsg(null),4000); return 
+    }
     const newFiles = editingId ? [...files, ...selected].slice(0, imageLimit === 999999 ? 20 : imageLimit) : selected
     setFiles(newFiles)
     const pr: string[] = []
     const existingPreviews = editingId ? previews : []
     newFiles.forEach(file => {
       const r = new FileReader()
-      r.onload = ev => { pr.push(ev.target?.result as string); if (pr.length === newFiles.length) { setPreviews(editingId ? [...existingPreviews, ...pr].slice(0, newFiles.length) : pr) } }
+      r.onload = ev => {
+        pr.push(ev.target?.result as string)
+        if (pr.length === newFiles.length) {
+          setPreviews(editingId ? [...existingPreviews, ...pr].slice(0, newFiles.length) : pr)
+        }
+      }
       r.readAsDataURL(file)
     })
     if (newFiles.length === 0) setPreviews([])
   }
-  const removeFileAt = (idx: number) => { const nf = files.filter((_, i) => i !== idx); const np = previews.filter((_, i) => i !== idx); setFiles(nf); setPreviews(np) }
+  const removeFileAt = (idx: number) => {
+    const nf = files.filter((_, i) => i !== idx)
+    const np = previews.filter((_, i) => i !== idx)
+    setFiles(nf); setPreviews(np)
+  }
   const uploadOne = async (file: File, userId: string) => {
     const ext = file.name.split('.').pop(); const fileName = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
     const { error } = await supabase.storage.from('product-images').upload(fileName, file); if (error) throw error
     const { data } = supabase.storage.from('product-images').getPublicUrl(fileName); return data.publicUrl
   }
   const startEdit = (p: any) => { 
-    setEditingId(p.id); setProdName(p.name); setProdPrice(String(p.price)); setProdDesc(p.description || ''); setProdCategory(p.category || 'General'); setProdStock(String(p.stock || 100)); setProdSizes(Array.isArray(p.sizes) ? p.sizes.join(', ') : p.sizes || ''); setProdColors(Array.isArray(p.colors) ? p.colors.join(', ') : p.colors || ''); setProdOrigPrice(p.original_price ? String(p.original_price) : ''); setPreviews(p.image_urls && p.image_urls.length ? p.image_urls : [p.image_url]); setFiles([]); setActiveTab('products'); window.scrollTo({ top: 0, behavior: 'smooth' }) 
+    setEditingId(p.id); setProdName(p.name); setProdPrice(String(p.price)); setProdDesc(p.description || ''); setProdCategory(p.category || 'General'); setProdStock(String(p.stock || 100)); setProdSizes(Array.isArray(p.sizes) ? p.sizes.join(', ') : p.sizes || ''); setProdColors(Array.isArray(p.colors) ? p.colors.join(', ') : p.colors || ''); setProdOrigPrice(p.original_price ? String(p.original_price) : ''); setPreviews(p.image_urls && p.image_urls.length ? p.image_urls : [p.image_url]); setFiles([]); setActiveTab('products'); 
   }
-  const cancelEdit = () => { setEditingId(null); setProdName(''); setProdPrice(''); setProdDesc(''); setProdCategory('General'); setProdStock('100'); setProdSizes(''); setProdColors(''); setProdOrigPrice(''); setFiles([]); setPreviews([]) }
+  const cancelEdit = () => { setEditingId(null); setProdName(''); setProdPrice(''); setProdDesc(''); setProdCategory('General'); setProdStock('100'); setProdSizes(''); setProdColors(''); setProdOrigPrice(''); setPreviews([]); setFiles([]) }
   const addProduct = async () => {
-    if (editingId === null && products.length >= productLimit){ setErrorMsg(`🔒 ${currentPlanId.toUpperCase()} allows ${productLimit===999999?'Unlimited':productLimit} products.`); setTimeout(()=>setErrorMsg(null),4000); setActiveTab('payments'); return }
-    if (!prodName.trim() || !prodPrice){ setErrorMsg('Name and price required'); setTimeout(()=>setErrorMsg(null),3000); return}
-    if (files.length === 0 && !editingId){ setErrorMsg('Photo required'); setTimeout(()=>setErrorMsg(null),3000); return}
-    if (files.length > imageLimit && imageLimit!==999999){ setErrorMsg(`❌ Allows ${imageLimit} images.`); setTimeout(()=>setErrorMsg(null),4000); return}
+    if (!prodName.trim() || !prodPrice) { setErrorMsg('Name and price required'); return }
+    if (!profile) return
+    if (!editingId && products.length >= productLimit) { setErrorMsg(`❌ ${currentPlanId.toUpperCase()} allows ${productLimit} products. Upgrade: Till ${TILL_ID}`); setActiveTab('payments'); return }
     setUploading(true)
-    try{
-      const { data: { user } } = await supabase.auth.getUser(); if (!user) throw new Error('Not logged in')
-      let urls: string[] = []
-      for (const f of files){ const url = await uploadOne(f, user.id); urls.push(url) }
-      if (editingId && urls.length === 0) { const existing = products.find(p=>p.id===editingId); if (existing) { urls = existing.image_urls && existing.image_urls.length ? existing.image_urls : [existing.image_url].filter(Boolean) as string[] } }
-      if (urls.length === 0) throw new Error('No images')
-      if (editingId) {
-        const sizesArr = prodSizes.split(',').map(s=>s.trim()).filter(Boolean)
-        const colorsArr = prodColors.split(',').map(s=>s.trim()).filter(Boolean)
-        const payload: any = { name: prodName.trim(), price: Number(prodPrice), image_url: urls[0], image_urls: urls, description: prodDesc.trim(), category: prodCategory, stock: Number(prodStock) || 100, sizes: sizesArr, colors: colorsArr, original_price: prodOrigPrice ? Number(prodOrigPrice) : 0 }
-        const { data, error } = await supabase.from('products').update(payload).eq('id', editingId).select().single()
-        if (error) throw error; if (data) setProducts(products.map(pr => pr.id === editingId ? data : pr)); setEditingId(null)
-      } else {
-        const sizesArr = prodSizes.split(',').map(s=>s.trim()).filter(Boolean)
-        const colorsArr = prodColors.split(',').map(s=>s.trim()).filter(Boolean)
-        const { data, error } = await supabase.from('products').insert({ user_id: user.id, name: prodName.trim(), price: Number(prodPrice), image_url: urls[0], image_urls: urls, description: prodDesc.trim(), category: prodCategory, stock: Number(prodStock) || 100, sizes: sizesArr, colors: colorsArr, original_price: prodOrigPrice ? Number(prodOrigPrice) : 0 }).select().single()
-        if (error) throw error; if (data) setProducts([data, ...products])
+    try {
+      let imageUrls: string[] = []
+      if (files.length>0) {
+        for (const f of files) { const url = await uploadOne(f, profile.id); imageUrls.push(url) }
+      } else if (previews.length>0 && editingId) {
+        imageUrls = previews
       }
-      setProdName(''); setProdPrice(''); setProdDesc(''); setProdCategory('General'); setProdStock('100'); setProdSizes(''); setProdColors(''); setProdOrigPrice(''); setFiles([]); setPreviews([]); 
-    }catch(e:any){ setErrorMsg(e.message); setTimeout(()=>setErrorMsg(null),5000) } setUploading(false)
+      if (editingId) {
+        const existing = products.find(p=>p.id===editingId)
+        const finalImages = imageUrls.length>0 ? imageUrls : (existing?.image_urls || [existing?.image_url])
+        const { error } = await supabase.from('products').update({ name: prodName.trim(), price: parseFloat(prodPrice), description: prodDesc.trim(), category: prodCategory, stock: parseInt(prodStock)||100, sizes: prodSizes.split(',').map(s=>s.trim()).filter(Boolean), colors: prodColors.split(',').map(s=>s.trim()).filter(Boolean), original_price: prodOrigPrice?parseFloat(prodOrigPrice):null, image_url: finalImages[0]||'', image_urls: finalImages }).eq('id', editingId)
+        if (error) throw error
+      } else {
+        if (imageUrls.length===0) { setErrorMsg('Please upload at least one image'); setUploading(false); return }
+        const { data, error } = await supabase.from('products').insert({ user_id: profile.id, name: prodName.trim(), price: parseFloat(prodPrice), description: prodDesc.trim(), category: prodCategory, stock: parseInt(prodStock)||100, sizes: prodSizes.split(',').map(s=>s.trim()).filter(Boolean), colors: prodColors.split(',').map(s=>s.trim()).filter(Boolean), original_price: prodOrigPrice?parseFloat(prodOrigPrice):null, image_url: imageUrls[0], image_urls: imageUrls }).select().single()
+        if (error) throw error
+        if (data) setProducts([data as any, ...products])
+      }
+      const { data: prods } = await supabase.from('products').select('*').eq('user_id', profile.id).order('created_at', { ascending: false })
+      if (prods) setProducts(prods)
+      cancelEdit()
+    } catch (e:any){ setErrorMsg(e.message) } setUploading(false)
   }
-  const deleteProduct = async (id: string) => { if (!confirm('Delete?')) return; await supabase.from('products').delete().eq('id', id); setProducts(products.filter(p=>p.id!==id)) }
+  const deleteProduct = async (id:string) => {
+    if (!confirm('Delete product?')) return
+    try { const { error } = await supabase.from('products').delete().eq('id', id); if (error) throw error; setProducts(products.filter(p=>p.id!==id)) } catch(e:any){ setErrorMsg(e.message) }
+  }
+
+  const getDisplayPrice = (p:PlanDef) => billing==='monthly'?p.monthly:p.yearlyMonthly
+  const handleBuyPlan = async () => {
+    if (!selectedPlan || !txnId.trim() || !profile) { setErrorMsg('Select plan and enter Txn ID'); return }
+    setPurchasing(true)
+    try {
+      const amount = billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal
+      const { data, error } = await supabase.from('plan_payments').insert({ user_id: profile.id, plan_id: selectedPlan.id, billing, amount, txn_id: txnId.trim(), status: 'pending' }).select().single()
+      if (error) throw error
+      setMyPayments([data, ...myPayments]); setJustSubmitted(data); setTxnId(''); setErrorMsg(null)
+      setTimeout(()=>setJustSubmitted(null), 5000)
+    } catch(e:any){ setErrorMsg(e.message) } setPurchasing(false)
+  }
 
   const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut()
-      window.location.href = '/login'
-    } catch(e:any){ setErrorMsg(e.message) }
+    await supabase.auth.signOut()
+    router.push('/login')
   }
 
-  const handleBuyPlan = async () => {
-    if (!selectedPlan) return; if (selectedPlan.monthly===0){setSelectedPlan(null); return}; if (!txnId.trim()){setErrorMsg('Enter Transaction ID'); setTimeout(()=>setErrorMsg(null),3000); return}; setPurchasing(true)
-    const amount = billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal
-    try{
-      const { data: { user } } = await supabase.auth.getUser(); if (!user) throw new Error('Not logged in')
-      const { error } = await supabase.from('plan_payments').insert({ user_id: user.id, plan_id: selectedPlan.id, amount, till_id: TILL_ID, txn_id: txnId.trim(), status: 'pending' })
-      if (error) throw error;
-      const { data: pays } = await supabase.from('plan_payments').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
-      if (pays) { setMyPayments(pays); if (pays[0]) setJustSubmitted(pays[0]) }
-      setSelectedPlan(null); setTxnId('')
-    }catch(e:any){ setErrorMsg(e.message); setTimeout(()=>setErrorMsg(null),4000) } setPurchasing(false)
-  }
+  const filteredStandard = getStandardThemes ? getStandardThemes() : STORE_THEMES.filter(t=> (t.category as string)!=='premium' && (t.category as string)!=='advanced')
+  const standardThemes = filteredStandard
 
-  if (loading) return <DukaanWhatsLoader message="Loading your store..." />
-
-  const standardThemes = STORE_THEMES.filter(t => !premiumIds.includes(t.id) && !finalAdvancedList.some(a=>a.id===t.id))
-  const filteredStandard = (filter as string) === 'all' ? standardThemes : STORE_THEMES.filter(t => (t.category as string) === (filter as string) && !premiumIds.includes(t.id) && !finalAdvancedList.some(a=>a.id===t.id))
-  const filteredAdvanced = (filter as string) === 'all' || filter === 'advanced' ? finalAdvancedList : finalAdvancedList.filter(t=>(t.category as string)===filter)
-  const getDisplayPrice = (p: PlanDef) => billing==='monthly'?p.monthly:p.yearlyMonthly
+  if (loading) return <DukaanWhatsLoader />
 
   const CurrentPlanButton = () => (
-    <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur border border-white/10 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-      <span className={`w-2 h-2 rounded-full ${isPremium?'bg-[#E8FF86] shadow-[0_0_8px_#E8FF86]':isAdvanced?'bg-black':'bg-zinc-400'} animate-pulse`}></span>
-      <span className="text-[11px] font-bold tracking-widest">{currentPlanDef.name.toUpperCase()}</span>
-      <span className="text-[10px] opacity-50 font-mono hidden md:inline">• {productLimit===999999?'∞':productLimit} prod • {imageLimit===999999?'∞':imageLimit} img</span>
+    <div className={`h-8 px-3 rounded-full text-[10px] font-black tracking-widest flex items-center gap-1.5 border backdrop-blur ${isPremium?'bg-[#E8FF86]/90 text-black border-[#E8FF86]':isAdvanced?'bg-white/10 text-white border-white/20':'bg-white/10 text-white/70 border-white/10'}`}>
+      <span className={`w-2 h-2 rounded-full ${isPremium?'bg-black':'bg-white'} animate-pulse`} />
+      {currentPlanDef.name.toUpperCase()} • {productLimit===999999?'∞':productLimit}P
     </div>
   )
 
+  // RIGHT NAV ITEMS - as requested
+  const navItems = [
+    { id: 'products', label: 'Products', icon: '◫', count: `${products.length}` },
+    { id: 'payments', label: 'Pro', icon: '✦', glow: true },
+    { id: 'themes', label: 'Themes', icon: '◧' },
+    { id: 'store', label: 'Store', icon: '⌂' },
+    { id: 'analytics', label: 'Analytics', icon: '▅', premium: true },
+  ] as any[]
+
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white pb-24 antialiased overflow-x-clip selection:bg-[#E8FF86]/20 relative">
-      {/* ANIMATED BLACK & GREEN GRADIENT BACKGROUND */}
+    <div className="min-h-screen w-full relative overflow-hidden bg-[#0A0A0E] text-white selection:bg-[#E8FF86] selection:text-black">
+      {/* LIQUID GLASS BACKGROUND */}
       <div className="fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-[#0A0A0A]" />
-        <div className="absolute -top-[30%] -left-[20%] w-[80%] h-[80%] bg-gradient-to-br from-[#E8FF86]/20 via-[#C6FF00]/15 to-transparent rounded-full blur-[120px] animate-[float1_12s_ease-in-out_infinite]" />
-        <div className="absolute top-[10%] -right-[20%] w-[70%] h-[70%] bg-gradient-to-bl from-[#00FF88]/15 via-[#E8FF86]/10 to-transparent rounded-full blur-[130px] animate-[float2_14s_ease-in-out_infinite]" />
-        <div className="absolute bottom-[-20%] left-[10%] w-[90%] h-[60%] bg-gradient-to-tr from-[#0A0A0A] via-[#1A2E05]/20 to-[#E8FF86]/10 rounded-full blur-[140px] animate-[float3_16s_ease-in-out_infinite]" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#0A0A0A]/80" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#15151D] via-[#0E0E12] to-[#08080A]" />
+        <div className="absolute inset-0 opacity-[0.4]" style={{backgroundImage:`url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80')`, backgroundSize:'cover', backgroundPosition:'center', filter:'blur(18px) brightness(0.45)'}} />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/60" />
+        {/* ambient orbs */}
+        <div className="absolute top-[-10%] left-[20%] w-[60%] h-[50%] bg-[radial-gradient(ellipse_at_center,_rgba(120,119,198,0.25),transparent_70%)] blur-[40px]" />
+        <div className="absolute bottom-[-10%] right-[10%] w-[50%] h-[50%] bg-[radial-gradient(ellipse_at_center,_rgba(232,255,134,0.18),transparent_70%)] blur-[60px]" />
       </div>
-            <style>{`
-        @keyframes float1 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(30px,40px) scale(1.1)} }
-        @keyframes float2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-40px,30px) scale(1.15)} }
-        @keyframes float3 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(20px,-30px) scale(1.05)} }
-        @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
-        .no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
-        .dark-glass { background: rgba(28,28,30,0.72); backdrop-filter: blur(24px) saturate(1.4); -webkit-backdrop-filter: blur(24px) saturate(1.4); border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08); }
-        .dark-glass-hover:hover { background: rgba(38,38,40,0.8); border-color: rgba(232,255,134,0.2); box-shadow: 0 16px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(232,255,134,0.1); transform: translateY(-2px); }
-        .dark-glass-card { background: linear-gradient(135deg, rgba(40,40,42,0.8) 0%, rgba(28,28,30,0.7) 100%); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.06); box-shadow: 0 8px 24px rgba(0,0,0,0.3); transition: all 0.3s cubic-bezier(0.4,0,0.2,1); }
-        .glass-container { position: relative; display: flex; justify-content: flex-start; align-items: center; min-height: 360px; padding: 24px 24px 40px 32px; gap: 0; overflow-x: auto; overflow-y: visible; scroll-snap-type: x proximity; } .glass-container::-webkit-scrollbar{display:none}
-        .glass-container .glass { position: relative; width: 260px; height: 320px; flex-shrink: 0; background: rgba(35,35,37,0.75); border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(20px); border-radius: 24px; display: flex; flex-direction: column; align-items: center; transition: all 0.45s cubic-bezier(0.4,0,0.2,1); transform: rotate(var(--r,0deg)); margin: 0 -14px; }
-        .glass-container .glass:hover { transform: rotate(0deg) translateY(-10px) scale(1.04); margin: 0 12px; background: rgba(45,45,47,0.85); border-color: rgba(232,255,134,0.15); box-shadow: 0 20px 50px rgba(0,0,0,0.4); z-index: 10; }
-        .glass-container .glass.selected { background: #E8FF86; border: 2px solid #E8FF86; transform: rotate(0deg) translateY(-14px) scale(1.06); margin: 0 16px; z-index: 20; box-shadow: 0 24px 60px rgba(232,255,134,0.25), 0 0 0 4px rgba(232,255,134,0.3); }
-        .glass-container .glass.selected .glass-text { color: #000; }
-        .glass-lock-overlay { position: absolute; inset: 0; background: rgba(10,10,10,0.75); backdrop-filter: blur(18px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; z-index: 10; border-radius: 24px; }
-        .glass-preview-wrap { width: 86%; height: 200px; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; background: rgba(0,0,0,0.3); margin-top: 16px; }
-        .adv-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; } @media (min-width: 768px){ .adv-grid{ grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap:14px; } }
-        .adv-card { width: 100%; height: 190px; border-radius: 20px; background: rgba(32,32,34,0.7); border: 1px solid rgba(255,255,255,0.06); backdrop-filter: blur(16px); display: flex; flex-direction: column; align-items: flex-start; padding: 14px; cursor: pointer; transition: all 0.25s ease; position: relative; overflow: hidden; text-align: left; }
-        .adv-card:hover { transform: translateY(-3px); background: rgba(42,42,44,0.85); border-color: rgba(232,255,134,0.15); box-shadow: 0 12px 24px rgba(0,0,0,0.3); }
-        .adv-card.selected { border: 2px solid #E8FF86; box-shadow: 0 0 0 3px rgba(232,255,134,0.3), 0 12px 24px rgba(0,0,0,0.3); background: rgba(45,45,47,0.9); }
-        .adv-card-lock-overlay { position: absolute; inset: 0; background: rgba(10,10,10,0.8); backdrop-filter: blur(12px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; z-index: 5; border-radius: 20px; }
-        .billing-toggle{display:flex;background:#1C1C1E;border-radius:999px;padding:3px;gap:3px;border:1px solid rgba(255,255,255,0.06)}
-        .billing-btn{height:28px;padding:0 12px;border-radius:999px;font-size:11px;font-weight:600;transition:all .25s;white-space:nowrap;display:flex;align-items:center;}
-        .billing-btn-active{background:#E8FF86;color:#000} .billing-btn-inactive{color:rgba(255,255,255,0.5)}
-        .radio-container{--main-color:#E8FF86;--total-radio:3;display:flex;flex-direction:column;position:relative;padding-left:1rem}
-        .radio-container input{appearance:none;position:absolute;opacity:0} .radio-container .glider-container{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(0deg,transparent 0%,rgba(255,255,255,0.1) 50%,transparent 100%);width:1px}
-        .radio-container .glider{position:relative;height:calc(100% / var(--total-radio));width:100%;background:var(--main-color);transition:transform .45s cubic-bezier(0.4,0,0.2,1)}
-        .radio-container .glider::before{content:"";position:absolute;height:60%;width:300%;top:50%;transform:translateY(-50%);background:var(--main-color);filter:blur(12px);opacity:0.2}
-        .radio-container label{cursor:pointer;padding:14px 14px;border-radius:18px;color:rgba(255,255,255,0.5);transition:all .25s;border:1px solid transparent}
-        .radio-container input:checked+label{color:#fff;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);box-shadow:0 2px 8px rgba(0,0,0,.2)}
-        @media (max-width: 768px) { .glass-container .glass { width: 190px; height: 260px; margin: 0 -14px; } .glass-container { min-height: 280px; padding: 16px 0 24px; } }
+
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;900&display=swap');
+        *{font-family: 'Geist', sans-serif}
+        .no-scrollbar::-webkit-scrollbar{display:none}
+        .no-scrollbar{-ms-overflow-style:none; scrollbar-width:none}
+        .liquid-card{
+          background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
+          backdrop-filter: blur(28px) saturate(1.4);
+          -webkit-backdrop-filter: blur(28px) saturate(1.4);
+          border: 1px solid rgba(255,255,255,0.14);
+          box-shadow: 0 12px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+        .liquid-panel{
+          background: rgba(18,18,22,0.72);
+          backdrop-filter: blur(36px) saturate(1.5);
+          -webkit-backdrop-filter: blur(36px) saturate(1.5);
+          border: 1px solid rgba(255,255,255,0.10);
+          box-shadow: 0 20px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12);
+        }
+        .liquid-input{
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(255,255,255,0.12);
+          backdrop-filter: blur(12px);
+        }
+        .liquid-input:focus{
+          background: rgba(255,255,255,0.10);
+          border-color: rgba(255,255,255,0.25);
+          outline: none;
+        }
+        .right-nav-glass{
+          background: linear-gradient(180deg, rgba(28,28,34,0.88), rgba(16,16,20,0.92));
+          backdrop-filter: blur(40px) saturate(1.6);
+          -webkit-backdrop-filter: blur(40px) saturate(1.6);
+          border-left: 1px solid rgba(255,255,255,0.08);
+          box-shadow: -12px 0 40px rgba(0,0,0,0.45), inset 1px 0 0 rgba(255,255,255,0.08);
+        }
+        .nav-icon-btn{
+          width: 48px; height: 48px;
+          border-radius: 14px;
+          display:flex; align-items:center; justify-content:center;
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(255,255,255,0.08);
+          color: rgba(255,255,255,0.65);
+          transition: all 0.25s ease;
+          position: relative;
+        }
+        .nav-icon-btn:hover{
+          background: rgba(255,255,255,0.12);
+          color: white;
+          transform: translateY(-1px);
+          border-color: rgba(255,255,255,0.16);
+        }
+        .nav-icon-btn.active{
+          background: white;
+          color: black;
+          border-color: white;
+          box-shadow: 0 8px 24px rgba(255,255,255,0.25), 0 0 0 1px rgba(255,255,255,0.6);
+        }
+        .nav-icon-btn.pro-glow.active{
+          background: #E8FF86;
+          color: black;
+          border-color: #E8FF86;
+          box-shadow: 0 8px 28px rgba(232,255,134,0.45);
+        }
+        .pro-dot{width:6px;height:6px;border-radius:999px;background:#E8FF86;box-shadow:0 0 8px #E8FF86}
+        .pro-dot.active{background:black;box-shadow:none}
+        /* PRESERVED 6 GLASS THEMES NAVIGATOR - DO NOT CHANGE ANIMATION/DESIGN */
+        .glass-container{
+          display:flex; gap:20px; overflow-x:auto; padding:24px 20px 36px;
+          scroll-snap-type:x mandatory;
+          scrollbar-width:none;
+        }
+        .glass-container::-webkit-scrollbar{display:none}
+        .glass{
+          min-width:260px; height:240px; position:relative; flex-shrink:0;
+          background: rgba(255,255,255,0.10);
+          backdrop-filter: blur(18px) saturate(1.3);
+          border: 1px solid rgba(255,255,255,0.18);
+          border-radius:22px;
+          transform: rotate(calc(var(--r) * 1deg));
+          transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+          cursor:pointer;
+          box-shadow: 0 12px 32px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.25);
+        }
+        .glass:hover{ transform: rotate(0deg) translateY(-6px) scale(1.02); z-index:10; box-shadow: 0 20px 48px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.3);}
+        .glass.selected{ transform: rotate(0deg) translateY(-4px) scale(1.03); border-color:white; box-shadow: 0 16px 40px rgba(0,0,0,0.3), 0 0 0 1px white; }
+        .glass-preview-wrap{padding:12px; height:100%; display:flex; flex-direction:column; gap:10px}
+        .glass-preview-header{height:36px; border-radius:12px; display:flex; align-items:center; justify-content:space-between; padding:0 12px; font-size:10px; font-weight:900; letter-spacing:0.05em}
+        .glass-preview-body{display:flex; flex-direction:column; gap:8px; flex:1}
+        .glass-lock-overlay{position:absolute; inset:0; background:rgba(248,247,245,0.86); backdrop-filter:blur(10px); border-radius:22px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:16px}
+        .adv-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px}
+        .adv-card{position:relative; height:220px; background: rgba(255,255,255,0.08); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.12); border-radius:20px; padding:16px; text-align:left; transition:all 0.25s; overflow:hidden}
+        .adv-card:hover{border-color:rgba(255,255,255,0.22); transform:translateY(-2px); background:rgba(255,255,255,0.12)}
+        .adv-card.selected{border-color:white; background:rgba(255,255,255,0.14); box-shadow:0 0 0 1px white}
+        .adv-card-lock-overlay{position:absolute; inset:0; background:rgba(18,18,22,0.78); backdrop-filter:blur(16px); display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:20px; padding:12px}
+        .radio-container{position:relative; display:flex; flex-direction:column; gap:10px; --total-radio:3}
+        .radio-container input{display:none}
+        .radio-container label{position:relative; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.10); border-radius:16px; padding:14px 16px; cursor:pointer; transition:all 0.25s; backdrop-filter:blur(12px)}
+        .radio-container input:checked + label{background:rgba(255,255,255,0.12); border-color:white; box-shadow:0 0 0 1px white}
+        .glider-container{position:absolute; pointer-events:none}
       `}</style>
 
+      {/* TOP BAR - liquid */}
+      <header className="relative z-10 sticky top-0 px-4 md:px-6 py-3">
+        <div className="max-w-[1400px] mx-auto flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-white text-black flex items-center justify-center font-black rounded-[12px] text-[15px] shadow-[0_8px_20px_rgba(255,255,255,0.2)]">D</div>
+            <div>
+              <div className="font-bold tracking-tight text-[14px] md:text-[15px] leading-none">DukaanWhats.pk</div>
+              <div className="text-[10px] text-white/50 tracking-widest uppercase mt-[2px]">Liquid OS • {theme}</div>
+            </div>
+            <div className="hidden md:flex ml-4"><CurrentPlanButton /></div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2 liquid-card px-3 h-9 rounded-full text-[11px]">
+              <span className="w-2 h-2 bg-[#E8FF86] rounded-full animate-pulse" /> Live • {products.length} products
+            </div>
+            <Link href={slug ? `/s/${slug}` : '#'} target="_blank" className="h-9 px-5 bg-white text-black rounded-full text-[12px] font-bold flex items-center justify-center hover:bg-white/90 transition">View Store ↗</Link>
+          </div>
+        </div>
+      </header>
 
-
-      {/* OUTER DARK GLASS CONTAINER - like the image */}
-      <div className="relative z-10 p-2 md:p-4">
-        <div className="max-w-[1280px] mx-auto dark-glass rounded-[28px] overflow-hidden">
-
-          {/* TOP HEADER - pill nav like reference */}
-          <div className="px-4 md:px-8 pt-6 pb-2 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-[14px] bg-gradient-to-br from-[#E8FF86] to-[#111111] text-white flex items-center justify-center font-bold text-[16px] shadow-[0_8px_20px_rgba(139,111,234,0.3)]">D</div>
-              <div className="hidden md:block text-[11px] tracking-[0.14em] font-bold text-white/40">DUKAANWHATS</div>
+      <div className="relative z-10 max-w-[1400px] mx-auto flex gap-0 md:gap-6 px-0 md:px-6 pb-24 md:pb-6">
+        {/* MAIN CONTENT - liquid cards */}
+        <main className="flex-1 min-w-0 px-4 md:px-0 space-y-5 order-1">
+          {/* Status strip like reference image */}
+          <div className="grid grid-cols-12 gap-4">
+            <div className="col-span-12 md:col-span-3 liquid-card rounded-[24px] p-5">
+              <div className="flex justify-between items-start">
+                <div><div className="text-[11px] text-white/50 tracking-widest uppercase">Air-Conditioner</div><div className="text-[11px] text-white/30">Living room</div></div>
+                <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center"><div className="w-2 h-2 bg-[#6EF0FF] rounded-full" /></div>
+              </div>
+              <div className="mt-6 flex items-center gap-4">
+                <div className="relative w-24 h-24">
+                  <svg className="w-24 h-24 rotate-[-90deg]"><circle cx="48" cy="48" r="40" stroke="rgba(255,255,255,0.12)" strokeWidth="6" fill="none"/><circle cx="48" cy="48" r="40" stroke="#6EF0FF" strokeWidth="6" fill="none" strokeDasharray="251" strokeDashoffset="90" strokeLinecap="round"/></svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-[24px] font-black">19°</span><span className="text-[10px] text-white/50">Celsius</span></div>
+                </div>
+                <div className="text-[10px] text-white/40">19° 40°</div>
+              </div>
+              <div className="mt-4 flex gap-2">
+                <span className="px-3 h-7 rounded-full bg-[#0A84FF] text-white text-[10px] font-bold flex items-center">Cooling</span>
+                <span className="px-3 h-7 rounded-full bg-white/10 text-white/50 text-[10px] flex items-center">Heating</span>
+              </div>
             </div>
 
-            {/* Center Pill Nav */}
-            <div className="order-3 md:order-2 w-full md:w-auto bg-[#EFEAE6]/80 backdrop-blur border border-white/50 rounded-full p-1.5 flex items-center gap-1 overflow-x-auto no-scrollbar shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
-              <div className="flex items-center gap-1">
-                {[
-                  { id: 'store', label: 'Store' },
-                  { id: 'themes', label: 'Themes' },
-                  { id: 'products', label: `Products` },
-                  { id: 'analytics', label: 'Analytics' },
-                  { id: 'payments', label: 'PRO', glow: true },
-                ].map((t:any) => {
-                  const active = activeTab===t.id
-                  const isGlow = t.glow
-                  return (
-                    <button key={t.id} onClick={()=>setActiveTab(t.id as any)}
-                      className={`h-[36px] px-4 rounded-full text-[13px] font-medium transition-all flex items-center gap-1.5 whitespace-nowrap ${active ? 'bg-white text-black shadow-[0_2px_12px_rgba(0,0,0,0.08)] border border-black/5 font-semibold' : isGlow ? 'bg-[#E8FF86] text-black hover:bg-[#222222] shadow-[0_4px_16px_rgba(167,139,250,0.3)]' : 'text-white/50 hover:text-black hover:bg-white/5'}`}>
-                      {t.label}
-                      {t.id==='analytics' && !isPremium && !active && <span className="w-3 h-3 rounded-full bg-black/10 flex items-center justify-center text-[7px]">🔒</span>}
-                      {t.id==='analytics' && isPremium && <LiveDot />}
+            <div className="col-span-12 md:col-span-6 liquid-panel rounded-[28px] overflow-hidden relative min-h-[220px]">
+              <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=80" className="absolute inset-0 w-full h-full object-cover opacity-60" alt="" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+              <div className="relative p-4 flex justify-between items-start">
+                <div className="flex gap-2">
+                  <span className="px-3 h-7 rounded-full bg-white/15 backdrop-blur text-white text-[10px] flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-red-400 rounded-full animate-pulse"/>Live</span>
+                  <span className="px-2.5 h-7 rounded-full bg-black/40 backdrop-blur text-white/70 text-[10px] flex items-center">32W</span>
+                  <span className="px-2.5 h-7 rounded-full bg-black/40 backdrop-blur text-white/70 text-[10px] flex items-center">24°C</span>
+                </div>
+              </div>
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                {['Living Room 1','Living Room 2'].map((r,i)=><span key={r} className={`px-4 h-8 rounded-full text-[11px] font-medium flex items-center backdrop-blur ${i===0?'bg-white text-black':'bg-white/15 text-white'}`}>{r}</span>)}
+              </div>
+            </div>
+
+            <div className="col-span-12 md:col-span-3 liquid-card rounded-[24px] p-4 hidden md:block">
+              <div className="text-[11px] font-bold">Messages</div>
+              <div className="mt-3 space-y-3">
+                {[{n:'Andrey Janny'},{n:'Will Smith'},{n:'Khan Mart'},{n:'Saba Saleh'},{n:'Barbara Linda'}].map(u=>(
+                  <div key={u.n} className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-full bg-white/15" />
+                    <div className="text-[11px] text-white/80">{u.n}</div>
+                    <div className="ml-auto text-[9px] text-white/30">Sun 24</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {activeTab==='themes' && (
+            <div className="space-y-6">
+              <div className="liquid-panel rounded-[28px] p-6 md:p-7">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+                  <h2 className="text-[16px] font-bold tracking-tight">Themes — <span className="font-normal text-white/50 text-[13px]">Current: {currentPlanDef.name} • {currentPlanId==='basic'?'Only 3 Advanced unlocked':currentPlanId==='advanced'?'All 8 Advanced unlocked':'All unlocked ✓'}</span></h2>
+                  <CurrentPlanButton />
+                </div>
+
+                <div className="mt-6 mb-3 flex items-center gap-2"><span className="text-[10px] font-black tracking-widest bg-white text-black px-3 py-1.5 rounded-full">8 ADVANCED THEMES</span><span className="text-[11px] text-white/50">{currentPlanId==='basic'?`${basicAllowedAdvancedIds.length}/8 unlocked`:`${currentPlanId.toUpperCase()}: 8/8 ✓`}</span></div>
+                <div className="adv-grid">
+                  {finalAdvancedList.map(t => { const isActive = theme===t.id; const locked = isThemeLocked(t); return (
+                    <button key={t.id} onClick={()=>handleThemeClick(t)} className={`adv-card ${isActive?'selected':''}`}>
+                      {isActive && <span className="absolute top-3 right-3 w-6 h-6 bg-white text-black rounded-full flex items-center justify-center text-[11px] font-bold">✓</span>}
+                      <div className="flex items-center gap-3 w-full">
+                        <div className="w-10 h-10 rounded-[12px] flex items-center justify-center text-[16px] shrink-0 bg-white/10 border border-white/10">{t.name?.[0] || '◧'}</div>
+                        <div className="min-w-0 flex-1"><div className="text-[13px] font-bold truncate tracking-tight text-white">{t.name}</div><div className="text-[10px] text-white/40 uppercase tracking-widest font-medium mt-0.5">ADVANCED</div></div>
+                      </div>
+                      <div className="mt-4 w-full h-[88px] rounded-[14px] bg-white/[0.06] border border-white/10 p-2 flex gap-2">
+                        <div className="w-9 h-full rounded-[10px]" style={{background:t.colors?.accent || '#fff'}} />
+                        <div className="flex-1 flex flex-col gap-1.5"><div className="h-2 w-3/4 bg-white/20 rounded-full" /><div className="h-2 w-1/2 bg-white/10 rounded-full" /><div className="mt-auto h-6 w-full bg-white/10 border border-white/10 rounded-[10px]" /></div>
+                      </div>
+                      {locked && <div className="adv-card-lock-overlay"><GlassLockIcon size={40} /><div className="text-[11px] font-black tracking-widest mt-1 text-white">LOCKED</div><div className="text-[10px] text-white/50 text-center leading-tight">Basic 3/8<br/>Need Advanced</div><div className="mt-1.5 bg-white text-black text-[10px] px-3.5 h-7 rounded-full font-bold flex items-center">UPGRADE → Rs. 899</div></div>}
+                      {!locked && <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-[#E8FF86] text-black text-[9px] px-2.5 h-5 rounded-full font-bold flex items-center">UNLOCKED ✓</div>}
                     </button>
-                  )
-                })}
-              </div>
-            </div>
+                  )})}
+                </div>
 
-            {/* Right icons like reference */}
-            <div className="order-2 md:order-3 flex items-center gap-2 ml-auto md:ml-0">
-              <div className="hidden md:flex items-center gap-2 bg-white/5 backdrop-blur rounded-full p-1 border border-white/10">
-                <button className="w-9 h-9 rounded-full bg-white flex items-center justify-center border border-black/5 hover:bg-zinc-50 text-[16px]">◐</button>
-                <button className="w-9 h-9 rounded-full bg-white flex items-center justify-center border border-black/5 hover:bg-zinc-50">📅</button>
-                <button className="w-9 h-9 rounded-full bg-white flex items-center justify-center border border-black/5 hover:bg-zinc-50">⌕</button>
-                <button className="w-9 h-9 rounded-full bg-white flex items-center justify-center border border-black/5 relative">🔔<span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-white"></span></button>
-              </div>
-              <CurrentPlanButton />
-              <Link href={slug ? `/s/${slug}` : '#'} target="_blank" className="h-9 px-4 bg-black text-white rounded-full text-[12px] font-medium flex items-center gap-1 hover:bg-zinc-900">View <span className="opacity-60">↗</span></Link>
-            </div>
-          </div>
+                <div className="mt-10 mb-3 flex items-center gap-2"><span className="text-[10px] font-black tracking-widest bg-white/10 border border-white/10 px-3 py-1.5 rounded-full text-white">STANDARD THEMES</span><span className="text-[11px] text-white/40">All plans</span></div>
+                <div className="adv-grid">
+                  {filteredStandard.slice(0,6).map(t => { const isActive = theme===t.id; return (
+                    <button key={t.id} onClick={()=>handleThemeClick(t)} className={`adv-card ${isActive?'selected':''} !h-[200px]`}>
+                      {isActive && <span className="absolute top-3 right-3 w-6 h-6 bg-white text-black rounded-full flex items-center justify-center text-[11px] font-bold">✓</span>}
+                      <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-[12px] bg-white/10 flex items-center justify-center text-[16px] text-white">{t.name?.[0] || '◧'}</div><div><div className="text-[13px] font-bold text-white">{t.name}</div><div className="text-[10px] text-white/40 uppercase tracking-widest">{t.category}</div></div></div>
+                      <div className="mt-4 w-full h-[68px] rounded-[14px] bg-white/[0.06] border border-white/10" />
+                    </button>
+                  )})}
+                </div>
 
-          {/* Greeting - always visible */}
-          <div className="px-4 md:px-8 mt-2">
-            <h1 className="text-[18px] md:text-[20px] font-bold tracking-tight">Good morning, {businessName || 'James'}!</h1>
-            {/* STAT CARDS - ONLY IN ANALYTICS */}
-            {activeTab==='analytics' && (
-              <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className="dark-glass-card rounded-[22px] p-5 dark-glass-hover hover:shadow-[0_12px_32px_rgba(0,0,0,0.06)] transition-shadow">
-                  <div className="flex justify-between items-start"><div className="w-9 h-9 rounded-[12px] bg-white border flex items-center justify-center text-[16px]">◧</div><span className="w-7 h-7 rounded-full bg-white border flex items-center justify-center text-[12px]">⋮</span></div>
-                  <div className="mt-4 font-black text-[22px] tracking-tight">{products.length}/{productLimit===999999?'∞':productLimit}</div>
-                  <div className="text-[12px] text-white/50 mt-1 leading-tight">Your product<br/>balance</div>
-                </div>
-                <div className="dark-glass-card rounded-[22px] p-5 dark-glass-hover">
-                  <div className="w-9 h-9 rounded-full border-2 border-black flex items-center justify-center relative"><div className="absolute -top-1 -right-1 w-3 h-3 bg-[#E8FF86] rounded-full border-2 border-white"></div>◐</div>
-                  <div className="mt-4 font-black text-[22px]">{imageLimit===999999?'∞':imageLimit}</div>
-                  <div className="text-[12px] text-white/50 mt-1 leading-tight">Images per<br/>product allowed</div>
-                </div>
-                <div className="dark-glass-card rounded-[22px] p-5 dark-glass-hover">
-                  <div className="w-9 h-9 rounded-[12px] bg-white border flex items-center justify-center">◫</div>
-                  <div className="mt-4 font-black text-[22px]">{finalAdvancedList.length + premiumThemes.length}</div>
-                  <div className="text-[12px] text-white/50 mt-1 leading-tight">Themes<br/>working today</div>
-                </div>
-                <div className="dark-glass-card rounded-[22px] p-5 dark-glass-hover">
-                  <div className="w-9 h-9 rounded-[12px] bg-white border flex items-center justify-center">↧</div>
-                  <div className="mt-4 font-black text-[22px]">Rs. {currentPlanDef.monthly}</div>
-                  <div className="text-[12px] text-white/50 mt-1 leading-tight">This month's<br/>plan cost</div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* MAIN CONTENT AREA */}
-          <main className="px-4 md:px-8 py-6 space-y-6">
-            {activeTab==='themes' && (
-              <div className="space-y-6">
-                {/* Advanced */}
-                <div className="dark-glass rounded-[24px] p-5 md:p-7">
-                  <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-                    <div className="flex items-center gap-3"><span className="bg-black text-white text-[10px] font-black tracking-widest px-3 py-1.5 rounded-full">8 ADVANCED THEMES</span><span className="text-[12px] text-white/50">Current: {currentPlanDef.name}</span></div>
-                    <div className="flex items-center gap-2"><span className="text-[11px] text-white/50">{currentPlanId==='basic'?`${basicAllowedAdvancedIds.length}/8 unlocked`:'All unlocked'}</span><CurrentPlanButton/></div>
+                {/* PRESERVED 6 GLASS THEMES - EXACT ANIMATION */}
+                <div className="mt-10 rounded-[28px] border border-white/10 overflow-hidden liquid-panel">
+                  <div className="p-6 md:p-7 border-b border-white/10 bg-white/[0.03] flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-3"><span className="bg-white text-black text-[10px] font-black px-3 py-1.5 rounded-full tracking-widest">6 GLASS THEMES</span><span className="font-bold text-[14px] tracking-tight text-white">Glass Collection — Premium Only</span></div>
+                    <span className="bg-white/10 border border-white/10 text-[11px] px-3 py-1.5 rounded-full font-medium text-white/70">{currentPlanId==='premium'?'All Premium Unlocked ✓':`Locked for ${currentPlanId.toUpperCase()} — Need Premium Rs. 2999/mo`}</span>
                   </div>
-                  <div className="adv-grid">
-                    {finalAdvancedList.map(t => { const isActive = theme===t.id; const locked = isThemeLocked(t); return (
-                      <button key={t.id} onClick={()=>handleThemeClick(t)} className={`adv-card ${isActive?'selected':''}`}>
-                        {isActive && <span className="absolute top-3 right-3 w-6 h-6 bg-black text-white rounded-full flex items-center justify-center text-[11px] font-bold">✓</span>}
-                        <div className="flex items-center gap-3 w-full"><div className="w-10 h-10 rounded-[12px] flex items-center justify-center text-[16px] shrink-0" style={{background:t.colors?.bg || '#F4F4F5'}}>{t.name?.[0]}</div><div className="min-w-0 flex-1"><div className="text-[13px] font-bold truncate">{t.name}</div><div className="text-[10px] text-white/50 uppercase tracking-widest font-medium mt-0.5">ADVANCED</div></div></div>
-                        <div className="mt-4 w-full h-[88px] rounded-[14px] bg-[#F5F1ED] border border-white p-2 flex gap-2"><div className="w-9 h-full rounded-[10px]" style={{background:t.colors?.accent || '#000'}} /><div className="flex-1 flex flex-col gap-1.5"><div className="h-2 w-3/4 bg-zinc-200 rounded-full" /><div className="h-2 w-1/2 bg-zinc-100 rounded-full" /><div className="mt-auto h-6 w-full bg-white border rounded-[8px]" /></div></div>
-                        {locked && <div className="adv-card-lock-overlay"><GlassLockIcon size={40} /><div className="text-[11px] font-black tracking-widest">LOCKED</div><div className="text-[10px] text-white/50 text-center">Need Advanced</div></div>}
-                        {!locked && <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-[#E8FF86] text-black text-[9px] px-2.5 h-5 rounded-full font-bold flex items-center">UNLOCKED ✓</div>}
-                      </button>
-                    )})}
-                  </div>
-                </div>
-
-                {/* Standard */}
-                <div className="dark-glass rounded-[24px] p-5 md:p-7">
-                  <div className="mb-4 flex items-center gap-2"><span className="text-[11px] font-black tracking-widest bg-white border px-3 py-1.5 rounded-full">STANDARD THEMES</span><span className="text-[11px] text-white/50">All plans</span></div>
-                  <div className="adv-grid">
-                    {standardThemes.slice(0,6).map(t => { const isActive = theme===t.id; return (
-                      <button key={t.id} onClick={()=>handleThemeClick(t)} className={`adv-card ${isActive?'selected':''} !h-[200px]`}>
-                        {isActive && <span className="absolute top-3 right-3 w-6 h-6 bg-black text-white rounded-full flex items-center justify-center text-[11px] font-bold">✓</span>}
-                        <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-[12px] bg-zinc-100 flex items-center justify-center">{t.name?.[0]}</div><div><div className="text-[13px] font-bold">{t.name}</div><div className="text-[10px] text-white/50 uppercase tracking-widest">STANDARD</div></div></div>
-                        <div className="mt-4 w-full h-[68px] rounded-[14px] bg-[#F5F1ED] border border-white" />
-                      </button>
-                    )})}
-                  </div>
-                </div>
-
-                {/* Premium Glass */}
-                <div className="rounded-[28px] border border-black/10 overflow-hidden bg-gradient-to-br from-white/80 to-[#F5FFE8]/80 backdrop-blur shadow-[0_16px_40px_rgba(232,255,134,0.18)]">
-                  <div className="p-6 md:p-7 border-b border-white/10 bg-white/50 flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex items-center gap-3"><span className="bg-[#E8FF86] text-black text-[10px] font-bold px-3 py-1.5 rounded-full tracking-widest">3 PREMIUM GLASS</span><span className="font-bold text-[14px]">Glass Collection — Premium Only</span></div>
-                    <span className="bg-white border text-[11px] px-3 py-1.5 rounded-full font-medium">{currentPlanId==='premium'?'All 3 Unlocked ✓':`Locked — Need Premium Rs. 2999`}</span>
-                  </div>
-                  <div className="bg-gradient-to-br from-[#FEFFEB] to-[#F5F7F0] relative">
-                    <div className="absolute top-3 right-5 hidden md:flex items-center gap-2 text-[10px] mono text-black/30"><span>← Scroll to see all {premiumThemes.length} Glass →</span></div>
+                  <div className="bg-black/20 relative">
+                    <div className="absolute top-3 right-5 hidden md:flex items-center gap-2 text-[10px] font-mono text-white/30"><span>← Scroll to see all {premiumThemes.length} Glass →</span></div>
                     <div className="glass-container">
                       {premiumThemes.map((t,i)=>{
-                        const isActive=theme===t.id; const locked=isThemeLocked(t); const r = isActive ? 0 : (GLASS_TILTS[i % GLASS_TILTS.length]); 
+                        const isActive=theme===t.id;
+                        const locked=isThemeLocked(t);
+                        const r = isActive ? 0 : (GLASS_TILTS[i % GLASS_TILTS.length]); 
                         return (
-                          <div key={t.id} className={`glass ${isActive?'selected':''}`} style={{'--r':r, scrollSnapAlign:'start'} as any} onClick={()=>handleThemeClick(t)}>
+                          <div key={t.id} className={`glass ${isActive?'selected':''}`} data-text={t.name} style={{'--r':r, scrollSnapAlign:'start'} as any} onClick={()=>handleThemeClick(t)}>
                             <div className="glass-preview-wrap">
-                              <div className="h-8 flex items-center justify-between px-3 text-[9px] font-bold tracking-widest" style={{background:t.colors?.bg || '#fff', color:t.colors?.text || '#000'}}><span>{t.id.slice(0,12).toUpperCase()}</span><span className="opacity-60">{locked?'🔒':'✓'}</span></div>
-                              <div className="flex-1 p-3 flex flex-col gap-2"><div className="h-8 rounded-[8px] border bg-white" /><div className="flex gap-2"><div className="flex-1 h-14 rounded-[10px] bg-white border" /><div className="flex-1 h-14 rounded-[10px] bg-white border" /></div><div className="h-7 rounded-[8px] bg-black" /></div>
-                            </div>
-                            <div className="mt-3 text-[12px] font-bold tracking-tight">{t.name}</div>
-                            {isActive && <div className="absolute top-3 right-3 w-6 h-6 bg-black text-white rounded-full flex items-center justify-center text-[10px]">✓</div>}
-                            {locked && (<div className="glass-lock-overlay"><GlassPremiumLock size={52} /><div className="text-[11px] font-black tracking-widest">PREMIUM LOCKED</div><div className="text-[10px] text-white/50 text-center leading-[1.4]">Need Premium<br/>Rs. 2999/mo</div><div className="mt-1 bg-black text-white text-[10px] font-bold px-4 h-7 rounded-full flex items-center">UPGRADE →</div></div>)}
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-center pt-2 flex-wrap gap-3 bg-white/5 backdrop-blur border border-white/10 rounded-full px-5 py-3">
-                  <span className="text-[11px] text-white/50">Products {products.length}/{productLimit===999999?'∞':productLimit} • Images {imageLimit===999999?'∞':imageLimit}/product • Current: {currentPlanDef.name}</span>
-                  <div className="flex gap-2 items-center">{saved && <span className="h-9 px-4 flex items-center text-[11px] text-green-600 font-medium bg-green-50 rounded-full border border-green-200">✓ Saved! {getTheme(theme).name}</span>}<button onClick={saveStore} className="h-9 px-6 bg-black text-white text-[12px] font-medium rounded-full hover:bg-zinc-900 flex items-center gap-2">Save Store & Theme <span className="w-5 h-5 bg-white text-black rounded-full flex items-center justify-center text-[10px]">↗</span></button></div>
-                </div>
-              </div>
-            )}
-
-            {activeTab==='store' && (
-              <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-6">
-                <div className="dark-glass rounded-[24px] p-6 md:p-8">
-                  <div className="flex items-center justify-between"><h2 className="font-bold text-[16px] tracking-tight">Store Identity</h2>{saved && <span className="bg-[#E8FF86] text-black px-3 h-7 rounded-full text-[11px] font-bold flex items-center">Saved ✓</span>}</div>
-                  <div className="mt-5 bg-white/5 border border-white rounded-[18px] p-4 flex items-center gap-3"><div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-[12px] ${isPremium?'bg-[#E8FF86] text-black':isAdvanced?'bg-black text-white':'bg-white border'}`}>{currentPlanDef.name[0]}</div><div><div className="text-[13px] font-bold">{currentPlanDef.name} • {productLimit===999999?'∞':productLimit} products • {imageLimit===999999?'∞':imageLimit} images</div><div className="text-[11px] text-white/50">{currentPlanDef.features.join(' • ')}</div></div></div>
-                  <div className="mt-6 grid md:grid-cols-2 gap-4">
-                    <div><label className="text-[11px] font-bold tracking-widest uppercase text-white/50">Business Name</label><input value={businessName} onChange={e=>setBusinessName(e.target.value)} className="mt-2 w-full h-11 px-4 border border-white bg-white/5 rounded-[14px] text-[13px] focus:bg-white focus:outline-none focus:border-black/20 focus:ring-4 focus:ring-[#E8FF86]/20 transition-all" /></div>
-                    <div><label className="text-[11px] font-bold tracking-widest uppercase text-white/50">WhatsApp Number</label><input value={whatsapp} onChange={e=>setWhatsapp(e.target.value)} placeholder="923001234567" className="mt-2 w-full h-11 px-4 border border-white bg-white/5 rounded-[14px] text-[13px] focus:bg-white focus:outline-none focus:border-black/20 focus:ring-4 focus:ring-[#E8FF86]/20 transition-all" /></div>
-                    <div className="md:col-span-2"><label className="text-[11px] font-bold tracking-widest uppercase text-white/50">Store Slug</label><input value={slug} onChange={e=>setSlug(e.target.value)} className="mt-2 w-full h-11 px-4 border border-white bg-white/5 rounded-[14px] text-[13px] focus:bg-white focus:outline-none focus:border-black/20 focus:ring-4 focus:ring-[#E8FF86]/20" /><div className="text-[11px] text-white/50 mt-2">Your store: /s/{slug || 'your-slug'}</div></div>
-                  </div>
-                  <div className="mt-6 flex flex-wrap gap-3"><button onClick={saveStore} disabled={saving} className="h-11 px-7 bg-black text-white rounded-full text-[13px] font-medium hover:bg-zinc-900 transition-colors flex items-center gap-2">{saving?'Saving...':saved?'Saved ✓':'Save Store'} <span className="w-5 h-5 bg-white text-black rounded-full flex items-center justify-center text-[10px]">↗</span></button><button onClick={copyLink} className="h-11 px-5 border border-white bg-white/10 rounded-full text-[13px] font-medium hover:bg-white">{copied?'Copied!':'Copy Link'}</button><Link href={slug ? `/s/${slug}` : '#'} target="_blank" className="h-11 px-5 bg-white/10 border border-white rounded-full text-[13px] font-medium flex items-center hover:bg-white">View Store ↗</Link></div>
-                </div>
-                <div className="space-y-4">
-                  <div className="bg-white/5 backdrop-blur border border-white/10 rounded-[24px] p-5">
-                    <h3 className="font-bold text-[14px]">Formation status</h3><p className="text-[12px] text-white/50 mt-1">In progress — {currentPlanDef.name} setup</p>
-                    <div className="mt-4 h-2.5 bg-white rounded-full overflow-hidden border"><div className="h-full bg-[#E8FF86] rounded-full" style={{width: isPremium?'100%':isAdvanced?'70%':'35%'}}></div></div>
-                    <p className="text-[11px] text-white/50 mt-3">Estimated Processing<br/>4-5 Business Days for verification</p>
-                    <button onClick={()=>setActiveTab('payments')} className="mt-4 w-full h-11 bg-white border rounded-full font-bold text-[13px] hover:bg-zinc-50">View status</button>
-                  </div>
-                  <div className="bg-gradient-to-br from-[#E8FF86] to-[#111111] rounded-[24px] p-6 text-white shadow-[0_12px_32px_rgba(139,111,234,0.3)]">
-                    <div className="flex justify-between items-start"><div><h3 className="font-bold">Success Rate</h3><p className="text-[11px] opacity-70 mt-1">Keep growing your store</p></div><span className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">↗</span></div>
-                    <div className="mt-8 flex items-end justify-center"><div className="text-[48px] font-black tracking-tight">{products.length*7+13}.2%<span className="text-[14px] font-medium ml-2 bg-white/20 px-2 py-1 rounded-full">+5%</span></div></div>
-                    <p className="text-[11px] opacity-80 mt-4 text-center">Hooray you have {products.length} products and {productLimit===999999?'∞':productLimit} limit, keep it up</p>
-                    <div className="mt-6 grid grid-cols-2 gap-4 text-center"><div><div className="text-[11px] opacity-60">Products</div><div className="font-bold text-[18px]">{products.length}</div></div><div><div className="text-[11px] opacity-60">Themes</div><div className="font-bold text-[18px]">{finalAdvancedList.length + premiumThemes.length}</div></div></div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {profile && activeTab==='themes' && (
-              <div className="dark-glass rounded-[24px] p-5">
-                <PremiumThemeEditor profile={{...profile, premium_custom: premiumCustom}} onSave={(d:any)=>{ setPremiumCustom(d); setProfile({...profile, premium_custom: d} as any) }} />
-              </div>
-            )}
-
-            {activeTab==='products' && (
-              <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-6">
-                <div className="space-y-4">
-                  <div className="dark-glass rounded-[24px] p-6">
-                    <div className="flex flex-wrap items-center justify-between gap-3 mb-5"><h2 className="font-bold text-[16px] tracking-tight">Add Product — {products.length}/{productLimit===999999?'∞':productLimit}</h2><div className="flex items-center gap-2"><span className={`px-3 h-7 rounded-full text-[10px] font-bold flex items-center border ${products.length>=productLimit?'bg-red-500 text-white border-red-500':'bg-white text-black border-white'}`}>{products.length>=productLimit?'LIMIT REACHED':`${productLimit===999999?'∞':productLimit-products.length} left`}</span><CurrentPlanButton /></div></div>
-                    <label className="group relative border-2 border-dashed border-white bg-white/5 rounded-[24px] p-6 flex flex-col items-center justify-center cursor-pointer hover:border-black/20 hover:bg-white transition-all min-h-[160px] overflow-hidden">
-                      <div className="absolute inset-0 bg-gradient-to-b from-white to-[#F5FFE8]/50 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <div className="relative z-10 flex flex-col items-center w-full">
-                        {previews.length ? (
-                          <div className="grid grid-cols-5 gap-2.5 w-full">{previews.map((src,i)=>(<div key={i} className="relative group/img"><img src={src} className="w-full h-[72px] object-cover rounded-[14px] border-2 border-white shadow-[0_2px_8px_rgba(0,0,0,0.06)]" /></div>))}<div className="h-[72px] rounded-[14px] border-2 border-dashed border-zinc-200 bg-white flex flex-col items-center justify-center gap-1 hover:border-black"><span className="text-[16px]">+</span><span className="text-[9px] font-bold tracking-widest">ADD</span></div></div>
-                        ) : (
-                          <><UploadIcon /><div className="mt-4 text-center"><div className="font-bold text-[14px] tracking-tight">Drop images or click to upload</div><div className="mt-2 flex items-center justify-center gap-2 text-[11px]"><span className="px-2.5 h-6 rounded-full bg-black text-white font-bold flex items-center">Basic 1</span><span className="px-2.5 h-6 rounded-full bg-white border font-bold flex items-center">Advanced 5</span><span className="px-2.5 h-6 rounded-full bg-[#E8FF86] text-black font-bold flex items-center">Premium ∞</span></div><div className="mt-2 text-[11px] text-white/50">Your plan <b className="text-black">{currentPlanId.toUpperCase()}</b> allows <b className="text-black">{imageLimit===999999?'Unlimited':imageLimit}</b> image{imageLimit!==1?'s':''} per product</div></div></>
-                        )}
-                      </div>
-                      <input type="file" accept="image/*" multiple onChange={handleFile} className="hidden" />
-                    </label>
-                    <div className="mt-5 grid md:grid-cols-2 gap-3">
-                      <input placeholder="Product name *" value={prodName} onChange={e=>setProdName(e.target.value)} className="w-full h-11 px-4 border border-white bg-white/5 rounded-[14px] text-[13px] focus:bg-white focus:outline-none focus:border-black/20 focus:ring-4 focus:ring-[#E8FF86]/20" />
-                      <input placeholder="Price Rs. 3500 *" type="number" value={prodPrice} onChange={e=>setProdPrice(e.target.value)} className="w-full h-11 px-4 border border-white bg-white/5 rounded-[14px] text-[13px] focus:bg-white focus:outline-none focus:border-black/20" />
-                      <input placeholder="Compare price (optional)" type="number" value={prodOrigPrice} onChange={e=>setProdOrigPrice(e.target.value)} className="w-full h-11 px-4 border border-white bg-white/5 rounded-[14px] text-[13px] focus:bg-white focus:outline-none" />
-                      <select value={prodCategory} onChange={e=>setProdCategory(e.target.value)} className="w-full h-11 px-4 border border-white bg-white/5 rounded-[14px] text-[13px] focus:bg-white focus:outline-none"><option>General</option><option>Clothing</option><option>Shoes</option><option>Bags</option><option>Beauty</option><option>Electronics</option><option>Food</option><option>Other</option></select>
-                      <input placeholder="Stock qty (e.g. 100)" type="number" value={prodStock} onChange={e=>setProdStock(e.target.value)} className="w-full h-11 px-4 border border-white bg-white/5 rounded-[14px] text-[13px] focus:bg-white focus:outline-none" />
-                      <input placeholder="Sizes (S, M, L, XL)" value={prodSizes} onChange={e=>setProdSizes(e.target.value)} className="w-full h-11 px-4 border border-white bg-white/5 rounded-[14px] text-[13px] focus:bg-white focus:outline-none" />
-                      <input placeholder="Colors (Black, White, Red)" value={prodColors} onChange={e=>setProdColors(e.target.value)} className="md:col-span-2 w-full h-11 px-4 border border-white bg-white/5 rounded-[14px] text-[13px] focus:bg-white focus:outline-none" />
-                      <textarea placeholder="Product description, materials, care instructions..." value={prodDesc} onChange={e=>setProdDesc(e.target.value)} className="md:col-span-2 w-full min-h-[80px] p-4 border border-white bg-white/5 rounded-[14px] text-[13px] focus:bg-white focus:outline-none" />
-                    </div>
-                    <div className="mt-4 flex justify-end gap-2">{editingId && <button onClick={cancelEdit} className="h-11 px-6 border border-white bg-white/5 rounded-full text-[13px] font-medium hover:bg-white">Cancel</button>}<button onClick={addProduct} disabled={uploading || (!editingId && products.length>=productLimit)} className="h-11 px-7 bg-black text-white text-[13px] font-medium rounded-full disabled:opacity-40 hover:bg-zinc-900 flex items-center gap-2">{uploading?(editingId?'Updating...':'Adding...'):editingId?'Update Product':'Add Product'} <span className="w-5 h-5 bg-white text-black rounded-full flex items-center justify-center text-[10px]">↗</span></button></div>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {products.length===0 ? (<div className="col-span-2 md:col-span-3 bg-white/5 border border-dashed border-white rounded-[24px] p-12 flex flex-col items-center justify-center text-center"><UploadIcon className="w-12 h-12" /><div className="mt-4 font-bold text-[14px]">No products yet</div><div className="text-[11px] text-white/50 mt-1">Add your first product to start selling</div></div>) : products.map(p => (<PremiumProductCard key={p.id} p={p} onEdit={startEdit} onDelete={deleteProduct} themeId={theme} imageLimit={imageLimit} />))}
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <div className="bg-white/5 backdrop-blur border border-white/10 rounded-[24px] p-5">
-                    <h3 className="font-bold">Recent emails</h3>
-                    <div className="mt-4 space-y-3">
-                      <div className="flex items-center justify-between bg-[#F5F1ED] rounded-full p-2 pr-4"><div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-[10px]">H</div><span className="text-[12px] font-medium">Hannah Morgan</span></div><span className="text-[11px] text-white/50">Meeting scheduled</span></div>
-                      <div className="flex items-center justify-between bg-[#F5F1ED] rounded-full p-2 pr-4"><div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-[#E8FF86] text-black flex items-center justify-center text-[10px]">M</div><span className="text-[12px] font-medium">Megan Clark</span></div><span className="text-[11px] text-white/50">Update on campaign</span></div>
-                    </div>
-                  </div>
-                  <div className="bg-[#FCFBF9]/80 backdrop-blur border border-white/10 rounded-[24px] p-5">
-                    <h3 className="font-bold text-[14px]">Average Sales</h3><p className="text-[11px] text-white/50">Sales overview from all channels</p>
-                    <div className="mt-4 grid grid-cols-2 gap-3"><div><div className="text-[11px] text-white/50">Offline</div><div className="font-black text-[18px]">$12,201 <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full">-11%</span></div></div><div><div className="text-[11px] text-white/50">Online</div><div className="font-black text-[18px]">$100,799 <span className="text-[10px] bg-green-500 text-white px-1.5 py-0.5 rounded-full">+6%</span></div></div></div>
-                    <div className="mt-4 h-[120px] flex items-end gap-2">{[40,80,60,35,75,100,50,40,60].map((h,i)=><div key={i} className={`flex-1 rounded-[10px] ${i===4?'bg-[#E8FF86]':'bg-[#EDE8F5]'} transition-all`} style={{height:`${h}%`}}></div>)}</div>
-                    <div className="flex justify-between text-[10px] text-white/40 mt-2"><span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span></div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab==='analytics' && (
-              <div>
-                {!profile ? <div className="p-8 text-center">Loading...</div> : currentPlanId === 'premium' ? (
-                  <div className="bg-[#FCFBF9]/70 backdrop-blur border border-white/10 rounded-[28px] p-6"><RealAnalytics userId={profile!.id} currentPlanId={currentPlanId} /></div>
-                ) : (
-                  <div className="relative">
-                    <div className="bg-white/5 backdrop-blur border border-white/10 rounded-[28px] p-8 text-center"><div className="w-16 h-16 bg-black rounded-[16px] flex items-center justify-center mx-auto text-white">◐</div><h3 className="font-black text-[18px] mt-4">Analytics is Premium Only</h3><p className="text-[12px] text-white/50 mt-2 max-w-[320px] mx-auto">Your {currentPlanId.toUpperCase()} plan shows blurred preview. Upgrade to Premium to see real live analytics.</p><button onClick={()=>setActiveTab('payments')} className="mt-5 h-10 px-6 bg-black text-white rounded-full text-[12px] font-bold">Upgrade to Premium →</button></div>
-                    <div className="mt-4 opacity-30 blur-[8px] pointer-events-none select-none"><RealAnalytics userId={profile!.id} currentPlanId={'premium'} /></div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab==='payments' && (
-              <div className="dark-glass rounded-[24px] p-6 md:p-8">
-                {myPayments.length > 0 && (
-                  <div className="mb-6 rounded-[20px] border border-white bg-white/5 p-4 md:p-5">
-                    <div className="flex items-center gap-2.5 mb-3"><div className="w-8 h-8 bg-black text-white rounded-[10px] flex items-center justify-center text-[12px]">₨</div><span className="font-black text-[13px] tracking-tight">Your Payments</span>{myPayments.filter((p:any)=>p.status==='pending').length > 0 && <span className="ml-auto flex items-center gap-1.5 text-[11px] bg-yellow-50 border border-yellow-200 text-yellow-700 px-2.5 h-7 rounded-full font-bold"><span className="w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse"></span>Pending</span>}</div>
-                    <div className="space-y-2.5">{myPayments.slice(0,5).map((p:any)=>(<div key={p.id} className="group flex items-center justify-between gap-3 bg-[#F5F1ED] border border-white rounded-[14px] p-3.5"><div className="flex items-center gap-3 min-w-0 flex-1"><span className={`shrink-0 h-7 px-3 rounded-full text-[10px] font-black tracking-widest flex items-center border ${p.status==='pending'?'bg-yellow-100 text-yellow-700 border-yellow-200':p.status==='approved'?'bg-black text-white border-black':'bg-red-50 text-red-600 border-red-200'}`}>{p.status.toUpperCase()}</span><div className="min-w-0"><div className="flex items-center gap-2"><span className="text-[13px] font-black">{p.plan_id.toUpperCase()}</span><span className="text-[12px] font-bold text-zinc-600">Rs. {p.amount}</span></div><div className="flex items-center gap-2 mt-1"><span className="font-mono text-[11px] bg-white border px-2 py-0.5 rounded-[8px]">{p.txn_id}</span><span className="text-[10px] text-white/50 hidden md:inline">{new Date(p.created_at).toLocaleDateString()}</span></div></div></div><div className="shrink-0 text-right">{p.status==='pending' && <div className="text-[11px] font-medium text-white/50">Verifying...<br/><span className="text-[10px]">~1 hour</span></div>}{p.status==='approved' && <div className="text-[11px] font-black text-green-600">Active<br/><span className="text-[10px] font-medium text-white/50">Unlocked</span></div>}{p.status==='rejected' && <div className="text-[11px] font-black text-red-600">Rejected<br/><span className="text-[10px] font-medium text-white/50">Contact support</span></div>}</div></div>))}</div>
-                    {justSubmitted && justSubmitted.status==='pending' && (<div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-[12px] p-3 flex items-start gap-2.5"><span className="w-6 h-6 bg-yellow-100 border border-yellow-200 rounded-full flex items-center justify-center text-[12px] shrink-0">⏳</span><div><div className="text-[12px] font-bold text-yellow-800">Payment submitted — Pending verification</div><div className="text-[11px] text-yellow-700/80 mt-0.5">Verifying Txn ID <span className="font-mono bg-white px-1 py-0.5 rounded border">{justSubmitted.txn_id}</span></div></div></div>)}
-                  </div>
-                )}
-                <div className="flex flex-wrap items-start justify-between gap-4"><div className="flex items-center gap-4"><div className="w-12 h-12 bg-black text-white rounded-[14px] flex items-center justify-center text-[18px]">⬡</div><div><h2 className="font-black text-[18px] tracking-tight">Pricing — Till {TILL_ID} — Current: {currentPlanDef.name}</h2><p className="text-[12px] text-white/50">Upgrade via JazzCash Business Till</p></div></div><div className="flex items-center gap-2"><div className="billing-toggle"><button onClick={()=>setBilling('monthly')} className={`billing-btn ${billing==='monthly'?'billing-btn-active':'billing-btn-inactive'}`}>Monthly</button><button onClick={()=>setBilling('yearly')} className={`billing-btn ${billing==='yearly'?'billing-btn-active':'billing-btn-inactive'}`}>Yearly <span className="ml-1 bg-[#E8FF86] text-black text-[8px] px-1 py-0.5 rounded-full">-22%</span></button></div><CurrentPlanButton /></div></div>
-                <div className="mt-8 grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-6">
-                  <div className="rounded-[20px] border border-white bg-black text-white p-5 shadow-[0_16px_40px_rgba(0,0,0,0.2)]"><div className="flex justify-between items-center"><div className="text-[10px] tracking-[0.2em] uppercase opacity-50 font-bold">JAZZCASH BUSINESS TILL</div><button onClick={copyTill} className="h-7 px-3 bg-white/10 border border-white/10 rounded-full text-[11px] hover:bg-white/20">{copiedTill?'Copied!':'Copy'}</button></div><div className="mt-4 bg-white/[0.06] border border-white/[0.08] rounded-[14px] p-4"><div className="text-[10px] uppercase opacity-50">Till ID Number</div><div className="text-[32px] font-black font-mono tracking-[0.12em]">{TILL_ID}</div></div><div className="mt-3 bg-white rounded-[14px] p-3"><img src={`https://barcodeapi.org/api/code128/${TILL_ID}`} alt="Barcode" className="w-full h-[48px] object-contain"/><div className="text-center text-[11px] font-mono text-black font-black tracking-[0.3em] mt-1">{TILL_ID}</div></div><div className="mt-3 bg-white rounded-[14px] p-3 flex justify-center"><img src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=JAZZCASH_TILL_${TILL_ID}`} alt="QR" className="w-[120px] h-[120px]"/></div></div>
-                  <div className="space-y-4">
-                    <div className="radio-container" style={{"--total-radio": plans.length} as any}>
-                      {plans.map(p=>{
-                        const displayPrice = getDisplayPrice(p)
-                        const isSelected = selectedPlan?.id===p.id
-                        const isCurrent = currentPlanId===p.id
-                        return (
-                          <div key={p.id} className="contents">
-                            <input type="radio" id={`dash-${p.id}`} name="dash-plan" checked={isSelected} onChange={()=>setSelectedPlan(p)} />
-                            <label htmlFor={`dash-${p.id}`} onClick={()=>setSelectedPlan(p)} className={isCurrent?'!bg-[#FFFEF5] !border-black' : ''}>
-                              <div className="flex justify-between items-start gap-3">
-                                <div className="min-w-0 flex-1"><div className="flex items-center gap-2 flex-wrap"><span className="font-black text-[14px]">{p.name}</span>{isCurrent && <span className="bg-black text-white text-[8px] px-2 h-5 rounded-full font-bold flex items-center">CURRENT</span>}<span className={`text-[10px] px-2.5 h-6 rounded-full font-bold flex items-center ${p.id==='premium'?'bg-[#E8FF86] text-black':p.id==='advanced'?'bg-black text-white':'bg-zinc-100'}`}>Rs. {displayPrice}/mo</span>{p.id==='advanced' && <span className="bg-[#E8FF86] text-black text-[8px] px-2 h-5 rounded-full font-bold flex items-center">POPULAR</span>}</div><div className="text-[11px] mt-1.5 opacity-60 leading-[1.3]">{p.features.join(' • ')}</div></div><div className="text-right shrink-0"><div className="font-black text-[16px]">Rs. {displayPrice}</div><div className="text-[10px] opacity-60">{billing==='yearly'?`Billed Rs. ${p.yearlyTotal}/yr`:p.id!=='basic'?`Yearly Rs. ${p.yearlyMonthly}/mo`:''}</div></div>
+                              <div className="glass-preview-header" style={{background:t.colors?.bg || 'rgba(255,255,255,0.12)', color:t.colors?.text || '#fff'}}>
+                                <span className="tracking-widest">{t.id.slice(0,14).toUpperCase()} • PREMIUM</span>
+                                <span className="text-[8px] opacity-60">{locked?'🔒 LOCKED':'✓ UNLOCKED'}</span>
                               </div>
-                            </label>
+                              <div className="glass-preview-body">
+                                <div className="h-8 rounded-[10px] border border-white/10" style={{background:t.colors?.card || 'rgba(255,255,255,0.08)'}} />
+                                <div className="flex gap-2"><div className="flex-1 h-16 rounded-[12px] bg-white/10 border border-white/10" /><div className="flex-1 h-16 rounded-[12px] bg-white/10 border border-white/10" /></div>
+                                <div className="h-8 rounded-[10px] bg-white/90" />
+                              </div>
+                            </div>
+                            {isActive && <div className="absolute top-4 right-4 w-7 h-7 bg-white text-black rounded-full flex items-center justify-center text-[12px] font-bold shadow-lg">✓</div>}
+                            {locked && (
+                              <div className="glass-lock-overlay">
+                                <GlassPremiumLock size={56} />
+                                <div className="text-black text-[12px] font-black tracking-widest mt-1">PREMIUM LOCKED</div>
+                                <div className="text-zinc-500 text-[10px] text-center leading-[1.4] font-medium">Basic: 0/3 • Advanced: 0/3<br/>Need Premium Rs. 2999/mo</div>
+                                <div className="mt-2 bg-black text-white text-[10px] font-bold px-4 h-8 rounded-full flex items-center shadow-[0_8px_20px_rgba(0,0,0,0.2)]">UPGRADE → PREMIUM</div>
+                              </div>
+                            )}
                           </div>
                         )
                       })}
-                      <div className="glider-container"><div className="glider"></div></div>
                     </div>
-                    {selectedPlan && selectedPlan.monthly>0 && (
-                      <div className="rounded-[18px] border-2 border-black bg-[#FFFEF5] p-5">
-                        <div className="flex items-center gap-2 flex-wrap"><div className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-[12px]">₨</div><div className="text-[13px] font-bold">Pay Rs. {billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} → Till {TILL_ID} ({billing})</div></div>
-                        <input value={txnId} onChange={e=>setTxnId(e.target.value)} placeholder={`Txn ID after paying Rs. ${billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} to Till ${TILL_ID}`} className="mt-4 w-full h-12 px-4 rounded-[14px] border-2 bg-white text-[12px] font-mono focus:outline-none focus:border-black"/>
-                        <button onClick={handleBuyPlan} disabled={purchasing} className="mt-3 w-full h-12 bg-black text-white rounded-full font-bold text-[13px] flex items-center justify-center gap-2 hover:bg-zinc-900 leading-none">{purchasing?'Submitting...':`I Paid Rs. ${billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} — Activate ${selectedPlan.name}`} <span className="w-5 h-5 bg-white text-black rounded-full flex items-center justify-center text-[10px]">↗</span></button>
-                      </div>
-                    )}
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center pt-8 flex-wrap gap-3">
+                  <span className="text-[11px] text-white/40">Products {products.length}/{productLimit===999999?'∞':productLimit} • Images {imageLimit===999999?'∞':imageLimit}/product • Current: {currentPlanDef.name}</span>
+                  <div className="flex gap-2 items-center">
+                    {saved && <span className="h-11 px-4 flex items-center text-[12px] text-black font-bold bg-[#E8FF86] rounded-full">✓ Saved! {getTheme(theme).name}</span>}
+                    <button onClick={saveStore} className="h-11 px-7 bg-white text-black text-[13px] font-bold rounded-full hover:bg-white/90 transition-colors flex items-center justify-center leading-none">{saving?'Saving...':'Save Store & Theme'}</button>
                   </div>
                 </div>
               </div>
-            )}
-          </main>
-        </div>
+            </div>
+          )}
+
+          {activeTab==='store' && (
+            <div className="liquid-panel rounded-[28px] p-6 md:p-8">
+              <div className="flex items-center justify-between flex-wrap gap-3"><h2 className="font-bold text-[16px] tracking-tight">Store Identity</h2>{saved && <span className="bg-[#E8FF86] text-black px-3 h-7 rounded-full text-[11px] font-bold flex items-center">Saved ✓</span>}</div>
+              <div className="mt-5 liquid-card rounded-[16px] p-4 flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-[12px] ${isPremium?'bg-[#E8FF86] text-black':isAdvanced?'bg-white text-black':'bg-white/10 border border-white/10 text-white'}`}>{currentPlanDef.name[0]}</div>
+                <div><div className="text-[13px] font-bold text-white">{currentPlanDef.name} • {productLimit===999999?'∞':productLimit} products • {imageLimit===999999?'∞':imageLimit} images</div><div className="text-[11px] text-white/50">{currentPlanDef.features.join(' • ')}</div></div>
+              </div>
+              <div className="mt-6 grid md:grid-cols-2 gap-4">
+                <div><label className="text-[10px] font-bold tracking-widest uppercase text-white/40">Business Name</label><input value={businessName} onChange={e=>setBusinessName(e.target.value)} className="mt-2 w-full h-11 px-4 rounded-[12px] liquid-input text-[13px] text-white" /></div>
+                <div><label className="text-[10px] font-bold tracking-widest uppercase text-white/40">WhatsApp Number</label><input value={whatsapp} onChange={e=>setWhatsapp(e.target.value)} placeholder="923001234567" className="mt-2 w-full h-11 px-4 rounded-[12px] liquid-input text-[13px] text-white" /></div>
+                <div className="md:col-span-2"><label className="text-[10px] font-bold tracking-widest uppercase text-white/40">Store Slug</label><input value={slug} onChange={e=>setSlug(e.target.value)} className="mt-2 w-full h-11 px-4 rounded-[12px] liquid-input text-[13px] text-white" /><div className="mt-2 text-[11px] text-white/40">Your store: /s/{slug || 'your-slug'}</div></div>
+              </div>
+              <div className="mt-6 flex flex-wrap gap-3 items-center">
+                <button onClick={saveStore} disabled={saving} className="h-11 px-7 bg-white text-black rounded-full text-[13px] font-bold hover:bg-white/90 transition-colors flex items-center justify-center leading-none">{saving?'Saving...':saved?'Saved ✓':'Save Store'}</button>
+                <button onClick={copyLink} className="h-11 px-6 border border-white/15 bg-white/5 rounded-full text-[13px] font-medium hover:bg-white/10 text-white transition-colors">{copied?'Copied!':'Copy Link'}</button>
+                <span className="text-[11px] text-white/30">{slug ? `/s/${slug}` : ''}</span>
+              </div>
+              <div className="mt-8">
+                <h3 className="font-bold text-[13px] text-white">Premium Editor</h3>
+                <div className="mt-3 liquid-card rounded-[16px] p-4"><PremiumThemeEditor themeId={theme} custom={premiumCustom} onChange={setPremiumCustom} /></div>
+              </div>
+            </div>
+          )}
+
+          {activeTab==='products' && (
+            <div className="space-y-4">
+              <div className="liquid-panel rounded-[28px] p-6 md:p-8">
+                <div className="flex items-center justify-between"><h2 className="font-bold text-[15px] tracking-tight text-white">Add Product — {editingId?'Editing':'New'} • {currentPlanId.toUpperCase()} allows {imageLimit===999999?'∞':imageLimit} images</h2><div className="text-[11px] text-white/40">{products.length}/{productLimit===999999?'∞':productLimit}</div></div>
+                <label className="mt-6 group liquid-card rounded-[20px] border-dashed border-white/20 p-8 flex flex-col items-center justify-center cursor-pointer hover:border-white/30 transition-colors min-h-[160px]">
+                  <div className="relative z-10 flex flex-col items-center">
+                  {previews.length ? (
+                    <div className="grid grid-cols-5 gap-2.5 w-full">
+                      {previews.map((src,i)=>(
+                        <div key={i} className="relative group/img">
+                          <img src={src} className="w-full h-[72px] object-cover rounded-[12px] border-2 border-white/20 shadow-[0_2px_8px_rgba(0,0,0,0.2)]" />
+                          <button type="button" onClick={(e)=>{e.preventDefault(); removeFileAt(i)}} className="absolute -top-2 -right-2 w-5 h-5 bg-white text-black rounded-full text-[10px]">✕</button>
+                        </div>
+                      ))}
+                      <div className="h-[72px] rounded-[12px] border-2 border-dashed border-white/20 bg-white/5 flex flex-col items-center justify-center gap-1 hover:border-white/30 transition-colors">
+                        <span className="text-[16px] text-white">+</span><span className="text-[9px] font-bold tracking-widest text-white/60">ADD</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <UploadIcon />
+                      <div className="mt-4 text-center">
+                        <div className="font-bold text-[14px] tracking-tight text-white">Drop images or click to upload</div>
+                        <div className="mt-1.5 flex items-center justify-center gap-2 text-[11px]">
+                          <span className="px-2.5 h-6 rounded-full bg-white text-black font-bold flex items-center">Basic 1</span>
+                          <span className="px-2.5 h-6 rounded-full bg-white/10 border border-white/10 font-bold flex items-center text-white">Advanced 5</span>
+                          <span className="px-2.5 h-6 rounded-full bg-[#E8FF86] text-black font-bold flex items-center">Premium ∞</span>
+                        </div>
+                        <div className="mt-2 text-[11px] text-white/40">Your plan <b className="text-white">{currentPlanId.toUpperCase()}</b> allows <b className="text-white">{imageLimit===999999?'Unlimited':imageLimit}</b> image{imageLimit!==1?'s':''} per product</div>
+                      </div>
+                    </>
+                  )}
+                  </div>
+                  <input type="file" accept="image/*" multiple onChange={handleFile} className="hidden" />
+                </label>
+                <div className="mt-6 grid md:grid-cols-2 gap-3">
+                  <input placeholder="Product name *" value={prodName} onChange={e=>setProdName(e.target.value)} className="w-full h-11 px-4 rounded-[12px] liquid-input text-[13px] text-white" />
+                  <input placeholder="Price Rs. 3500 *" type="number" value={prodPrice} onChange={e=>setProdPrice(e.target.value)} className="w-full h-11 px-4 rounded-[12px] liquid-input text-[13px] text-white" />
+                  <input placeholder="Compare price (optional) Rs. 5000" type="number" value={prodOrigPrice} onChange={e=>setProdOrigPrice(e.target.value)} className="w-full h-11 px-4 rounded-[12px] liquid-input text-[13px] text-white" />
+                  <select value={prodCategory} onChange={e=>setProdCategory(e.target.value)} className="w-full h-11 px-4 rounded-[12px] liquid-input text-[13px] text-white">
+                    <option className="bg-black">General</option><option className="bg-black">Clothing</option><option className="bg-black">Shoes</option><option className="bg-black">Bags</option><option className="bg-black">Beauty</option><option className="bg-black">Electronics</option><option className="bg-black">Food</option><option className="bg-black">Other</option>
+                  </select>
+                  <input placeholder="Stock qty (e.g. 100)" type="number" value={prodStock} onChange={e=>setProdStock(e.target.value)} className="w-full h-11 px-4 rounded-[12px] liquid-input text-[13px] text-white" />
+                  <input placeholder="Sizes (S, M, L, XL) - comma separated" value={prodSizes} onChange={e=>setProdSizes(e.target.value)} className="w-full h-11 px-4 rounded-[12px] liquid-input text-[13px] text-white" />
+                  <input placeholder="Colors (Black, White, Red) - comma" value={prodColors} onChange={e=>setProdColors(e.target.value)} className="md:col-span-2 w-full h-11 px-4 rounded-[12px] liquid-input text-[13px] text-white" />
+                  <textarea placeholder="Product description..." value={prodDesc} onChange={e=>setProdDesc(e.target.value)} className="md:col-span-2 w-full min-h-[80px] p-4 rounded-[12px] liquid-input text-[13px] text-white resize-none" />
+                </div>
+                <div className="mt-6 flex justify-end gap-2">
+                  {editingId && <button onClick={cancelEdit} className="h-11 px-6 border border-white/15 bg-white/5 rounded-full text-[13px] font-medium hover:bg-white/10 text-white transition-colors">Cancel</button>}
+                  <button onClick={addProduct} disabled={uploading || (!editingId && products.length>=productLimit)} className="h-11 px-7 bg-white text-black text-[13px] font-bold rounded-full disabled:opacity-40 hover:bg-white/90 transition-colors flex items-center justify-center leading-none">{uploading?'Uploading...':!editingId && products.length>=productLimit?`Limit ${productLimit===999999?'∞':productLimit} — Upgrade`:`${editingId?'Update':'Add'} Product →`}</button>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {products.length===0 ? (
+                  <div className="col-span-2 md:col-span-4 liquid-card rounded-[20px] p-12 flex flex-col items-center justify-center text-center"><UploadIcon className="w-12 h-12" /><div className="mt-4 font-bold text-[14px] text-white">No products yet</div><div className="text-[11px] text-white/40 mt-1">Add your first product — {productLimit===999999?'Unlimited':productLimit} allowed on {currentPlanDef.name}</div></div>
+                ) : products.map(p => (
+                  <PremiumProductCard key={p.id} p={p} onEdit={startEdit} onDelete={deleteProduct} themeId={theme} imageLimit={imageLimit} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab==='analytics' && (
+            <div>
+              {!profile ? <div className="p-8 text-center text-white/50">Loading...</div> : currentPlanId === 'premium' ? (
+                <div className="liquid-panel rounded-[28px] p-2"><RealAnalytics userId={profile!.id} currentPlanId={currentPlanId} /></div>
+              ) : (
+                <div className="relative">
+                  <div className="liquid-panel rounded-[28px] p-8 text-center relative">
+                    <div className="w-16 h-16 bg-white/10 rounded-[16px] flex items-center justify-center mx-auto text-white border border-white/10">◐</div>
+                    <h3 className="font-bold text-[16px] mt-4 text-white">Analytics Locked — Premium Only</h3>
+                    <p className="text-[12px] text-white/50 mt-2">Upgrade to Premium to unlock live analytics.</p>
+                    <button onClick={()=>setActiveTab('payments')} className="mt-4 h-10 px-6 bg-[#E8FF86] text-black rounded-full text-[12px] font-bold">Upgrade → Premium Rs. 2999</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab==='payments' && (
+            <div className="liquid-panel rounded-[28px] p-6 md:p-8">
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <h2 className="font-bold text-[16px] text-white">Pro Plans — Till {TILL_ID}</h2>
+                <div className="flex items-center gap-2">
+                  <button onClick={()=>setBilling('monthly')} className={`h-8 px-4 rounded-full text-[11px] font-bold border transition ${billing==='monthly'?'bg-white text-black border-white':'bg-white/10 text-white/60 border-white/10'}`}>Monthly</button>
+                  <button onClick={()=>setBilling('yearly')} className={`h-8 px-4 rounded-full text-[11px] font-bold border transition ${billing==='yearly'?'bg-white text-black border-white':'bg-white/10 text-white/60 border-white/10'}`}>Yearly Save 22%</button>
+                </div>
+              </div>
+
+              <div className="mt-6 grid md:grid-cols-3 gap-4">
+                <div className="liquid-card rounded-[20px] p-5">
+                  <div className="text-[11px] tracking-widest text-white/40 font-bold">JAZZCASH TILL ID</div>
+                  <div className="mt-3 flex items-center gap-2"><span className="font-mono text-[22px] font-black tracking-widest text-white">{TILL_ID}</span><button onClick={copyTill} className="h-7 px-3 rounded-full bg-white/10 text-[10px] text-white border border-white/10">{copiedTill?'Copied!':'Copy'}</button></div>
+                  <div className="mt-3 bg-white rounded-[14px] p-3"><img src={`https://barcodeapi.org/api/code128/${TILL_ID}`} alt="Barcode" className="w-full h-[48px] object-contain"/><div className="text-center text-[11px] font-mono text-black font-black tracking-[0.3em] mt-1">{TILL_ID}</div></div>
+                  <div className="mt-3 bg-white rounded-[14px] p-3 flex justify-center"><img src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=JAZZCASH_TILL_${TILL_ID}`} alt="QR" className="w-[120px] h-[120px]"/></div>
+                </div>
+                <div className="md:col-span-2 space-y-4">
+                  <div className="radio-container" style={{"--total-radio": plans.length} as any}>
+                    {plans.map(p=>{
+                      const displayPrice = getDisplayPrice(p)
+                      const isSelected = selectedPlan?.id===p.id
+                      const isCurrent = currentPlanId===p.id
+                      return (
+                        <div key={p.id} className="contents">
+                          <input type="radio" id={`dash-${p.id}`} name="dash-plan" checked={isSelected} onChange={()=>setSelectedPlan(p)} />
+                          <label htmlFor={`dash-${p.id}`} onClick={()=>setSelectedPlan(p)} className={isCurrent?'!bg-white/15 !border-white' : ''}>
+                            <div className="flex justify-between items-start gap-3">
+                              <div className="min-w-0 flex-1"><div className="flex items-center gap-2 flex-wrap"><span className="font-black text-[14px] text-white">{p.name}</span>{isCurrent && <span className="bg-white text-black text-[8px] px-2 h-5 rounded-full font-bold flex items-center">CURRENT</span>}<span className={`text-[10px] px-2.5 h-6 rounded-full font-bold flex items-center ${p.id==='premium'?'bg-[#E8FF86] text-black':p.id==='advanced'?'bg-white text-black':'bg-white/10 text-white border border-white/10'}`}>Rs. {displayPrice}/mo</span>{p.id==='advanced' && <span className="bg-[#E8FF86] text-black text-[8px] px-2 h-5 rounded-full font-bold flex items-center">POPULAR</span>}</div><div className="text-[11px] mt-1.5 opacity-60 leading-[1.3] text-white">{p.features.join(' • ')}</div></div><div className="text-right shrink-0"><div className="font-black text-[16px] text-white">Rs. {displayPrice}</div><div className="text-[10px] opacity-60 text-white/50">{billing==='yearly'?`Billed Rs. ${p.yearlyTotal}/yr`:p.id!=='basic'?`Yearly Rs. ${p.yearlyMonthly}/mo`:''}</div></div>
+                            </div>
+                          </label>
+                        </div>
+                      )
+                    })}
+                    <div className="glider-container"><div className="glider"></div></div>
+                  </div>
+                  {selectedPlan && selectedPlan.monthly>0 && (
+                    <div className="rounded-[20px] border border-[#E8FF86]/30 bg-[#E8FF86]/10 backdrop-blur p-5">
+                      <div className="flex items-center gap-1.5 md:gap-2 flex-wrap"><div className="w-6 h-6 rounded-full bg-[#E8FF86] text-black flex items-center justify-center text-[12px]">₨</div><div className="text-[13px] font-bold text-white">Pay Rs. {billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} → Till {TILL_ID} ({billing})</div></div>
+                      <input value={txnId} onChange={e=>setTxnId(e.target.value)} placeholder={`Txn ID after paying Rs. ${billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} to Till ${TILL_ID}`} className="mt-4 w-full h-12 px-4 rounded-[12px] border bg-black/40 text-white border-white/10 text-[12px] font-mono focus:outline-none focus:border-white/30"/>
+                      <button onClick={handleBuyPlan} disabled={purchasing} className="mt-3 w-full h-12 bg-[#E8FF86] text-black rounded-full font-bold text-[13px] flex items-center justify-center gap-2 hover:bg-[#E8FF86]/90 transition-colors leading-none">{purchasing?'Submitting...':`I Paid Rs. ${billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} — Activate ${selectedPlan.name}`} <span className="w-5 h-5 bg-black text-[#E8FF86] rounded-full flex items-center justify-center text-[10px]">↗</span></button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </main>
+
+        {/* RIGHT NAV - liquid glass like reference */}
+        <aside className="order-2 w-full md:w-[88px] shrink-0 md:sticky md:top-[72px] md:h-[calc(100vh-88px)]">
+          <div className="right-nav-glass rounded-[28px] md:rounded-[28px] p-3 md:p-3 flex md:flex-col flex-row items-center justify-between md:justify-start gap-2 md:gap-3 mx-4 md:mx-0">
+            <div className="hidden md:flex w-12 h-12 rounded-[16px] bg-white/5 border border-white/10 items-center justify-center text-white/60">88</div>
+            
+            <div className="flex md:flex-col flex-row gap-2 md:gap-3">
+              {navItems.map((item:any)=>(
+                <button key={item.id} onClick={()=>setActiveTab(item.id as any)}
+                  className={`nav-icon-btn group ${activeTab===item.id?'active':''} ${item.glow?'pro-glow':''}`}
+                  title={item.label}>
+                  <span className="text-[16px] font-bold">{item.icon}</span>
+                  {item.premium && !isPremium && <span className="absolute -top-1 -right-1 w-4 h-4 bg-white/20 rounded-full flex items-center justify-center"><span className="text-[8px]">🔒</span></span>}
+                  {item.count && <span className={`absolute -top-1 -right-1 text-[9px] font-black px-1.5 h-4 rounded-full flex items-center ${activeTab===item.id?'bg-black text-white':'bg-[#E8FF86] text-black'}`}>{item.count}</span>}
+                  <span className="hidden md:group-hover:block absolute left-[62px] bg-black text-white text-[11px] px-2.5 py-1 rounded-full whitespace-nowrap">{item.label}</span>
+                </button>
+              ))}
+              <div className="hidden md:block w-full h-[1px] bg-white/10 my-1" />
+              <button onClick={()=>setActiveTab('store' as any)} className={`nav-icon-btn ${activeTab==='store'?'active':''}`} title="Store">
+                <span className="text-[14px]">⌂</span>
+              </button>
+            </div>
+
+            <div className="flex md:flex-col flex-row gap-2 md:mt-auto items-center">
+              <button onClick={handleLogout} className="nav-icon-btn !bg-red-500/10 !border-red-500/20 !text-red-300 hover:!bg-red-500/20" title="Logout">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              </button>
+              <div className="hidden md:flex w-10 h-10 rounded-full bg-gradient-to-br from-zinc-700 to-black border border-white/10 items-center justify-center text-[12px] font-bold">A</div>
+            </div>
+          </div>
+
+          {/* extra bottom pills like reference */}
+          <div className="hidden md:flex mt-4 flex-col gap-3">
+            <div className="liquid-card rounded-[20px] p-3">
+              <div className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Humidity</div>
+              <div className="text-[16px] font-black text-white mt-1">40.2%</div>
+            </div>
+            <div className="liquid-card rounded-[20px] p-3">
+              <div className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Power Use</div>
+              <div className="mt-2 h-12 flex items-end gap-1">
+                <div className="flex-1 h-[40%] bg-white/10 rounded-full" /><div className="flex-1 h-[70%] bg-white/10 rounded-full" /><div className="flex-1 h-[90%] bg-[#6EF0FF] rounded-full shadow-[0_0_12px_rgba(110,240,255,0.6)]" /><div className="flex-1 h-[55%] bg-white/10 rounded-full" />
+              </div>
+            </div>
+          </div>
+        </aside>
       </div>
 
-      
-      {/* GLASS FLOATING LOGOUT BUTTON - bottom right */}
-      <button
-        onClick={handleLogout}
-        className="fixed bottom-6 right-6 z-[100] group flex items-center gap-3 h-[56px] px-2 pr-6 rounded-full bg-white/5 backdrop-blur-[20px] border border-white/10 shadow-[0_16px_40px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] hover:bg-white hover:shadow-[0_20px_50px_rgba(0,0,0,0.16)] transition-all duration-300"
-        aria-label="Logout"
-      >
-        <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.2)] group-hover:bg-zinc-900 transition-colors">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M16 17l5-5-5-5" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M21 12H9" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
-        </div>
-        <div className="text-left hidden md:block">
-          <div className="text-[13px] font-bold tracking-tight leading-none">Logout</div>
-          <div className="text-[10px] text-white/50 font-medium mt-0.5">{profile?.business_name || 'Exit store'}</div>
-        </div>
-        <span className="md:hidden text-[13px] font-bold tracking-tight">Logout</span>
-      </button>
-
-      {errorMsg && <div className="fixed bottom-4 right-4 bg-red-600 text-white px-4 py-2 rounded-full text-[12px] shadow-lg z-[100]">{errorMsg}</div>}
+      {errorMsg && <div className="fixed bottom-4 right-4 z-50 bg-red-500/90 backdrop-blur text-white px-4 py-2 rounded-full text-[12px] shadow-lg border border-red-400/20">{errorMsg}</div>}
 
       {showStatusModal && (
-        <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-[28px] w-full max-w-[380px] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
+        <div className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-xl flex items-center justify-center p-4">
+          <div className="liquid-panel rounded-[28px] w-full max-w-[380px] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
             {showStatusModal.type === 'approved' ? (
               <div>
-                <div className="bg-black text-white p-8 text-center"><div className="w-16 h-16 bg-[#E8FF86] rounded-full flex items-center justify-center mx-auto"><span className="text-[28px]">✓</span></div><h2 className="font-black text-[22px] mt-4">Payment Approved!</h2><p className="text-[13px] text-white/60 mt-1">Your store is now {showStatusModal.payment.plan_id.toUpperCase()}</p></div>
-                <div className="p-6"><div className="bg-[#F5F1ED] border border-white rounded-[14px] p-4"><div className="flex justify-between"><span className="text-[11px] text-white/50">Plan</span><span className="text-[13px] font-black">{showStatusModal.payment.plan_id.toUpperCase()} • Rs. {showStatusModal.payment.amount}</span></div><div className="flex justify-between mt-2"><span className="text-[11px] text-white/50">Txn ID</span><span className="font-mono text-[12px] bg-white border px-2 py-1 rounded-[8px]">{showStatusModal.payment.txn_id}</span></div></div><button onClick={()=>setShowStatusModal(null)} className="mt-6 w-full h-12 bg-black text-white rounded-full font-bold text-[13px]">Continue →</button></div>
+                <div className="bg-white/5 text-white p-8 text-center border-b border-white/10">
+                  <div className="w-16 h-16 bg-[#E8FF86] rounded-full flex items-center justify-center mx-auto"><span className="text-[28px] text-black">✓</span></div>
+                  <h2 className="font-black text-[22px] mt-4">Payment Approved!</h2>
+                  <p className="text-[13px] text-white/50 mt-1">Your store is now {showStatusModal.payment.plan_id.toUpperCase()}</p>
+                </div>
+                <div className="p-6">
+                  <div className="liquid-card rounded-[14px] p-4">
+                    <div className="flex justify-between"><span className="text-[11px] text-white/50">Plan</span><span className="text-[13px] font-black text-white">{showStatusModal.payment.plan_id.toUpperCase()} • Rs. {showStatusModal.payment.amount}</span></div>
+                    <div className="flex justify-between mt-2"><span className="text-[11px] text-white/50">Txn ID</span><span className="font-mono text-[12px] bg-white/10 border border-white/10 px-2 py-1 rounded-[8px] text-white">{showStatusModal.payment.txn_id}</span></div>
+                  </div>
+                  <button onClick={()=>setShowStatusModal(null)} className="mt-6 w-full h-12 bg-white text-black rounded-full font-bold text-[13px]">Continue →</button>
+                </div>
               </div>
             ) : (
-              <div><div className="bg-[#FFFBF0] p-8 text-center border-b"><div className="w-16 h-16 bg-red-50 border border-red-200 rounded-full flex items-center justify-center mx-auto"><span className="text-[24px]">✕</span></div><h2 className="font-black text-[20px] mt-4">Payment Rejected</h2><p className="text-[12px] text-white/50 mt-1">Check Txn ID and try again</p></div><div className="p-6"><p className="text-[12px] text-zinc-600">Txn ID could not be verified in Till {TILL_ID}. Please ensure correct amount and ID.</p><button onClick={()=>setShowStatusModal(null)} className="mt-6 w-full h-12 bg-black text-white rounded-full font-bold text-[13px]">Try Again →</button></div></div>
+              <div>
+                <div className="bg-white/[0.03] p-8 text-center border-b border-white/10">
+                  <div className="w-16 h-16 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center mx-auto"><span className="text-[24px]">✕</span></div>
+                  <h2 className="font-black text-[20px] mt-4 text-white">Payment Rejected</h2>
+                  <p className="text-[12px] text-white/50 mt-1">Check Txn ID and try again</p>
+                </div>
+                <div className="p-6">
+                  <p className="text-[12px] text-white/60">Txn ID could not be verified in Till {TILL_ID}. Please ensure correct amount and ID.</p>
+                  <button onClick={()=>setShowStatusModal(null)} className="mt-6 w-full h-12 bg-white text-black rounded-full font-bold text-[13px]">Try Again →</button>
+                </div>
+              </div>
             )}
           </div>
         </div>
