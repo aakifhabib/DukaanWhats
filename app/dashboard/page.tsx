@@ -371,7 +371,7 @@ export default function Dashboard() {
     setPurchasing(true)
     try {
       const amount = billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal
-      const { data: pay, error } = await supabase.from('plan_payments').insert({ user_id: profile.id, plan_id: selectedPlan.id, billing, amount, txn_id: txnId.trim(), status: 'pending' }).select().single()
+      const { data: pay, error } = await supabase.from('plan_payments').insert({ user_id: profile.id, plan_id: selectedPlan.id, billing, amount, txn_id: txnId.trim(), till_id: TILL_ID, status: 'pending' }).select().single()
       if (error) throw error
       setMyPayments([pay, ...myPayments])
       setJustSubmitted(pay)
@@ -848,23 +848,61 @@ export default function Dashboard() {
             )}
 
             {activeTab==='payments' && (
-              <div className="liquid-glass-card rounded-[32px] p-6 md:p-8 float-section">
-                <div className="flex items-center justify-between flex-wrap gap-3">
-                  <h2 className="font-black text-[16px] text-white">Pro Plans — Till {TILL_ID}</h2>
+              <div className="liquid-glass-card rounded-[32px] p-6 md:p-8 float-section overflow-hidden relative">
+                {/* FULL PAYMENT HISTORY - RESTORED FROM ORIGINAL */}
+                {myPayments.length > 0 && (
+                  <div className="mb-6 rounded-[22px] liquid-glass p-4 md:p-5">
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <div className="w-8 h-8 bg-white text-black rounded-[10px] flex items-center justify-center text-[12px] font-black">₨</div>
+                      <span className="font-black text-[13px] tracking-tight text-white">Your Payments</span>
+                      {myPayments.filter((p:any)=>p.status==='pending').length > 0 && <span className="ml-auto flex items-center gap-1.5 text-[11px] bg-yellow-400/20 border border-yellow-400/30 text-yellow-200 px-2.5 h-7 rounded-full font-bold"><span className="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse" />{myPayments.filter((p:any)=>p.status==='pending').length} Pending</span>}
+                      {myPayments.filter((p:any)=>p.status==='pending').length === 0 && myPayments.filter((p:any)=>p.status==='approved').length > 0 && <span className="ml-auto text-[11px] bg-[#E8FF86]/20 border border-[#E8FF86]/30 text-[#E8FF86] px-2.5 h-7 rounded-full font-bold flex items-center gap-1">✓ Active</span>}
+                    </div>
+                    <div className="space-y-2.5">
+                      {myPayments.slice(0,5).map((p:any)=>(
+                        <div key={p.id} className="group flex items-center justify-between gap-3 bg-white/[0.06] border border-white/10 rounded-[14px] p-3.5 hover:bg-white/[0.10] transition-colors">
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
+                            <span className={`shrink-0 h-7 px-3 rounded-full text-[10px] font-black tracking-widest flex items-center border ${p.status==='pending'?'bg-yellow-400/20 text-yellow-200 border-yellow-400/30':p.status==='approved'?'bg-white text-black border-white':'bg-red-500/20 text-red-200 border-red-500/30'}`}>{p.status==='pending'?'⏳ PENDING':p.status==='approved'?'✓ APPROVED':'✕ REJECTED'}</span>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2"><span className="text-[13px] font-black text-white">{p.plan_id.toUpperCase()}</span><span className="text-[12px] font-bold text-white/70">Rs. {p.amount}</span><span className="text-[10px] text-white/40">• {p.billing || billing}</span></div>
+                              <div className="flex items-center gap-2 mt-1"><span className="font-mono text-[11px] bg-white/10 border border-white/10 px-2 py-0.5 rounded-[8px] text-white/80">{p.txn_id}</span><span className="text-[10px] text-white/40 hidden md:inline">{new Date(p.created_at).toLocaleDateString()} • {p.till_id ? `Till ${p.till_id}` : `Till ${TILL_ID}`}</span></div>
+                            </div>
+                          </div>
+                          <div className="shrink-0 text-right">
+                            {p.status==='pending' && <div className="text-[11px] font-medium text-white/50">Verifying...<br/><span className="text-[10px]">~1 hour</span></div>}
+                            {p.status==='approved' && <div className="text-[11px] font-black text-[#E8FF86]">Active<br/><span className="text-[10px] font-medium text-white/40">Unlocked</span></div>}
+                            {p.status==='rejected' && <div className="text-[11px] font-black text-red-300">Rejected<br/><span className="text-[10px] font-medium text-white/40">Contact support</span></div>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {justSubmitted && justSubmitted.status==='pending' && (
+                      <div className="mt-4 bg-yellow-400/10 border border-yellow-400/20 rounded-[12px] p-3 flex items-start gap-2.5">
+                        <span className="w-6 h-6 bg-yellow-400/20 border border-yellow-400/30 rounded-full flex items-center justify-center text-[12px] shrink-0">⏳</span>
+                        <div><div className="text-[12px] font-bold text-yellow-200">Payment submitted — Pending verification</div><div className="text-[11px] text-yellow-100/60 mt-0.5 leading-[1.4]">We are verifying Txn ID <span className="font-mono bg-white/10 px-1 py-0.5 rounded border border-white/10 text-white">{justSubmitted.txn_id}</span> for Rs. {justSubmitted.amount} in Till {TILL_ID}. You will get notification within 1 hour.</div></div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div className="flex items-center gap-4"><div className="w-12 h-12 bg-white text-black rounded-[14px] flex items-center justify-center text-[18px] font-black">⬡</div><div><h2 className="font-black text-[18px] tracking-tight text-white">Pricing — Till {TILL_ID} — Current: {currentPlanDef.name}</h2><p className="text-[11px] text-white/40 mt-0.5">Pay to JazzCash Till {TILL_ID} & submit Txn ID • Billing: {billing}</p></div></div>
                   <div className="flex items-center gap-2">
-                    <button onClick={()=>setBilling('monthly')} className={`h-9 px-5 rounded-full text-[11px] font-black border transition-all ${billing==='monthly'?'bg-white text-black border-white shadow-[0_4px_16px_rgba(255,255,255,0.25)] scale-[1.05]':'liquid-glass text-white/60 border-white/10 hover:text-white'}`}>Monthly</button>
-                    <button onClick={()=>setBilling('yearly')} className={`h-9 px-5 rounded-full text-[11px] font-black border transition-all ${billing==='yearly'?'bg-white text-black border-white shadow-[0_4px_16px_rgba(255,255,255,0.25)] scale-[1.05]':'liquid-glass text-white/60 border-white/10 hover:text-white'}`}>Yearly Save 22%</button>
+                    <div className="flex items-center gap-1 p-1 rounded-full liquid-glass">
+                      <button onClick={()=>setBilling('monthly')} className={`h-8 px-4 rounded-full text-[11px] font-black transition-all ${billing==='monthly'?'bg-white text-black shadow-[0_2px_8px_rgba(255,255,255,0.25)]':'text-white/50 hover:text-white'}`}>Monthly</button>
+                      <button onClick={()=>setBilling('yearly')} className={`h-8 px-4 rounded-full text-[11px] font-black transition-all flex items-center gap-1 ${billing==='yearly'?'bg-white text-black shadow-[0_2px_8px_rgba(255,255,255,0.25)]':'text-white/50 hover:text-white'}`}>Yearly <span className="bg-[#E8FF86] text-black text-[8px] px-1.5 py-0.5 rounded-full">-22%</span></button>
+                    </div>
+                    <CurrentPlanButton />
                   </div>
                 </div>
-                <div className="mt-6 grid md:grid-cols-3 gap-4">
-                  <div className="liquid-glass rounded-[22px] p-5">
-                    <div className="text-[10px] tracking-widest text-white/40 font-black">JAZZCASH TILL ID</div>
-                    <div className="mt-3 flex items-center gap-2"><span className="font-mono text-[22px] font-black tracking-widest text-white">{TILL_ID}</span><button onClick={copyTill} className="h-7 px-3 rounded-full liquid-glass text-[10px] text-white hover:scale-105 transition-transform">{copiedTill?'Copied!':'Copy'}</button></div>
+                <div className="mt-8 grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-6">
+                  <div className="rounded-[22px] liquid-glass p-5 bg-white/[0.06]">
+                    <div className="flex justify-between items-center"><div className="text-[10px] tracking-[0.2em] uppercase opacity-50 font-black text-white/50">JAZZCASH BUSINESS TILL</div><button onClick={copyTill} className="h-7 px-3 liquid-glass rounded-full text-[11px] hover:scale-105 transition-transform text-white">{copiedTill?'Copied!':'Copy ID'}</button></div>
+                    <div className="mt-4 liquid-glass rounded-[14px] p-4"><div className="text-[10px] uppercase opacity-50 text-white/40">Till ID Number</div><div className="text-[32px] font-black font-mono tracking-[0.12em] text-white">{TILL_ID}</div><div className="text-[10px] text-white/30 mt-1">Billing: {billing.toUpperCase()} • Amount depends on plan</div></div>
                     <div className="mt-3 bg-white rounded-[14px] p-3"><img src={`https://barcodeapi.org/api/code128/${TILL_ID}`} alt="Barcode" className="w-full h-[48px] object-contain"/><div className="text-center text-[11px] font-mono text-black font-black tracking-[0.3em] mt-1">{TILL_ID}</div></div>
                     <div className="mt-3 bg-white rounded-[14px] p-3 flex justify-center"><img src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=JAZZCASH_TILL_${TILL_ID}`} alt="QR" className="w-[120px] h-[120px]"/></div>
-                    {myPayments.length>0 && <div className="mt-4 liquid-glass rounded-[14px] p-3"><div className="text-[10px] font-black text-white/60">MY PAYMENTS</div>{myPayments.slice(0,3).map((pay:any)=><div key={pay.id} className="mt-2 text-[11px] flex justify-between"><span className="text-white/80">{pay.plan_id} • Rs.{pay.amount}</span><span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${pay.status==='approved'?'bg-[#E8FF86] text-black':pay.status==='pending'?'bg-yellow-400 text-black':'bg-red-400 text-black'}`}>{pay.status}</span></div>)}</div>}
+                    <div className="mt-3 liquid-glass rounded-[12px] p-3"><div className="text-[10px] font-black text-white/40">HOW TO PAY</div><div className="text-[11px] text-white/60 mt-1 leading-[1.4]">1. Open JazzCash → Send Money → Till ID<br/>2. Enter {TILL_ID}<br/>3. Pay Rs. {selectedPlan ? (billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal) : '899/2999'}<br/>4. Copy Txn ID and submit below</div></div>
                   </div>
-                  <div className="md:col-span-2 space-y-4">
+                  <div className="space-y-4">
                     <div className="radio-container" style={{"--total-radio": plans.length} as any}>
                       {plans.map(p=>{
                         const displayPrice = getDisplayPrice(p)
@@ -875,19 +913,20 @@ export default function Dashboard() {
                             <input type="radio" id={`dash-${p.id}`} name="dash-plan" checked={isSelected} onChange={()=>setSelectedPlan(p)} />
                             <label htmlFor={`dash-${p.id}`} onClick={()=>setSelectedPlan(p)} className={isCurrent?'!bg-white/15 !border-white' : ''}>
                               <div className="flex justify-between items-start gap-3">
-                                <div className="min-w-0 flex-1"><div className="flex items-center gap-2 flex-wrap"><span className="font-black text-[14px] text-white">{p.name}</span>{isCurrent && <span className="bg-white text-black text-[8px] px-2 h-5 rounded-full font-bold flex items-center">CURRENT</span>}<span className={`text-[10px] px-2.5 h-6 rounded-full font-bold flex items-center ${p.id==='premium'?'bg-[#E8FF86] text-black':p.id==='advanced'?'bg-white text-black':'bg-white/10 text-white border border-white/10'}`}>Rs. {displayPrice}/mo</span>{p.id==='advanced' && <span className="bg-[#E8FF86] text-black text-[8px] px-2 h-5 rounded-full font-bold">POPULAR</span>}</div><div className="text-[11px] mt-1.5 opacity-60 leading-[1.3] text-white/60">{p.features.join(' • ')}</div></div><div className="text-right shrink-0"><div className="font-black text-[16px] text-white">Rs. {displayPrice}</div><div className="text-[10px] opacity-60 text-white/40">{billing==='yearly'?`Billed Rs. ${p.yearlyTotal}/yr`:p.id!=='basic'?`Yearly Rs. ${p.yearlyMonthly}/mo`:''}</div></div>
+                                <div className="min-w-0 flex-1"><div className="flex items-center gap-2 flex-wrap"><span className="font-black text-[14px] text-white">{p.name}</span>{isCurrent && <span className="bg-white text-black text-[8px] px-2 h-5 rounded-full font-bold flex items-center">CURRENT</span>}<span className={`text-[10px] px-2.5 h-6 rounded-full font-bold flex items-center ${p.id==='premium'?'bg-[#E8FF86] text-black':p.id==='advanced'?'bg-white text-black':'bg-white/10 text-white border border-white/10'}`}>Rs. {displayPrice}/mo {billing==='yearly'?'• Yearly':''}</span>{p.id==='advanced' && <span className="bg-[#E8FF86] text-black text-[8px] px-2 h-5 rounded-full font-bold flex items-center">POPULAR</span>}</div><div className="text-[11px] mt-1.5 opacity-60 leading-[1.3] text-white/60">{p.features.join(' • ')}</div><div className="text-[10px] mt-1 text-white/30">Billing: {billing} • {billing==='yearly'?`Total Rs. ${p.yearlyTotal}/year`:`Rs. ${p.monthly}/month`}</div></div><div className="text-right shrink-0"><div className="font-black text-[16px] text-white">Rs. {displayPrice}</div><div className="text-[10px] opacity-60 text-white/40">{billing==='yearly'?`Billed Rs. ${p.yearlyTotal}/yr`:p.id!=='basic'?`Yearly Rs. ${p.yearlyMonthly}/mo`:''}</div></div>
                               </div>
                             </label>
                           </div>
                         )
                       })}
-                      <div className="glider-container"><div className="glider"></div></div>
                     </div>
                     {selectedPlan && selectedPlan.monthly>0 && (
-                      <div className="rounded-[22px] liquid-glass p-5">
-                        <div className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-white text-black flex items-center justify-center text-[12px] font-bold">₨</div><div className="text-[13px] font-bold text-white">Pay Rs. {billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} → Till {TILL_ID} ({billing}) • {justSubmitted?'Submitted ✓':''}</div></div>
-                        <input value={txnId} onChange={e=>setTxnId(e.target.value)} placeholder={`Txn ID after paying Rs. ${billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} to Till ${TILL_ID}`} className="mt-4 w-full h-12 px-4 rounded-[14px] liquid-input text-white text-[12px] font-mono"/>
-                        <button onClick={handleBuyPlan} disabled={purchasing} className="mt-3 w-full h-12 bg-white text-black rounded-full font-black text-[13px] flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_8px_24px_rgba(255,255,255,0.20)]">{purchasing?'Submitting...':`I Paid Rs. ${billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} — Activate ${selectedPlan.name}`} <span className="w-5 h-5 bg-black text-white rounded-full flex items-center justify-center text-[10px]">↗</span></button>
+                      <div className="rounded-[22px] liquid-glass p-5 border-2 border-white/20">
+                        <div className="flex items-center gap-2 flex-wrap"><div className="w-6 h-6 rounded-full bg-white text-black flex items-center justify-center text-[12px] font-bold">₨</div><div className="text-[13px] font-bold text-white">Pay Rs. {billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} → Till {TILL_ID} ({billing.toUpperCase()}) • {justSubmitted?'Submitted ✓':''}</div></div>
+                        <div className="mt-2 text-[11px] text-white/40">Selected: {selectedPlan.name.toUpperCase()} • {billing} • Rs. {billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} • Till {TILL_ID}</div>
+                        <input value={txnId} onChange={e=>setTxnId(e.target.value)} placeholder={`Txn ID after paying Rs. ${billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} to Till ${TILL_ID} [${billing}]`} className="mt-4 w-full h-12 px-4 rounded-[14px] liquid-input text-white text-[12px] font-mono"/>
+                        <button onClick={handleBuyPlan} disabled={purchasing || !txnId.trim()} className="mt-3 w-full h-12 bg-white text-black rounded-full font-black text-[13px] flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_8px_24px_rgba(255,255,255,0.20)] disabled:opacity-50">{purchasing?'Submitting...':`I Paid Rs. ${billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} — Activate ${selectedPlan.name} (${billing})`} <span className="w-5 h-5 bg-black text-white rounded-full flex items-center justify-center text-[10px]">↗</span></button>
+                        <div className="mt-2 text-[10px] text-white/30 text-center">Billing mode: {billing} • Make sure Txn ID matches Till {TILL_ID}</div>
                       </div>
                     )}
                   </div>
