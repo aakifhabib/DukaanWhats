@@ -227,14 +227,56 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <footer className="flex flex-col gap-4 border-t border-black/10 py-8 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-3 text-[13px]">
-            <div className="grid h-7 w-7 place-items-center rounded-[8px] bg-black text-white text-[12px] font-bold">D</div>
-            <span className="font-medium">DukaanWhats.pk</span>
-            <span className="text-zinc-500">© 2025 — Made for Pakistan</span>
-          </div>
-          <div className="flex items-center gap-5 text-[12px] text-zinc-500">
-            <span className="inline-flex items-center gap-1 rounded-[8px] bg-[#E8FF86] px-2 py-1 text-black font-medium"><span className="h-1.5 w-1.5 rounded-full bg-black" /> All systems operational</span>
+        <footer className="mt-10 border-t border-black/10 bg-white/60 backdrop-blur">
+          <div className="mx-auto max-w-[1280px] px-0 md:px-0 py-10">
+            <div className="grid gap-10 md:grid-cols-[1.3fr_0.7fr_0.7fr_1fr]">
+              <div>
+                <div className="flex items-center gap-3">
+                  <div className="grid h-8 w-8 place-items-center rounded-[10px] bg-black text-white text-[13px] font-bold">D</div>
+                  <span className="font-semibold tracking-[-0.02em]">DukaanWhats.pk</span>
+                  <span className="ml-2 inline-flex h-5 items-center rounded-full border border-black/10 bg-[#E8FF86] px-2 text-[10px] font-bold tracking-widest">BY M AAKIF</span>
+                </div>
+                <p className="mt-3 max-w-[300px] text-[13px] leading-[1.6] text-zinc-600">One-page store in 60 seconds. Built solo by M Aakif for Pakistani Instagram sellers. No commission, orders straight to WhatsApp.</p>
+                <div className="mt-4 inline-flex items-center gap-2 rounded-[10px] bg-[#E8FF86] px-3 py-1.5 text-[11px] font-bold text-black"><span className="h-1.5 w-1.5 rounded-full bg-black animate-pulse" /> All systems operational • Solo Built</div>
+              </div>
+
+              <div>
+                <div className="text-[11px] font-black tracking-[0.12em] text-zinc-400">EXPLORE</div>
+                <div className="mt-4 flex flex-col gap-2.5 text-[13px]">
+                  <Link href="/about" className="group flex items-center justify-between hover:opacity-70"><span className="font-medium">about</span><span className="text-[11px] text-zinc-400 group-hover:text-black">— our story</span></Link>
+                  <Link href="/pricing" className="group flex items-center justify-between hover:opacity-70"><span className="font-medium">pricing</span><span className="text-[11px] text-zinc-400 group-hover:text-black">— plans</span></Link>
+                  <Link href="/login" className="group flex items-center justify-between hover:opacity-70"><span className="font-medium">login</span><span className="text-[11px] text-zinc-400 group-hover:text-black">— sign in</span></Link>
+                  <Link href="/dashboard" className="group flex items-center justify-between hover:opacity-70"><span className="font-medium">dashboard</span><span className="text-[11px] text-zinc-400 group-hover:text-black">— manage store</span></Link>
+                </div>
+              </div>
+
+              <div>
+                <div className="text-[11px] font-black tracking-[0.12em] text-zinc-400">STORE</div>
+                <div className="mt-4 flex flex-col gap-2.5 text-[13px]">
+                  <Link href="/s/premiumstore" className="group flex items-center justify-between hover:opacity-70"><span className="font-medium">store demo</span><span className="text-[11px] text-zinc-400">— live example</span></Link>
+                  <Link href="/reset-password" className="group flex items-center justify-between hover:opacity-70"><span className="font-medium">reset password</span><span className="text-[11px] text-zinc-400">— help</span></Link>
+                  <a href="mailto:hello@dukaanwhats.pk" className="group flex items-center justify-between hover:opacity-70"><span className="font-medium">contact</span><span className="text-[11px] text-zinc-400">— hello@</span></a>
+                </div>
+              </div>
+
+              <div>
+                <div className="text-[11px] font-black tracking-[0.12em] text-zinc-400">BUILT BY</div>
+                <div className="mt-4 rounded-[16px] border bg-[#F8F7F5] p-3 flex gap-3">
+                  <div className="grid h-10 w-10 place-items-center rounded-[10px] bg-black text-[#E8FF86] font-black text-[13px] relative">MA<div className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-[#E8FF86] border-2 border-black" /></div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[13px] font-bold leading-none">M Aakif</div>
+                    <div className="mt-1 text-[11px] text-zinc-500">Solo Founder • Karachi</div>
+                    <div className="mt-2 inline-flex h-5 items-center rounded-full bg-black px-2 text-[9px] font-black tracking-widest text-white">100% SOLO • NO TEAM</div>
+                    <div className="mt-2 text-[10px] text-zinc-400">I built everything alone — idea, design, code, themes, payments, deploy.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-10 flex flex-col gap-2 border-t border-black/10 pt-6 md:flex-row md:items-center md:justify-between text-[11px] text-zinc-500">
+              <span>© 2026 M Aakif • DukaanWhats.pk • Built solo in Karachi • Till ID 984837533</span>
+              <span className="inline-flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-[#25D366]" /> Made for Pakistan ♥ • All pages listed above</span>
+            </div>
           </div>
         </footer>
       </main>
