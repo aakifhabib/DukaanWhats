@@ -268,6 +268,14 @@ export default function Dashboard() {
     }catch(e:any){ setErrorMsg(e.message); setTimeout(()=>setErrorMsg(null),5000) } setUploading(false)
   }
   const deleteProduct = async (id: string) => { if (!confirm('Delete?')) return; await supabase.from('products').delete().eq('id', id); setProducts(products.filter(p=>p.id!==id)) }
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut()
+      window.location.href = '/login'
+    } catch(e:any){ setErrorMsg(e.message) }
+  }
+
   const handleBuyPlan = async () => {
     if (!selectedPlan) return; if (selectedPlan.monthly===0){setSelectedPlan(null); return}; if (!txnId.trim()){setErrorMsg('Enter Transaction ID'); setTimeout(()=>setErrorMsg(null),3000); return}; setPurchasing(true)
     const amount = billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal
@@ -381,31 +389,34 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Greeting + Stats Row - inspired by reference's top cards */}
+          {/* Greeting - always visible */}
           <div className="px-4 md:px-8 mt-2">
             <h1 className="text-[18px] md:text-[20px] font-bold tracking-tight">Good morning, {businessName || 'James'}!</h1>
-            <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="bg-[#FCFBF9]/80 backdrop-blur border border-white/70 rounded-[24px] p-5 shadow-[0_8px_24px_rgba(0,0,0,0.03)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.06)] transition-shadow">
-                <div className="flex justify-between items-start"><div className="w-9 h-9 rounded-[12px] bg-white border flex items-center justify-center text-[16px]">◧</div><span className="w-7 h-7 rounded-full bg-white border flex items-center justify-center text-[12px]">⋮</span></div>
-                <div className="mt-4 font-black text-[22px] tracking-tight">{products.length}/{productLimit===999999?'∞':productLimit}</div>
-                <div className="text-[12px] text-zinc-500 mt-1 leading-tight">Your product<br/>balance</div>
+            {/* STAT CARDS - ONLY IN ANALYTICS */}
+            {activeTab==='analytics' && (
+              <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="bg-[#FCFBF9]/80 backdrop-blur border border-white/70 rounded-[24px] p-5 shadow-[0_8px_24px_rgba(0,0,0,0.03)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.06)] transition-shadow">
+                  <div className="flex justify-between items-start"><div className="w-9 h-9 rounded-[12px] bg-white border flex items-center justify-center text-[16px]">◧</div><span className="w-7 h-7 rounded-full bg-white border flex items-center justify-center text-[12px]">⋮</span></div>
+                  <div className="mt-4 font-black text-[22px] tracking-tight">{products.length}/{productLimit===999999?'∞':productLimit}</div>
+                  <div className="text-[12px] text-zinc-500 mt-1 leading-tight">Your product<br/>balance</div>
+                </div>
+                <div className="bg-[#FCFBF9]/80 backdrop-blur border border-white/70 rounded-[24px] p-5 shadow-[0_8px_24px_rgba(0,0,0,0.03)]">
+                  <div className="w-9 h-9 rounded-full border-2 border-black flex items-center justify-center relative"><div className="absolute -top-1 -right-1 w-3 h-3 bg-[#E8FF86] rounded-full border-2 border-white"></div>◐</div>
+                  <div className="mt-4 font-black text-[22px]">{imageLimit===999999?'∞':imageLimit}</div>
+                  <div className="text-[12px] text-zinc-500 mt-1 leading-tight">Images per<br/>product allowed</div>
+                </div>
+                <div className="bg-[#FCFBF9]/80 backdrop-blur border border-white/70 rounded-[24px] p-5 shadow-[0_8px_24px_rgba(0,0,0,0.03)]">
+                  <div className="w-9 h-9 rounded-[12px] bg-white border flex items-center justify-center">◫</div>
+                  <div className="mt-4 font-black text-[22px]">{finalAdvancedList.length + premiumThemes.length}</div>
+                  <div className="text-[12px] text-zinc-500 mt-1 leading-tight">Themes<br/>working today</div>
+                </div>
+                <div className="bg-[#FCFBF9]/80 backdrop-blur border border-white/70 rounded-[24px] p-5 shadow-[0_8px_24px_rgba(0,0,0,0.03)]">
+                  <div className="w-9 h-9 rounded-[12px] bg-white border flex items-center justify-center">↧</div>
+                  <div className="mt-4 font-black text-[22px]">Rs. {currentPlanDef.monthly}</div>
+                  <div className="text-[12px] text-zinc-500 mt-1 leading-tight">This month's<br/>plan cost</div>
+                </div>
               </div>
-              <div className="bg-[#FCFBF9]/80 backdrop-blur border border-white/70 rounded-[24px] p-5 shadow-[0_8px_24px_rgba(0,0,0,0.03)]">
-                <div className="w-9 h-9 rounded-full border-2 border-black flex items-center justify-center relative"><div className="absolute -top-1 -right-1 w-3 h-3 bg-[#E8FF86] rounded-full border-2 border-white"></div>◐</div>
-                <div className="mt-4 font-black text-[22px]">{imageLimit===999999?'∞':imageLimit}</div>
-                <div className="text-[12px] text-zinc-500 mt-1 leading-tight">Images per<br/>product allowed</div>
-              </div>
-              <div className="bg-[#FCFBF9]/80 backdrop-blur border border-white/70 rounded-[24px] p-5 shadow-[0_8px_24px_rgba(0,0,0,0.03)]">
-                <div className="w-9 h-9 rounded-[12px] bg-white border flex items-center justify-center">◫</div>
-                <div className="mt-4 font-black text-[22px]">{finalAdvancedList.length + premiumThemes.length}</div>
-                <div className="text-[12px] text-zinc-500 mt-1 leading-tight">Themes<br/>working today</div>
-              </div>
-              <div className="bg-[#FCFBF9]/80 backdrop-blur border border-white/70 rounded-[24px] p-5 shadow-[0_8px_24px_rgba(0,0,0,0.03)]">
-                <div className="w-9 h-9 rounded-[12px] bg-white border flex items-center justify-center">↧</div>
-                <div className="mt-4 font-black text-[22px]">Rs. {currentPlanDef.monthly}</div>
-                <div className="text-[12px] text-zinc-500 mt-1 leading-tight">This month's<br/>plan cost</div>
-              </div>
-            </div>
+            )}
           </div>
 
           {/* MAIN CONTENT AREA */}
@@ -622,6 +633,23 @@ export default function Dashboard() {
           </main>
         </div>
       </div>
+
+      
+      {/* GLASS FLOATING LOGOUT BUTTON - bottom right */}
+      <button
+        onClick={handleLogout}
+        className="fixed bottom-6 right-6 z-[100] group flex items-center gap-3 h-[56px] px-2 pr-6 rounded-full bg-white/70 backdrop-blur-[20px] border border-white/60 shadow-[0_16px_40px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] hover:bg-white hover:shadow-[0_20px_50px_rgba(0,0,0,0.16)] transition-all duration-300"
+        aria-label="Logout"
+      >
+        <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.2)] group-hover:bg-zinc-900 transition-colors">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M16 17l5-5-5-5" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M21 12H9" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        </div>
+        <div className="text-left hidden md:block">
+          <div className="text-[13px] font-bold tracking-tight leading-none">Logout</div>
+          <div className="text-[10px] text-zinc-500 font-medium mt-0.5">{profile?.business_name || 'Exit store'}</div>
+        </div>
+        <span className="md:hidden text-[13px] font-bold tracking-tight">Logout</span>
+      </button>
 
       {errorMsg && <div className="fixed bottom-4 right-4 bg-red-600 text-white px-4 py-2 rounded-full text-[12px] shadow-lg z-[100]">{errorMsg}</div>}
 
