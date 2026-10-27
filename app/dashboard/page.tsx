@@ -362,24 +362,6 @@ export default function Dashboard() {
     }catch(e:any){ setErrorMsg(e.message); setTimeout(()=>setErrorMsg(null),5000) } setUploading(false)
   }
   const deleteProduct = async (id: string) => { if (!confirm('Delete?')) return; await supabase.from('products').delete().eq('id', id); setProducts(products.filter(p=>p.id!==id)) }
-  const handleBuyPlan = async () => {
-    if (!selectedPlan) return; if (selectedPlan.monthly===0){setSelectedPlan(null); return}; if (!txnId.trim()){setErrorMsg('Enter Transaction ID'); setTimeout(()=>setErrorMsg(null),3000); return}; setPurchasing(true)
-    const amount = billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal
-    try{
-      const { data: { user } } = await supabase.auth.getUser(); if (!user) throw new Error('Not logged in')
-      const { error } = await supabase.from('plan_payments').insert({ user_id: user.id, plan_id: selectedPlan.id, amount, till_id: TILL_ID, txn_id: txnId.trim(), status: 'pending' })
-      if (error) throw error;
-      const { data: pays } = await supabase.from('plan_payments').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
-      if (pays) { setMyPayments(pays); if (pays[0]) setJustSubmitted(pays[0]) }
-      setSelectedPlan(null); setTxnId('')
-    }catch(e:any){ setErrorMsg(e.message); setTimeout(()=>setErrorMsg(null),4000) } setPurchasing(false)
-  }
-
-  if (loading) return <DukaanWhatsLoader message="Loading your store..." />
-
-  const standardThemes = STORE_THEMES.filter(t => !premiumIds.includes(t.id) && !finalAdvancedList.some(a=>a.id===t.id))
-  const filteredStandard = (filter as string) === 'all' ? standardThemes : STORE_THEMES.filter(t => (t.category as string) === (filter as string) && !premiumIds.includes(t.id) && !finalAdvancedList.some(a=>a.id===t.id))
-  const filteredAdvanced = (filter as string) === 'all' || filter === 'advanced' ? finalAdvancedList : finalAdvancedList.filter(t=>(t.category as string)===filter)
   const getDisplayPrice = (p: PlanDef) => billing==='monthly'?p.monthly:p.yearlyMonthly
   const handleBuyPlan = async () => {
     if (!selectedPlan) { setErrorMsg('Please select a plan'); return }
