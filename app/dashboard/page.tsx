@@ -303,12 +303,12 @@ export default function Dashboard() {
     setEditingId(p.id); 
     setProdName(p.name); 
     setProdPrice(String(p.price)); 
-    setProdDesc(p.description || ''); 
-    setProdCategory(p.category || 'General'); 
-    setProdStock(String(p.stock || 100)); 
-    setProdSizes(Array.isArray(p.sizes) ? p.sizes.join(', ') : p.sizes || ''); 
-    setProdColors(Array.isArray(p.colors) ? p.colors.join(', ') : p.colors || ''); 
-    setProdOrigPrice(p.original_price ? String(p.original_price) : ''); 
+    setProdDesc((p as any).description || ''); 
+    setProdCategory((p as any).category || 'General'); 
+    setProdStock(String((p as any).stock || 100)); 
+    setProdSizes(Array.isArray((p as any).sizes) ? (p as any).sizes.join(', ') : (p as any).sizes || ''); 
+    setProdColors(Array.isArray((p as any).colors) ? (p as any).colors.join(', ') : (p as any).colors || ''); 
+    setProdOrigPrice((p as any).original_price ? String((p as any).original_price) : ''); 
     setPreviews(p.image_urls && p.image_urls.length ? p.image_urls : [p.image_url]); 
     setFiles([]); 
     setActiveTab('products'); 
@@ -824,7 +824,7 @@ export default function Dashboard() {
                           <img src={images[0]} className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-700" alt={p.name} />
                           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">{images.map((_:any,i:number)=><div key={i} className={`h-1 rounded-full transition-all ${i===0?'w-4 bg-white':'w-1.5 bg-white/40'}`} />)}</div>
                         </div>
-                        <div className="mt-3 px-1"><div className="font-bold text-[13px] truncate text-white">{p.name}</div><div className="flex items-center justify-between mt-1"><span className="font-black text-[14px] text-white">Rs. {p.price.toLocaleString()}</span><span className="text-[11px] text-white/40">{images.length} img • {p.category || 'General'}</span></div><div className="mt-3 flex gap-2"><button onClick={()=>{ setEditingId(p.id); setProdName(p.name); setProdPrice(String(p.price)); setProdDesc((p as any).description || ''); setProdCategory((p as any).category || 'General'); setProdStock(String((p as any).stock || 100)); setProdSizes(Array.isArray((p as any).sizes) ? (p as any).sizes.join(', ') : (p as any).sizes || ''); setProdColors(Array.isArray((p as any).colors) ? (p as any).colors.join(', ') : (p as any).colors || ''); setProdOrigPrice((p as any).original_price ? String((p as any).original_price) : ''); setPreviews(p.image_urls && p.image_urls.length ? p.image_urls : [p.image_url]); setFiles([]); setActiveTab('products'); }} className="flex-1 h-8 bg-white text-black rounded-full text-[11px] font-bold hover:scale-[1.05] transition-transform">Edit</button><button onClick={async ()=>{ if (!confirm('Delete product?')) return; const { error } = await supabase.from('products').delete().eq('id', p.id); if (!error) setProducts(products.filter(x=>x.id!==p.id)) }} className="h-8 w-8 liquid-glass rounded-full flex items-center justify-center text-[12px] text-white hover:scale-110 transition-transform">✕</button></div></div>
+                        <div className="mt-3 px-1"><div className="font-bold text-[13px] truncate text-white">{p.name}</div><div className="flex items-center justify-between mt-1"><span className="font-black text-[14px] text-white">Rs. {p.price.toLocaleString()}</span><span className="text-[11px] text-white/40">{images.length} img • {(p as any).category || 'General'}</span></div><div className="mt-3 flex gap-2"><button onClick={()=>{ setEditingId(p.id); setProdName(p.name); setProdPrice(String(p.price)); setProdDesc((p as any).description || ''); setProdCategory((p as any).category || 'General'); setProdStock(String((p as any).stock || 100)); setProdSizes(Array.isArray((p as any).sizes) ? (p as any).sizes.join(', ') : (p as any).sizes || ''); setProdColors(Array.isArray((p as any).colors) ? (p as any).colors.join(', ') : (p as any).colors || ''); setProdOrigPrice((p as any).original_price ? String((p as any).original_price) : ''); setPreviews(p.image_urls && p.image_urls.length ? p.image_urls : [p.image_url]); setFiles([]); setActiveTab('products'); }} className="flex-1 h-8 bg-white text-black rounded-full text-[11px] font-bold hover:scale-[1.05] transition-transform">Edit</button><button onClick={async ()=>{ if (!confirm('Delete product?')) return; const { error } = await supabase.from('products').delete().eq('id', p.id); if (!error) setProducts(products.filter(x=>x.id!==p.id)) }} className="h-8 w-8 liquid-glass rounded-full flex items-center justify-center text-[12px] text-white hover:scale-110 transition-transform">✕</button></div></div>
                       </div>
                     )
                   })}
