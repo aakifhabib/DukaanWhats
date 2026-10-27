@@ -371,7 +371,7 @@ export default function Dashboard() {
     setPurchasing(true)
     try {
       const amount = billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal
-      const { data: pay, error } = await supabase.from('plan_payments').insert({ user_id: profile.id, plan_id: selectedPlan.id, billing, amount, txn_id: txnId.trim(), till_id: TILL_ID, status: 'pending' }).select().single()
+      const { data: pay, error } = await supabase.from('plan_payments').insert({ user_id: profile.id, plan_id: selectedPlan.id, amount, till_id: TILL_ID, txn_id: txnId.trim(), status: 'pending' }).select().single()
       if (error) throw error
       setMyPayments([pay, ...myPayments])
       setJustSubmitted(pay)
@@ -864,7 +864,7 @@ export default function Dashboard() {
                           <div className="flex items-center gap-3 min-w-0 flex-1">
                             <span className={`shrink-0 h-7 px-3 rounded-full text-[10px] font-black tracking-widest flex items-center border ${p.status==='pending'?'bg-yellow-400/20 text-yellow-200 border-yellow-400/30':p.status==='approved'?'bg-white text-black border-white':'bg-red-500/20 text-red-200 border-red-500/30'}`}>{p.status==='pending'?'⏳ PENDING':p.status==='approved'?'✓ APPROVED':'✕ REJECTED'}</span>
                             <div className="min-w-0">
-                              <div className="flex items-center gap-2"><span className="text-[13px] font-black text-white">{p.plan_id.toUpperCase()}</span><span className="text-[12px] font-bold text-white/70">Rs. {p.amount}</span><span className="text-[10px] text-white/40">• {p.billing || billing}</span></div>
+                              <div className="flex items-center gap-2"><span className="text-[13px] font-black text-white">{p.plan_id.toUpperCase()}</span><span className="text-[12px] font-bold text-white/70">Rs. {p.amount}</span><span className="text-[10px] text-white/40">• {billing.toUpperCase()}</span></div>
                               <div className="flex items-center gap-2 mt-1"><span className="font-mono text-[11px] bg-white/10 border border-white/10 px-2 py-0.5 rounded-[8px] text-white/80">{p.txn_id}</span><span className="text-[10px] text-white/40 hidden md:inline">{new Date(p.created_at).toLocaleDateString()} • {p.till_id ? `Till ${p.till_id}` : `Till ${TILL_ID}`}</span></div>
                             </div>
                           </div>
