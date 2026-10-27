@@ -267,6 +267,7 @@ export default function Dashboard() {
       setTimeout(()=>setLoading(false), 700)
     }
     init()
+  }, [])
 
   // Bubble delegation for all elegant buttons
   useEffect(() => {
