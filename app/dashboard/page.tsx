@@ -108,7 +108,7 @@ const PremiumProductCard = ({ p, onEdit, onDelete, themeId, imageLimit }: { p: a
         <img src={images[hoverIdx]} className="w-full h-full object-cover transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] group-hover:scale-[1.03]" alt={p.name} />
         {images.length > 1 && (
           <>
-            <div className="absolute top-2 left-2 bg-black/70 backdrop-blur text-white text-[10px] px-2 py-1 rounded-full font-bold">
+            <div className="absolute top-2 left-2 bg-black/70 backdrop-blur text-zinc-900 text-[10px] px-2 py-1 rounded-full font-bold">
               {hoverIdx+1}/{images.length} {isHovering ? '• AUTO' : ''}
             </div>
             <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
@@ -132,7 +132,7 @@ const PremiumProductCard = ({ p, onEdit, onDelete, themeId, imageLimit }: { p: a
           <span className="text-[11px] text-zinc-500">{images.length} img</span>
         </div>
         <div className="mt-3 flex gap-2">
-          <button onClick={()=>onEdit(p)} className="flex-1 h-8 bg-black text-white rounded-full text-[11px] font-bold">Edit</button>
+          <button onClick={()=>onEdit(p)} className="flex-1 h-8 bg-black text-zinc-900 rounded-full text-[11px] font-bold">Edit</button>
           <button onClick={()=>onDelete(p.id)} className="h-8 w-8 border rounded-full flex items-center justify-center text-[12px]">✕</button>
         </div>
       </div>
@@ -456,8 +456,8 @@ export default function Dashboard() {
   const CurrentPlanButton = () => (
     <div className="liquid-glass-pill flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-black tracking-widest">
       <span className={`w-2 h-2 rounded-full animate-pulse ${isPremium?'bg-[#E8FF86] shadow-[0_0_8px_#E8FF86]':isAdvanced?'bg-white':'bg-white/50'}`} />
-      <span className="text-white">{currentPlanDef.name.toUpperCase()}</span>
-      <span className="text-white/50 font-mono hidden md:inline">• {productLimit===999999?'∞':productLimit} • {imageLimit===999999?'∞':imageLimit}</span>
+      <span className="text-zinc-900">{currentPlanDef.name.toUpperCase()}</span>
+      <span className="text-zinc-900/50 font-mono hidden md:inline">• {productLimit===999999?'∞':productLimit} • {imageLimit===999999?'∞':imageLimit}</span>
     </div>
   )
 
@@ -470,7 +470,7 @@ export default function Dashboard() {
   ] as any[]
 
   return (
-    <div className="min-h-screen w-full relative bg-[#F8F7F5] text-zinc-900 selection:bg-black selection:text-white">
+    <div className="min-h-screen w-full relative bg-[#F8F7F5] text-zinc-900 selection:bg-black selection:text-zinc-900">
             {/* ANALYTICS COLOURS BACKGROUND - MATCHES REAL ANALYTICS PALETTE */}
       <div className="fixed inset-0 z-0 overflow-hidden">
         <div className="absolute inset-0 bg-[#F8F7F5]" />
@@ -692,12 +692,12 @@ export default function Dashboard() {
       <div className="relative z-10 flex min-h-screen">
         <aside className="hidden md:flex w-[96px] shrink-0 pl-4 py-4">
           <div className="liquid-nav rounded-[28px] p-3 flex flex-col items-center gap-3 sticky top-4 h-[calc(100vh-32px)] float-section">
-            <div className="w-10 h-10 rounded-[14px] liquid-glass flex items-center justify-center font-black text-[14px] text-white">D</div>
+            <div className="w-10 h-10 rounded-[14px] liquid-glass flex items-center justify-center font-black text-[14px] text-zinc-900">D</div>
             <div className="w-full h-[1px] bg-white/10" />
             {navItems.map((item:any)=>(
               <button key={item.id} onClick={()=>setActiveTab(item.id)} className={`liquid-nav-btn group ${activeTab===item.id?'active':''} ${item.pro?'pro':''}`} title={item.label}>
                 {item.icon}
-                {item.count!==undefined && <span className={`absolute -top-1 -right-1 text-[9px] font-bold px-1 h-4 rounded-full flex items-center ${activeTab===item.id?'bg-black text-white':'bg-[#E8FF86] text-black'}`}>{item.count}</span>}
+                {item.count!==undefined && <span className={`absolute -top-1 -right-1 text-[9px] font-bold px-1 h-4 rounded-full flex items-center ${activeTab===item.id?'bg-black text-zinc-900':'bg-[#E8FF86] text-black'}`}>{item.count}</span>}
                 <span className="absolute left-[60px] hidden group-hover:block liquid-glass-pill text-black text-[11px] px-3 py-1 rounded-full whitespace-nowrap shadow-xl">{item.label}</span>
               </button>
             ))}
@@ -715,7 +715,7 @@ export default function Dashboard() {
               <div className="md:hidden w-8 h-8 rounded-[12px] liquid-glass flex items-center justify-center font-bold">D</div>
               <div className="leading-tight">
                 <div className="font-semibold text-[14px] tracking-tight text-zinc-900">DukaanWhats.pk</div>
-                <div className="text-[10px] text-white/40 tracking-wide">FLOATING LIQUID OS • {theme}</div>
+                <div className="text-[10px] text-zinc-500 tracking-wide">FLOATING LIQUID OS • {theme}</div>
               </div>
               <div className="hidden md:flex ml-4"><CurrentPlanButton /></div>
             </div>
@@ -734,35 +734,35 @@ export default function Dashboard() {
 
                 <div className="mt-6 flex flex-wrap gap-2">
                   {(['all','clothing','shoes','beauty','tech','food','advanced'] as any[]).map(cat=>(
-                    <button key={cat} onClick={()=>setFilter(cat)} className={`btn-elegant h-8 px-4 rounded-full text-[11px] font-bold tracking-widest capitalize transition-all ${filter===cat?'bg-black text-white shadow-[0_4px_16px_rgba(0,0,0,0.15)] scale-[1.05]':'bg-white border border-black/10 text-zinc-700 hover:bg-zinc-50 hover:text-black hover:scale-[1.03]'}`}>{cat}</button>
+                    <button key={cat} onClick={()=>setFilter(cat)} className={`btn-elegant h-8 px-4 rounded-full text-[11px] font-bold tracking-widest capitalize transition-all ${filter===cat?'bg-black text-zinc-900 shadow-[0_4px_16px_rgba(0,0,0,0.15)] scale-[1.05]':'bg-white border border-black/10 text-zinc-700 hover:bg-zinc-50 hover:text-black hover:scale-[1.03]'}`}>{cat}</button>
                   ))}
                 </div>
 
                 <div className="mt-8 mb-3 flex items-center gap-2">
                   <span className="text-[10px] font-black tracking-widest bg-white text-black px-3 py-1.5 rounded-full">8 ADVANCED THEMES</span>
-                  <span className="text-[11px] text-white/40">{currentPlanId==='basic'?`${basicAllowedAdvancedIds.length}/8 unlocked`:'8/8 unlocked'}</span>
+                  <span className="text-[11px] text-zinc-500">{currentPlanId==='basic'?`${basicAllowedAdvancedIds.length}/8 unlocked`:'8/8 unlocked'}</span>
                 </div>
                 <div className="adv-grid">
                   {filteredAdvanced.map((t:any) => { const isActive = theme===t.id; const locked = isThemeLocked(t); return (
                     <button key={t.id} onClick={()=>{ const tmp=t; if (isThemeLocked(tmp)) { if (isPremiumTheme(tmp)) { alert(`🔒 Premium Glass Locked\nBasic: 0/3 Premium\nAdvanced: 0/3 Premium\nNeed Premium — Till ${TILL_ID} Rs. 2999/mo`); setActiveTab('payments'); return } alert(`🔒 Advanced Theme Locked\nBasic allows 3/8 Advanced\nThis theme needs Advanced — Till ${TILL_ID} Rs. 899/mo`); setActiveTab('payments'); return } setTheme(t.id) }} className={`adv-card group ${isActive?'selected':''}`}>
                       {isActive && <span className="absolute top-3 right-3 w-6 h-6 bg-white text-black rounded-full flex items-center justify-center text-[11px] font-bold shadow-lg">✓</span>}
                       <div className="flex items-center gap-3 w-full">
-                        <div className="w-9 h-9 rounded-[10px] liquid-glass flex items-center justify-center text-white text-[13px] group-hover:scale-110 transition-transform">{t.name?.[0]}</div>
+                        <div className="w-9 h-9 rounded-[10px] liquid-glass flex items-center justify-center text-zinc-900 text-[13px] group-hover:scale-110 transition-transform">{t.name?.[0]}</div>
                         <div className="min-w-0 flex-1"><div className="text-[13px] font-bold truncate text-zinc-900">{t.name}</div><div className="text-[9px] text-zinc-500 uppercase tracking-widest font-medium mt-0.5">ADVANCED • {t.category}</div></div>
                       </div>
                       <div className="mt-4 w-full h-[84px] rounded-[12px] bg-white/[0.05] border border-white/10 p-2 flex gap-2">
                         <div className="w-8 h-full rounded-[8px] transition-all group-hover:scale-105" style={{background:t.colors?.accent || '#fff'}} />
                         <div className="flex-1 flex flex-col gap-1.5"><div className="h-2 w-3/4 bg-white/15 rounded-full" /><div className="h-2 w-1/2 bg-white/10 rounded-full" /><div className="mt-auto h-5 w-full bg-white/10 border border-white/10 rounded-[8px]" /></div>
                       </div>
-                      {locked && <div className="adv-card-lock-overlay"><GlassLockIcon size={40} /><div className="text-[10px] font-black tracking-widest mt-1 text-white">LOCKED</div><div className="text-[10px] text-white/50 text-center">Need Advanced</div><div className="mt-2 bg-white text-black text-[10px] px-3 h-7 rounded-full font-bold flex items-center hover:scale-105 transition-transform">UPGRADE Rs. 899</div></div>}
+                      {locked && <div className="adv-card-lock-overlay"><GlassLockIcon size={40} /><div className="text-[10px] font-black tracking-widest mt-1 text-zinc-900">LOCKED</div><div className="text-[10px] text-zinc-900/50 text-center">Need Advanced</div><div className="mt-2 bg-white text-black text-[10px] px-3 h-7 rounded-full font-bold flex items-center hover:scale-105 transition-transform">UPGRADE Rs. 899</div></div>}
                       {!locked && <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-[#E8FF86] text-black text-[9px] px-2.5 h-5 rounded-full font-bold flex items-center shadow-lg">UNLOCKED ✓</div>}
                     </button>
                   )})}
                 </div>
 
                 <div className="mt-10 mb-3 flex items-center gap-2">
-                  <span className="text-[10px] font-black tracking-widest bg-white/10 border border-white/10 px-3 py-1.5 rounded-full text-white">STANDARD • {filteredStandard.length}</span>
-                  <span className="text-[11px] text-white/30">All plans</span>
+                  <span className="text-[10px] font-black tracking-widest bg-white/10 border border-white/10 px-3 py-1.5 rounded-full text-zinc-900">STANDARD • {filteredStandard.length}</span>
+                  <span className="text-[11px] text-zinc-400">All plans</span>
                 </div>
                 <div className="adv-grid">
                   {filteredStandard.slice(0,6).map((t:any) => { const isActive = theme===t.id; return (
@@ -776,11 +776,11 @@ export default function Dashboard() {
 
                 <div className="mt-10 rounded-[28px] border border-black/10 overflow-hidden bg-white shadow-[0_8px_32px_rgba(0,0,0,0.06)]">
                   <div className="p-5 md:p-6 border-b border-white/10 bg-white/[0.03] flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex items-center gap-3"><span className="bg-white text-black text-[10px] font-black px-3 py-1.5 rounded-full tracking-widest animate-pulse">6 GLASS THEMES</span><span className="font-bold text-[13px] text-white">Glass Collection — Premium Only</span></div>
-                    <span className="liquid-glass-pill text-[11px] px-3 py-1.5 rounded-full text-white/60">{currentPlanId==='premium'?'All Premium Unlocked ✓':`Locked • Need Premium Rs. 2999/mo`}</span>
+                    <div className="flex items-center gap-3"><span className="bg-white text-black text-[10px] font-black px-3 py-1.5 rounded-full tracking-widest animate-pulse">6 GLASS THEMES</span><span className="font-bold text-[13px] text-zinc-900">Glass Collection — Premium Only</span></div>
+                    <span className="liquid-glass-pill text-[11px] px-3 py-1.5 rounded-full text-zinc-500">{currentPlanId==='premium'?'All Premium Unlocked ✓':`Locked • Need Premium Rs. 2999/mo`}</span>
                   </div>
                   <div className="bg-black/20 relative">
-                    <div className="absolute top-3 right-5 hidden md:flex items-center gap-2 text-[10px] font-mono text-white/30"><span>← Scroll to see all {premiumThemes.length} Glass →</span></div>
+                    <div className="absolute top-3 right-5 hidden md:flex items-center gap-2 text-[10px] font-mono text-zinc-400"><span>← Scroll to see all {premiumThemes.length} Glass →</span></div>
                     <div className="glass-container">
                       {premiumThemes.map((t,i)=>{
                         const isActive=theme===t.id;
@@ -805,7 +805,7 @@ export default function Dashboard() {
                                 <GlassPremiumLock size={56} />
                                 <div className="text-black text-[12px] font-black tracking-widest mt-1">PREMIUM LOCKED</div>
                                 <div className="text-zinc-500 text-[10px] text-center leading-[1.4] font-medium">Basic: 0/3 • Advanced: 0/3<br/>Need Premium Rs. 2999/mo</div>
-                                <div className="mt-2 bg-black text-white text-[10px] font-bold px-4 h-8 rounded-full flex items-center shadow-[0_8px_20px_rgba(0,0,0,0.2)] hover:scale-105 transition-transform">UPGRADE → PREMIUM</div>
+                                <div className="mt-2 bg-black text-zinc-900 text-[10px] font-bold px-4 h-8 rounded-full flex items-center shadow-[0_8px_20px_rgba(0,0,0,0.2)] hover:scale-105 transition-transform">UPGRADE → PREMIUM</div>
                               </div>
                             )}
                           </div>
@@ -816,7 +816,7 @@ export default function Dashboard() {
                 </div>
 
                 <div className="flex justify-between items-center pt-8 flex-wrap gap-3">
-                  <span className="text-[11px] text-white/30">Products {products.length}/{productLimit===999999?'∞':productLimit} • Images {imageLimit===999999?'∞':imageLimit}/product • {justSubmitted?'Just submitted ✓':''}</span>
+                  <span className="text-[11px] text-zinc-400">Products {products.length}/{productLimit===999999?'∞':productLimit} • Images {imageLimit===999999?'∞':imageLimit}/product • {justSubmitted?'Just submitted ✓':''}</span>
                   <div className="flex gap-2 items-center">
                     {saved && <span className="h-10 px-4 flex items-center text-[12px] text-black font-bold bg-[#E8FF86] rounded-full animate-pulse">✓ Saved! {getTheme(theme).name}</span>}
                     <button onClick={(e:any)=>{createBubbleEffect(e); saveStore()}} className="btn-elegant btn-elegant-primary h-10 px-6 rounded-full text-[13px] shadow-[0_8px_24px_rgba(255,255,255,0.20)]">{saving?'Saving...':'Save Store & Theme'}</button>
@@ -826,16 +826,16 @@ export default function Dashboard() {
             )}
 
             {activeTab==='store' && (
-              <div className="liquid-glass-card rounded-[32px] p-6 md:p-8 float-section">
+              <div className="bg-white border rounded-[20px] p-6 md:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.06)]">
                 <div className="flex items-center justify-between flex-wrap gap-3"><h2 className="font-black text-[15px]">Store Identity</h2>{saved && <span className="bg-[#E8FF86] text-black px-3 h-7 rounded-full text-[11px] font-bold flex items-center animate-pulse">Saved ✓</span>}</div>
                 <div className="mt-5 liquid-glass rounded-[16px] p-4 flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-[12px] ${isPremium?'bg-[#E8FF86] text-black':isAdvanced?'bg-white text-black':'bg-white/10 border border-white/10 text-white'}`}>{currentPlanDef.name[0]}</div>
-                  <div><div className="text-[13px] font-bold text-white">{currentPlanDef.name} • {productLimit===999999?'∞':productLimit} products • {imageLimit===999999?'∞':imageLimit} images</div><div className="text-[11px] text-white/40">{currentPlanDef.features.join(' • ')}</div></div>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-[12px] ${isPremium?'bg-[#E8FF86] text-black':isAdvanced?'bg-white text-black':'bg-white/10 border border-white/10 text-zinc-900'}`}>{currentPlanDef.name[0]}</div>
+                  <div><div className="text-[13px] font-bold text-zinc-900">{currentPlanDef.name} • {productLimit===999999?'∞':productLimit} products • {imageLimit===999999?'∞':imageLimit} images</div><div className="text-[11px] text-zinc-500">{currentPlanDef.features.join(' • ')}</div></div>
                 </div>
                 <div className="mt-6 grid md:grid-cols-2 gap-4">
-                  <div><label className="text-[10px] font-black tracking-widest uppercase text-white/40">Business Name</label><input value={businessName} onChange={e=>setBusinessName(e.target.value)} className="mt-2 w-full h-11 px-4 rounded-[14px] liquid-input text-[13px] text-white" /></div>
-                  <div><label className="text-[10px] font-black tracking-widest uppercase text-white/40">WhatsApp Number</label><input value={whatsapp} onChange={e=>setWhatsapp(e.target.value)} placeholder="923001234567" className="mt-2 w-full h-11 px-4 rounded-[14px] liquid-input text-[13px] text-white" /></div>
-                  <div className="md:col-span-2"><label className="text-[10px] font-black tracking-widest uppercase text-white/40">Store Slug</label><input value={slug} onChange={e=>setSlug(e.target.value)} className="mt-2 w-full h-11 px-4 rounded-[14px] liquid-input text-[13px] text-white" /><div className="mt-2 text-[11px] text-white/30">Your store: /s/{slug || 'your-slug'}</div></div>
+                  <div><label className="text-[10px] font-black tracking-widest uppercase text-zinc-500">Business Name</label><input value={businessName} onChange={e=>setBusinessName(e.target.value)} className="mt-2 w-full h-11 px-4 rounded-[14px] liquid-input text-[13px] text-zinc-900" /></div>
+                  <div><label className="text-[10px] font-black tracking-widest uppercase text-zinc-500">WhatsApp Number</label><input value={whatsapp} onChange={e=>setWhatsapp(e.target.value)} placeholder="923001234567" className="mt-2 w-full h-11 px-4 rounded-[14px] liquid-input text-[13px] text-zinc-900" /></div>
+                  <div className="md:col-span-2"><label className="text-[10px] font-black tracking-widest uppercase text-zinc-500">Store Slug</label><input value={slug} onChange={e=>setSlug(e.target.value)} className="mt-2 w-full h-11 px-4 rounded-[14px] liquid-input text-[13px] text-zinc-900" /><div className="mt-2 text-[11px] text-zinc-400">Your store: /s/{slug || 'your-slug'}</div></div>
                 </div>
                 <div className="mt-6 flex flex-wrap gap-3 items-center">
                   <button onClick={(e:any)=>{createBubbleEffect(e); saveStore()}} disabled={saving} className="btn-elegant btn-elegant-primary h-11 px-7 rounded-full text-[13px]">{saving?'Saving...':saved?'Saved ✓':'Save Store'}</button>
@@ -843,7 +843,7 @@ export default function Dashboard() {
                 </div>
                 {profile && (
                   <div className="mt-8">
-                    <h3 className="font-bold text-[13px] text-white">Premium Editor</h3>
+                    <h3 className="font-bold text-[13px] text-zinc-900">Premium Editor</h3>
                     <div className="mt-3 liquid-glass rounded-[16px] p-2">
                       <PremiumThemeEditor profile={{...profile, premium_custom: premiumCustom} as any} onSave={(d:any)=>{ setPremiumCustom(d); setProfile({...profile, premium_custom: d} as any) }} />
                     </div>
@@ -854,9 +854,9 @@ export default function Dashboard() {
 
             {activeTab==='products' && (
               <div className="space-y-4">
-                <div className="liquid-glass-card rounded-[32px] p-6 md:p-8 float-section">
-                  <div className="flex items-center justify-between"><h2 className="font-bold text-[14px] text-white">Add Product — {editingId?'Editing':'New'} • {currentPlanId.toUpperCase()} {imageLimit===999999?'∞':imageLimit} images • {prodCategory} • Stock {prodStock}</h2><div className="text-[11px] text-white/40">{products.length}/{productLimit===999999?'∞':productLimit}</div></div>
-                  <label className="mt-6 group liquid-glass rounded-[20px] border-dashed border-white/20 p-8 flex flex-col items-center justify-center cursor-pointer hover:border-white/30 transition-all hover:scale-[1.01] min-h-[160px]">
+                <div className="bg-white border border-black/[0.06] rounded-[28px] p-6 md:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.06)]">
+                  <div className="flex items-center justify-between"><h2 className="font-bold text-[14px] text-zinc-900">Add Product — {editingId?'Editing':'New'} • {currentPlanId.toUpperCase()} {imageLimit===999999?'∞':imageLimit} images • {prodCategory} • Stock {prodStock}</h2><div className="text-[11px] text-zinc-500">{products.length}/{productLimit===999999?'∞':productLimit}</div></div>
+                  <label className="mt-6 group bg-[#FCFCFA] border-2 border-dashed border-zinc-200 rounded-[20px] p-8 flex flex-col items-center justify-center cursor-pointer hover:border-black hover:bg-white transition-all min-h-[160px]">
                     <div className="relative z-10 flex flex-col items-center">
                     {previews.length ? (
                       <div className="grid grid-cols-5 gap-2.5 w-full">
@@ -867,15 +867,15 @@ export default function Dashboard() {
                           </div>
                         ))}
                         <div className="h-[72px] rounded-[12px] border-2 border-dashed border-white/20 bg-white/5 flex flex-col items-center justify-center gap-1 hover:border-white/30 hover:bg-white/10 transition-all">
-                          <span className="text-[16px] text-white">+</span><span className="text-[9px] font-bold tracking-widest text-white/60">ADD</span>
+                          <span className="text-[16px] text-zinc-900">+</span><span className="text-[9px] font-bold tracking-widest text-zinc-500">ADD</span>
                         </div>
                       </div>
                     ) : (
                       <>
                         <UploadIcon />
                         <div className="mt-4 text-center">
-                          <div className="font-bold text-[14px] text-white">Drop images or click to upload</div>
-                          <div className="mt-2 text-[11px] text-white/40">Your plan <b className="text-white">{currentPlanId.toUpperCase()}</b> allows <b className="text-white">{imageLimit===999999?'Unlimited':imageLimit}</b> images • {prodSizes?`Sizes ${prodSizes}`:''} {prodColors?`• Colors ${prodColors}`:''}</div>
+                          <div className="font-bold text-[14px] text-zinc-900">Drop images or click to upload</div>
+                          <div className="mt-2 text-[11px] text-zinc-500">Your plan <b className="text-zinc-900">{currentPlanId.toUpperCase()}</b> allows <b className="text-zinc-900">{imageLimit===999999?'Unlimited':imageLimit}</b> images • {prodSizes?`Sizes ${prodSizes}`:''} {prodColors?`• Colors ${prodColors}`:''}</div>
                         </div>
                       </>
                     )}
@@ -892,19 +892,19 @@ export default function Dashboard() {
                     }} className="hidden" />
                   </label>
                   <div className="mt-6 grid md:grid-cols-2 gap-3">
-                    <input placeholder="Product name *" value={prodName} onChange={e=>setProdName(e.target.value)} className="w-full h-11 px-4 rounded-[14px] liquid-input text-[13px] text-white" />
-                    <input placeholder="Price Rs. 3500 *" type="number" value={prodPrice} onChange={e=>setProdPrice(e.target.value)} className="w-full h-11 px-4 rounded-[14px] liquid-input text-[13px] text-white" />
-                    <input placeholder="Compare price (optional)" type="number" value={prodOrigPrice} onChange={e=>setProdOrigPrice(e.target.value)} className="w-full h-11 px-4 rounded-[14px] liquid-input text-[13px] text-white" />
-                    <select value={prodCategory} onChange={e=>setProdCategory(e.target.value)} className="w-full h-11 px-4 rounded-[14px] liquid-input text-[13px] text-white">
+                    <input placeholder="Product name *" value={prodName} onChange={e=>setProdName(e.target.value)} className="w-full h-11 px-4 border rounded-[12px] bg-zinc-50/50 text-[13px] focus:bg-white focus:outline-none focus:border-black text-zinc-900" />
+                    <input placeholder="Price Rs. 3500 *" type="number" value={prodPrice} onChange={e=>setProdPrice(e.target.value)} className="w-full h-11 px-4 border rounded-[12px] bg-zinc-50/50 text-[13px] focus:bg-white focus:outline-none focus:border-black text-zinc-900" />
+                    <input placeholder="Compare price (optional)" type="number" value={prodOrigPrice} onChange={e=>setProdOrigPrice(e.target.value)} className="w-full h-11 px-4 border rounded-[12px] bg-zinc-50/50 text-[13px] focus:bg-white focus:outline-none focus:border-black text-zinc-900" />
+                    <select value={prodCategory} onChange={e=>setProdCategory(e.target.value)} className="w-full h-11 px-4 border rounded-[12px] bg-zinc-50/50 text-[13px] focus:bg-white focus:outline-none focus:border-black text-zinc-900">
                       <option className="bg-[#0A1F14]">General</option><option className="bg-[#0A1F14]">Clothing</option><option className="bg-[#0A1F14]">Shoes</option><option className="bg-[#0A1F14]">Bags</option><option className="bg-[#0A1F14]">Beauty</option><option className="bg-[#0A1F14]">Electronics</option><option className="bg-[#0A1F14]">Food</option><option className="bg-[#0A1F14]">Other</option>
                     </select>
-                    <input placeholder="Stock qty" type="number" value={prodStock} onChange={e=>setProdStock(e.target.value)} className="w-full h-11 px-4 rounded-[14px] liquid-input text-[13px] text-white" />
-                    <input placeholder="Sizes (S, M, L, XL)" value={prodSizes} onChange={e=>setProdSizes(e.target.value)} className="w-full h-11 px-4 rounded-[14px] liquid-input text-[13px] text-white" />
-                    <input placeholder="Colors (comma)" value={prodColors} onChange={e=>setProdColors(e.target.value)} className="md:col-span-2 w-full h-11 px-4 rounded-[14px] liquid-input text-[13px] text-white" />
-                    <textarea placeholder="Description..." value={prodDesc} onChange={e=>setProdDesc(e.target.value)} className="md:col-span-2 w-full min-h-[80px] p-4 rounded-[14px] liquid-input text-[13px] text-white resize-none" />
+                    <input placeholder="Stock qty" type="number" value={prodStock} onChange={e=>setProdStock(e.target.value)} className="w-full h-11 px-4 border rounded-[12px] bg-zinc-50/50 text-[13px] focus:bg-white focus:outline-none focus:border-black text-zinc-900" />
+                    <input placeholder="Sizes (S, M, L, XL)" value={prodSizes} onChange={e=>setProdSizes(e.target.value)} className="w-full h-11 px-4 border rounded-[12px] bg-zinc-50/50 text-[13px] focus:bg-white focus:outline-none focus:border-black text-zinc-900" />
+                    <input placeholder="Colors (comma)" value={prodColors} onChange={e=>setProdColors(e.target.value)} className="md:col-span-2 w-full h-11 px-4 rounded-[14px] liquid-input text-[13px] text-zinc-900" />
+                    <textarea placeholder="Description..." value={prodDesc} onChange={e=>setProdDesc(e.target.value)} className="md:col-span-2 w-full min-h-[80px] p-4 border rounded-[12px] bg-zinc-50/50 text-[13px] focus:bg-white focus:outline-none focus:border-black resize-none text-zinc-900" />
                   </div>
                   <div className="mt-6 flex justify-end gap-2">
-                    {editingId && <button onClick={()=>{ setEditingId(null); setProdName(''); setProdPrice(''); setProdDesc(''); setProdCategory('General'); setProdStock('100'); setProdSizes(''); setProdColors(''); setProdOrigPrice(''); setPreviews([]); setFiles([])}} className="h-11 px-6 liquid-glass rounded-full text-[13px] font-medium text-white">Cancel</button>}
+                    {editingId && <button onClick={()=>{ setEditingId(null); setProdName(''); setProdPrice(''); setProdDesc(''); setProdCategory('General'); setProdStock('100'); setProdSizes(''); setProdColors(''); setProdOrigPrice(''); setPreviews([]); setFiles([])}} className="h-11 px-6 liquid-glass rounded-full text-[13px] font-medium text-zinc-900">Cancel</button>}
                     <button onClick={async ()=>{
                       if (!prodName.trim() || !prodPrice) { setErrorMsg('Name and price required'); return }
                       if (!profile) return
@@ -933,7 +933,7 @@ export default function Dashboard() {
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {products.length===0 ? (
-                    <div className="col-span-2 md:col-span-4 liquid-glass rounded-[24px] p-12 flex flex-col items-center justify-center text-center float-section"><UploadIcon className="w-12 h-12" /><div className="mt-4 font-bold text-[14px] text-white">No products yet</div><div className="text-[11px] text-white/40 mt-1">Add your first product — {productLimit===999999?'∞':productLimit} allowed</div></div>
+                    <div className="col-span-2 md:col-span-4 bg-white border border-dashed rounded-[20px] p-12 flex flex-col items-center justify-center text-center"><UploadIcon className="w-12 h-12" /><div className="mt-4 font-bold text-[14px] text-zinc-900">No products yet</div><div className="text-[11px] text-zinc-500 mt-1">Add your first product — {productLimit===999999?'∞':productLimit} allowed on {currentPlanDef.name}</div></div>
                   ) : products.map(p => {
                     const images = (() => { if (p.image_urls && Array.isArray(p.image_urls) && p.image_urls.length>0) return p.image_urls; if (typeof p.image_urls==='string'){try{const pa=JSON.parse(p.image_urls); if(Array.isArray(pa)) return pa}catch{} return [p.image_urls]} if(p.image_url) return [p.image_url]; return [] })()
                     return (
@@ -942,7 +942,7 @@ export default function Dashboard() {
                           <img src={images[0]} className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-700" alt={p.name} />
                           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">{images.map((_:any,i:number)=><div key={i} className={`h-1 rounded-full transition-all ${i===0?'w-4 bg-white':'w-1.5 bg-white/40'}`} />)}</div>
                         </div>
-                        <div className="mt-3 px-1"><div className="font-bold text-[13px] truncate text-white">{p.name}</div><div className="flex items-center justify-between mt-1"><span className="font-black text-[14px] text-white">Rs. {p.price.toLocaleString()}</span><span className="text-[11px] text-white/40">{images.length} img • {(p as any).category || 'General'}</span></div><div className="mt-3 flex gap-2"><button onClick={()=>{ setEditingId(p.id); setProdName(p.name); setProdPrice(String(p.price)); setProdDesc((p as any).description || ''); setProdCategory((p as any).category || 'General'); setProdStock(String((p as any).stock || 100)); setProdSizes(Array.isArray((p as any).sizes) ? (p as any).sizes.join(', ') : (p as any).sizes || ''); setProdColors(Array.isArray((p as any).colors) ? (p as any).colors.join(', ') : (p as any).colors || ''); setProdOrigPrice((p as any).original_price ? String((p as any).original_price) : ''); setPreviews(p.image_urls && p.image_urls.length ? p.image_urls : [p.image_url]); setFiles([]); setActiveTab('products'); }} className="btn-elegant btn-elegant-primary flex-1 h-8 rounded-full text-[11px]">Edit</button><button onClick={async ()=>{ if (!confirm('Delete product?')) return; const { error } = await supabase.from('products').delete().eq('id', p.id); if (!error) setProducts(products.filter(x=>x.id!==p.id)) }} className="btn-elegant btn-elegant-glass h-8 w-8 rounded-full flex items-center justify-center text-[12px]">✕</button></div></div>
+                        <div className="mt-3 px-1"><div className="font-bold text-[13px] truncate text-zinc-900">{p.name}</div><div className="flex items-center justify-between mt-1"><span className="font-black text-[14px] text-zinc-900">Rs. {p.price.toLocaleString()}</span><span className="text-[11px] text-zinc-500">{images.length} img • {(p as any).category || 'General'}</span></div><div className="mt-3 flex gap-2"><button onClick={()=>{ setEditingId(p.id); setProdName(p.name); setProdPrice(String(p.price)); setProdDesc((p as any).description || ''); setProdCategory((p as any).category || 'General'); setProdStock(String((p as any).stock || 100)); setProdSizes(Array.isArray((p as any).sizes) ? (p as any).sizes.join(', ') : (p as any).sizes || ''); setProdColors(Array.isArray((p as any).colors) ? (p as any).colors.join(', ') : (p as any).colors || ''); setProdOrigPrice((p as any).original_price ? String((p as any).original_price) : ''); setPreviews(p.image_urls && p.image_urls.length ? p.image_urls : [p.image_url]); setFiles([]); setActiveTab('products'); }} className="btn-elegant btn-elegant-primary flex-1 h-8 rounded-full text-[11px]">Edit</button><button onClick={async ()=>{ if (!confirm('Delete product?')) return; const { error } = await supabase.from('products').delete().eq('id', p.id); if (!error) setProducts(products.filter(x=>x.id!==p.id)) }} className="btn-elegant btn-elegant-glass h-8 w-8 rounded-full flex items-center justify-center text-[12px]">✕</button></div></div>
                       </div>
                     )
                   })}
@@ -951,14 +951,14 @@ export default function Dashboard() {
             )}
 
             {activeTab==='analytics' && (
-              <div className="float-section">
-                {!profile ? <div className="p-8 text-center text-white/50 liquid-glass rounded-[24px]">Loading...</div> : currentPlanId === 'premium' ? (
-                  <div className="liquid-glass-card rounded-[32px] p-2"><RealAnalytics userId={profile!.id} currentPlanId={currentPlanId} /></div>
+              <div>
+                {!profile ? <div className="p-8 text-center bg-white border rounded-[24px]">Loading...</div> : currentPlanId === 'premium' ? (
+                  <div className="bg-white border rounded-[28px] p-2 shadow-[0_8px_32px_rgba(0,0,0,0.06)]"><RealAnalytics userId={profile!.id} currentPlanId={currentPlanId} /></div>
                 ) : (
-                  <div className="liquid-glass-card rounded-[32px] p-12 text-center">
-                    <div className="w-16 h-16 liquid-glass rounded-[18px] flex items-center justify-center mx-auto text-white text-[24px]">◐</div>
-                    <h3 className="font-black text-[18px] mt-4 text-white">Analytics Locked — Premium Only</h3>
-                    <p className="text-[12px] text-white/40 mt-2">Your {currentPlanId.toUpperCase()} plan: {currentPlanDef.features.join(' • ')} — Upgrade to Premium for live analytics.</p>
+                  <div className="bg-white border rounded-[28px] p-12 text-center shadow-[0_8px_32px_rgba(0,0,0,0.06)]">
+                    <div className="w-16 h-16 bg-black rounded-[16px] flex items-center justify-center mx-auto text-zinc-900 text-[24px]">◐</div>
+                    <h3 className="font-black text-[18px] mt-4 text-zinc-900">Analytics Locked — Premium Only</h3>
+                    <p className="text-[12px] text-zinc-500 mt-2">Your {currentPlanId.toUpperCase()} plan: {currentPlanDef.features.join(' • ')} — Upgrade to Premium for live analytics.</p>
                     <button onClick={()=>setActiveTab('payments')} className="mt-6 h-11 px-8 bg-white text-black rounded-full text-[13px] font-bold hover:scale-[1.05] transition-transform shadow-[0_8px_24px_rgba(255,255,255,0.20)]">Upgrade → Premium Till {TILL_ID}</button>
                   </div>
                 )}
@@ -966,13 +966,13 @@ export default function Dashboard() {
             )}
 
             {activeTab==='payments' && (
-              <div className="liquid-glass-card rounded-[32px] p-6 md:p-8 float-section overflow-hidden relative">
+              <div className="bg-white border rounded-[24px] p-6 md:p-8 overflow-hidden relative shadow-[0_8px_32px_rgba(0,0,0,0.06)]">
                 {/* FULL PAYMENT HISTORY - RESTORED FROM ORIGINAL */}
                 {myPayments.length > 0 && (
-                  <div className="mb-6 rounded-[22px] liquid-glass p-4 md:p-5">
+                  <div className="mb-6 rounded-[20px] border bg-[#FFFEF8] p-4 md:p-5">
                     <div className="flex items-center gap-2.5 mb-3">
                       <div className="w-8 h-8 bg-white text-black rounded-[10px] flex items-center justify-center text-[12px] font-black">₨</div>
-                      <span className="font-black text-[13px] tracking-tight text-white">Your Payments</span>
+                      <span className="font-black text-[13px] tracking-tight text-zinc-900">Your Payments</span>
                       {myPayments.filter((p:any)=>p.status==='pending').length > 0 && <span className="ml-auto flex items-center gap-1.5 text-[11px] bg-yellow-400/20 border border-yellow-400/30 text-yellow-200 px-2.5 h-7 rounded-full font-bold"><span className="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse" />{myPayments.filter((p:any)=>p.status==='pending').length} Pending</span>}
                       {myPayments.filter((p:any)=>p.status==='pending').length === 0 && myPayments.filter((p:any)=>p.status==='approved').length > 0 && <span className="ml-auto text-[11px] bg-[#E8FF86]/20 border border-[#E8FF86]/30 text-[#E8FF86] px-2.5 h-7 rounded-full font-bold flex items-center gap-1">✓ Active</span>}
                     </div>
@@ -980,16 +980,16 @@ export default function Dashboard() {
                       {myPayments.slice(0,5).map((p:any)=>(
                         <div key={p.id} className="group flex items-center justify-between gap-3 bg-white/[0.06] border border-white/10 rounded-[14px] p-3.5 hover:bg-white/[0.10] transition-colors">
                           <div className="flex items-center gap-3 min-w-0 flex-1">
-                            <span className={`shrink-0 h-7 px-3 rounded-full text-[10px] font-black tracking-widest flex items-center border ${p.status==='pending'?'bg-yellow-400/20 text-yellow-200 border-yellow-400/30':p.status==='approved'?'bg-white text-black border-white':'bg-red-500/20 text-red-200 border-red-500/30'}`}>{p.status==='pending'?'⏳ PENDING':p.status==='approved'?'✓ APPROVED':'✕ REJECTED'}</span>
+                            <span className={`shrink-0 h-7 px-3 rounded-full text-[10px] font-black tracking-widest flex items-center border ${p.status==='pending'?'bg-yellow-100 text-yellow-700 border-yellow-200':p.status==='approved'?'bg-black text-zinc-900 border-black':'bg-red-50 text-red-600 border-red-200'}`}>{p.status==='pending'?'⏳ PENDING':p.status==='approved'?'✓ APPROVED':'✕ REJECTED'}</span>
                             <div className="min-w-0">
-                              <div className="flex items-center gap-2"><span className="text-[13px] font-black text-white">{p.plan_id.toUpperCase()}</span><span className="text-[12px] font-bold text-white/70">Rs. {p.amount}</span><span className="text-[10px] text-white/40">• {billing.toUpperCase()}</span></div>
-                              <div className="flex items-center gap-2 mt-1"><span className="font-mono text-[11px] bg-white/10 border border-white/10 px-2 py-0.5 rounded-[8px] text-white/80">{p.txn_id}</span><span className="text-[10px] text-white/40 hidden md:inline">{new Date(p.created_at).toLocaleDateString()} • {p.till_id ? `Till ${p.till_id}` : `Till ${TILL_ID}`}</span></div>
+                              <div className="flex items-center gap-2"><span className="text-[13px] font-black text-zinc-900">{p.plan_id.toUpperCase()}</span><span className="text-[12px] font-bold text-zinc-600">Rs. {p.amount}</span><span className="text-[10px] text-zinc-500">• {billing.toUpperCase()}</span></div>
+                              <div className="flex items-center gap-2 mt-1"><span className="font-mono text-[11px] bg-white border px-2 py-0.5 rounded-[8px] text-zinc-700">{p.txn_id}</span><span className="text-[10px] text-zinc-500 hidden md:inline">{new Date(p.created_at).toLocaleDateString()} • {p.till_id ? `Till ${p.till_id}` : `Till ${TILL_ID}`}</span></div>
                             </div>
                           </div>
                           <div className="shrink-0 text-right">
-                            {p.status==='pending' && <div className="text-[11px] font-medium text-white/50">Verifying...<br/><span className="text-[10px]">~1 hour</span></div>}
-                            {p.status==='approved' && <div className="text-[11px] font-black text-[#E8FF86]">Active<br/><span className="text-[10px] font-medium text-white/40">Unlocked</span></div>}
-                            {p.status==='rejected' && <div className="text-[11px] font-black text-red-300">Rejected<br/><span className="text-[10px] font-medium text-white/40">Contact support</span></div>}
+                            {p.status==='pending' && <div className="text-[11px] font-medium text-zinc-900/50">Verifying...<br/><span className="text-[10px]">~1 hour</span></div>}
+                            {p.status==='approved' && <div className="text-[11px] font-black text-[#E8FF86]">Active<br/><span className="text-[10px] font-medium text-zinc-500">Unlocked</span></div>}
+                            {p.status==='rejected' && <div className="text-[11px] font-black text-red-300">Rejected<br/><span className="text-[10px] font-medium text-zinc-500">Contact support</span></div>}
                           </div>
                         </div>
                       ))}
@@ -997,28 +997,28 @@ export default function Dashboard() {
                     {justSubmitted && justSubmitted.status==='pending' && (
                       <div className="mt-4 bg-yellow-400/10 border border-yellow-400/20 rounded-[12px] p-3 flex items-start gap-2.5">
                         <span className="w-6 h-6 bg-yellow-400/20 border border-yellow-400/30 rounded-full flex items-center justify-center text-[12px] shrink-0">⏳</span>
-                        <div><div className="text-[12px] font-bold text-yellow-200">Payment submitted — Pending verification</div><div className="text-[11px] text-yellow-100/60 mt-0.5 leading-[1.4]">We are verifying Txn ID <span className="font-mono bg-white/10 px-1 py-0.5 rounded border border-white/10 text-white">{justSubmitted.txn_id}</span> for Rs. {justSubmitted.amount} in Till {TILL_ID}. You will get notification within 1 hour.</div></div>
+                        <div><div className="text-[12px] font-bold text-yellow-200">Payment submitted — Pending verification</div><div className="text-[11px] text-yellow-100/60 mt-0.5 leading-[1.4]">We are verifying Txn ID <span className="font-mono bg-white/10 px-1 py-0.5 rounded border border-white/10 text-zinc-900">{justSubmitted.txn_id}</span> for Rs. {justSubmitted.amount} in Till {TILL_ID}. You will get notification within 1 hour.</div></div>
                       </div>
                     )}
                   </div>
                 )}
                 <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div className="flex items-center gap-4"><div className="w-12 h-12 bg-white text-black rounded-[14px] flex items-center justify-center text-[18px] font-black">⬡</div><div><h2 className="font-black text-[18px] tracking-tight text-white">Pricing — Till {TILL_ID} — Current: {currentPlanDef.name}</h2><p className="text-[11px] text-white/40 mt-0.5">Pay to JazzCash Till {TILL_ID} & submit Txn ID • Billing: {billing}</p></div></div>
+                  <div className="flex items-center gap-4"><div className="w-12 h-12 bg-white text-black rounded-[14px] flex items-center justify-center text-[18px] font-black">⬡</div><div><h2 className="font-black text-[18px] tracking-tight text-zinc-900">Pricing — Till {TILL_ID} — Current: {currentPlanDef.name}</h2><p className="text-[11px] text-zinc-500 mt-0.5">Pay to JazzCash Till {TILL_ID} & submit Txn ID • Billing: {billing}</p></div></div>
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1 p-1 rounded-full liquid-glass">
-                      <button onClick={()=>setBilling('monthly')} className={`h-8 px-4 rounded-full text-[11px] font-black transition-all ${billing==='monthly'?'bg-white text-black shadow-[0_2px_8px_rgba(255,255,255,0.25)]':'text-white/50 hover:text-white'}`}>Monthly</button>
-                      <button onClick={()=>setBilling('yearly')} className={`h-8 px-4 rounded-full text-[11px] font-black transition-all flex items-center gap-1 ${billing==='yearly'?'bg-white text-black shadow-[0_2px_8px_rgba(255,255,255,0.25)]':'text-white/50 hover:text-white'}`}>Yearly <span className="bg-[#E8FF86] text-black text-[8px] px-1.5 py-0.5 rounded-full">-22%</span></button>
+                      <button onClick={()=>setBilling('monthly')} className={`h-8 px-4 rounded-full text-[11px] font-black transition-all ${billing==='monthly'?'bg-white text-black shadow-[0_2px_8px_rgba(255,255,255,0.25)]':'text-zinc-900/50 hover:text-zinc-900'}`}>Monthly</button>
+                      <button onClick={()=>setBilling('yearly')} className={`h-8 px-4 rounded-full text-[11px] font-black transition-all flex items-center gap-1 ${billing==='yearly'?'bg-white text-black shadow-[0_2px_8px_rgba(255,255,255,0.25)]':'text-zinc-900/50 hover:text-zinc-900'}`}>Yearly <span className="bg-[#E8FF86] text-black text-[8px] px-1.5 py-0.5 rounded-full">-22%</span></button>
                     </div>
                     <CurrentPlanButton />
                   </div>
                 </div>
                 <div className="mt-8 grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-6">
                   <div className="rounded-[22px] liquid-glass p-5 bg-white/[0.06]">
-                    <div className="flex justify-between items-center"><div className="text-[10px] tracking-[0.2em] uppercase opacity-50 font-black text-white/50">JAZZCASH BUSINESS TILL</div><button onClick={(e:any)=>{createBubbleEffect(e); copyTill()}} className="h-7 px-3 liquid-glass rounded-full text-[11px] hover:scale-105 transition-transform text-white">{copiedTill?'Copied!':'Copy ID'}</button></div>
-                    <div className="mt-4 liquid-glass rounded-[14px] p-4"><div className="text-[10px] uppercase opacity-50 text-white/40">Till ID Number</div><div className="text-[32px] font-black font-mono tracking-[0.12em] text-white">{TILL_ID}</div><div className="text-[10px] text-white/30 mt-1">Billing: {billing.toUpperCase()} • Amount depends on plan</div></div>
+                    <div className="flex justify-between items-center"><div className="text-[10px] tracking-[0.2em] uppercase opacity-50 font-black text-zinc-900/50">JAZZCASH BUSINESS TILL</div><button onClick={(e:any)=>{createBubbleEffect(e); copyTill()}} className="h-7 px-3 liquid-glass rounded-full text-[11px] hover:scale-105 transition-transform text-zinc-900">{copiedTill?'Copied!':'Copy ID'}</button></div>
+                    <div className="mt-4 liquid-glass rounded-[14px] p-4"><div className="text-[10px] uppercase opacity-50 text-zinc-500">Till ID Number</div><div className="text-[32px] font-black font-mono tracking-[0.12em] text-zinc-900">{TILL_ID}</div><div className="text-[10px] text-zinc-400 mt-1">Billing: {billing.toUpperCase()} • Amount depends on plan</div></div>
                     <div className="mt-3 bg-white rounded-[14px] p-3"><img src={`https://barcodeapi.org/api/code128/${TILL_ID}`} alt="Barcode" className="w-full h-[48px] object-contain"/><div className="text-center text-[11px] font-mono text-black font-black tracking-[0.3em] mt-1">{TILL_ID}</div></div>
                     <div className="mt-3 bg-white rounded-[14px] p-3 flex justify-center"><img src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=JAZZCASH_TILL_${TILL_ID}`} alt="QR" className="w-[120px] h-[120px]"/></div>
-                    <div className="mt-3 liquid-glass rounded-[12px] p-3"><div className="text-[10px] font-black text-white/40">HOW TO PAY</div><div className="text-[11px] text-white/60 mt-1 leading-[1.4]">1. Open JazzCash → Send Money → Till ID<br/>2. Enter {TILL_ID}<br/>3. Pay Rs. {selectedPlan ? (billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal) : '899/2999'}<br/>4. Copy Txn ID and submit below</div></div>
+                    <div className="mt-3 liquid-glass rounded-[12px] p-3"><div className="text-[10px] font-black text-zinc-500">HOW TO PAY</div><div className="text-[11px] text-zinc-500 mt-1 leading-[1.4]">1. Open JazzCash → Send Money → Till ID<br/>2. Enter {TILL_ID}<br/>3. Pay Rs. {selectedPlan ? (billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal) : '899/2999'}<br/>4. Copy Txn ID and submit below</div></div>
                   </div>
                   <div className="space-y-4">
                     <div className="radio-container" style={{"--total-radio": plans.length} as any}>
@@ -1031,7 +1031,7 @@ export default function Dashboard() {
                             <input type="radio" id={`dash-${p.id}`} name="dash-plan" checked={isSelected} onChange={()=>setSelectedPlan(p)} />
                             <label htmlFor={`dash-${p.id}`} onClick={()=>setSelectedPlan(p)} className={isCurrent?'!bg-white/15 !border-white' : ''}>
                               <div className="flex justify-between items-start gap-3">
-                                <div className="min-w-0 flex-1"><div className="flex items-center gap-2 flex-wrap"><span className="font-black text-[14px] text-white">{p.name}</span>{isCurrent && <span className="bg-white text-black text-[8px] px-2 h-5 rounded-full font-bold flex items-center">CURRENT</span>}<span className={`text-[10px] px-2.5 h-6 rounded-full font-bold flex items-center ${p.id==='premium'?'bg-[#E8FF86] text-black':p.id==='advanced'?'bg-white text-black':'bg-white/10 text-white border border-white/10'}`}>Rs. {displayPrice}/mo {billing==='yearly'?'• Yearly':''}</span>{p.id==='advanced' && <span className="bg-[#E8FF86] text-black text-[8px] px-2 h-5 rounded-full font-bold flex items-center">POPULAR</span>}</div><div className="text-[11px] mt-1.5 opacity-60 leading-[1.3] text-white/60">{p.features.join(' • ')}</div><div className="text-[10px] mt-1 text-white/30">Billing: {billing} • {billing==='yearly'?`Total Rs. ${p.yearlyTotal}/year`:`Rs. ${p.monthly}/month`}</div></div><div className="text-right shrink-0"><div className="font-black text-[16px] text-white">Rs. {displayPrice}</div><div className="text-[10px] opacity-60 text-white/40">{billing==='yearly'?`Billed Rs. ${p.yearlyTotal}/yr`:p.id!=='basic'?`Yearly Rs. ${p.yearlyMonthly}/mo`:''}</div></div>
+                                <div className="min-w-0 flex-1"><div className="flex items-center gap-2 flex-wrap"><span className="font-black text-[14px] text-zinc-900">{p.name}</span>{isCurrent && <span className="bg-white text-black text-[8px] px-2 h-5 rounded-full font-bold flex items-center">CURRENT</span>}<span className={`text-[10px] px-2.5 h-6 rounded-full font-bold flex items-center ${p.id==='premium'?'bg-[#E8FF86] text-black':p.id==='advanced'?'bg-white text-black':'bg-white/10 text-zinc-900 border border-white/10'}`}>Rs. {displayPrice}/mo {billing==='yearly'?'• Yearly':''}</span>{p.id==='advanced' && <span className="bg-[#E8FF86] text-black text-[8px] px-2 h-5 rounded-full font-bold flex items-center">POPULAR</span>}</div><div className="text-[11px] mt-1.5 opacity-60 leading-[1.3] text-zinc-500">{p.features.join(' • ')}</div><div className="text-[10px] mt-1 text-zinc-400">Billing: {billing} • {billing==='yearly'?`Total Rs. ${p.yearlyTotal}/year`:`Rs. ${p.monthly}/month`}</div></div><div className="text-right shrink-0"><div className="font-black text-[16px] text-zinc-900">Rs. {displayPrice}</div><div className="text-[10px] opacity-60 text-zinc-500">{billing==='yearly'?`Billed Rs. ${p.yearlyTotal}/yr`:p.id!=='basic'?`Yearly Rs. ${p.yearlyMonthly}/mo`:''}</div></div>
                               </div>
                             </label>
                           </div>
@@ -1040,11 +1040,11 @@ export default function Dashboard() {
                     </div>
                     {selectedPlan && selectedPlan.monthly>0 && (
                       <div className="rounded-[22px] liquid-glass p-5 border-2 border-white/20">
-                        <div className="flex items-center gap-2 flex-wrap"><div className="w-6 h-6 rounded-full bg-white text-black flex items-center justify-center text-[12px] font-bold">₨</div><div className="text-[13px] font-bold text-white">Pay Rs. {billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} → Till {TILL_ID} ({billing.toUpperCase()}) • {justSubmitted?'Submitted ✓':''}</div></div>
-                        <div className="mt-2 text-[11px] text-white/40">Selected: {selectedPlan.name.toUpperCase()} • {billing} • Rs. {billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} • Till {TILL_ID}</div>
-                        <input value={txnId} onChange={e=>setTxnId(e.target.value)} placeholder={`Txn ID after paying Rs. ${billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} to Till ${TILL_ID} [${billing}]`} className="mt-4 w-full h-12 px-4 rounded-[14px] liquid-input text-white text-[12px] font-mono"/>
-                        <button onClick={(e:any)=>{createBubbleEffect(e); handleBuyPlan()}} disabled={purchasing || !txnId.trim()} className="btn-elegant btn-elegant-premium mt-3 w-full h-12 rounded-full text-[13px] flex items-center justify-center gap-2 disabled:opacity-50">{purchasing?'Submitting...':`I Paid Rs. ${billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} — Activate ${selectedPlan.name} (${billing})`} <span className="w-5 h-5 bg-black text-white rounded-full flex items-center justify-center text-[10px]">↗</span></button>
-                        <div className="mt-2 text-[10px] text-white/30 text-center">Billing mode: {billing} • Make sure Txn ID matches Till {TILL_ID}</div>
+                        <div className="flex items-center gap-2 flex-wrap"><div className="w-6 h-6 rounded-full bg-white text-black flex items-center justify-center text-[12px] font-bold">₨</div><div className="text-[13px] font-bold text-zinc-900">Pay Rs. {billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} → Till {TILL_ID} ({billing.toUpperCase()}) • {justSubmitted?'Submitted ✓':''}</div></div>
+                        <div className="mt-2 text-[11px] text-zinc-500">Selected: {selectedPlan.name.toUpperCase()} • {billing} • Rs. {billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} • Till {TILL_ID}</div>
+                        <input value={txnId} onChange={e=>setTxnId(e.target.value)} placeholder={`Txn ID after paying Rs. ${billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} to Till ${TILL_ID} [${billing}]`} className="mt-4 w-full h-12 px-4 rounded-[14px] liquid-input text-zinc-900 text-[12px] font-mono"/>
+                        <button onClick={(e:any)=>{createBubbleEffect(e); handleBuyPlan()}} disabled={purchasing || !txnId.trim()} className="btn-elegant btn-elegant-premium mt-3 w-full h-12 rounded-full text-[13px] flex items-center justify-center gap-2 disabled:opacity-50">{purchasing?'Submitting...':`I Paid Rs. ${billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} — Activate ${selectedPlan.name} (${billing})`} <span className="w-5 h-5 bg-black text-zinc-900 rounded-full flex items-center justify-center text-[10px]">↗</span></button>
+                        <div className="mt-2 text-[10px] text-zinc-400 text-center">Billing mode: {billing} • Make sure Txn ID matches Till {TILL_ID}</div>
                       </div>
                     )}
                   </div>
@@ -1056,7 +1056,7 @@ export default function Dashboard() {
           <div className="md:hidden fixed bottom-4 left-4 right-4 z-30">
             <div className="liquid-nav rounded-[28px] p-2 flex items-center justify-between gap-1">
               {navItems.map((item:any)=>(
-                <button key={item.id} onClick={()=>setActiveTab(item.id)} className={`flex-1 h-12 rounded-[18px] flex flex-col items-center justify-center gap-0.5 transition-all ${activeTab===item.id?'bg-white text-black shadow-[0_4px_16px_rgba(255,255,255,0.25)] scale-[1.05]':'text-white/50 hover:text-white'}`}>
+                <button key={item.id} onClick={()=>setActiveTab(item.id)} className={`flex-1 h-12 rounded-[18px] flex flex-col items-center justify-center gap-0.5 transition-all ${activeTab===item.id?'bg-white text-black shadow-[0_4px_16px_rgba(255,255,255,0.25)] scale-[1.05]':'text-zinc-900/50 hover:text-zinc-900'}`}>
                   <span>{item.icon}</span><span className="text-[9px] font-bold">{item.label}</span>
                 </button>
               ))}
@@ -1066,21 +1066,21 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {errorMsg && <div className="fixed bottom-24 md:bottom-4 right-4 z-50 liquid-glass bg-red-500/20 border-red-500/30 text-white px-4 py-2 rounded-full text-[12px] shadow-xl">{errorMsg}</div>}
+      {errorMsg && <div className="fixed bottom-24 md:bottom-4 right-4 z-50 liquid-glass bg-red-500/20 border-red-500/30 text-zinc-900 px-4 py-2 rounded-full text-[12px] shadow-xl">{errorMsg}</div>}
       {showStatusModal && (
         <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-xl flex items-center justify-center p-4">
           <div className="liquid-glass-card rounded-[32px] w-full max-w-[380px] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
             {showStatusModal.type === 'approved' ? (
               <div>
-                <div className="bg-white/5 text-white p-8 text-center border-b border-white/10">
+                <div className="bg-white/5 text-zinc-900 p-8 text-center border-b border-white/10">
                   <div className="w-16 h-16 bg-[#E8FF86] rounded-full flex items-center justify-center mx-auto shadow-[0_8px_24px_rgba(232,255,134,0.35)]"><span className="text-[28px] text-black">✓</span></div>
                   <h2 className="font-black text-[22px] mt-4">Payment Approved!</h2>
-                  <p className="text-[13px] text-white/60 mt-1">Your store is now {showStatusModal.payment.plan_id.toUpperCase()}</p>
+                  <p className="text-[13px] text-zinc-500 mt-1">Your store is now {showStatusModal.payment.plan_id.toUpperCase()}</p>
                 </div>
                 <div className="p-6">
                   <div className="liquid-glass rounded-[14px] p-4">
-                    <div className="flex justify-between"><span className="text-[11px] text-white/40">Plan</span><span className="text-[13px] font-black text-white">{showStatusModal.payment.plan_id.toUpperCase()} • Rs. {showStatusModal.payment.amount}</span></div>
-                    <div className="flex justify-between mt-2"><span className="text-[11px] text-white/40">Txn ID</span><span className="font-mono text-[12px] liquid-glass px-2 py-1 rounded-[8px] text-white">{showStatusModal.payment.txn_id}</span></div>
+                    <div className="flex justify-between"><span className="text-[11px] text-zinc-500">Plan</span><span className="text-[13px] font-black text-zinc-900">{showStatusModal.payment.plan_id.toUpperCase()} • Rs. {showStatusModal.payment.amount}</span></div>
+                    <div className="flex justify-between mt-2"><span className="text-[11px] text-zinc-500">Txn ID</span><span className="font-mono text-[12px] liquid-glass px-2 py-1 rounded-[8px] text-zinc-900">{showStatusModal.payment.txn_id}</span></div>
                   </div>
                   <button onClick={()=>setShowStatusModal(null)} className="mt-6 w-full h-12 bg-white text-black rounded-full font-black text-[13px] hover:scale-[1.02] active:scale-[0.98] transition-transform">Continue →</button>
                 </div>
@@ -1089,11 +1089,11 @@ export default function Dashboard() {
               <div>
                 <div className="bg-white/[0.03] p-8 text-center border-b border-white/10">
                   <div className="w-16 h-16 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center mx-auto"><span className="text-[24px]">✕</span></div>
-                  <h2 className="font-black text-[20px] mt-4 text-white">Payment Rejected</h2>
-                  <p className="text-[12px] text-white/50 mt-1">Check Txn ID and try again</p>
+                  <h2 className="font-black text-[20px] mt-4 text-zinc-900">Payment Rejected</h2>
+                  <p className="text-[12px] text-zinc-900/50 mt-1">Check Txn ID and try again</p>
                 </div>
                 <div className="p-6">
-                  <p className="text-[12px] text-white/60">Txn ID could not be verified in Till {TILL_ID}. Please ensure correct amount and ID.</p>
+                  <p className="text-[12px] text-zinc-500">Txn ID could not be verified in Till {TILL_ID}. Please ensure correct amount and ID.</p>
                   <button onClick={()=>setShowStatusModal(null)} className="mt-6 w-full h-12 bg-white text-black rounded-full font-black text-[13px] hover:scale-[1.02] transition-transform">Try Again →</button>
                 </div>
               </div>
