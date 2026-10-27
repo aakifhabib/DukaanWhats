@@ -47,6 +47,36 @@ const GlassPremiumLock = ({ size = 56 }: { size?: number }) => (
 const AnalyticsIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none"><rect x="3" y="12" width="4" height="8" rx="1.5" fill="currentColor" /><rect x="10" y="8" width="4" height="12" rx="1.5" fill="currentColor" opacity="0.7" /><rect x="17" y="4" width="4" height="16" rx="1.5" fill="currentColor" opacity="0.4" /></svg>
 )
+
+const createBubbleEffect = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const btn = e.currentTarget as HTMLElement;
+  const rect = btn.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  // Create 6-8 bubbles
+  for(let i=0;i<8;i++){
+    const bubble = document.createElement('span');
+    bubble.className = 'elegant-bubble';
+    const size = Math.random()*12 + 6;
+    bubble.style.width = size+'px';
+    bubble.style.height = size+'px';
+    bubble.style.left = (x + (Math.random()-0.5)*40)+'px';
+    bubble.style.top = (y + (Math.random()-0.5)*20)+'px';
+    bubble.style.setProperty('--tx', (Math.random()-0.5)*80+'px');
+    bubble.style.setProperty('--ty', -(60 + Math.random()*60)+'px');
+    bubble.style.animationDelay = (Math.random()*0.1)+'s';
+    btn.appendChild(bubble);
+    setTimeout(()=>bubble.remove(), 900);
+  }
+  // Ripple
+  const ripple = document.createElement('span');
+  ripple.className = 'elegant-ripple';
+  ripple.style.left = x+'px';
+  ripple.style.top = y+'px';
+  btn.appendChild(ripple);
+  setTimeout(()=>ripple.remove(), 600);
+}
+
 const LiveDot = () => (<span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#E8FF86] opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-[#E8FF86]"></span></span>)
 
 const TILL_ID = '984837533'
@@ -237,7 +267,40 @@ export default function Dashboard() {
       setTimeout(()=>setLoading(false), 700)
     }
     init()
-  }, [])
+
+  // Bubble delegation for all elegant buttons
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      const target = (e.target as HTMLElement)?.closest('.btn-elegant') as HTMLElement;
+      if (!target) return;
+      const rect = target.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      for(let i=0;i<7;i++){
+        const bubble = document.createElement('span');
+        bubble.className = 'elegant-bubble';
+        const size = Math.random()*14 + 5;
+        bubble.style.width = size+'px';
+        bubble.style.height = size+'px';
+        bubble.style.left = (x + (Math.random()-0.5)*50)+'px';
+        bubble.style.top = (y + (Math.random()-0.5)*20)+'px';
+        bubble.style.setProperty('--tx', (Math.random()-0.5)*90+'px');
+        bubble.style.setProperty('--ty', -(50 + Math.random()*80)+'px');
+        bubble.style.animationDelay = (Math.random()*0.12)+'s';
+        target.appendChild(bubble);
+        setTimeout(()=>bubble.remove(), 950);
+      }
+      const ripple = document.createElement('span');
+      ripple.className = 'elegant-ripple';
+      ripple.style.left = x+'px';
+      ripple.style.top = y+'px';
+      target.appendChild(ripple);
+      setTimeout(()=>ripple.remove(), 650);
+    };
+    document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
+  }, []);
+
 
   const handleThemeClick = (t: any) => {
     if (isThemeLocked(t)) {
@@ -430,6 +493,60 @@ export default function Dashboard() {
         @keyframes shimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(200%)} }
         @keyframes pulseGlow { 0%,100%{opacity:0.6} 50%{opacity:1} }
 
+
+        /* === ELEGANT BUTTONS + BUBBLE EFFECT === */
+        @keyframes elegantBubble { 0%{transform:translate(0,0) scale(0.3); opacity:0.9} 50%{opacity:0.6} 100%{transform:translate(var(--tx), var(--ty)) scale(1.3); opacity:0} }
+        @keyframes elegantRipple { 0%{transform:translate(-50%,-50%) scale(0); opacity:0.5} 100%{transform:translate(-50%,-50%) scale(4); opacity:0} }
+        .elegant-bubble{ position:absolute; border-radius:50%; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95) 0%, rgba(232,255,134,0.7) 40%, rgba(255,255,255,0.15) 100%); box-shadow: 0 0 8px rgba(255,255,255,0.6), inset -2px -2px 4px rgba(255,255,255,0.8); pointer-events:none; z-index:20; animation: elegantBubble 0.9s cubic-bezier(0.2,0.8,0.2,1) forwards; }
+        .elegant-ripple{ position:absolute; width:12px; height:12px; border-radius:50%; background: radial-gradient(circle, rgba(255,255,255,0.45) 0%, transparent 70%); pointer-events:none; transform:translate(-50%,-50%); animation: elegantRipple 0.6s ease-out forwards; z-index:10; }
+
+        .btn-elegant{ position:relative; overflow:hidden; isolation:isolate; transition: all 0.4s cubic-bezier(0.2,0.8,0.2,1); }
+        .btn-elegant::before{ content:''; position:absolute; inset:0; background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 50%); opacity:0; transition: opacity 0.3s; border-radius:inherit; pointer-events:none; z-index:1; }
+        .btn-elegant:hover::before{ opacity:1; }
+        .btn-elegant::after{ content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent); transition: left 0.6s; z-index:1; }
+        .btn-elegant:hover::after{ left:100%; }
+        .btn-elegant:active{ transform: scale(0.96) translateY(1px); }
+
+        .btn-elegant-primary{
+          background: linear-gradient(180deg, #ffffff 0%, #f8f8f6 100%);
+          border: 1px solid rgba(255,255,255,0.9);
+          border-top-color: #ffffff;
+          box-shadow: inset 0 1px 0.8px rgba(255,255,255,1), inset 0 -0.5px 0.5px rgba(0,0,0,0.06), 0 8px 24px rgba(255,255,255,0.22), 0 4px 12px rgba(0,0,0,0.10);
+          color: #000; font-weight: 700; letter-spacing: -0.01em;
+        }
+        .btn-elegant-primary:hover{
+          background: linear-gradient(180deg, #ffffff 0%, #ffffff 100%);
+          transform: translateY(-2px) scale(1.02);
+          box-shadow: inset 0 1.2px 1px rgba(255,255,255,1), 0 16px 36px rgba(255,255,255,0.32), 0 8px 20px rgba(0,0,0,0.12);
+        }
+        .btn-elegant-glass{
+          background: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 100%);
+          backdrop-filter: blur(24px) saturate(180%);
+          -webkit-backdrop-filter: blur(24px) saturate(180%);
+          border: 1px solid rgba(255,255,255,0.22);
+          border-top-color: rgba(255,255,255,0.38);
+          box-shadow: inset 0 1px 0.8px rgba(255,255,255,0.52), 0 8px 20px rgba(0,0,0,0.18);
+          color: white;
+        }
+        .btn-elegant-glass:hover{
+          background: linear-gradient(180deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.09) 100%);
+          border-top-color: rgba(255,255,255,0.55);
+          transform: translateY(-2px) scale(1.02);
+          box-shadow: inset 0 1.5px 1px rgba(255,255,255,0.65), 0 14px 32px rgba(0,0,0,0.24);
+        }
+        .btn-elegant-premium{
+          background: linear-gradient(180deg, #E8FF86 0%, #d8f06e 100%);
+          border: 1px solid #E8FF86;
+          border-top-color: #f0ff9a;
+          box-shadow: inset 0 1px 0.8px rgba(255,255,255,0.9), 0 8px 24px rgba(232,255,134,0.35), 0 0 0 1px rgba(232,255,134,0.3);
+          color: #000; font-weight: 800;
+        }
+        .btn-elegant-premium:hover{
+          background: linear-gradient(180deg, #eeff9a 0%, #E8FF86 100%);
+          transform: translateY(-2px) scale(1.03);
+          box-shadow: inset 0 1.2px 1px rgba(255,255,255,0.95), 0 16px 40px rgba(232,255,134,0.45);
+        }
+
         /* === TRUE FLOATING LIQUID GLASS FROM YOUR WEBP === */
         .liquid-glass{
           background: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 100%);
@@ -584,7 +701,7 @@ export default function Dashboard() {
               </button>
             ))}
             <div className="w-full h-[1px] bg-white/10 my-1 mt-auto" />
-            <button onClick={handleLogout} className="liquid-nav-btn !bg-red-500/10 !border-red-500/20 !text-red-300" title="Logout">
+            <button onClick={(e:any)=>{createBubbleEffect(e); handleLogout()}} className="liquid-nav-btn !bg-red-500/10 !border-red-500/20 !text-red-300" title="Logout">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
             </button>
             <div className="w-10 h-10 rounded-full liquid-glass flex items-center justify-center text-[12px] font-bold">A</div>
@@ -602,7 +719,7 @@ export default function Dashboard() {
               <div className="hidden md:flex ml-4"><CurrentPlanButton /></div>
             </div>
             <div className="flex items-center gap-2">
-              <Link href={slug ? `/s/${slug}` : '#'} target="_blank" className="h-9 px-5 bg-white text-black rounded-full text-[12px] font-bold hover:bg-white/90 transition-all hover:scale-[1.03] active:scale-[0.97]">View Store ↗</Link>
+              <Link href={slug ? `/s/${slug}` : '#'} target="_blank" className="btn-elegant btn-elegant-primary h-9 px-5 rounded-full text-[12px]">View Store ↗</Link>
             </div>
           </header>
 
@@ -701,7 +818,7 @@ export default function Dashboard() {
                   <span className="text-[11px] text-white/30">Products {products.length}/{productLimit===999999?'∞':productLimit} • Images {imageLimit===999999?'∞':imageLimit}/product • {justSubmitted?'Just submitted ✓':''}</span>
                   <div className="flex gap-2 items-center">
                     {saved && <span className="h-10 px-4 flex items-center text-[12px] text-black font-bold bg-[#E8FF86] rounded-full animate-pulse">✓ Saved! {getTheme(theme).name}</span>}
-                    <button onClick={saveStore} className="h-10 px-6 bg-white text-black text-[13px] font-bold rounded-full hover:bg-white/90 transition-all hover:scale-[1.03] active:scale-[0.97] shadow-[0_8px_24px_rgba(255,255,255,0.20)]">{saving?'Saving...':'Save Store & Theme'}</button>
+                    <button onClick={(e:any)=>{createBubbleEffect(e); saveStore()}} className="btn-elegant btn-elegant-primary h-10 px-6 rounded-full text-[13px] shadow-[0_8px_24px_rgba(255,255,255,0.20)]">{saving?'Saving...':'Save Store & Theme'}</button>
                   </div>
                 </div>
               </div>
@@ -720,8 +837,8 @@ export default function Dashboard() {
                   <div className="md:col-span-2"><label className="text-[10px] font-black tracking-widest uppercase text-white/40">Store Slug</label><input value={slug} onChange={e=>setSlug(e.target.value)} className="mt-2 w-full h-11 px-4 rounded-[14px] liquid-input text-[13px] text-white" /><div className="mt-2 text-[11px] text-white/30">Your store: /s/{slug || 'your-slug'}</div></div>
                 </div>
                 <div className="mt-6 flex flex-wrap gap-3 items-center">
-                  <button onClick={saveStore} disabled={saving} className="h-11 px-7 bg-white text-black rounded-full text-[13px] font-bold hover:bg-white/90 transition-all hover:scale-[1.03] active:scale-[0.97]">{saving?'Saving...':saved?'Saved ✓':'Save Store'}</button>
-                  <button onClick={copyLink} className="h-11 px-6 liquid-glass rounded-full text-[13px] font-medium text-white hover:scale-[1.03] transition-transform">{copied?'Copied!':'Copy Link'}</button>
+                  <button onClick={(e:any)=>{createBubbleEffect(e); saveStore()}} disabled={saving} className="btn-elegant btn-elegant-primary h-11 px-7 rounded-full text-[13px]">{saving?'Saving...':saved?'Saved ✓':'Save Store'}</button>
+                  <button onClick={(e:any)=>{createBubbleEffect(e); copyLink()}} className="btn-elegant btn-elegant-glass h-11 px-6 rounded-full text-[13px] font-medium">{copied?'Copied!':'Copy Link'}</button>
                 </div>
                 {profile && (
                   <div className="mt-8">
@@ -810,7 +927,7 @@ export default function Dashboard() {
                         if (prods) setProducts(prods)
                         setEditingId(null); setProdName(''); setProdPrice(''); setProdDesc(''); setProdCategory('General'); setProdStock('100'); setProdSizes(''); setProdColors(''); setProdOrigPrice(''); setPreviews([]); setFiles([])
                       } catch (e:any){ setErrorMsg(e.message) } setUploading(false)
-                    }} disabled={uploading || (!editingId && products.length>=productLimit)} className="h-11 px-7 bg-white text-black text-[13px] font-bold rounded-full disabled:opacity-40 hover:bg-white/90 transition-all hover:scale-[1.03] active:scale-[0.97] shadow-[0_8px_24px_rgba(255,255,255,0.20)]">{uploading?'Uploading...':!editingId && products.length>=productLimit?`Limit ${productLimit} — Upgrade`:`${editingId?'Update':'Add'} Product →`}</button>
+                    }} disabled={uploading || (!editingId && products.length>=productLimit)} className="btn-elegant btn-elegant-primary h-11 px-7 rounded-full text-[13px] disabled:opacity-40 shadow-[0_8px_24px_rgba(255,255,255,0.20)]">{uploading?'Uploading...':!editingId && products.length>=productLimit?`Limit ${productLimit} — Upgrade`:`${editingId?'Update':'Add'} Product →`}</button>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -824,7 +941,7 @@ export default function Dashboard() {
                           <img src={images[0]} className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-700" alt={p.name} />
                           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">{images.map((_:any,i:number)=><div key={i} className={`h-1 rounded-full transition-all ${i===0?'w-4 bg-white':'w-1.5 bg-white/40'}`} />)}</div>
                         </div>
-                        <div className="mt-3 px-1"><div className="font-bold text-[13px] truncate text-white">{p.name}</div><div className="flex items-center justify-between mt-1"><span className="font-black text-[14px] text-white">Rs. {p.price.toLocaleString()}</span><span className="text-[11px] text-white/40">{images.length} img • {(p as any).category || 'General'}</span></div><div className="mt-3 flex gap-2"><button onClick={()=>{ setEditingId(p.id); setProdName(p.name); setProdPrice(String(p.price)); setProdDesc((p as any).description || ''); setProdCategory((p as any).category || 'General'); setProdStock(String((p as any).stock || 100)); setProdSizes(Array.isArray((p as any).sizes) ? (p as any).sizes.join(', ') : (p as any).sizes || ''); setProdColors(Array.isArray((p as any).colors) ? (p as any).colors.join(', ') : (p as any).colors || ''); setProdOrigPrice((p as any).original_price ? String((p as any).original_price) : ''); setPreviews(p.image_urls && p.image_urls.length ? p.image_urls : [p.image_url]); setFiles([]); setActiveTab('products'); }} className="flex-1 h-8 bg-white text-black rounded-full text-[11px] font-bold hover:scale-[1.05] transition-transform">Edit</button><button onClick={async ()=>{ if (!confirm('Delete product?')) return; const { error } = await supabase.from('products').delete().eq('id', p.id); if (!error) setProducts(products.filter(x=>x.id!==p.id)) }} className="h-8 w-8 liquid-glass rounded-full flex items-center justify-center text-[12px] text-white hover:scale-110 transition-transform">✕</button></div></div>
+                        <div className="mt-3 px-1"><div className="font-bold text-[13px] truncate text-white">{p.name}</div><div className="flex items-center justify-between mt-1"><span className="font-black text-[14px] text-white">Rs. {p.price.toLocaleString()}</span><span className="text-[11px] text-white/40">{images.length} img • {(p as any).category || 'General'}</span></div><div className="mt-3 flex gap-2"><button onClick={()=>{ setEditingId(p.id); setProdName(p.name); setProdPrice(String(p.price)); setProdDesc((p as any).description || ''); setProdCategory((p as any).category || 'General'); setProdStock(String((p as any).stock || 100)); setProdSizes(Array.isArray((p as any).sizes) ? (p as any).sizes.join(', ') : (p as any).sizes || ''); setProdColors(Array.isArray((p as any).colors) ? (p as any).colors.join(', ') : (p as any).colors || ''); setProdOrigPrice((p as any).original_price ? String((p as any).original_price) : ''); setPreviews(p.image_urls && p.image_urls.length ? p.image_urls : [p.image_url]); setFiles([]); setActiveTab('products'); }} className="btn-elegant btn-elegant-primary flex-1 h-8 rounded-full text-[11px]">Edit</button><button onClick={async ()=>{ if (!confirm('Delete product?')) return; const { error } = await supabase.from('products').delete().eq('id', p.id); if (!error) setProducts(products.filter(x=>x.id!==p.id)) }} className="btn-elegant btn-elegant-glass h-8 w-8 rounded-full flex items-center justify-center text-[12px]">✕</button></div></div>
                       </div>
                     )
                   })}
@@ -896,7 +1013,7 @@ export default function Dashboard() {
                 </div>
                 <div className="mt-8 grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-6">
                   <div className="rounded-[22px] liquid-glass p-5 bg-white/[0.06]">
-                    <div className="flex justify-between items-center"><div className="text-[10px] tracking-[0.2em] uppercase opacity-50 font-black text-white/50">JAZZCASH BUSINESS TILL</div><button onClick={copyTill} className="h-7 px-3 liquid-glass rounded-full text-[11px] hover:scale-105 transition-transform text-white">{copiedTill?'Copied!':'Copy ID'}</button></div>
+                    <div className="flex justify-between items-center"><div className="text-[10px] tracking-[0.2em] uppercase opacity-50 font-black text-white/50">JAZZCASH BUSINESS TILL</div><button onClick={(e:any)=>{createBubbleEffect(e); copyTill()}} className="h-7 px-3 liquid-glass rounded-full text-[11px] hover:scale-105 transition-transform text-white">{copiedTill?'Copied!':'Copy ID'}</button></div>
                     <div className="mt-4 liquid-glass rounded-[14px] p-4"><div className="text-[10px] uppercase opacity-50 text-white/40">Till ID Number</div><div className="text-[32px] font-black font-mono tracking-[0.12em] text-white">{TILL_ID}</div><div className="text-[10px] text-white/30 mt-1">Billing: {billing.toUpperCase()} • Amount depends on plan</div></div>
                     <div className="mt-3 bg-white rounded-[14px] p-3"><img src={`https://barcodeapi.org/api/code128/${TILL_ID}`} alt="Barcode" className="w-full h-[48px] object-contain"/><div className="text-center text-[11px] font-mono text-black font-black tracking-[0.3em] mt-1">{TILL_ID}</div></div>
                     <div className="mt-3 bg-white rounded-[14px] p-3 flex justify-center"><img src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=JAZZCASH_TILL_${TILL_ID}`} alt="QR" className="w-[120px] h-[120px]"/></div>
@@ -925,7 +1042,7 @@ export default function Dashboard() {
                         <div className="flex items-center gap-2 flex-wrap"><div className="w-6 h-6 rounded-full bg-white text-black flex items-center justify-center text-[12px] font-bold">₨</div><div className="text-[13px] font-bold text-white">Pay Rs. {billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} → Till {TILL_ID} ({billing.toUpperCase()}) • {justSubmitted?'Submitted ✓':''}</div></div>
                         <div className="mt-2 text-[11px] text-white/40">Selected: {selectedPlan.name.toUpperCase()} • {billing} • Rs. {billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} • Till {TILL_ID}</div>
                         <input value={txnId} onChange={e=>setTxnId(e.target.value)} placeholder={`Txn ID after paying Rs. ${billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} to Till ${TILL_ID} [${billing}]`} className="mt-4 w-full h-12 px-4 rounded-[14px] liquid-input text-white text-[12px] font-mono"/>
-                        <button onClick={handleBuyPlan} disabled={purchasing || !txnId.trim()} className="mt-3 w-full h-12 bg-white text-black rounded-full font-black text-[13px] flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_8px_24px_rgba(255,255,255,0.20)] disabled:opacity-50">{purchasing?'Submitting...':`I Paid Rs. ${billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} — Activate ${selectedPlan.name} (${billing})`} <span className="w-5 h-5 bg-black text-white rounded-full flex items-center justify-center text-[10px]">↗</span></button>
+                        <button onClick={(e:any)=>{createBubbleEffect(e); handleBuyPlan()}} disabled={purchasing || !txnId.trim()} className="btn-elegant btn-elegant-premium mt-3 w-full h-12 rounded-full text-[13px] flex items-center justify-center gap-2 disabled:opacity-50">{purchasing?'Submitting...':`I Paid Rs. ${billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} — Activate ${selectedPlan.name} (${billing})`} <span className="w-5 h-5 bg-black text-white rounded-full flex items-center justify-center text-[10px]">↗</span></button>
                         <div className="mt-2 text-[10px] text-white/30 text-center">Billing mode: {billing} • Make sure Txn ID matches Till {TILL_ID}</div>
                       </div>
                     )}
@@ -942,7 +1059,7 @@ export default function Dashboard() {
                   <span>{item.icon}</span><span className="text-[9px] font-bold">{item.label}</span>
                 </button>
               ))}
-              <button onClick={handleLogout} className="h-12 w-12 rounded-[18px] bg-red-500/10 text-red-300 flex items-center justify-center">↪</button>
+              <button onClick={(e:any)=>{createBubbleEffect(e); handleLogout()}} className="h-12 w-12 rounded-[18px] bg-red-500/10 text-red-300 flex items-center justify-center">↪</button>
             </div>
           </div>
         </div>
