@@ -8,40 +8,34 @@ import { STORE_THEMES, getTheme, ThemeCategory, getAdvancedThemes, getPremiumThe
 import { DukaanWhatsLoader } from '@/components/DukaanWhatsLoader'
 import { PremiumThemeEditor } from '@/components/PremiumThemeEditor'
 
-// --- PRESERVED ICONS (same logic) ---
 const UploadIcon = ({ className = "w-12 h-12" }: { className?: string }) => (
   <div className={`${className} relative`}>
-    <div className="absolute inset-0 bg-black rounded-[14px] shadow-[0_8px_20px_rgba(0,0,0,0.15)]" />
+    <div className="absolute inset-0 bg-black rounded-[14px]" />
     <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-black rounded-[14px]" />
     <div className="absolute inset-[1px] bg-black rounded-[13px] flex items-center justify-center">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 15.5V19.5C3 20.6 3.9 21.5 5 21.5H19C20.1 21.5 21 20.6 21 19.5V15.5" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" opacity="0.3"/><path d="M12 3.5V14.5" stroke="white" strokeWidth="1.6" strokeLinecap="round"/><path d="M8.5 7L12 3.5L15.5 7" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><circle cx="9" cy="12.5" r="1.2" fill="white" opacity="0.9"/></svg>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 15.5V19.5C3 20.6 3.9 21.5 5 21.5H19C20.1 21.5 21 20.6 21 19.5V15.5" stroke="white" strokeWidth="1.6" strokeLinecap="round" opacity="0.3"/><path d="M12 3.5V14.5" stroke="white" strokeWidth="1.6" strokeLinecap="round"/><path d="M8.5 7L12 3.5L15.5 7" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><circle cx="9" cy="12.5" r="1.2" fill="white" opacity="0.9"/></svg>
     </div>
-    <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#E8FF86] rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(232,255,134,0.5)] border-2 border-white">
+    <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#E8FF86] rounded-full flex items-center justify-center border-2 border-white">
       <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M12 5V19M5 12H19" stroke="black" strokeWidth="2.5" strokeLinecap="round"/></svg>
     </div>
   </div>
 )
 const GlassLockIcon = ({ size = 40 }: { size?: number }) => (
   <div style={{ width: size, height: size }} className="relative shrink-0">
-    <div className="absolute inset-0 rounded-[14px] bg-white/90 backdrop-blur-xl border border-black/[0.06] shadow-[0_8px_24px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,1)]" />
-    <div className="absolute inset-0 rounded-[14px] bg-gradient-to-br from-white via-white/80 to-zinc-50/90" />
-    <div className="absolute inset-[1px] rounded-[13px] bg-gradient-to-b from-white to-transparent opacity-80" />
+    <div className="absolute inset-0 rounded-[14px] bg-white/90 backdrop-blur-xl border border-black/[0.06]" />
     <div className="absolute inset-0 flex items-center justify-center">
-      <svg width={size>40?22:16} height={size>40?22:16} viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="10" rx="3" fill="#0A0A0A" /><path d="M8 10V7.5C8 5.3 9.8 3.5 12 3.5C14.2 3.5 16 5.3 16 7.5V10" stroke="#0A0A0A" strokeWidth="1.8" strokeLinecap="round" /><circle cx="12" cy="15" r="1.6" fill="white" /><path d="M12 16.6V18" stroke="white" strokeWidth="1.2" strokeLinecap="round" /></svg>
+      <svg width={size>40?22:16} height={size>40?22:16} viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="10" rx="3" fill="#0A0A0A" /><path d="M8 10V7.5C8 5.3 9.8 3.5 12 3.5C14.2 3.5 16 5.3 16 7.5V10" stroke="#0A0A0A" strokeWidth="1.8" strokeLinecap="round" /></svg>
     </div>
   </div>
 )
 const GlassPremiumLock = ({ size = 56 }: { size?: number }) => (
   <div style={{ width: size, height: size }} className="relative">
-    <div className="absolute inset-0 rounded-[16px] bg-[#0A0A0A] shadow-[0_12px_28px_rgba(0,0,0,0.22)]" />
-    <div className="absolute inset-0 rounded-[16px] bg-gradient-to-br from-zinc-800 to-black" />
-    <div className="absolute inset-[1px] rounded-[15px] bg-gradient-to-b from-white/[0.08] to-transparent" />
+    <div className="absolute inset-0 rounded-[16px] bg-[#0A0A0A]" />
     <div className="absolute inset-0 flex items-center justify-center">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="4.5" y="10.5" width="15" height="10" rx="3.5" fill="white" /><path d="M8 10.5V7.8C8 5.4 9.9 3.5 12.2 3.5C14.5 3.5 16.4 5.4 16.4 7.8V10.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" /><circle cx="12" cy="15.5" r="1.5" fill="black" /><path d="M12 17V18.5" stroke="black" strokeWidth="1.2" strokeLinecap="round" /></svg>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="4.5" y="10.5" width="15" height="10" rx="3.5" fill="white" /><path d="M8 10.5V7.8C8 5.4 9.9 3.5 12.2 3.5C14.5 3.5 16.4 5.4 16.4 7.8V10.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" /></svg>
     </div>
   </div>
 )
-const LiveDot = () => (<span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#E8FF86] opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-[#E8FF86]"></span></span>)
 
 const TILL_ID = '984837533'
 type Profile = { id: string; business_name: string; whatsapp_number: string; store_slug: string; store_theme?: string; current_plan?: string }
@@ -49,7 +43,7 @@ type Product = { id: string; name: string; price: number; image_url: string; ima
 type Billing = 'monthly' | 'yearly'
 type PlanDef = { id: 'basic'|'advanced'|'premium'; name: string; monthly: number; yearlyMonthly: number; yearlyTotal: number; products: number; imagesPerProduct: number; advancedAllowed: number|'all'; premiumAllowed: number|'all'; stores: number; features: string[] }
 
-const PremiumProductCard = ({ p, onEdit, onDelete, imageLimit }: { p: any; onEdit: (p:any)=>void; onDelete: (id:string)=>void; themeId: string; imageLimit: number }) => {
+const PremiumProductCard = ({ p, onEdit, onDelete }: { p: any; onEdit: (p:any)=>void; onDelete: (id:string)=>void; themeId: string; imageLimit: number }) => {
   const [hoverIdx, setHoverIdx] = useState(0)
   const [isHovering, setIsHovering] = useState(false)
   const images = (() => { if (p.image_urls && Array.isArray(p.image_urls) && p.image_urls.length>0) return p.image_urls; if (typeof p.image_urls==='string'){try{const pa=JSON.parse(p.image_urls); if(Array.isArray(pa)) return pa}catch{} return [p.image_urls]} if(p.image_url) return [p.image_url]; return [] })()
@@ -62,12 +56,7 @@ const PremiumProductCard = ({ p, onEdit, onDelete, imageLimit }: { p: any; onEdi
     <div className="group clear-glass rounded-[22px] p-[10px] hover:border-white/30 transition-all duration-300"
          onMouseEnter={() => setIsHovering(true)} onMouseLeave={() => setIsHovering(false)}>
       <div className="relative overflow-hidden rounded-[16px] h-[180px] bg-white/[0.04]">
-        {images.length>0 ? (
-          <>
-            <img src={images[hoverIdx % images.length]} className="w-full h-full object-cover" />
-            {images.length>1 && <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">{images.map((_:any,i:number)=><span key={i} className={`h-1 rounded-full transition-all ${i===hoverIdx?'w-4 bg-white':'w-1.5 bg-white/40'}`} />)}</div>}
-          </>
-        ) : <div className="w-full h-full flex items-center justify-center text-white/30 text-[11px]">No image</div>}
+        {images.length>0 ? (<><img src={images[hoverIdx % images.length]} className="w-full h-full object-cover" /></>) : <div className="w-full h-full flex items-center justify-center text-white/30 text-[11px]">No image</div>}
       </div>
       <div className="mt-3 px-2 pb-2">
         <div className="font-semibold text-[13px] truncate text-white">{p.name}</div>
@@ -76,8 +65,8 @@ const PremiumProductCard = ({ p, onEdit, onDelete, imageLimit }: { p: any; onEdi
           <span className="text-[10px] text-white/40">{images.length} img</span>
         </div>
         <div className="mt-3 flex gap-2">
-          <button onClick={()=>onEdit(p)} className="flex-1 h-8 bg-white text-black rounded-full text-[11px] font-semibold hover:bg-white/90">Edit</button>
-          <button onClick={()=>onDelete(p.id)} className="h-8 w-8 bg-white/10 border border-white/10 rounded-full flex items-center justify-center text-white/60 hover:bg-white/15">✕</button>
+          <button onClick={()=>onEdit(p)} className="flex-1 h-8 bg-white text-black rounded-full text-[11px] font-semibold">Edit</button>
+          <button onClick={()=>onDelete(p.id)} className="h-8 w-8 bg-white/10 border border-white/10 rounded-full flex items-center justify-center text-white/60">✕</button>
         </div>
       </div>
     </div>
@@ -108,7 +97,6 @@ export default function Dashboard() {
   const [previews, setPreviews] = useState<string[]>([])
   const [uploading, setUploading] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [filter, setFilter] = useState<ThemeCategory | 'all' | string>('all')
   const [activeTab, setActiveTab] = useState<'store'|'themes'|'products'|'analytics'|'payments'>('themes')
   const [selectedPlan, setSelectedPlan] = useState<PlanDef | null>(null)
   const [billing, setBilling] = useState<Billing>('monthly')
@@ -132,7 +120,6 @@ export default function Dashboard() {
   const productLimit = currentPlanDef.products
   const imageLimit = currentPlanDef.imagesPerProduct
 
-  // --- GLASS MERGED: 3 sleek + 3 premium = 6 glass themes --- PRESERVED EXACTLY
   const advancedGlassRaw = getAdvancedThemes()
   const premiumNewRaw = getPremiumThemes()
   const premiumThemes = [...advancedGlassRaw, ...premiumNewRaw]
@@ -174,17 +161,7 @@ export default function Dashboard() {
           const { data: prods } = await supabase.from('products').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
           if (prods) setProducts(prods)
           const { data: pays } = await supabase.from('plan_payments').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
-          if (pays) {
-            setMyPayments(pays)
-            const latest = pays[0]
-            if (latest && (latest.status === 'approved' || latest.status === 'rejected')) {
-              const lastSeenId = localStorage.getItem('dw_last_seen_payment')
-              if (latest.id !== lastSeenId) {
-                setShowStatusModal({ type: latest.status, payment: latest })
-                localStorage.setItem('dw_last_seen_payment', latest.id)
-              }
-            }
-          }
+          if (pays) setMyPayments(pays)
         }
       } catch (e: any) { setErrorMsg(e.message) }
       setTimeout(()=>setLoading(false), 700)
@@ -194,8 +171,8 @@ export default function Dashboard() {
 
   const handleThemeClick = (t: any) => {
     if (isThemeLocked(t)) {
-      if (isPremiumTheme(t)) { alert(`🔒 Premium Glass Locked\nNeed Premium — Till ${TILL_ID} Rs. 2999/mo`); setActiveTab('payments'); return }
-      alert(`🔒 Advanced Theme Locked\nBasic allows 3/8 Advanced\nNeed Advanced — Till ${TILL_ID} Rs. 899/mo`); setActiveTab('payments'); return
+      alert(`🔒 Locked - Till ${TILL_ID}`);
+      setActiveTab('payments'); return
     }
     setTheme(t.id)
   }
@@ -231,7 +208,6 @@ export default function Dashboard() {
   const addProduct = async () => {
     if (!prodName.trim() || !prodPrice) { setErrorMsg('Name and price required'); return }
     if (!profile) return
-    if (!editingId && products.length >= productLimit) { setErrorMsg(`❌ ${currentPlanId.toUpperCase()} allows ${productLimit} products.`); setActiveTab('payments'); return }
     setUploading(true)
     try {
       let imageUrls: string[] = []
@@ -242,7 +218,7 @@ export default function Dashboard() {
         const { error } = await supabase.from('products').update({ name: prodName.trim(), price: parseFloat(prodPrice), description: prodDesc.trim(), category: prodCategory, stock: parseInt(prodStock)||100, sizes: prodSizes.split(',').map(s=>s.trim()).filter(Boolean), colors: prodColors.split(',').map(s=>s.trim()).filter(Boolean), original_price: prodOrigPrice?parseFloat(prodOrigPrice):null, image_url: finalImages[0]||'', image_urls: finalImages }).eq('id', editingId)
         if (error) throw error
       } else {
-        if (imageUrls.length===0) { setErrorMsg('Please upload at least one image'); setUploading(false); return }
+        if (imageUrls.length===0) { setErrorMsg('Please upload image'); setUploading(false); return }
         const { data, error } = await supabase.from('products').insert({ user_id: profile.id, name: prodName.trim(), price: parseFloat(prodPrice), description: prodDesc.trim(), category: prodCategory, stock: parseInt(prodStock)||100, sizes: prodSizes.split(',').map(s=>s.trim()).filter(Boolean), colors: prodColors.split(',').map(s=>s.trim()).filter(Boolean), original_price: prodOrigPrice?parseFloat(prodOrigPrice):null, image_url: imageUrls[0], image_urls: imageUrls }).select().single()
         if (error) throw error
         if (data) setProducts([data as any, ...products])
@@ -252,7 +228,7 @@ export default function Dashboard() {
       cancelEdit()
     } catch (e:any){ setErrorMsg(e.message) } setUploading(false)
   }
-  const deleteProduct = async (id:string) => { if (!confirm('Delete product?')) return; try { const { error } = await supabase.from('products').delete().eq('id', id); if (error) throw error; setProducts(products.filter(p=>p.id!==id)) } catch(e:any){ setErrorMsg(e.message) } }
+  const deleteProduct = async (id:string) => { if (!confirm('Delete?')) return; const { error } = await supabase.from('products').delete().eq('id', id); if (!error) setProducts(products.filter(p=>p.id!==id)) }
   const getDisplayPrice = (p:PlanDef) => billing==='monthly'?p.monthly:p.yearlyMonthly
   const handleBuyPlan = async () => {
     if (!selectedPlan || !txnId.trim() || !profile) { setErrorMsg('Select plan and enter Txn ID'); return }
@@ -285,46 +261,123 @@ export default function Dashboard() {
   ] as any[]
 
   return (
-    <div className="min-h-screen w-full relative bg-black text-white selection:bg-white selection:text-black overflow-hidden">
-      {/* GREEN + BLACK GRADIENT WITH FLOATING ANIMATED BACKGROUND */}
-      <div className="fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#050A06] via-[#0A1A12] to-black" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(16,185,129,0.18),transparent_60%),radial-gradient(ellipse_at_bottom_right,_rgba(34,197,94,0.15),transparent_55%),radial-gradient(ellipse_at_bottom_left,_rgba(0,0,0,1),transparent_60%)]" />
-        {/* floating orbs */}
-        <div className="absolute top-[10%] left-[15%] w-[500px] h-[500px] bg-[radial-gradient(circle,_rgba(34,197,94,0.28),transparent_70%)] rounded-full blur-[50px] animate-float-slow" />
-        <div className="absolute top-[40%] right-[10%] w-[600px] h-[600px] bg-[radial-gradient(circle,_rgba(16,185,129,0.22),transparent_70%)] rounded-full blur-[60px] animate-float-slower" />
-        <div className="absolute bottom-[5%] left-[30%] w-[700px] h-[700px] bg-[radial-gradient(circle,_rgba(74,222,128,0.18),transparent_70%)] rounded-full blur-[70px] animate-float" />
-        <div className="absolute top-[20%] left-[60%] w-[300px] h-[300px] bg-[radial-gradient(circle,_rgba(187,247,208,0.12),transparent_70%)] rounded-full blur-[40px] animate-float-fast" />
+    <div className="min-h-screen w-full relative bg-black text-white selection:bg-white selection:text-black">
+      {/* ANIMATED GREEN BLACK BACKGROUND - NOW WITH STRONG KEYFRAMES */}
+      <div className="fixed inset-0 z-0 overflow-hidden">
+        {/* base */}
+        <div className="absolute inset-0 bg-[#050A06]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0A1F14] via-[#050A06] to-black" />
+        
+        {/* GREEN GLOW BLOBS - INLINE ANIMATIONS THAT CANNOT BE PURGED */}
+        <div
+          className="absolute rounded-full blur-[60px] will-change-transform"
+          style={{
+            width: '700px', height: '700px',
+            left: '-10%', top: '-15%',
+            background: 'radial-gradient(circle, rgba(34,197,94,0.45) 0%, rgba(16,185,129,0.22) 40%, transparent 75%)',
+            animation: 'blob1 14s ease-in-out infinite',
+          }}
+        />
+        <div
+          className="absolute rounded-full blur-[70px] will-change-transform"
+          style={{
+            width: '800px', height: '800px',
+            right: '-15%', top: '10%',
+            background: 'radial-gradient(circle, rgba(16,185,129,0.38) 0%, rgba(5,150,105,0.18) 45%, transparent 75%)',
+            animation: 'blob2 18s ease-in-out infinite',
+          }}
+        />
+        <div
+          className="absolute rounded-full blur-[80px] will-change-transform"
+          style={{
+            width: '900px', height: '900px',
+            left: '20%', bottom: '-30%',
+            background: 'radial-gradient(circle, rgba(74,222,128,0.32) 0%, rgba(34,197,94,0.15) 50%, transparent 75%)',
+            animation: 'blob3 22s ease-in-out infinite',
+          }}
+        />
+        <div
+          className="absolute rounded-full blur-[50px] will-change-transform"
+          style={{
+            width: '500px', height: '500px',
+            left: '55%', top: '35%',
+            background: 'radial-gradient(circle, rgba(187,247,208,0.22) 0%, rgba(34,197,94,0.10) 60%, transparent 80%)',
+            animation: 'blob4 11s ease-in-out infinite',
+          }}
+        />
+        {/* extra small fast blobs for visible motion */}
+        <div
+          className="absolute rounded-full blur-[40px] will-change-transform"
+          style={{
+            width: '320px', height: '320px',
+            left: '70%', bottom: '15%',
+            background: 'radial-gradient(circle, rgba(34,197,94,0.55) 0%, transparent 70%)',
+            animation: 'blobFast 8s ease-in-out infinite',
+          }}
+        />
+        <div
+          className="absolute rounded-full blur-[45px] will-change-transform"
+          style={{
+            width: '380px', height: '380px',
+            left: '5%', bottom: '10%',
+            background: 'radial-gradient(circle, rgba(16,185,129,0.40) 0%, transparent 70%)',
+            animation: 'blobFast2 9.5s ease-in-out infinite',
+          }}
+        />
       </div>
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         *{font-family:'Inter',sans-serif}
-        @keyframes float { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-30px,-40px) scale(1.08)} }
-        @keyframes floatSlow { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(40px,-30px) scale(1.12)} }
-        @keyframes floatSlower { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-50px,20px) scale(1.05)} }
-        @keyframes floatFast { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(20px,-50px) scale(1.15)} }
-        .animate-float{animation:float 18s ease-in-out infinite}
-        .animate-float-slow{animation:floatSlow 22s ease-in-out infinite}
-        .animate-float-slower{animation:floatSlower 28s ease-in-out infinite}
-        .animate-float-fast{animation:floatFast 12s ease-in-out infinite}
-        .no-scrollbar::-webkit-scrollbar{display:none}
-        .no-scrollbar{-ms-overflow-style:none; scrollbar-width:none}
+        /* BLOBS MUST MOVE VISIBLY */
+        @keyframes blob1 {
+          0%{transform:translate(0px,0px) scale(1) rotate(0deg)}
+          25%{transform:translate(80px,60px) scale(1.15) rotate(8deg)}
+          50%{transform:translate(40px,120px) scale(0.92) rotate(-5deg)}
+          75%{transform:translate(-30px,50px) scale(1.08) rotate(12deg)}
+          100%{transform:translate(0px,0px) scale(1) rotate(0deg)}
+        }
+        @keyframes blob2 {
+          0%{transform:translate(0px,0px) scale(1)}
+          33%{transform:translate(-70px,80px) scale(1.18)}
+          66%{transform:translate(-120px,-30px) scale(0.88)}
+          100%{transform:translate(0px,0px) scale(1)}
+        }
+        @keyframes blob3 {
+          0%{transform:translate(0px,0px) scale(1)}
+          30%{transform:translate(60px,-80px) scale(1.12)}
+          60%{transform:translate(-40px,-50px) scale(1.20)}
+          100%{transform:translate(0px,0px) scale(1)}
+        }
+        @keyframes blob4 {
+          0%{transform:translate(0,0) scale(1) rotate(0deg)}
+          50%{transform:translate(-90px,-90px) scale(1.25) rotate(15deg)}
+          100%{transform:translate(0,0) scale(1) rotate(0deg)}
+        }
+        @keyframes blobFast {
+          0%{transform:translate(0,0) scale(1)}
+          50%{transform:translate(-50px,-70px) scale(1.35)}
+          100%{transform:translate(0,0) scale(1)}
+        }
+        @keyframes blobFast2 {
+          0%{transform:translate(0,0) scale(1)}
+          50%{transform:translate(70px,-60px) scale(1.3)}
+          100%{transform:translate(0,0) scale(1)}
+        }
 
-        /* NO-COLOUR LIQUID GLASS - truly transparent */
         .clear-glass{
           background: rgba(255,255,255,0.07);
-          backdrop-filter: blur(28px) saturate(1.4);
-          -webkit-backdrop-filter: blur(28px) saturate(1.4);
+          backdrop-filter: blur(28px) saturate(1.5);
+          -webkit-backdrop-filter: blur(28px) saturate(1.5);
           border: 1px solid rgba(255,255,255,0.14);
-          box-shadow: 0 8px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(255,255,255,0.04);
+          box-shadow: 0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.20);
         }
         .clear-panel{
           background: rgba(255,255,255,0.06);
-          backdrop-filter: blur(32px) saturate(1.5);
-          -webkit-backdrop-filter: blur(32px) saturate(1.5);
+          backdrop-filter: blur(32px) saturate(1.6);
+          -webkit-backdrop-filter: blur(32px) saturate(1.6);
           border: 1px solid rgba(255,255,255,0.12);
-          box-shadow: 0 16px 48px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+          box-shadow: 0 16px 48px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.16);
         }
         .clear-input{
           background: rgba(255,255,255,0.06);
@@ -332,14 +385,12 @@ export default function Dashboard() {
           backdrop-filter: blur(10px);
         }
         .clear-input:focus{ background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.20); outline:none }
-
-        /* LEFT NAV - clear liquid glass, no colour */
         .left-glass{
           background: rgba(255,255,255,0.06);
-          backdrop-filter: blur(36px) saturate(1.6);
-          -webkit-backdrop-filter: blur(36px) saturate(1.6);
+          backdrop-filter: blur(36px) saturate(1.8);
+          -webkit-backdrop-filter: blur(36px) saturate(1.8);
           border: 1px solid rgba(255,255,255,0.12);
-          box-shadow: 0 20px 60px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.12);
+          box-shadow: 0 20px 60px rgba(0,0,0,0.50), inset 0 1px 0 rgba(255,255,255,0.14);
         }
         .nav-btn{
           width: 48px; height: 48px; border-radius: 14px;
@@ -351,10 +402,9 @@ export default function Dashboard() {
           position:relative;
         }
         .nav-btn:hover{ background: rgba(255,255,255,0.12); color: white; border-color: rgba(255,255,255,0.16) }
-        .nav-btn.active{ background: white; color: black; border-color: white; box-shadow: 0 8px 24px rgba(255,255,255,0.25) }
-        .nav-btn.pro.active{ background: #E8FF86; color: black; border-color: #E8FF86; box-shadow: 0 8px 24px rgba(232,255,134,0.35) }
+        .nav-btn.active{ background: white; color: black; border-color: white; box-shadow: 0 8px 24px rgba(255,255,255,0.28) }
+        .nav-btn.pro.active{ background: #E8FF86; color: black; border-color: #E8FF86; box-shadow: 0 8px 24px rgba(232,255,134,0.38) }
 
-        /* PRESERVED 6 GLASS THEMES NAVIGATOR - DO NOT CHANGE */
         .glass-container{ display:flex; gap:20px; overflow-x:auto; padding:24px 20px 36px; scroll-snap-type:x mandatory; scrollbar-width:none; }
         .glass-container::-webkit-scrollbar{display:none}
         .glass{
@@ -368,7 +418,7 @@ export default function Dashboard() {
           cursor:pointer;
           box-shadow: 0 12px 32px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.25);
         }
-        .glass:hover{ transform: rotate(0deg) translateY(-6px) scale(1.02); z-index:10; box-shadow: 0 20px 48px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.3);}
+        .glass:hover{ transform: rotate(0deg) translateY(-6px) scale(1.02); z-index:10; }
         .glass.selected{ transform: rotate(0deg) translateY(-4px) scale(1.03); border-color:white; box-shadow: 0 16px 40px rgba(0,0,0,0.3), 0 0 0 1px white; }
         .glass-preview-wrap{padding:12px; height:100%; display:flex; flex-direction:column; gap:10px}
         .glass-preview-header{height:36px; border-radius:12px; display:flex; align-items:center; justify-content:space-between; padding:0 12px; font-size:10px; font-weight:700; letter-spacing:0.05em}
@@ -379,14 +429,13 @@ export default function Dashboard() {
         .adv-card:hover{border-color:rgba(255,255,255,0.18); transform:translateY(-2px); background:rgba(255,255,255,0.09)}
         .adv-card.selected{border-color:rgba(255,255,255,0.85); background:rgba(255,255,255,0.12); box-shadow:0 0 0 1px rgba(255,255,255,0.5)}
         .adv-card-lock-overlay{position:absolute; inset:0; background:rgba(10,10,12,0.72); backdrop-filter:blur(16px); display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:20px; padding:12px}
-        .radio-container{position:relative; display:flex; flex-direction:column; gap:10px; --total-radio:3}
+        .radio-container{position:relative; display:flex; flex-direction:column; gap:10px;}
         .radio-container input{display:none}
         .radio-container label{position:relative; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.10); border-radius:16px; padding:14px 16px; cursor:pointer; transition:all 0.22s; backdrop-filter:blur(12px)}
         .radio-container input:checked + label{background:rgba(255,255,255,0.12); border-color:white; box-shadow:0 0 0 1px white}
       `}</style>
 
       <div className="relative z-10 flex min-h-screen">
-        {/* LEFT NAV - MOVED FROM RIGHT */}
         <aside className="hidden md:flex w-[96px] shrink-0 pl-4 py-4">
           <div className="left-glass rounded-[24px] p-3 flex flex-col items-center gap-3 sticky top-4 h-[calc(100vh-32px)]">
             <div className="w-10 h-10 rounded-[12px] bg-white text-black flex items-center justify-center font-bold text-[14px]">D</div>
@@ -394,9 +443,8 @@ export default function Dashboard() {
             {navItems.map((item:any)=>(
               <button key={item.id} onClick={()=>setActiveTab(item.id)} className={`nav-btn group ${activeTab===item.id?'active':''} ${item.pro?'pro':''}`} title={item.label}>
                 {item.icon}
-                {item.premium && !isPremium && <span className="absolute -top-1 -right-1 w-3 h-3 bg-white/20 rounded-full flex items-center justify-center text-[7px]">🔒</span>}
                 {item.count!==undefined && <span className={`absolute -top-1 -right-1 text-[9px] font-bold px-1 h-4 rounded-full flex items-center ${activeTab===item.id?'bg-black text-white':'bg-[#E8FF86] text-black'}`}>{item.count}</span>}
-                <span className="absolute left-[60px] hidden group-hover:block bg-white text-black text-[11px] px-3 py-1 rounded-full whitespace-nowrap pointer-events-none shadow-lg">{item.label}</span>
+                <span className="absolute left-[60px] hidden group-hover:block bg-white text-black text-[11px] px-3 py-1 rounded-full whitespace-nowrap shadow-lg">{item.label}</span>
               </button>
             ))}
             <div className="w-full h-[1px] bg-white/10 my-1 mt-auto" />
@@ -407,19 +455,18 @@ export default function Dashboard() {
           </div>
         </aside>
 
-        {/* MAIN */}
         <div className="flex-1 min-w-0">
           <header className="sticky top-0 z-20 px-4 md:px-8 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="md:hidden w-8 h-8 rounded-[10px] bg-white text-black flex items-center justify-center font-bold">D</div>
               <div className="leading-tight">
                 <div className="font-semibold text-[14px] tracking-tight">DukaanWhats.pk</div>
-                <div className="text-[10px] text-white/40 tracking-wide">GREEN GLASS OS • {theme}</div>
+                <div className="text-[10px] text-white/40 tracking-wide">ANIMATED GREEN OS • {theme}</div>
               </div>
               <div className="hidden md:flex ml-4"><CurrentPlanButton /></div>
             </div>
             <div className="flex items-center gap-2">
-              <Link href={slug ? `/s/${slug}` : '#'} target="_blank" className="h-9 px-5 bg-white text-black rounded-full text-[12px] font-semibold hover:bg-white/90 transition">View Store ↗</Link>
+              <Link href={slug ? `/s/${slug}` : '#'} target="_blank" className="h-9 px-5 bg-white text-black rounded-full text-[12px] font-semibold hover:bg-white/90">View Store ↗</Link>
             </div>
           </header>
 
@@ -433,7 +480,6 @@ export default function Dashboard() {
 
                 <div className="mt-8 mb-3 flex items-center gap-2">
                   <span className="text-[10px] font-bold tracking-widest bg-white text-black px-3 py-1.5 rounded-full">8 ADVANCED THEMES</span>
-                  <span className="text-[11px] text-white/40">{currentPlanId==='basic'?`${basicAllowedAdvancedIds.length}/8 unlocked`:'8/8 unlocked'}</span>
                 </div>
                 <div className="adv-grid">
                   {finalAdvancedList.map(t => { const isActive = theme===t.id; const locked = isThemeLocked(t); return (
@@ -447,20 +493,7 @@ export default function Dashboard() {
                         <div className="w-8 h-full rounded-[8px]" style={{background:t.colors?.accent || '#fff'}} />
                         <div className="flex-1 flex flex-col gap-1.5"><div className="h-2 w-3/4 bg-white/15 rounded-full" /><div className="h-2 w-1/2 bg-white/10 rounded-full" /><div className="mt-auto h-5 w-full bg-white/10 border border-white/10 rounded-[8px]" /></div>
                       </div>
-                      {locked && <div className="adv-card-lock-overlay"><GlassLockIcon size={40} /><div className="text-[10px] font-bold tracking-widest mt-1 text-white">LOCKED</div><div className="mt-2 bg-white text-black text-[10px] px-3 h-7 rounded-full font-bold">UPGRADE Rs. 899</div></div>}
-                    </button>
-                  )})}
-                </div>
-
-                <div className="mt-10 mb-3 flex items-center gap-2">
-                  <span className="text-[10px] font-bold tracking-widest bg-white/10 border border-white/10 px-3 py-1.5 rounded-full text-white">STANDARD</span>
-                </div>
-                <div className="adv-grid">
-                  {filteredStandard.slice(0,6).map(t => { const isActive = theme===t.id; return (
-                    <button key={t.id} onClick={()=>handleThemeClick(t)} className={`adv-card ${isActive?'selected':''} !h-[180px]`}>
-                      {isActive && <span className="absolute top-3 right-3 w-6 h-6 bg-white text-black rounded-full flex items-center justify-center text-[11px] font-bold">✓</span>}
-                      <div className="flex items-center gap-3"><div className="w-9 h-9 rounded-[10px] bg-white/10 flex items-center justify-center text-white">{t.name?.[0]}</div><div><div className="text-[13px] font-semibold text-white">{t.name}</div><div className="text-[9px] text-white/40 uppercase">{t.category}</div></div></div>
-                      <div className="mt-4 w-full h-[56px] rounded-[12px] bg-white/[0.06] border border-white/10" />
+                      {locked && <div className="adv-card-lock-overlay"><GlassLockIcon size={40} /><div className="text-[10px] font-bold tracking-widest mt-1 text-white">LOCKED</div></div>}
                     </button>
                   )})}
                 </div>
@@ -468,21 +501,18 @@ export default function Dashboard() {
                 <div className="mt-10 rounded-[24px] border border-white/10 overflow-hidden clear-panel">
                   <div className="p-5 md:p-6 border-b border-white/10 bg-white/[0.03] flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-3"><span className="bg-white text-black text-[10px] font-bold px-3 py-1.5 rounded-full tracking-widest">6 GLASS THEMES</span><span className="font-semibold text-[13px] text-white">Glass Collection — Premium Only</span></div>
-                    <span className="bg-white/10 border border-white/10 text-[11px] px-3 py-1.5 rounded-full text-white/60">{currentPlanId==='premium'?'All Premium Unlocked ✓':`Locked • Need Premium`}</span>
                   </div>
                   <div className="bg-black/20 relative">
-                    <div className="absolute top-3 right-5 hidden md:flex items-center gap-2 text-[10px] font-mono text-white/30"><span>← Scroll to see all {premiumThemes.length} Glass →</span></div>
                     <div className="glass-container">
                       {premiumThemes.map((t,i)=>{
                         const isActive=theme===t.id;
                         const locked=isThemeLocked(t);
                         const r = isActive ? 0 : (GLASS_TILTS[i % GLASS_TILTS.length]); 
                         return (
-                          <div key={t.id} className={`glass ${isActive?'selected':''}`} data-text={t.name} style={{'--r':r, scrollSnapAlign:'start'} as any} onClick={()=>handleThemeClick(t)}>
+                          <div key={t.id} className={`glass ${isActive?'selected':''}`} style={{'--r':r, scrollSnapAlign:'start'} as any} onClick={()=>handleThemeClick(t)}>
                             <div className="glass-preview-wrap">
                               <div className="glass-preview-header" style={{background:t.colors?.bg || 'rgba(255,255,255,0.12)', color:t.colors?.text || '#fff'}}>
                                 <span className="tracking-widest">{t.id.slice(0,14).toUpperCase()} • PREMIUM</span>
-                                <span className="text-[8px] opacity-60">{locked?'🔒 LOCKED':'✓ UNLOCKED'}</span>
                               </div>
                               <div className="glass-preview-body">
                                 <div className="h-8 rounded-[10px] border border-white/10" style={{background:t.colors?.card || 'rgba(255,255,255,0.08)'}} />
@@ -490,14 +520,7 @@ export default function Dashboard() {
                                 <div className="h-8 rounded-[10px] bg-white/90" />
                               </div>
                             </div>
-                            {isActive && <div className="absolute top-4 right-4 w-7 h-7 bg-white text-black rounded-full flex items-center justify-center text-[12px] font-bold">✓</div>}
-                            {locked && (
-                              <div className="glass-lock-overlay">
-                                <GlassPremiumLock size={56} />
-                                <div className="text-black text-[12px] font-black tracking-widest mt-1">PREMIUM LOCKED</div>
-                                <div className="mt-2 bg-black text-white text-[10px] font-bold px-4 h-8 rounded-full flex items-center">UPGRADE → PREMIUM</div>
-                              </div>
-                            )}
+                            {locked && (<div className="glass-lock-overlay"><GlassPremiumLock size={56} /><div className="text-black text-[12px] font-black tracking-widest mt-1">PREMIUM LOCKED</div></div>)}
                           </div>
                         )
                       })}
@@ -505,28 +528,28 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center pt-8 flex-wrap gap-3">
+                <div className="flex justify-between items-center pt-8">
                   <span className="text-[11px] text-white/30">Products {products.length}/{productLimit===999999?'∞':productLimit}</span>
-                  <button onClick={saveStore} className="h-10 px-6 bg-white text-black text-[13px] font-semibold rounded-full hover:bg-white/90">{saving?'Saving...':'Save Store & Theme'}</button>
+                  <button onClick={saveStore} className="h-10 px-6 bg-white text-black text-[13px] font-semibold rounded-full">Save Store & Theme</button>
                 </div>
               </div>
             )}
 
             {activeTab==='store' && (
               <div className="clear-panel rounded-[28px] p-6 md:p-8">
-                <div className="flex items-center justify-between flex-wrap gap-3"><h2 className="font-semibold text-[15px]">Store Identity</h2>{saved && <span className="bg-[#E8FF86] text-black px-3 h-7 rounded-full text-[11px] font-bold">Saved ✓</span>}</div>
+                <h2 className="font-semibold text-[15px]">Store Identity</h2>
                 <div className="mt-5 clear-glass rounded-[16px] p-4 flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-[12px] ${isPremium?'bg-[#E8FF86] text-black':'bg-white text-black'}`}>{currentPlanDef.name[0]}</div>
+                  <div className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center font-bold">{currentPlanDef.name[0]}</div>
                   <div><div className="text-[13px] font-semibold text-white">{currentPlanDef.name} • {productLimit===999999?'∞':productLimit} products</div><div className="text-[11px] text-white/40">{currentPlanDef.features.join(' • ')}</div></div>
                 </div>
                 <div className="mt-6 grid md:grid-cols-2 gap-4">
                   <div><label className="text-[10px] font-bold tracking-widest uppercase text-white/40">Business Name</label><input value={businessName} onChange={e=>setBusinessName(e.target.value)} className="mt-2 w-full h-11 px-4 rounded-[12px] clear-input text-[13px] text-white" /></div>
-                  <div><label className="text-[10px] font-bold tracking-widest uppercase text-white/40">WhatsApp Number</label><input value={whatsapp} onChange={e=>setWhatsapp(e.target.value)} placeholder="923001234567" className="mt-2 w-full h-11 px-4 rounded-[12px] clear-input text-[13px] text-white" /></div>
-                  <div className="md:col-span-2"><label className="text-[10px] font-bold tracking-widest uppercase text-white/40">Store Slug</label><input value={slug} onChange={e=>setSlug(e.target.value)} className="mt-2 w-full h-11 px-4 rounded-[12px] clear-input text-[13px] text-white" /><div className="mt-2 text-[11px] text-white/30">Your store: /s/{slug || 'your-slug'}</div></div>
+                  <div><label className="text-[10px] font-bold tracking-widest uppercase text-white/40">WhatsApp Number</label><input value={whatsapp} onChange={e=>setWhatsapp(e.target.value)} className="mt-2 w-full h-11 px-4 rounded-[12px] clear-input text-[13px] text-white" /></div>
+                  <div className="md:col-span-2"><label className="text-[10px] font-bold tracking-widest uppercase text-white/40">Store Slug</label><input value={slug} onChange={e=>setSlug(e.target.value)} className="mt-2 w-full h-11 px-4 rounded-[12px] clear-input text-[13px] text-white" /></div>
                 </div>
-                <div className="mt-6 flex flex-wrap gap-3 items-center">
-                  <button onClick={saveStore} disabled={saving} className="h-11 px-7 bg-white text-black rounded-full text-[13px] font-semibold hover:bg-white/90">{saving?'Saving...':saved?'Saved ✓':'Save Store'}</button>
-                  <button onClick={copyLink} className="h-11 px-6 border border-white/15 bg-white/5 rounded-full text-[13px] font-medium hover:bg-white/10 text-white">{copied?'Copied!':'Copy Link'}</button>
+                <div className="mt-6 flex gap-3">
+                  <button onClick={saveStore} disabled={saving} className="h-11 px-7 bg-white text-black rounded-full text-[13px] font-semibold">{saving?'Saving...':'Save Store'}</button>
+                  <button onClick={copyLink} className="h-11 px-6 border border-white/15 bg-white/5 rounded-full text-[13px] text-white">{copied?'Copied!':'Copy Link'}</button>
                 </div>
                 {profile && (
                   <div className="mt-8">
@@ -542,56 +565,32 @@ export default function Dashboard() {
             {activeTab==='products' && (
               <div className="space-y-4">
                 <div className="clear-panel rounded-[28px] p-6 md:p-8">
-                  <div className="flex items-center justify-between"><h2 className="font-semibold text-[14px] text-white">Add Product — {editingId?'Editing':'New'}</h2><div className="text-[11px] text-white/40">{products.length}/{productLimit===999999?'∞':productLimit}</div></div>
+                  <div className="flex items-center justify-between"><h2 className="font-semibold text-[14px] text-white">Add Product</h2><div className="text-[11px] text-white/40">{products.length}/{productLimit===999999?'∞':productLimit}</div></div>
                   <label className="mt-6 group clear-glass rounded-[20px] border-dashed border-white/15 p-8 flex flex-col items-center justify-center cursor-pointer hover:border-white/25 min-h-[160px]">
-                    <div className="relative z-10 flex flex-col items-center">
                     {previews.length ? (
                       <div className="grid grid-cols-5 gap-2.5 w-full">
-                        {previews.map((src,i)=>(
-                          <div key={i} className="relative group/img">
-                            <img src={src} className="w-full h-[72px] object-cover rounded-[12px] border border-white/20" />
-                            <button type="button" onClick={(e)=>{e.preventDefault(); removeFileAt(i)}} className="absolute -top-2 -right-2 w-5 h-5 bg-white text-black rounded-full text-[10px]">✕</button>
-                          </div>
-                        ))}
-                        <div className="h-[72px] rounded-[12px] border-2 border-dashed border-white/20 bg-white/5 flex flex-col items-center justify-center gap-1 hover:border-white/30">
-                          <span className="text-[16px] text-white">+</span><span className="text-[9px] font-bold tracking-widest text-white/60">ADD</span>
-                        </div>
+                        {previews.map((src,i)=><div key={i} className="relative"><img src={src} className="w-full h-[72px] object-cover rounded-[12px] border border-white/20" /><button type="button" onClick={(e)=>{e.preventDefault(); removeFileAt(i)}} className="absolute -top-2 -right-2 w-5 h-5 bg-white text-black rounded-full text-[10px]">✕</button></div>)}
                       </div>
-                    ) : (
-                      <>
-                        <UploadIcon />
-                        <div className="mt-4 text-center">
-                          <div className="font-semibold text-[14px] text-white">Drop images or click to upload</div>
-                          <div className="mt-2 text-[11px] text-white/40">Your plan <b className="text-white">{currentPlanId.toUpperCase()}</b> allows <b className="text-white">{imageLimit===999999?'Unlimited':imageLimit}</b> images</div>
-                        </div>
-                      </>
-                    )}
-                    </div>
+                    ) : (<><UploadIcon /><div className="mt-4 text-[14px] font-semibold text-white">Drop images or click</div></>)}
                     <input type="file" accept="image/*" multiple onChange={handleFile} className="hidden" />
                   </label>
                   <div className="mt-6 grid md:grid-cols-2 gap-3">
                     <input placeholder="Product name *" value={prodName} onChange={e=>setProdName(e.target.value)} className="w-full h-11 px-4 rounded-[12px] clear-input text-[13px] text-white" />
-                    <input placeholder="Price Rs. 3500 *" type="number" value={prodPrice} onChange={e=>setProdPrice(e.target.value)} className="w-full h-11 px-4 rounded-[12px] clear-input text-[13px] text-white" />
+                    <input placeholder="Price Rs. *" type="number" value={prodPrice} onChange={e=>setProdPrice(e.target.value)} className="w-full h-11 px-4 rounded-[12px] clear-input text-[13px] text-white" />
                     <input placeholder="Compare price" type="number" value={prodOrigPrice} onChange={e=>setProdOrigPrice(e.target.value)} className="w-full h-11 px-4 rounded-[12px] clear-input text-[13px] text-white" />
-                    <select value={prodCategory} onChange={e=>setProdCategory(e.target.value)} className="w-full h-11 px-4 rounded-[12px] clear-input text-[13px] text-white">
-                      <option className="bg-black">General</option><option className="bg-black">Clothing</option><option className="bg-black">Shoes</option><option className="bg-black">Bags</option><option className="bg-black">Beauty</option><option className="bg-black">Electronics</option><option className="bg-black">Food</option><option className="bg-black">Other</option>
-                    </select>
-                    <input placeholder="Stock qty" type="number" value={prodStock} onChange={e=>setProdStock(e.target.value)} className="w-full h-11 px-4 rounded-[12px] clear-input text-[13px] text-white" />
+                    <select value={prodCategory} onChange={e=>setProdCategory(e.target.value)} className="w-full h-11 px-4 rounded-[12px] clear-input text-[13px] text-white"><option className="bg-black">General</option><option className="bg-black">Clothing</option><option className="bg-black">Shoes</option><option className="bg-black">Other</option></select>
+                    <input placeholder="Stock" type="number" value={prodStock} onChange={e=>setProdStock(e.target.value)} className="w-full h-11 px-4 rounded-[12px] clear-input text-[13px] text-white" />
                     <input placeholder="Sizes" value={prodSizes} onChange={e=>setProdSizes(e.target.value)} className="w-full h-11 px-4 rounded-[12px] clear-input text-[13px] text-white" />
                     <input placeholder="Colors" value={prodColors} onChange={e=>setProdColors(e.target.value)} className="md:col-span-2 w-full h-11 px-4 rounded-[12px] clear-input text-[13px] text-white" />
                     <textarea placeholder="Description..." value={prodDesc} onChange={e=>setProdDesc(e.target.value)} className="md:col-span-2 w-full min-h-[80px] p-4 rounded-[12px] clear-input text-[13px] text-white resize-none" />
                   </div>
                   <div className="mt-6 flex justify-end gap-2">
-                    {editingId && <button onClick={cancelEdit} className="h-11 px-6 border border-white/15 bg-white/5 rounded-full text-[13px] font-medium hover:bg-white/10 text-white">Cancel</button>}
-                    <button onClick={addProduct} disabled={uploading || (!editingId && products.length>=productLimit)} className="h-11 px-7 bg-white text-black text-[13px] font-semibold rounded-full disabled:opacity-40 hover:bg-white/90">{uploading?'Uploading...':`${editingId?'Update':'Add'} Product →`}</button>
+                    {editingId && <button onClick={cancelEdit} className="h-11 px-6 border border-white/15 bg-white/5 rounded-full text-[13px] text-white">Cancel</button>}
+                    <button onClick={addProduct} disabled={uploading} className="h-11 px-7 bg-white text-black text-[13px] font-semibold rounded-full">{uploading?'Uploading...':`${editingId?'Update':'Add'} Product →`}</button>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {products.length===0 ? (
-                    <div className="col-span-2 md:col-span-4 clear-glass rounded-[20px] p-12 flex flex-col items-center justify-center text-center"><UploadIcon className="w-12 h-12" /><div className="mt-4 font-semibold text-[14px] text-white">No products yet</div></div>
-                  ) : products.map(p => (
-                    <PremiumProductCard key={p.id} p={p} onEdit={startEdit} onDelete={deleteProduct} themeId={theme} imageLimit={imageLimit} />
-                  ))}
+                  {products.map(p => (<PremiumProductCard key={p.id} p={p} onEdit={startEdit} onDelete={deleteProduct} themeId={theme} imageLimit={imageLimit} />))}
                 </div>
               </div>
             )}
@@ -601,10 +600,7 @@ export default function Dashboard() {
                 {!profile ? <div className="p-8 text-center text-white/50">Loading...</div> : currentPlanId === 'premium' ? (
                   <div className="clear-panel rounded-[28px] p-2"><RealAnalytics userId={profile!.id} currentPlanId={currentPlanId} /></div>
                 ) : (
-                  <div className="clear-panel rounded-[28px] p-8 text-center">
-                    <h3 className="font-semibold text-[16px] text-white">Analytics Locked — Premium Only</h3>
-                    <button onClick={()=>setActiveTab('payments')} className="mt-4 h-10 px-6 bg-white text-black rounded-full text-[12px] font-semibold">Upgrade → Premium</button>
-                  </div>
+                  <div className="clear-panel rounded-[28px] p-8 text-center"><h3 className="font-semibold text-[16px] text-white">Analytics Locked — Premium Only</h3><button onClick={()=>setActiveTab('payments')} className="mt-4 h-10 px-6 bg-white text-black rounded-full text-[12px] font-semibold">Upgrade → Premium</button></div>
                 )}
               </div>
             )}
@@ -614,8 +610,8 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between flex-wrap gap-3">
                   <h2 className="font-semibold text-[16px] text-white">Pro Plans — Till {TILL_ID}</h2>
                   <div className="flex items-center gap-2">
-                    <button onClick={()=>setBilling('monthly')} className={`h-8 px-4 rounded-full text-[11px] font-bold border transition ${billing==='monthly'?'bg-white text-black border-white':'bg-white/10 text-white/60 border-white/10'}`}>Monthly</button>
-                    <button onClick={()=>setBilling('yearly')} className={`h-8 px-4 rounded-full text-[11px] font-bold border transition ${billing==='yearly'?'bg-white text-black border-white':'bg-white/10 text-white/60 border-white/10'}`}>Yearly Save 22%</button>
+                    <button onClick={()=>setBilling('monthly')} className={`h-8 px-4 rounded-full text-[11px] font-bold border ${billing==='monthly'?'bg-white text-black border-white':'bg-white/10 text-white/60 border-white/10'}`}>Monthly</button>
+                    <button onClick={()=>setBilling('yearly')} className={`h-8 px-4 rounded-full text-[11px] font-bold border ${billing==='yearly'?'bg-white text-black border-white':'bg-white/10 text-white/60 border-white/10'}`}>Yearly</button>
                   </div>
                 </div>
                 <div className="mt-6 grid md:grid-cols-3 gap-4">
@@ -626,7 +622,7 @@ export default function Dashboard() {
                     <div className="mt-3 bg-white rounded-[14px] p-3 flex justify-center"><img src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=JAZZCASH_TILL_${TILL_ID}`} alt="QR" className="w-[120px] h-[120px]"/></div>
                   </div>
                   <div className="md:col-span-2 space-y-4">
-                    <div className="radio-container" style={{"--total-radio": plans.length} as any}>
+                    <div className="radio-container">
                       {plans.map(p=>{
                         const displayPrice = getDisplayPrice(p)
                         const isSelected = selectedPlan?.id===p.id
@@ -636,7 +632,7 @@ export default function Dashboard() {
                             <input type="radio" id={`dash-${p.id}`} name="dash-plan" checked={isSelected} onChange={()=>setSelectedPlan(p)} />
                             <label htmlFor={`dash-${p.id}`} onClick={()=>setSelectedPlan(p)} className={isCurrent?'!bg-white/15 !border-white' : ''}>
                               <div className="flex justify-between items-start gap-3">
-                                <div className="min-w-0 flex-1"><div className="flex items-center gap-2 flex-wrap"><span className="font-bold text-[14px] text-white">{p.name}</span>{isCurrent && <span className="bg-white text-black text-[8px] px-2 h-5 rounded-full font-bold">CURRENT</span>}<span className={`text-[10px] px-2.5 h-6 rounded-full font-bold ${p.id==='premium'?'bg-[#E8FF86] text-black':p.id==='advanced'?'bg-white text-black':'bg-white/10 text-white border border-white/10'}`}>Rs. {displayPrice}/mo</span></div><div className="text-[11px] mt-1.5 opacity-60 text-white">{p.features.join(' • ')}</div></div><div className="text-right shrink-0"><div className="font-bold text-[14px] text-white">Rs. {displayPrice}</div></div>
+                                <div className="min-w-0 flex-1"><div className="flex items-center gap-2 flex-wrap"><span className="font-bold text-[14px] text-white">{p.name}</span>{isCurrent && <span className="bg-white text-black text-[8px] px-2 h-5 rounded-full font-bold">CURRENT</span>}<span className={`text-[10px] px-2.5 h-6 rounded-full font-bold ${p.id==='premium'?'bg-[#E8FF86] text-black':p.id==='advanced'?'bg-white text-black':'bg-white/10 text-white border border-white/10'}`}>Rs. {displayPrice}/mo</span></div><div className="text-[11px] mt-1.5 opacity-60 text-white">{p.features.join(' • ')}</div></div>
                               </div>
                             </label>
                           </div>
@@ -645,8 +641,8 @@ export default function Dashboard() {
                     </div>
                     {selectedPlan && selectedPlan.monthly>0 && (
                       <div className="rounded-[20px] border border-white/15 bg-white/10 backdrop-blur p-5">
-                        <input value={txnId} onChange={e=>setTxnId(e.target.value)} placeholder={`Txn ID after paying Rs. ${billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} to Till ${TILL_ID}`} className="w-full h-12 px-4 rounded-[12px] border bg-black/30 text-white border-white/10 text-[12px] font-mono"/>
-                        <button onClick={handleBuyPlan} disabled={purchasing} className="mt-3 w-full h-12 bg-white text-black rounded-full font-bold text-[13px]">{purchasing?'Submitting...':`I Paid Rs. ${billing==='monthly'?selectedPlan.monthly:selectedPlan.yearlyTotal} — Activate ${selectedPlan.name}`}</button>
+                        <input value={txnId} onChange={e=>setTxnId(e.target.value)} placeholder={`Txn ID after paying to Till ${TILL_ID}`} className="w-full h-12 px-4 rounded-[12px] border bg-black/30 text-white border-white/10 text-[12px] font-mono"/>
+                        <button onClick={handleBuyPlan} disabled={purchasing} className="mt-3 w-full h-12 bg-white text-black rounded-full font-bold text-[13px]">{purchasing?'Submitting...':`I Paid — Activate ${selectedPlan.name}`}</button>
                       </div>
                     )}
                   </div>
@@ -656,7 +652,6 @@ export default function Dashboard() {
           </main>
         </div>
 
-        {/* MOBILE BOTTOM NAV */}
         <div className="md:hidden fixed bottom-4 left-4 right-4 z-30">
           <div className="left-glass rounded-[24px] p-2 flex items-center justify-between gap-1">
             {navItems.map((item:any)=>(
@@ -669,18 +664,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {errorMsg && <div className="fixed bottom-24 md:bottom-4 right-4 z-50 bg-red-500/90 backdrop-blur text-white px-4 py-2 rounded-full text-[12px] shadow-lg">{errorMsg}</div>}
-      {showStatusModal && (
-        <div className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-xl flex items-center justify-center p-4">
-          <div className="clear-panel rounded-[28px] w-full max-w-[380px] overflow-hidden">
-            <div className="bg-white/5 text-white p-8 text-center border-b border-white/10">
-              <div className="w-16 h-16 bg-[#E8FF86] rounded-full flex items-center justify-center mx-auto"><span className="text-[28px] text-black">✓</span></div>
-              <h2 className="font-bold text-[20px] mt-4">{showStatusModal.type==='approved'?'Payment Approved!':'Payment Rejected'}</h2>
-            </div>
-            <div className="p-6"><button onClick={()=>setShowStatusModal(null)} className="w-full h-12 bg-white text-black rounded-full font-bold text-[13px]">Continue →</button></div>
-          </div>
-        </div>
-      )}
+      {errorMsg && <div className="fixed bottom-24 md:bottom-4 right-4 z-50 bg-red-500/90 backdrop-blur text-white px-4 py-2 rounded-full text-[12px]">{errorMsg}</div>}
     </div>
   )
 }
