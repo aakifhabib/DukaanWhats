@@ -642,10 +642,14 @@ export default function Dashboard() {
                 <button onClick={copyLink} className="h-11 px-6 border border-white/15 bg-white/5 rounded-full text-[13px] font-medium hover:bg-white/10 text-white transition-colors">{copied?'Copied!':'Copy Link'}</button>
                 <span className="text-[11px] text-white/30">{slug ? `/s/${slug}` : ''}</span>
               </div>
-              <div className="mt-8">
-                <h3 className="font-bold text-[13px] text-white">Premium Editor</h3>
-                <div className="mt-3 liquid-card rounded-[16px] p-4"><PremiumThemeEditor themeId={theme} custom={premiumCustom} onChange={setPremiumCustom} /></div>
-              </div>
+              {profile && (
+                <div className="mt-8">
+                  <h3 className="font-bold text-[13px] text-white">Premium Editor</h3>
+                  <div className="mt-3 liquid-card rounded-[16px] p-2">
+                    <PremiumThemeEditor profile={{...profile, premium_custom: premiumCustom} as any} onSave={(d:any)=>{ setPremiumCustom(d); setProfile({...profile, premium_custom: d} as any) }} />
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
