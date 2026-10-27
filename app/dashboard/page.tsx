@@ -132,7 +132,7 @@ const PremiumProductCard = ({ p, onEdit, onDelete, themeId, imageLimit }: { p: a
           <span className="text-[11px] text-zinc-500">{images.length} img</span>
         </div>
         <div className="mt-3 flex gap-2">
-          <button onClick={()=>onEdit(p)} className="flex-1 h-8 bg-black text-zinc-900 rounded-full text-[11px] font-bold">Edit</button>
+          <button onClick={()=>onEdit(p)} className="flex-1 h-8 bg-black text-white rounded-full text-[11px] font-bold">Edit</button>
           <button onClick={()=>onDelete(p.id)} className="h-8 w-8 border rounded-full flex items-center justify-center text-[12px]">✕</button>
         </div>
       </div>
@@ -471,11 +471,11 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen w-full relative bg-[#F8F7F5] text-zinc-900 selection:bg-black selection:text-zinc-900">
-            {/* ANALYTICS COLOURS BACKGROUND - MATCHES REAL ANALYTICS PALETTE */}
+            {/* ANALYTICS COLOURS - WARMER, LESS BRIGHT */}
       <div className="fixed inset-0 z-0 overflow-hidden">
         <div className="absolute inset-0 bg-[#F8F7F5]" />
         <div className="absolute inset-0 bg-gradient-to-br from-[#FFFFFF] via-[#F8F7F5] to-[#EDE9E2]" />
-        <div className="absolute rounded-full blur-[60px] will-change-transform" style={{ width:'700px', height:'700px', left:'-10%', top:'-15%', background:'radial-gradient(circle, rgba(232,255,134,0.42) 0%, rgba(232,255,134,0.14) 40%, transparent 75%)', animation:'blob1 14s ease-in-out infinite' }} />
+        <div className="absolute rounded-full blur-[60px] will-change-transform" style={{ width:'700px', height:'700px', left:'-10%', top:'-15%', background:'radial-gradient(circle, rgba(232,255,134,0.18) 0%, rgba(232,255,134,0.08) 40%, transparent 75%)', animation:'blob1 14s ease-in-out infinite' }} />
         <div className="absolute rounded-full blur-[70px] will-change-transform" style={{ width:'800px', height:'800px', right:'-15%', top:'10%', background:'radial-gradient(circle, rgba(0,0,0,0.06) 0%, rgba(0,0,0,0.02) 45%, transparent 75%)', animation:'blob2 18s ease-in-out infinite' }} />
         <div className="absolute rounded-full blur-[80px] will-change-transform" style={{ width:'900px', height:'900px', left:'20%', bottom:'-30%', background:'radial-gradient(circle, rgba(74,222,128,0.32) 0%, rgba(232,255,134,0.32) 50%, transparent 75%)', animation:'blob3 22s ease-in-out infinite' }} />
         <div className="absolute rounded-full blur-[50px] will-change-transform" style={{ width:'500px', height:'500px', left:'55%', top:'35%', background:'radial-gradient(circle, rgba(187,247,208,0.22) 0%, rgba(232,255,134,0.32) 60%, transparent 80%)', animation:'blob4 11s ease-in-out infinite' }} />
@@ -608,12 +608,11 @@ export default function Dashboard() {
         .liquid-nav-btn{
           width: 48px; height: 48px; border-radius: 16px;
           display:flex; align-items:center; justify-content:center;
-          background: linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 100%);
-          backdrop-filter: blur(20px) saturate(160%);
-          border: 1px solid rgba(255,255,255,0.14);
-          border-top-color: rgba(255,255,255,0.26);
-          box-shadow: inset 0 1px 0.5px rgba(255,255,255,0.36), 0 2px 8px rgba(0,0,0,0.12);
-          color: rgba(255,255,255,0.60);
+          background: #FFFFFF;
+          border: 1px solid rgba(0,0,0,0.07);
+          border-top-color: #fff;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.05), inset 0 1px 0 #fff;
+          color: #444;
           transition: all 0.35s cubic-bezier(0.2,0.8,0.2,1);
           position:relative;
           overflow:hidden;
@@ -625,14 +624,15 @@ export default function Dashboard() {
         }
         .liquid-nav-btn:hover::before{ opacity:1; }
         .liquid-nav-btn:hover{
-          background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 100%);
-          color: white; transform: translateY(-2px) scale(1.04);
-          box-shadow: inset 0 1px 0.8px rgba(255,255,255,0.55), 0 8px 24px rgba(0,0,0,0.22);
+          background: #FAFAFA;
+          color: #111; transform: translateY(-2px) scale(1.04);
+          border-color: rgba(0,0,0,0.12);
+          box-shadow: 0 8px 24px rgba(0,0,0,0.08);
         }
         .liquid-nav-btn.active{
-          background: linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.80) 100%);
-          color: black; border-color: rgba(255,255,255,0.90);
-          box-shadow: inset 0 1px 0.8px rgba(255,255,255,1), 0 8px 24px rgba(255,255,255,0.28);
+          background: #0A0A0A;
+          color: white; border-color: #0A0A0A;
+          box-shadow: 0 8px 20px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.12);
           transform: translateY(-1px);
         }
         .liquid-nav-btn.pro.active{
@@ -692,12 +692,12 @@ export default function Dashboard() {
       <div className="relative z-10 flex min-h-screen">
         <aside className="hidden md:flex w-[96px] shrink-0 pl-4 py-4">
           <div className="liquid-nav rounded-[28px] p-3 flex flex-col items-center gap-3 sticky top-4 h-[calc(100vh-32px)] float-section">
-            <div className="w-10 h-10 rounded-[14px] liquid-glass flex items-center justify-center font-black text-[14px] text-zinc-900">D</div>
+            <div className="w-10 h-10 rounded-[14px] bg-black text-white flex items-center justify-center font-black text-[14px] shadow-lg">D</div>
             <div className="w-full h-[1px] bg-white/10" />
             {navItems.map((item:any)=>(
               <button key={item.id} onClick={()=>setActiveTab(item.id)} className={`liquid-nav-btn group ${activeTab===item.id?'active':''} ${item.pro?'pro':''}`} title={item.label}>
                 {item.icon}
-                {item.count!==undefined && <span className={`absolute -top-1 -right-1 text-[9px] font-bold px-1 h-4 rounded-full flex items-center ${activeTab===item.id?'bg-black text-zinc-900':'bg-[#E8FF86] text-black'}`}>{item.count}</span>}
+                {item.count!==undefined && <span className={`absolute -top-1 -right-1 text-[9px] font-bold px-1 h-4 rounded-full flex items-center ${activeTab===item.id?'bg-black text-white':'bg-[#E8FF86] text-black'}`}>{item.count}</span>}
                 <span className="absolute left-[60px] hidden group-hover:block liquid-glass-pill text-black text-[11px] px-3 py-1 rounded-full whitespace-nowrap shadow-xl">{item.label}</span>
               </button>
             ))}
@@ -734,7 +734,7 @@ export default function Dashboard() {
 
                 <div className="mt-6 flex flex-wrap gap-2">
                   {(['all','clothing','shoes','beauty','tech','food','advanced'] as any[]).map(cat=>(
-                    <button key={cat} onClick={()=>setFilter(cat)} className={`btn-elegant h-8 px-4 rounded-full text-[11px] font-bold tracking-widest capitalize transition-all ${filter===cat?'bg-black text-zinc-900 shadow-[0_4px_16px_rgba(0,0,0,0.15)] scale-[1.05]':'bg-white border border-black/10 text-zinc-700 hover:bg-zinc-50 hover:text-black hover:scale-[1.03]'}`}>{cat}</button>
+                    <button key={cat} onClick={()=>setFilter(cat)} className={`btn-elegant h-8 px-4 rounded-full text-[11px] font-bold tracking-widest capitalize transition-all ${filter===cat?'bg-black text-white shadow-[0_4px_16px_rgba(0,0,0,0.15)] scale-[1.05]':'bg-white border border-black/10 text-zinc-700 hover:bg-zinc-50 hover:text-black hover:scale-[1.03]'}`}>{cat}</button>
                   ))}
                 </div>
 
