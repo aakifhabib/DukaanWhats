@@ -474,7 +474,7 @@ export default function Dashboard() {
             {/* ANALYTICS COLOURS BACKGROUND - MATCHES REAL ANALYTICS PALETTE */}
       <div className="fixed inset-0 z-0 overflow-hidden">
         <div className="absolute inset-0 bg-[#F8F7F5]" />
-        <div className="absolute inset-0 bg-gradient-to-br from-white via-[#F8F7F5] to-[#F2F0EB]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#FFFFFF] via-[#F8F7F5] to-[#EDE9E2]" />
         <div className="absolute rounded-full blur-[60px] will-change-transform" style={{ width:'700px', height:'700px', left:'-10%', top:'-15%', background:'radial-gradient(circle, rgba(232,255,134,0.42) 0%, rgba(232,255,134,0.14) 40%, transparent 75%)', animation:'blob1 14s ease-in-out infinite' }} />
         <div className="absolute rounded-full blur-[70px] will-change-transform" style={{ width:'800px', height:'800px', right:'-15%', top:'10%', background:'radial-gradient(circle, rgba(0,0,0,0.06) 0%, rgba(0,0,0,0.02) 45%, transparent 75%)', animation:'blob2 18s ease-in-out infinite' }} />
         <div className="absolute rounded-full blur-[80px] will-change-transform" style={{ width:'900px', height:'900px', left:'20%', bottom:'-30%', background:'radial-gradient(circle, rgba(74,222,128,0.32) 0%, rgba(232,255,134,0.32) 50%, transparent 75%)', animation:'blob3 22s ease-in-out infinite' }} />
@@ -677,9 +677,9 @@ export default function Dashboard() {
         .glass-preview-body{display:flex; flex-direction:column; gap:8px; flex:1}
         .glass-lock-overlay{position:absolute; inset:0; background:rgba(248,247,245,0.92); backdrop-filter:blur(16px); border-radius:24px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:16px}
         .adv-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:16px}
-        .adv-card{position:relative; height:210px; background: linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 100%); backdrop-filter:blur(28px) saturate(160%); border:1px solid rgba(255,255,255,0.16); border-top-color: rgba(255,255,255,0.28); border-radius:22px; padding:16px; text-align:left; transition:all 0.4s cubic-bezier(0.2,0.8,0.2,1); overflow:hidden; box-shadow: inset 0 1px 0.6px rgba(255,255,255,0.35), 0 8px 24px rgba(0,0,0,0.14);}
-        .adv-card:hover{border-color:rgba(255,255,255,0.26); transform:translateY(-4px) scale(1.02); background: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.06) 100%); box-shadow: inset 0 1px 0.8px rgba(255,255,255,0.45), 0 16px 36px rgba(0,0,0,0.22);}
-        .adv-card.selected{border-color:rgba(255,255,255,0.85); background:rgba(255,255,255,0.14); box-shadow:0 0 0 1px rgba(255,255,255,0.5), inset 0 1px 0.8px rgba(255,255,255,0.6)}
+        .adv-card{position:relative; height:210px; background: #FFFFFF; border:1px solid rgba(0,0,0,0.07); border-top-color: #fff; border-radius:22px; padding:16px; text-align:left; transition:all 0.35s cubic-bezier(0.2,0.8,0.2,1); overflow:hidden; box-shadow: 0 1px 0 0 rgba(255,255,255,1) inset, 0 8px 24px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04);}
+        .adv-card:hover{border-color:rgba(0,0,0,0.12); transform:translateY(-4px) scale(1.02); background: #FFFFFF; box-shadow: 0 16px 36px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.06);}
+        .adv-card.selected{border-color:#000; background:#FFFEF8; box-shadow:0 0 0 1.5px #000, 0 12px 32px rgba(0,0,0,0.12)}
         .adv-card-lock-overlay{position:absolute; inset:0; background:rgba(10,10,12,0.78); backdrop-filter:blur(18px); display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:22px; padding:12px}
         .radio-container{position:relative; display:flex; flex-direction:column; gap:12px;}
         .radio-container input{display:none}
@@ -726,15 +726,15 @@ export default function Dashboard() {
 
           <main className="px-4 md:px-8 pb-28 md:pb-8 space-y-6 max-w-[1200px]">
             {activeTab==='themes' && (
-              <div className="liquid-glass-card rounded-[32px] p-6 md:p-8 float-section">
+              <div className="bg-white border border-black/[0.06] rounded-[28px] p-6 md:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.06)]">
                 <div className="flex flex-wrap justify-between gap-3">
-                  <h2 className="text-[15px] font-bold">Themes <span className="font-normal text-white/40 text-[13px]">— {currentPlanDef.name} • {productLimit===999999?'∞':productLimit} products</span></h2>
+                  <h2 className="text-[15px] font-bold text-zinc-900">Themes <span className="font-medium text-zinc-500 text-[13px]">— {currentPlanDef.name} • {productLimit===999999?'∞':productLimit} products • Analytics palette</span></h2>
                   <CurrentPlanButton />
                 </div>
 
                 <div className="mt-6 flex flex-wrap gap-2">
                   {(['all','clothing','shoes','beauty','tech','food','advanced'] as any[]).map(cat=>(
-                    <button key={cat} onClick={()=>setFilter(cat)} className={`h-8 px-4 rounded-full text-[11px] font-bold tracking-widest capitalize transition-all ${filter===cat?'bg-white text-black shadow-[0_4px_16px_rgba(255,255,255,0.25)] scale-[1.05]':'liquid-glass text-white/60 hover:text-white hover:scale-[1.03]'}`}>{cat}</button>
+                    <button key={cat} onClick={()=>setFilter(cat)} className={`btn-elegant h-8 px-4 rounded-full text-[11px] font-bold tracking-widest capitalize transition-all ${filter===cat?'bg-black text-white shadow-[0_4px_16px_rgba(0,0,0,0.15)] scale-[1.05]':'bg-white border border-black/10 text-zinc-700 hover:bg-zinc-50 hover:text-black hover:scale-[1.03]'}`}>{cat}</button>
                   ))}
                 </div>
 
@@ -748,7 +748,7 @@ export default function Dashboard() {
                       {isActive && <span className="absolute top-3 right-3 w-6 h-6 bg-white text-black rounded-full flex items-center justify-center text-[11px] font-bold shadow-lg">✓</span>}
                       <div className="flex items-center gap-3 w-full">
                         <div className="w-9 h-9 rounded-[10px] liquid-glass flex items-center justify-center text-white text-[13px] group-hover:scale-110 transition-transform">{t.name?.[0]}</div>
-                        <div className="min-w-0 flex-1"><div className="text-[13px] font-bold truncate text-white">{t.name}</div><div className="text-[9px] text-white/40 uppercase tracking-widest mt-0.5">ADVANCED • {t.category}</div></div>
+                        <div className="min-w-0 flex-1"><div className="text-[13px] font-bold truncate text-zinc-900">{t.name}</div><div className="text-[9px] text-zinc-500 uppercase tracking-widest font-medium mt-0.5">ADVANCED • {t.category}</div></div>
                       </div>
                       <div className="mt-4 w-full h-[84px] rounded-[12px] bg-white/[0.05] border border-white/10 p-2 flex gap-2">
                         <div className="w-8 h-full rounded-[8px] transition-all group-hover:scale-105" style={{background:t.colors?.accent || '#fff'}} />
@@ -768,13 +768,13 @@ export default function Dashboard() {
                   {filteredStandard.slice(0,6).map((t:any) => { const isActive = theme===t.id; return (
                     <button key={t.id} onClick={()=>setTheme(t.id)} className={`adv-card !h-[180px] group ${isActive?'selected':''}`}>
                       {isActive && <span className="absolute top-3 right-3 w-6 h-6 bg-white text-black rounded-full flex items-center justify-center text-[11px] font-bold">✓</span>}
-                      <div className="flex items-center gap-3"><div className="w-9 h-9 rounded-[10px] liquid-glass flex items-center justify-center text-white group-hover:scale-110 transition-transform">{t.name?.[0]}</div><div><div className="text-[13px] font-bold text-white">{t.name}</div><div className="text-[9px] text-white/40 uppercase">{t.category}</div></div></div>
+                      <div className="flex items-center gap-3"><div className="w-9 h-9 rounded-[10px] bg-zinc-100 border flex items-center justify-center text-zinc-900 font-bold group-hover:scale-110 transition-transform">{t.name?.[0]}</div><div><div className="text-[13px] font-bold text-zinc-900">{t.name}</div><div className="text-[9px] text-zinc-500 uppercase font-medium">{t.category}</div></div></div>
                       <div className="mt-4 w-full h-[56px] rounded-[12px] bg-white/[0.05] border border-white/10 group-hover:bg-white/[0.08] transition-colors" />
                     </button>
                   )})}
                 </div>
 
-                <div className="mt-10 rounded-[28px] border border-white/10 overflow-hidden liquid-glass-card">
+                <div className="mt-10 rounded-[28px] border border-black/10 overflow-hidden bg-white shadow-[0_8px_32px_rgba(0,0,0,0.06)]">
                   <div className="p-5 md:p-6 border-b border-white/10 bg-white/[0.03] flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-3"><span className="bg-white text-black text-[10px] font-black px-3 py-1.5 rounded-full tracking-widest animate-pulse">6 GLASS THEMES</span><span className="font-bold text-[13px] text-white">Glass Collection — Premium Only</span></div>
                     <span className="liquid-glass-pill text-[11px] px-3 py-1.5 rounded-full text-white/60">{currentPlanId==='premium'?'All Premium Unlocked ✓':`Locked • Need Premium Rs. 2999/mo`}</span>
