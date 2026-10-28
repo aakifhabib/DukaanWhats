@@ -34,31 +34,164 @@ const LiveDot = () => (
 )
 
 /* -------------------- MINI STOREFRONT -------------------- */
+
 function MiniStorefront({ theme }: { theme: any }) {
+  const id = theme?.id || ''
   const c = theme?.colors || {}
-  const bg = c.bg || theme?.bg || '#F8F7F5'
-  const accent = c.accent || theme?.accent || '#000'
-  const card = c.card || theme?.card || '#ffffff'
-  const border = c.border || theme?.border || '#e4e4e7'
-  const text = c.text || theme?.text || '#0A0A0A'
-  return (
-    <div className="h-full w-full flex flex-col" style={{ background: bg, padding: 10 }}>
-      <div className="flex items-center justify-between mb-2">
-        <div className="h-1.5 w-10 rounded-full" style={{ background: accent }} />
-        <div className="h-1 w-4 rounded-full opacity-30" style={{ background: text }} />
+  const bg = c.bg || '#F8F7F5'
+  const text = c.text || '#0A0A0A'
+  const accent = c.accent || '#000'
+  const card = c.card || '#ffffff'
+  const border = c.border || '#e4e4e7'
+  const img1 = 'https://images.unsplash.com/photo-1558655146-d09347e92766?w=200&h=200&fit=crop'
+  const img2 = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&h=200&fit=crop'
+  const img3 = 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=200&h=200&fit=crop'
+
+  if (id === 'spike-premium') {
+    return (
+      <div className="h-full w-full flex flex-col bg-[#FCFBF9] text-[#0A0A0A] overflow-hidden">
+        <div className="h-[14px] bg-black text-[5px] text-white flex items-center justify-center tracking-[0.2em] font-bold">EDITORIAL • MINIMAL BY AAKIF • LUXURY • FREE SHIPPING</div>
+        <div className="px-2 py-1.5 flex items-center justify-between border-b border-black/[0.06] bg-white/80 backdrop-blur">
+          <div className="text-[7px] font-black tracking-[0.15em]">SPIKE • Shoes Shalwar</div>
+          <div className="flex gap-0.5"><div className="w-2 h-2 rounded-full bg-black" /><div className="w-2 h-2 rounded-full bg-zinc-200" /></div>
+        </div>
+        <div className="px-2 py-2 flex gap-1.5">
+          <div className="flex-1">
+            <div className="h-3 px-1 bg-black text-white text-[5px] rounded-full inline-flex items-center font-bold">MINIMAL • 2024</div>
+            <div className="mt-1 text-[10px] font-black leading-[0.9] tracking-[-0.02em]">Cool and<br/>Aakif style</div>
+            <div className="mt-1 text-[5px] text-black/50 leading-[1.2] w-[90%]">Clean lines, intentional whitespace, premium finish.</div>
+            <div className="mt-1.5 flex gap-1">
+              {['All','Nike','Adidas'].map(b=> <div key={b} className="h-3 px-1.5 bg-black text-white rounded-full text-[5px] font-bold flex items-center">{b}</div>)}
+            </div>
+          </div>
+          <div className="w-[46%] aspect-[4/5] rounded-[10px] overflow-hidden border border-black/10 bg-white"><img src={img1} className="w-full h-full object-cover" alt="" /></div>
+        </div>
+        <div className="px-2 pb-2 grid grid-cols-3 gap-1 mt-auto">
+          {[img1,img2,img3].map((im,i)=><div key={i} className="aspect-square rounded-[6px] overflow-hidden bg-white border"><img src={im} className="w-full h-full object-cover" alt="" /></div>)}
+        </div>
       </div>
-      <div className="flex-1 grid grid-cols-3 gap-1.5 mb-1.5">
-        {[1, 2, 3].map(i => (
-          <div key={i} className="rounded flex flex-col overflow-hidden" style={{ background: card, border: '1px solid ' + border, padding: 3 }}>
-            <div className="flex-1 rounded opacity-20" style={{ background: text }} />
-            <div className="h-0.5 w-full rounded mt-1 opacity-30" style={{ background: text }} />
+    )
+  }
+
+  if (id === 'shoe-app-premium') {
+    return (
+      <div className="h-full w-full flex flex-col bg-[#F2F0FF] p-1.5 gap-1 overflow-hidden">
+        <div className="h-6 bg-white rounded-[8px] border border-black/5 flex items-center justify-between px-1.5">
+          <div className="flex items-center gap-1"><div className="w-3 h-3 bg-black text-white rounded-[4px] grid place-items-center text-[6px] font-black">S</div><div className="flex gap-0.5">{['All','Nike'].map(f=> <div key={f} className="h-2.5 px-1 bg-black text-white rounded-full text-[5px] font-bold flex items-center">{f}</div>)}</div></div>
+          <div className="w-3 h-3 bg-black rounded-full grid place-items-center text-[5px] text-white">2</div>
+        </div>
+        <div className="flex-1 grid grid-cols-[28%_1fr_28%] gap-1">
+          <div className="bg-[#7C3AED] rounded-[8px] p-1 flex flex-col justify-between text-white">
+            <div className="text-[5px] font-black bg-black/20 rounded-full px-1 h-2.5 flex items-center w-fit">BLACK FRIDAY</div>
+            <div className="text-[8px] font-black leading-[0.9]">GET UP TO<br/>50% OFF</div>
+            <div className="h-3 bg-white text-black rounded-full text-[5px] font-bold grid place-items-center">Shop Sale →</div>
+          </div>
+          <div className="grid grid-cols-2 gap-1">
+            {[img1,img2,img3,img1].map((im,i)=><div key={i} className="aspect-square rounded-[6px] overflow-hidden bg-white border"><img src={im} className="w-full h-full object-cover" alt="" /></div>)}
+          </div>
+          <div className="bg-black rounded-[8px] p-1 flex flex-col text-white">
+            <div className="text-[6px] font-bold leading-[1.1]">Free Shipping<br/>+ 7 Days Return</div>
+            <div className="mt-1 text-[4px] text-white/50">Early access</div>
+            <div className="mt-auto h-3 bg-white text-black rounded-full text-[4px] font-bold grid place-items-center">Join Premium</div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (id === 'trenzo-luxury') {
+    return (
+      <div className="h-full w-full bg-[#0A0A0A] text-white p-1.5 flex flex-col overflow-hidden">
+        <div className="flex justify-between items-center"><div className="text-[6px] font-black tracking-[0.2em]">✦ TRENZO • LUXURY</div><div className="w-3 h-1.5 bg-white/10 rounded-full" /></div>
+        <div className="mt-1 flex gap-1.5">
+          <div className="flex-1">
+            <div className="text-[5px] tracking-[0.2em] text-white/40">EST. 2018 • LUXURY CURATED</div>
+            <div className="mt-1 text-[11px] font-[300] leading-[0.9] font-serif">A reflection<br/>of personal<br/>styling</div>
+            <div className="mt-2 h-3 px-1.5 border border-white/20 rounded-full text-[5px] flex items-center w-fit">Explore Collection →</div>
+          </div>
+          <div className="w-[46%] aspect-[4/5] rounded-[14px] overflow-hidden border border-white/10 relative bg-[#141414]"><img src={img2} className="w-full h-full object-cover opacity-90" alt="" /><div className="absolute top-1 left-1 h-2 px-1 bg-white text-black rounded-full text-[4px] font-bold grid place-items-center">FEATURED • NEW</div><div className="absolute bottom-1 right-1 w-5 h-5 bg-white text-black rounded-full grid place-items-center text-[6px] font-black">✦</div></div>
+        </div>
+        <div className="mt-auto grid grid-cols-3 gap-1">
+          {['Craftsmanship','Heritage','Sustainability'].map(t=> <div key={t} className="h-6 bg-[#141414] border border-white/10 rounded-[6px] px-1 flex flex-col justify-center"><div className="text-[5px] font-bold">{t}</div><div className="text-[3.5px] text-white/40 truncate">Hand-stitched</div></div>)}
+        </div>
+      </div>
+    )
+  }
+
+  if (id === 'sleek-beige') {
+    return (
+      <div className="h-full w-full bg-[#F5F1EB] text-[#0A0A0A] p-1.5 flex flex-col overflow-hidden">
+        <div className="h-2.5 bg-black text-[#E8FF86] text-[4px] flex items-center justify-center font-bold tracking-[0.2em]">FREE SHIPPING • NEW DROP • COD • PREMIUM BEIGE</div>
+        <div className="mt-1 flex justify-between items-center"><div className="text-[6px] font-black tracking-[0.2em]">BEIGE • Studio</div><div className="h-3 px-1 bg-black text-white rounded-full text-[5px] flex items-center">Cart (2)</div></div>
+        <div className="mt-1 flex gap-1.5">
+          <div className="flex-1">
+            <div className="h-2.5 px-1 bg-white border rounded-full text-[4px] font-bold inline-flex items-center">EDITORIAL • BEIGE • 2024</div>
+            <div className="mt-1 text-[10px] font-black leading-[0.9]">Warm minimal<br/>luxury, everyday<br/>icon.</div>
+            <div className="mt-1 h-3 px-2 bg-black text-white rounded-full text-[5px] font-bold flex items-center w-fit">Shop Beige →</div>
+          </div>
+          <div className="w-[44%] aspect-[4/5] rounded-[14px] overflow-hidden border shadow-[0_8px_16px_rgba(0,0,0,0.08)] bg-white"><img src={img1} className="w-full h-full object-cover" alt="" /></div>
+        </div>
+        <div className="mt-auto grid grid-cols-3 gap-1">{[img1,img2,img3].map((im,i)=><div key={i} className="aspect-square rounded-[5px] overflow-hidden bg-white border"><img src={im} className="w-full h-full object-cover" alt="" /></div>)}</div>
+      </div>
+    )
+  }
+
+  if (id === 'sleek-dark') {
+    return (
+      <div className="h-full w-full bg-[#0A0A0A] text-white p-1.5 flex flex-col overflow-hidden">
+        <div className="h-2.5 bg-[#E8FF86] text-black text-[4px] flex items-center justify-center font-bold tracking-[0.2em]">DARK MODE • LUXURY • FREE SHIPPING • COD</div>
+        <div className="mt-1 flex justify-between items-center"><div className="text-[6px] font-black tracking-[0.2em]">DARK • Studio</div><div className="h-3 px-1 bg-white text-black rounded-full text-[5px] flex items-center">Cart (2)</div></div>
+        <div className="mt-1 flex gap-1.5">
+          <div className="flex-1">
+            <div className="h-2.5 px-1 bg-white/10 border border-white/20 rounded-full text-[4px] font-bold inline-flex items-center">NOIR • DARK • 2024</div>
+            <div className="mt-1 text-[10px] font-black leading-[0.9]">Noir luxury,<br/>midnight<br/>icon.</div>
+            <div className="mt-1 h-3 px-2 bg-white text-black rounded-full text-[5px] font-bold flex items-center w-fit">Shop Dark →</div>
+          </div>
+          <div className="w-[44%] aspect-[4/5] rounded-[14px] overflow-hidden border border-white/10 bg-[#141414]"><img src={img2} className="w-full h-full object-cover" alt="" /></div>
+        </div>
+        <div className="mt-auto grid grid-cols-3 gap-1">{[img1,img2,img3].map((im,i)=><div key={i} className="aspect-square rounded-[5px] overflow-hidden bg-[#141414] border border-white/10"><img src={im} className="w-full h-full object-cover" alt="" /></div>)}</div>
+      </div>
+    )
+  }
+
+  if (id === 'sleek-editorial') {
+    return (
+      <div className="h-full w-full bg-[#FCFBF9] text-[#0A0A0A] p-1.5 flex flex-col overflow-hidden">
+        <div className="h-2.5 bg-black text-white text-[4px] flex items-center justify-center font-bold tracking-[0.2em]">EDITORIAL • MINIMAL • LUXURY • FREE SHIPPING</div>
+        <div className="mt-1 flex justify-between items-center"><div className="text-[6px] font-black tracking-[0.2em]">EDITORIAL • Studio <span className="ml-1 h-2 px-1 bg-black text-white rounded-full text-[3px]">PREMIUM • EDITORIAL</span></div><div className="w-2 h-2 bg-black rounded-full" /></div>
+        <div className="mt-1 flex gap-1.5">
+          <div className="flex-1">
+            <div className="h-2.5 px-1 bg-white border rounded-full text-[4px] font-bold inline-flex items-center">MINIMAL • 2024</div>
+            <div className="mt-1 text-[11px] font-black leading-[0.85] tracking-[-0.02em]">Cool and<br/>Aakif style</div>
+            <div className="mt-1 text-[5px] text-black/50">Clean lines, intentional whitespace, premium finish.</div>
+            <div className="mt-1 h-3 px-2 bg-black text-white rounded-full text-[5px] font-bold flex items-center w-fit">Shop Editorial →</div>
+          </div>
+          <div className="w-[44%] aspect-[4/5] rounded-[14px] overflow-hidden border bg-white"><img src={img1} className="w-full h-full object-cover" alt="" /></div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="h-full w-full flex flex-col overflow-hidden" style={{ background: bg }}>
+      <div className="h-2 w-full" style={{ background: accent }} />
+      <div className="px-2 py-1.5 flex items-center justify-between" style={{ background: card, borderBottom: `1px solid ${border}` }}>
+        <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full" style={{ background: accent }} /><div className="text-[6px] font-black tracking-[0.15em]" style={{ color: text }}>{theme?.name?.toUpperCase()}</div></div>
+        <div className="w-3 h-1.5 rounded-full opacity-30" style={{ background: text }} />
+      </div>
+      <div className="flex-1 p-1.5 grid grid-cols-3 gap-1">
+        {[img1,img2,img3].map((im,i)=> (
+          <div key={i} className="rounded-[6px] overflow-hidden flex flex-col" style={{ background: card, border: `1px solid ${border}` }}>
+            <div className="flex-1 overflow-hidden"><img src={im} className="w-full h-full object-cover" alt="" /></div>
+            <div className="h-3 px-1 flex flex-col justify-center"><div className="h-0.5 w-full rounded" style={{ background: text, opacity: 0.3 }} /><div className="mt-0.5 h-0.5 w-2/3 rounded" style={{ background: accent }} /></div>
           </div>
         ))}
       </div>
-      <div className="h-2.5 rounded-sm" style={{ background: accent }} />
+      <div className="h-2.5 mx-1.5 mb-1.5 rounded-full" style={{ background: accent }} />
     </div>
   )
 }
+
 
 /* -------------------- PRODUCT CARD -------------------- */
 function PremiumProductCard({ p, onEdit, onDelete, imageLimit }: { p: any; onEdit: (p: any) => void; onDelete: (id: string) => void; imageLimit: number }) {
