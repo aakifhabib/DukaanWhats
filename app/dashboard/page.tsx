@@ -267,16 +267,38 @@ export default function Dashboard() {
   }, [])
 
   /* ---------------- HANDLERS ---------------- */
-  const handleThemeClick = (t: any) => {
+    const handleThemeClick = async (t: any) => {
     if (isThemeLocked(t)) {
       if (isPremiumTheme(t)) {
-        alert(`🔒 Premium Glass Locked\nBasic: 0/3 Premium\nAdvanced: 0/3 Premium\nNeed Premium — Till ${TILL_ID} Rs. 2999/mo\n\nThis glass animation theme is Premium only.`)
+        alert(`🔒 Premium Glass Locked
+Basic: 0/3 Premium
+Advanced: 0/3 Premium
+Need Premium — Till ${TILL_ID} Rs. 2999/mo
+
+This glass animation theme is Premium only.`)
         setActiveTab('payments'); return
       }
-      alert(`🔒 Advanced Theme Locked\nBasic allows 3/8 Advanced\nThis theme needs Advanced — Till ${TILL_ID} Rs. 899/mo\n\nUpgrade to unlock all 8 Advanced themes.`)
+      alert(`🔒 Advanced Theme Locked
+Basic allows 3/8 Advanced
+This theme needs Advanced — Till ${TILL_ID} Rs. 899/mo
+
+Upgrade to unlock all 8 Advanced themes.`)
       setActiveTab('payments'); return
     }
+    // THEME-SPECIFIC EDITOR AUTO-SWITCH - FIXED BY AAKIF PATCH
     setTheme(t.id)
+    setProfile((prev: any) => prev ? ({ ...prev, store_theme: t.id }) : prev)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user && profile) {
+        await supabase.from('profiles').update({ store_theme: t.id }).eq('id', user.id)
+      }
+    } catch {}
+    if (['spike-premium','shoe-app-premium','trenzo-luxury','sleek-beige','sleek-dark','sleek-editorial'].includes(t.id)) {
+      setTimeout(()=> {
+        document.getElementById('premium-editor-anchor')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 150)
+    }
   }
 
   const saveStore = async () => {
@@ -655,7 +677,8 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Premium theme editor — only renders when profile loaded */}
+      {/* Premium theme editor — THEME-SPECIFIC REAL PREVIEW — AUTO-SWITCH */}
+      <div id="premium-editor-anchor" />
       {profile && (
         <div className="mt-6">
           <PremiumThemeEditor
