@@ -254,7 +254,7 @@ export function PremiumThemeEditor({ profile, onSave }: Props) {
                 <div><label className="text-[10px] font-black">HEADER LABEL</label><input value={custom.headerLabel || ''} onChange={e=>update('headerLabel', e.target.value)} placeholder="PREMIUM • EDITORIAL" className="mt-1 w-full h-11 px-3 border rounded-[12px] text-[12px]" /></div>
               )}
               <div className="bg-[#FCFBF9] border rounded-[12px] p-3 text-[11px] leading-[1.4]">
-                <b>{themeId.toUpperCase()} uses:</b> badge + heroTitle + heroSubtitle + announcement + heroImage + CTA. Minimal design — title is big, whitespace is luxury. Hero image is pill {themeId==='sleek-beige'?'beige':'dark'?'noir':'editorial'} style.
+                <b>{themeId.toUpperCase()} uses:</b> badge + heroTitle + heroSubtitle + announcement + heroImage + CTA. Minimal design — title is big, whitespace is luxury. Hero image is pill {themeId==='sleek-beige' ? 'beige' : themeId==='sleek-dark' ? 'noir' : 'editorial'} style.
               </div>
               <div className="text-[11px] text-zinc-500">
                 Tip: Keep title 2-3 lines, subtitle under 18 words for editorial balance.
