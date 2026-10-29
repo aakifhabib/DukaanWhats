@@ -8,9 +8,9 @@ const THEMES = [
   { id: 'spike-premium', name: 'Spike Pro', color: '#0A0A0A', accent: '#E8FF86', icon: '⚡' },
   { id: 'shoe-app-premium', name: 'Shoe App Pro', color: '#7C3AED', accent: '#F2F0FF', icon: '◩' },
   { id: 'trenzo-luxury', name: 'Trenzo Luxury', color: '#141414', accent: '#FFFFFF', icon: '✦' },
-  { id: 'sleek-beige', name: 'Sleek Beige Premium Store', color: '#F5F1EB', accent: '#0A0A0A', icon: '◧' },
-  { id: 'sleek-dark', name: 'Sleek Dark Premium Store', color: '#0A0A0A', accent: '#E8FF86', icon: '◫' },
-  { id: 'sleek-editorial', name: 'Sleek Editorial Premium Store', color: '#FCFBF9', accent: '#0A0A0A', icon: '◩' },
+  { id: 'sleek-beige', name: 'Sleek Beige', color: '#F5F1EB', accent: '#0A0A0A', icon: '◧' },
+  { id: 'sleek-dark', name: 'Sleek Dark', color: '#0A0A0A', accent: '#E8FF86', icon: '◫' },
+  { id: 'sleek-editorial', name: 'Sleek Editorial', color: '#FCFBF9', accent: '#0A0A0A', icon: '◩' },
 ]
 
 const MOCK_PRODUCTS = [
@@ -23,7 +23,7 @@ const MOCK_PRODUCTS = [
 const DEFAULTS: Record<string, any> = {
   'spike-premium': {
     headerLabel: 'SPIKE • Shoes Shalwar',
-    announcement: 'EDITORIAL • MINIMAL BY AAKIF • LUXURY • FREE SHIPPING • COD',
+    announcement: 'FREE SHIPPING • NEW DROP • COD AVAILABLE',
     heroBadge: 'MINIMAL • 2024',
     heroTitle: 'Cool and Aakif style',
     heroSubtitle: 'Clean lines, intentional whitespace, premium finish. Less is luxury.',
@@ -38,7 +38,6 @@ const DEFAULTS: Record<string, any> = {
   },
   'shoe-app-premium': {
     headerLabel: 'Shoe App • Premium',
-    logoLetter: 'S',
     announcement: 'SHOES SHALWAR • LIVE • COD • FREE SHIPPING',
     heroBadge: 'NEW DROP • 2024',
     newDropLabel: 'NEW DROP • 2024',
@@ -70,10 +69,10 @@ const DEFAULTS: Record<string, any> = {
   'sleek-beige': {
     headerLabel: 'BEIGE • Studio',
     headerTopLabel: 'PREMIUM • BEIGE • 2024',
-    announcement: 'FREE SHIPPING • NEW DROP • COD • PREMIUM BEIGE COLLECTION • CONCIERGE • BEIGE STUDIO',
+    announcement: 'FREE SHIPPING • NEW DROP • COD • CONCIERGE',
     badge: 'EDITORIAL • BEIGE • 2024',
     heroTitle: 'Warm minimal\nluxury, everyday\nicon.',
-    heroSubtitle: 'Soft beige tones, natural texture, premium stitch. Curated for icons who value warmth and craft. COD + Free Shipping over 5000.',
+    heroSubtitle: 'Soft beige tones, natural texture, premium stitch. Curated for icons.',
     ctaText: 'Shop Beige →',
     brands: ['All','Nike','Adidas','Puma','New Balance','New','Sale'],
     featuredLabel: 'FEATURED • NEW',
@@ -87,10 +86,10 @@ const DEFAULTS: Record<string, any> = {
   'sleek-dark': {
     headerLabel: 'DARK • Studio',
     headerTopLabel: 'NOIR • PREMIUM • 2024',
-    announcement: 'DARK MODE • LUXURY • FREE SHIPPING • COD • 24H DISPATCH • PREMIUM NOIR',
+    announcement: 'DARK MODE • LUXURY • FREE SHIPPING • COD • 24H DISPATCH',
     badge: 'NOIR • DARK • 2024',
     heroTitle: 'Noir luxury,\nmidnight\nicon.',
-    heroSubtitle: 'Deep black, subtle glow, premium finish. Designed for night, worn for power. COD + Free Shipping.',
+    heroSubtitle: 'Deep black, subtle glow, premium finish. Designed for night.',
     ctaText: 'Shop Dark →',
     brands: ['All','Nike','Adidas','Puma','New Balance','New','Sale'],
     featuredLabel: 'FEATURED • NEW',
@@ -104,10 +103,10 @@ const DEFAULTS: Record<string, any> = {
   'sleek-editorial': {
     headerLabel: 'EDITORIAL • Studio',
     headerTopLabel: 'PREMIUM • EDITORIAL',
-    announcement: 'EDITORIAL • MINIMAL • LUXURY • FREE SHIPPING • COD • LESS BUT BETTER • PREMIUM',
+    announcement: 'EDITORIAL • MINIMAL • LUXURY • FREE SHIPPING • COD',
     badge: 'MINIMAL • 2024',
     heroTitle: 'Cool and Aakif\nstyle — editorial\nminimal.',
-    heroSubtitle: 'Clean lines, intentional whitespace, premium finish. Less is luxury. Less but better. Curated for icons.',
+    heroSubtitle: 'Clean lines, intentional whitespace, premium finish. Less is luxury.',
     ctaText: 'Shop Editorial →',
     brands: ['All','Nike','Adidas','Puma','New Balance','New','Sale'],
     featuredLabel: 'FEATURED • NEW',
@@ -188,39 +187,39 @@ export function PremiumThemeEditor({ profile, onSave }: { profile: any; onSave: 
 
   const getTabs = () => {
     if(themeId==='spike-premium') return [
-      { id: 'header', label: 'Header', sub: 'SPIKE • Shoes Shalwar + marquee' },
-      { id: 'hero', label: 'Hero', sub: 'Cool and Aakif style + pill image 380×500' },
-      { id: 'filters', label: 'Filters', sub: 'All, Nike, Adidas chips' },
-      { id: 'stats', label: 'Stats & Badges', sub: '500+, 4.9★, COD, HOT, FREE SHIPPING' },
+      { id: 'header', label: 'Header', sub: 'Store name & announcement bar' },
+      { id: 'hero', label: 'Hero', sub: 'Title, subtitle & image' },
+      { id: 'filters', label: 'Filters', sub: 'Brand filter chips' },
+      { id: 'stats', label: 'Stats', sub: 'Trust badges & ratings' },
     ]
     if(themeId==='shoe-app-premium') return [
-      { id: 'header', label: 'Header', sub: 'Logo S, LIVE • COD' },
-      { id: 'promo', label: 'Promo', sub: 'BLACK FRIDAY 50% OFF blue card' },
-      { id: 'filters', label: 'Filters & Sizes', sub: 'Pills + EU 28-34' },
-      { id: 'perks', label: 'Perks Card', sub: 'Free Shipping + 7 Days' },
+      { id: 'header', label: 'Header', sub: 'Logo & announcement' },
+      { id: 'promo', label: 'Promo', sub: 'Black Friday card' },
+      { id: 'filters', label: 'Filters', sub: 'Brand & sizes' },
+      { id: 'perks', label: 'Perks', sub: 'Member benefits' },
     ]
     if(themeId==='trenzo-luxury') return [
-      { id: 'header', label: 'Header', sub: '✦ TRENZO • LUXURY + CONCIERGE bar' },
-      { id: 'hero', label: 'Hero Pill', sub: 'FEATURED • NEW, ✦ LUXE, pill 360×500' },
-      { id: 'stories', label: 'Stories', sub: 'Craftsmanship / Heritage / Sustainability' },
+      { id: 'header', label: 'Header', sub: 'Logo & concierge bar' },
+      { id: 'hero', label: 'Hero', sub: 'Title & featured image' },
+      { id: 'stories', label: 'Stories', sub: 'Craftsmanship & heritage' },
     ]
     if(themeId==='sleek-beige') return [
-      { id: 'header', label: 'Header Premium Store', sub: 'BEIGE • Studio + marquee + PREMIUM label + FREE SHIPPING/NEW' },
-      { id: 'hero', label: 'Hero Beige Premium Store', sub: 'Warm minimal luxury + pill 380×500 + badges + featured' },
-      { id: 'filters', label: 'Collection Filters', sub: 'All, Nike, Adidas, Puma — premium store chips filter grid' },
-      { id: 'stats', label: 'Trust & Story Strip', sub: '500+, 4.9★, COD + editorial story Craft/Return/Shipping' },
+      { id: 'header', label: 'Header', sub: 'Logo, top label & announcement' },
+      { id: 'hero', label: 'Hero', sub: 'Title, subtitle & image' },
+      { id: 'filters', label: 'Collection', sub: 'Filter chips' },
+      { id: 'stats', label: 'Trust', sub: 'Ratings & story strip' },
     ]
     if(themeId==='sleek-dark') return [
-      { id: 'header', label: 'Header Premium Store', sub: 'DARK • Studio + DARK MODE lime bar + HOT' },
-      { id: 'hero', label: 'Hero Dark Premium Store', sub: 'NOIR • DARK • 2024 + Noir luxury + pill + glow' },
-      { id: 'filters', label: 'Collection Filters', sub: 'Premium store chips + Sort Newest' },
-      { id: 'stats', label: 'Trust & Badges', sub: 'FREE SHIPPING, HOT, 500+, 4.9★ + story strip' },
+      { id: 'header', label: 'Header', sub: 'Logo & announcement' },
+      { id: 'hero', label: 'Hero', sub: 'Title, subtitle & image' },
+      { id: 'filters', label: 'Collection', sub: 'Filter chips' },
+      { id: 'stats', label: 'Trust', sub: 'Ratings & badges' },
     ]
     if(themeId==='sleek-editorial') return [
-      { id: 'header', label: 'Header Premium Store', sub: 'EDITORIAL • Studio + PREMIUM • EDITORIAL pill' },
-      { id: 'hero', label: 'Hero Editorial Premium Store', sub: 'Cool and Aakif style — minimal + pill + story' },
-      { id: 'filters', label: 'Filters', sub: 'All products + editorial story' },
-      { id: 'stats', label: 'Story & Trust', sub: 'Craft, Return, Shipping story + trust' },
+      { id: 'header', label: 'Header', sub: 'Logo & announcement' },
+      { id: 'hero', label: 'Hero', sub: 'Title & image' },
+      { id: 'filters', label: 'Collection', sub: 'Filter chips' },
+      { id: 'stats', label: 'Trust', sub: 'Story & ratings' },
     ]
     return [{ id: 'header', label: 'Header', sub: 'Top bar' }]
   }
@@ -233,16 +232,16 @@ export function PremiumThemeEditor({ profile, onSave }: { profile: any; onSave: 
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-[12px] bg-[#E8FF86] text-black grid place-items-center font-black text-[16px]">{themeMeta.icon}</div>
           <div>
-            <div className="font-black text-[14px] flex items-center gap-2">{themeMeta.name} Studio <span className="text-[10px] px-2 h-5 bg-white/10 rounded-full grid place-items-center border border-white/10 animate-pulse">{themeId.toUpperCase()} • PREMIUM STORE • EDITOR SYNCED</span></div>
-            <div className="text-[11px] text-white/50">Premium store — theme-specific — real device preview — updates both PremiumThemeRenderer + standalone sleek files — fixes your /s/te screenshots</div>
+            <div className="font-black text-[14px]">{themeMeta.name}</div>
+            <div className="text-[11px] text-white/50">{themeId} • Premium editor</div>
           </div>
         </div>
-        <button onClick={save} disabled={saving} className="h-10 px-6 bg-[#E8FF86] text-black rounded-full font-black text-[12px] hover:bg-white transition-colors disabled:opacity-50">{saving ? 'Saving...' : saved ? '✓ Saved Live' : 'Save Live →'}</button>
+        <button onClick={save} disabled={saving} className="h-10 px-6 bg-[#E8FF86] text-black rounded-full font-black text-[12px] hover:bg-white transition-colors disabled:opacity-50">{saving ? 'Saving...' : saved ? '✓ Saved' : 'Save Live →'}</button>
       </div>
 
-      <div className="grid lg:grid-cols-[300px_1fr] xl:grid-cols-[300px_1fr_520px] min-h-[760px]">
+      <div className="grid lg:grid-cols-[280px_1fr] xl:grid-cols-[280px_1fr_520px] min-h-[760px]">
         <div className="border-r border-zinc-100 bg-[#FAFAF9] p-3">
-          <div className="text-[10px] font-black tracking-[0.15em] text-zinc-400 px-2 py-2">PREMIUM STORE • {themeId.toUpperCase()} ONLY — SYNCED WITH STANDALONE FILES — FIXES LIVE /s/te</div>
+          <div className="text-[10px] font-black tracking-[0.15em] text-zinc-400 px-2 py-2">{themeId.toUpperCase()}</div>
           <div className="space-y-1.5">
             {tabs.map(t=>(
               <button key={t.id} onClick={()=>setActiveTab(t.id)} className={`w-full text-left p-3 rounded-[14px] border transition-all ${activeTab===t.id ? 'bg-black text-white border-black shadow-lg' : 'bg-white border-zinc-200 hover:border-black'}`}>
@@ -251,62 +250,120 @@ export function PremiumThemeEditor({ profile, onSave }: { profile: any; onSave: 
               </button>
             ))}
           </div>
-          <div className="mt-6 p-3 bg-black text-white rounded-[16px]">
-            <div className="text-[11px] font-black">Fix for /s/te screenshots — Premium Store — Synced</div>
-            <div className="mt-2 text-[10px] text-white/60 leading-[1.5]">Your screenshots showed only My store + Cart + Website Rs.2500 card — old minimal. This rebuild replaces it with marquee, BEIGE/STUDIO header, hero pill 380×500 with FREE SHIPPING/NEW, filter chips All,Nike,Adidas that filter grid, 4-col grid with Quick View hover, wishlist, story strip, trust stats. Click theme in Glass Collection to switch — saves to premium_custom JSONB which /s/[slug] reads.</div>
-          </div>
         </div>
 
         <div className="p-6 overflow-auto max-h-[900px] space-y-7 bg-white">
           {activeTab==='header' && (
             <div className="space-y-5">
-              <h3 className="font-black text-[14px]">Header — Premium Store — {themeMeta.name} — fixes My store header in screenshots</h3>
+              <h3 className="font-black text-[14px]">Header</h3>
               <div>
-                <label className="text-[10px] font-black">HEADER LABEL — e.g. BEIGE • Studio / DARK • Studio / EDITORIAL • Studio — replaces My store in screenshot</label>
-                <input value={custom.headerLabel || ''} onChange={e=>update('headerLabel', e.target.value)} placeholder={themeId} className="mt-2 w-full h-12 px-4 bg-white border-2 border-black rounded-[14px] text-[13px] font-bold outline-none" />
+                <label className="text-[10px] font-black tracking-widest">HEADER LABEL</label>
+                <input value={custom.headerLabel || ''} onChange={e=>update('headerLabel', e.target.value)} placeholder="BEIGE • Studio" className="mt-2 w-full h-12 px-4 bg-white border-2 border-black rounded-[14px] text-[13px] font-bold outline-none" />
               </div>
-              <div><label className="text-[10px] font-black">HEADER TOP LABEL — PREMIUM • BEIGE • 2024</label><input value={custom.headerTopLabel || ''} onChange={e=>update('headerTopLabel', e.target.value)} className="mt-2 w-full h-11 px-4 bg-zinc-50 border rounded-[12px] text-[12px]" /></div>
-              <div><label className="text-[10px] font-black">ANNOUNCEMENT MARQUEE — free shipping, COD, premium — marquee_24s — fixes missing top bar</label><input value={custom.announcement || ''} onChange={e=>update('announcement', e.target.value)} className="mt-2 w-full h-11 px-4 bg-zinc-50 border rounded-[12px] text-[12px]" /></div>
-              <div><label className="text-[10px] font-black">BADGE — EDITORIAL • BEIGE • 2024</label><input value={custom.badge || custom.heroBadge || ''} onChange={e=>{ update('badge', e.target.value); update('heroBadge', e.target.value) }} className="mt-2 w-full h-11 px-4 bg-zinc-50 border rounded-[12px] font-bold" /></div>
-              <div className="grid grid-cols-2 gap-3"><div><label className="text-[10px] font-black">FREE SHIPPING BADGE</label><input value={custom.freeShippingBadge || ''} onChange={e=>update('freeShippingBadge', e.target.value)} className="mt-1 w-full h-11 px-3 border rounded-[12px] font-bold" /></div><div><label className="text-[10px] font-black">HOT / NEW BADGE</label><input value={custom.hotBadge || ''} onChange={e=>update('hotBadge', e.target.value)} className="mt-1 w-full h-11 px-3 border rounded-[12px] font-bold" /></div></div>
+              <div>
+                <label className="text-[10px] font-black tracking-widest">TOP LABEL</label>
+                <input value={custom.headerTopLabel || ''} onChange={e=>update('headerTopLabel', e.target.value)} placeholder="PREMIUM • BEIGE • 2024" className="mt-2 w-full h-11 px-4 bg-zinc-50 border rounded-[12px] text-[12px]" />
+              </div>
+              <div>
+                <label className="text-[10px] font-black tracking-widest">ANNOUNCEMENT BAR</label>
+                <input value={custom.announcement || ''} onChange={e=>update('announcement', e.target.value)} placeholder="FREE SHIPPING • NEW DROP • COD" className="mt-2 w-full h-11 px-4 bg-zinc-50 border rounded-[12px] text-[12px]" />
+              </div>
+              <div>
+                <label className="text-[10px] font-black tracking-widest">BADGE</label>
+                <input value={custom.badge || custom.heroBadge || ''} onChange={e=>{ update('badge', e.target.value); update('heroBadge', e.target.value) }} placeholder="EDITORIAL • BEIGE • 2024" className="mt-2 w-full h-11 px-4 bg-zinc-50 border rounded-[12px] font-bold" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] font-black tracking-widest">FREE SHIPPING BADGE</label>
+                  <input value={custom.freeShippingBadge || ''} onChange={e=>update('freeShippingBadge', e.target.value)} placeholder="FREE SHIPPING" className="mt-1 w-full h-11 px-3 border rounded-[12px] font-bold" />
+                </div>
+                <div>
+                  <label className="text-[10px] font-black tracking-widest">HOT BADGE</label>
+                  <input value={custom.hotBadge || ''} onChange={e=>update('hotBadge', e.target.value)} placeholder="HOT / NEW" className="mt-1 w-full h-11 px-3 border rounded-[12px] font-bold" />
+                </div>
+              </div>
             </div>
           )}
 
           {activeTab==='hero' && (
             <div className="space-y-5">
-              <h3 className="font-black text-[14px]">Hero — Premium Store — {themeMeta.name} — pill 380×500 — fixes empty screenshots</h3>
-              <div><label className="text-[10px] font-black">HERO TITLE — use \n for line break — big serif premium</label><textarea value={custom.heroTitle || ''} onChange={e=>update('heroTitle', e.target.value)} rows={3} className="mt-2 w-full px-4 py-3 bg-zinc-50 border rounded-[14px] text-[20px] font-black leading-[0.9] outline-none resize-none" /></div>
-              <div><label className="text-[10px] font-black">SUBTITLE — trust + craft + COD</label><textarea value={custom.heroSubtitle || ''} onChange={e=>update('heroSubtitle', e.target.value)} rows={2} className="mt-2 w-full px-4 py-3 bg-zinc-50 border rounded-[12px] text-[12px]" /></div>
-              <div className="grid grid-cols-2 gap-3">
-                <div><label className="text-[10px] font-black">CTA TEXT</label><input value={custom.ctaText || ''} onChange={e=>update('ctaText', e.target.value)} className="mt-1 w-full h-11 px-3 bg-zinc-50 border rounded-[12px] font-bold" /></div>
-                <div><label className="text-[10px] font-black">FEATURED LABEL — FEATURED • NEW</label><input value={custom.featuredLabel || ''} onChange={e=>update('featuredLabel', e.target.value)} className="mt-1 w-full h-11 px-3 bg-zinc-50 border rounded-[12px]" /></div>
+              <h3 className="font-black text-[14px]">Hero</h3>
+              <div>
+                <label className="text-[10px] font-black tracking-widest">TITLE — Use \n for line break</label>
+                <textarea value={custom.heroTitle || ''} onChange={e=>update('heroTitle', e.target.value)} rows={3} className="mt-2 w-full px-4 py-3 bg-zinc-50 border rounded-[14px] text-[20px] font-black leading-[0.9] outline-none resize-none" />
               </div>
-              <div><label className="text-[10px] font-black">HERO IMAGE URL — leave empty = product[0]</label><input value={custom.heroImage || ''} onChange={e=>update('heroImage', e.target.value)} className="mt-1 w-full h-11 px-3 bg-zinc-50 border rounded-[12px] text-[10px] font-mono" /></div>
+              <div>
+                <label className="text-[10px] font-black tracking-widest">SUBTITLE</label>
+                <textarea value={custom.heroSubtitle || ''} onChange={e=>update('heroSubtitle', e.target.value)} rows={2} className="mt-2 w-full px-4 py-3 bg-zinc-50 border rounded-[12px] text-[12px]" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] font-black tracking-widest">BUTTON TEXT</label>
+                  <input value={custom.ctaText || ''} onChange={e=>update('ctaText', e.target.value)} placeholder="Shop Now →" className="mt-1 w-full h-11 px-3 bg-zinc-50 border rounded-[12px] font-bold" />
+                </div>
+                <div>
+                  <label className="text-[10px] font-black tracking-widest">FEATURED LABEL</label>
+                  <input value={custom.featuredLabel || ''} onChange={e=>update('featuredLabel', e.target.value)} placeholder="FEATURED • NEW" className="mt-1 w-full h-11 px-3 bg-zinc-50 border rounded-[12px]" />
+                </div>
+              </div>
+              <div>
+                <label className="text-[10px] font-black tracking-widest">HERO IMAGE URL</label>
+                <input value={custom.heroImage || ''} onChange={e=>update('heroImage', e.target.value)} placeholder="https://..." className="mt-1 w-full h-11 px-3 bg-zinc-50 border rounded-[12px] text-[10px] font-mono" />
+              </div>
+              {custom.heroImage && <img src={custom.heroImage} className="w-full h-[220px] object-cover rounded-[16px] border" alt="" />}
             </div>
           )}
 
           {activeTab==='filters' && (
             <div className="space-y-5">
-              <h3 className="font-black text-[14px]">Collection Filters — Premium Store — fixes no filters in screenshots</h3>
-              <div className="bg-[#F5F1EB] border rounded-[12px] p-3 text-[11px]">Your /s/te screenshots show no filter chips — only 1 product card. These chips filter the product grid — All, Nike, Adidas, Puma, New, Sale — premium store functionality. Click chip in preview to test. This now updates both PremiumThemeRenderer AND SleekBeige/Dark/EditorialPremiumTheme.tsx standalone files.</div>
-              <ChipInput value={custom.brands || custom.filters || []} onChange={v=>{ update('brands', v); update('filters', v) }} placeholder="Type brand and press Enter — e.g. Nike" />
+              <h3 className="font-black text-[14px]">Collection Filters</h3>
+              <ChipInput value={custom.brands || custom.filters || []} onChange={v=>{ update('brands', v); update('filters', v) }} placeholder="Type brand and press Enter" />
             </div>
           )}
 
           {activeTab==='stats' && (
             <div className="space-y-4">
-              <h3 className="font-black text-[14px]">Trust Stats & Story Strip — Premium Store — fixes empty page</h3>
+              <h3 className="font-black text-[14px]">Trust & Story</h3>
               <div className="grid grid-cols-3 gap-3">
-                <div><label className="text-[10px] font-black">500+ Orders</label><input value={custom.statsOrders || ''} onChange={e=>update('statsOrders', e.target.value)} className="mt-1 w-full h-11 px-3 border rounded-[12px] font-black" /></div>
-                <div><label className="text-[10px] font-black">4.9★ Rating</label><input value={custom.statsRating || ''} onChange={e=>update('statsRating', e.target.value)} className="mt-1 w-full h-11 px-3 border rounded-[12px] font-black" /></div>
-                <div><label className="text-[10px] font-black">COD Available</label><input value={custom.statsCod || ''} onChange={e=>update('statsCod', e.target.value)} className="mt-1 w-full h-11 px-3 border rounded-[12px] font-black" /></div>
+                <div><label className="text-[10px] font-black tracking-widest">ORDERS</label><input value={custom.statsOrders || ''} onChange={e=>update('statsOrders', e.target.value)} className="mt-1 w-full h-11 px-3 border rounded-[12px] font-black" /></div>
+                <div><label className="text-[10px] font-black tracking-widest">RATING</label><input value={custom.statsRating || ''} onChange={e=>update('statsRating', e.target.value)} className="mt-1 w-full h-11 px-3 border rounded-[12px] font-black" /></div>
+                <div><label className="text-[10px] font-black tracking-widest">COD</label><input value={custom.statsCod || ''} onChange={e=>update('statsCod', e.target.value)} className="mt-1 w-full h-11 px-3 border rounded-[12px] font-black" /></div>
               </div>
-              <div className="bg-black text-white rounded-[12px] p-3 text-[11px]">Fixes your screenshots: old page was just 1 card + huge empty space. New premium store has 4-col grid, hover Quick View + Add, wishlist ♡, color dots, story strip black section with Craft/Return/Shipping, trust row, lookbook mini grid, cart drawer, product modal with QTY, WhatsApp COD.</div>
+            </div>
+          )}
+
+          {activeTab==='promo' && (
+            <div className="space-y-4">
+              <h3 className="font-black text-[14px]">Promo</h3>
+              <div><label className="text-[10px] font-black tracking-widest">BADGE</label><input value={custom.promoBadge || ''} onChange={e=>update('promoBadge', e.target.value)} className="mt-1 w-full h-11 px-3 border rounded-[12px] font-black" /></div>
+              <div><label className="text-[10px] font-black tracking-widest">TITLE</label><textarea value={custom.promoTitle || ''} onChange={e=>update('promoTitle', e.target.value)} rows={2} className="mt-1 w-full px-3 py-2 border rounded-[12px] text-[16px] font-black" /></div>
+              <div><label className="text-[10px] font-black tracking-widest">CTA</label><input value={custom.promoCta || ''} onChange={e=>update('promoCta', e.target.value)} className="mt-1 w-full h-11 px-3 border rounded-[12px] font-bold" /></div>
+            </div>
+          )}
+
+          {activeTab==='perks' && (
+            <div className="space-y-4">
+              <h3 className="font-black text-[14px]">Perks</h3>
+              <div><label className="text-[10px] font-black tracking-widest">TITLE</label><textarea value={custom.memberPerksTitle || ''} onChange={e=>update('memberPerksTitle', e.target.value)} rows={2} className="mt-1 w-full px-3 py-2 border rounded-[12px] font-bold" /></div>
+              <div><label className="text-[10px] font-black tracking-widest">DESCRIPTION</label><input value={custom.memberPerksDesc || ''} onChange={e=>update('memberPerksDesc', e.target.value)} className="mt-1 w-full h-11 px-3 border rounded-[12px]" /></div>
+            </div>
+          )}
+
+          {activeTab==='stories' && (
+            <div className="space-y-3">
+              <h3 className="font-black text-[14px]">Stories</h3>
+              {(custom.stories || []).map((s:any,i:number)=>(
+                <div key={i} className="bg-black text-white rounded-[16px] p-4">
+                  <div className="text-[10px] font-black text-white/50">STORY #{i+1}</div>
+                  <input value={s.title} onChange={e=>{ const arr=[...(custom.stories||[])]; arr[i]={...arr[i], title:e.target.value}; update('stories', arr) }} className="mt-2 w-full h-10 px-3 bg-white/10 border border-white/10 rounded-[10px] text-[12px] font-bold text-white" />
+                  <input value={s.desc} onChange={e=>{ const arr=[...(custom.stories||[])]; arr[i]={...arr[i], desc:e.target.value}; update('stories', arr) }} className="mt-2 w-full h-10 px-3 bg-white/10 border border-white/10 rounded-[10px] text-[11px] text-white/70" />
+                </div>
+              ))}
             </div>
           )}
 
           <div className="pt-6 border-t flex justify-between items-center">
-            <div className="text-[11px] text-zinc-500">{Object.keys(custom).length} fields • {themeId} premium store • synced to standalone • fixes /s/te screenshots</div>
+            <div className="text-[11px] text-zinc-500">{Object.keys(custom).length} fields • {themeId}</div>
             <button onClick={save} className="h-11 px-7 bg-black text-white rounded-full font-bold text-[12px]">{saving ? 'Saving...' : saved ? '✓ Saved' : 'Save Live →'}</button>
           </div>
         </div>
@@ -315,7 +372,7 @@ export function PremiumThemeEditor({ profile, onSave }: { profile: any; onSave: 
           <div className="h-[56px] px-4 bg-[#141414] border-b border-white/10 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-[#E8FF86] rounded-full animate-pulse" />
-              <span className="text-[10px] font-black tracking-[0.15em] text-white">PREMIUM STORE • {themeId.toUpperCase()} • FIXES YOUR /s/te SCREENSHOTS</span>
+              <span className="text-[10px] font-black tracking-[0.15em] text-white">{themeId.toUpperCase()} • LIVE PREVIEW</span>
             </div>
             <div className="flex items-center gap-1 bg-white/10 rounded-full p-1 border border-white/10">
               <button onClick={()=>setDevice('mobile')} className={`h-7 px-3 rounded-full text-[10px] font-bold ${device==='mobile'?'bg-white text-black':'text-white/60'}`}>Mobile</button>
@@ -349,7 +406,7 @@ export function PremiumThemeEditor({ profile, onSave }: { profile: any; onSave: 
               <div className="w-full max-w-[1280px] bg-[#1E1E1E] rounded-[12px] overflow-hidden border border-white/10">
                 <div className="h-10 bg-[#2D2D2D] flex items-center px-4 gap-2 border-b border-white/10">
                   <div className="flex gap-1.5"><div className="w-3 h-3 rounded-full bg-[#FF5F56]" /><div className="w-3 h-3 rounded-full bg-[#FFBD2E]" /><div className="w-3 h-3 rounded-full bg-[#27C93F]" /></div>
-                  <div className="ml-4 flex-1 h-7 bg-[#1A1A1A] rounded-full flex items-center px-3 text-[11px] text-white/40">dukaanwhats.pk/s/{liveProfile.business_name?.toLowerCase().replace(/\s/g,'') || 'premiumstore'} • {themeId} • premium store • fixes /s/te</div>
+                  <div className="ml-4 flex-1 h-7 bg-[#1A1A1A] rounded-full flex items-center px-3 text-[11px] text-white/40">dukaanwhats.pk/s/{liveProfile.business_name?.toLowerCase().replace(/\s/g,'') || 'store'}</div>
                 </div>
                 <div className="w-full h-[800px] bg-white overflow-auto">
                   <PremiumThemeRenderer themeId={themeId} profile={liveProfile} products={MOCK_PRODUCTS} cart={cart} setShowCart={()=>{}} onAdd={(p:any)=>setCart(prev=>[...prev,p])} onOpen={(p:any)=>setSelectedProduct(p)} track={()=>{}} selectedProduct={selectedProduct} setSelectedProduct={setSelectedProduct} />
