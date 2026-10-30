@@ -358,13 +358,13 @@ export default function Dashboard() {
   const currentTheme: any = [...finalAdvancedList, ...standardThemes, ...premiumThemes].find(t => t.id === theme) || finalAdvancedList[0] || standardThemes[0] || { name: 'Theme', colors: { bg: '#F8F7F5', accent: '#000' } }
   const currentTier = finalAdvancedList.some(t => t.id === theme) ? 'Advanced' : standardThemes.some(t => t.id === theme) ? 'Standard' : 'Premium'
 
-  const sidebarNav: { id: string; label: string; Icon: any; badge?: string; pro?: boolean }[] = [
+  const sidebarNav = [
     { id: 'themes', label: 'Themes', Icon: IconThemes },
     { id: 'products', label: 'Products', Icon: IconProducts, badge: `${products.length}/${productLimit === 999999 ? '∞' : productLimit}` },
     { id: 'store', label: 'Store', Icon: IconStore },
     { id: 'analytics', label: 'Analytics', Icon: IconAnalytics, pro: !isPremium },
     { id: 'payments', label: 'Plans & Billing', Icon: IconBilling },
-  ]
+  ] as const
 
   /* ---------------- THEMES PAGE - BREATHTAKING REDESIGN -------------------- */
   const themesPage = (
@@ -407,10 +407,10 @@ export default function Dashboard() {
           {currentPlanId === 'basic' && <button onClick={() => setActiveTab('payments')} className="text-[12px] font-semibold text-zinc-900 hover:text-black bg-zinc-50 border border-zinc-200 h-8 px-3 rounded-full">Unlock all →</button>}
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3.5 md:gap-4">
-          {finalAdvancedList.map((t, i) => {
+          {finalAdvancedList.map(t => {
             const isActive = theme === t.id; const locked = isThemeLocked(t)
             return (
-              <button key={t.id} onClick={() => handleThemeClick(t)} style={{ animationDelay: `${i * 60}ms` }} className={`group premium-card relative bg-white border rounded-[20px] overflow-hidden text-left w-full cursor-pointer transition-all duration-500 hover:-translate-y-1.5 animate-[fadeInUp_0.6s_ease_both] ${isActive ? 'border-[#0A0A0A] ring-[3px] ring-[#0A0A0A]/10 shadow-[0_12px_32px_-8px_rgba(0,0,0,0.18)]' : 'border-zinc-200/80 hover:border-zinc-900/20 hover:shadow-[0_12px_32px_-8px_rgba(0,0,0,0.12)]'}`}>
+              <button key={t.id} onClick={() => handleThemeClick(t)} className={`group relative bg-white border rounded-[20px] overflow-hidden text-left w-full cursor-pointer transition-all duration-300 hover:-translate-y-1 ${isActive ? 'border-[#0A0A0A] ring-[3px] ring-[#0A0A0A]/10 shadow-[0_12px_32px_-8px_rgba(0,0,0,0.18)]' : 'border-zinc-200/80 hover:border-zinc-900/20 hover:shadow-[0_12px_32px_-8px_rgba(0,0,0,0.12)]'}`}>
                 <div className="aspect-[4/3] relative overflow-hidden bg-[#FAFAF9]"><MiniStorefront theme={t} />{isActive && <div className="absolute top-2.5 right-2.5 w-6 h-6 rounded-full bg-[#0A0A0A] text-white flex items-center justify-center shadow-lg"><IconCheck c="w-3 h-3" /></div>}{locked && (<div className="absolute inset-0 flex flex-col items-center justify-center gap-2.5 backdrop-blur-xl bg-white/80"><div className="w-10 h-10 rounded-[12px] bg-[#0A0A0A] flex items-center justify-center shadow-[0_8px_20px_rgba(0,0,0,0.15)]"><IconLock c="w-4.5 h-4.5 text-white" /></div><div className="text-[10px] font-black tracking-widest text-zinc-900">LOCKED</div><div className="text-[10px] text-zinc-500 font-mono">Rs. 899/mo</div></div>)}</div>
                 <div className="p-3.5 flex items-center justify-between gap-2"><div className="min-w-0"><div className="font-semibold text-[12.5px] tracking-[-0.01em] truncate">{t.name}</div><div className="text-[9px] text-zinc-400 uppercase tracking-[0.14em] font-bold mt-1">ADVANCED</div></div>{isActive && !locked && <span className="shrink-0 text-[9px] font-black tracking-widest px-2 h-5 rounded-full bg-[#E8FF86] text-black flex items-center">ACTIVE</span>}</div>
               </button>
@@ -423,10 +423,10 @@ export default function Dashboard() {
         <div className="bg-[#FAFAF9] border border-zinc-200/80 rounded-[24px] p-5 md:p-7 mb-5">
           <div className="flex items-center gap-3 mb-5"><span className="text-[10px] font-black tracking-[0.14em] bg-white border border-zinc-200 px-3 h-7 rounded-full flex items-center">STANDARD</span><span className="text-[13px] text-zinc-500">Included with every plan</span></div>
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
-            {standardThemes.slice(0, 6).map((t, i) => {
+            {standardThemes.slice(0, 6).map(t => {
               const isActive = theme === t.id
               return (
-                <button key={t.id} onClick={() => handleThemeClick(t)} style={{ animationDelay: `${i * 60}ms` }} className={`group premium-card relative bg-white border rounded-[20px] overflow-hidden text-left w-full cursor-pointer transition-all duration-500 hover:-translate-y-1.5 animate-[fadeInUp_0.6s_ease_both] ${isActive ? 'border-black ring-2 ring-black/10' : 'border-zinc-200/80 hover:border-black/20'}`}>
+                <button key={t.id} onClick={() => handleThemeClick(t)} className={`group relative bg-white border rounded-[20px] overflow-hidden text-left w-full cursor-pointer transition-all hover:-translate-y-1 ${isActive ? 'border-black ring-2 ring-black/10' : 'border-zinc-200/80 hover:border-black/20'}`}>
                   <div className="aspect-[4/3] relative overflow-hidden"><MiniStorefront theme={t} />{isActive && <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-black text-white flex items-center justify-center"><IconCheck c="w-3 h-3" /></div>}</div>
                   <div className="p-3"><div className="font-semibold text-[11.5px] tracking-tight truncate">{t.name}</div><div className="text-[8.5px] text-zinc-400 uppercase tracking-[0.15em] font-semibold mt-0.5">{t.category}</div></div>
                 </button>
@@ -644,7 +644,7 @@ export default function Dashboard() {
                   <Icon c={`w-[18px] h-[18px] ${isActive ? 'text-black' : 'text-white/40'}`} />
                   <span className="flex-1 text-left">{item.label}</span>
                   {item.badge && <span className={`text-[10px] font-mono px-1.5 h-5 rounded-full flex items-center ${isActive ? 'bg-black text-white' : 'bg-white/10 text-white/60 border border-white/10'}`}>{item.badge}</span>}
-                  {item.pro && <span className="text-[8px] font-black tracking-widest px-1.5 h-4 rounded-full bg-[#E8FF86] text-black flex items-center">PRO</span>}
+                  {(item as any).pro && <span className="text-[8px] font-black tracking-widest px-1.5 h-4 rounded-full bg-[#E8FF86] text-black flex items-center">PRO</span>}
                 </button>
               )
             })}
