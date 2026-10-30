@@ -358,13 +358,14 @@ export default function Dashboard() {
   const currentTheme: any = [...finalAdvancedList, ...standardThemes, ...premiumThemes].find(t => t.id === theme) || finalAdvancedList[0] || standardThemes[0] || { name: 'Theme', colors: { bg: '#F8F7F5', accent: '#000' } }
   const currentTier = finalAdvancedList.some(t => t.id === theme) ? 'Advanced' : standardThemes.some(t => t.id === theme) ? 'Standard' : 'Premium'
 
-  const sidebarNav = [
+  const sidebarNav: { id: string; label: string; Icon: any; badge?: string; pro?: boolean }[] = [
     { id: 'themes', label: 'Themes', Icon: IconThemes },
     { id: 'products', label: 'Products', Icon: IconProducts, badge: `${products.length}/${productLimit === 999999 ? '∞' : productLimit}` },
     { id: 'store', label: 'Store', Icon: IconStore },
     { id: 'analytics', label: 'Analytics', Icon: IconAnalytics, pro: !isPremium },
     { id: 'payments', label: 'Plans & Billing', Icon: IconBilling },
-  ] as const
+  ]
+
 
   /* ---------------- THEMES PAGE - BREATHTAKING REDESIGN -------------------- */
   const themesPage = (
@@ -643,7 +644,7 @@ export default function Dashboard() {
                 <button key={item.id} onClick={() => setActiveTab(item.id as any)} className={`w-full flex items-center gap-3 px-3 h-10 rounded-[12px] text-[13.5px] font-[500] tracking-[-0.01em] transition-all ${isActive ? 'bg-white text-black shadow-[0_2px_12px_rgba(255,255,255,0.08)]' : 'text-white/60 hover:text-white hover:bg-white/[0.06]'}`}>
                   <Icon c={`w-[18px] h-[18px] ${isActive ? 'text-black' : 'text-white/40'}`} />
                   <span className="flex-1 text-left">{item.label}</span>
-                  {item.badge && <span className={`text-[10px] font-mono px-1.5 h-5 rounded-full flex items-center ${isActive ? 'bg-black text-white' : 'bg-white/10 text-white/60 border border-white/10'}`}>{item.badge}</span>}
+                  {(item as any).badge && <span className={`text-[10px] font-mono px-1.5 h-5 rounded-full flex items-center ${isActive ? 'bg-black text-white' : 'bg-white/10 text-white/60 border border-white/10'}`}>{(item as any).badge}</span>}
                   {(item as any).pro && <span className="text-[8px] font-black tracking-widest px-1.5 h-4 rounded-full bg-[#E8FF86] text-black flex items-center">PRO</span>}
                 </button>
               )
