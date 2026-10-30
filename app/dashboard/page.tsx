@@ -637,14 +637,14 @@ export default function Dashboard() {
         <div className="flex-1 p-3 overflow-y-auto">
           <div className="px-2 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-white/30">Workspace</div>
           <div className="space-y-1">
-            {sidebarNav.map(item => {
+            {(sidebarNav as any[]).map(item => {
               const isActive = activeTab === item.id; const Icon = item.Icon
               return (
                 <button key={item.id} onClick={() => setActiveTab(item.id as any)} className={`w-full flex items-center gap-3 px-3 h-10 rounded-[12px] text-[13.5px] font-[500] tracking-[-0.01em] transition-all ${isActive ? 'bg-white text-black shadow-[0_2px_12px_rgba(255,255,255,0.08)]' : 'text-white/60 hover:text-white hover:bg-white/[0.06]'}`}>
                   <Icon c={`w-[18px] h-[18px] ${isActive ? 'text-black' : 'text-white/40'}`} />
                   <span className="flex-1 text-left">{item.label}</span>
                   {item.badge && <span className={`text-[10px] font-mono px-1.5 h-5 rounded-full flex items-center ${isActive ? 'bg-black text-white' : 'bg-white/10 text-white/60 border border-white/10'}`}>{item.badge}</span>}
-                  {(item as any).pro && <span className="text-[8px] font-black tracking-widest px-1.5 h-4 rounded-full bg-[#E8FF86] text-black flex items-center">PRO</span>}
+                  {item.pro && <span className="text-[8px] font-black tracking-widest px-1.5 h-4 rounded-full bg-[#E8FF86] text-black flex items-center">PRO</span>}
                 </button>
               )
             })}
@@ -701,7 +701,7 @@ export default function Dashboard() {
       {/* MOBILE BOTTOM NAV - Linear style */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-2xl border-t border-zinc-200/80 px-2 py-2 pb-[max(8px,env(safe-area-inset-bottom))]">
         <div className="flex justify-around">
-          {sidebarNav.map(item => {
+          {(sidebarNav as any[]).map(item => {
             const isActive = activeTab === item.id; const Icon = item.Icon
             return (
               <button key={item.id} onClick={() => setActiveTab(item.id as any)} className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-[12px] transition-all ${isActive ? 'text-black' : 'text-zinc-400'}`}>
