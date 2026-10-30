@@ -193,6 +193,113 @@ function MiniStorefront({ theme }: { theme: any }) {
 }
 
 
+/* -------------------- EXTRA ICONS -------------------- */
+const IconX = ({ c = '' }) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+const IconCopy = ({ c = '' }) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="12" height="12" rx="2.5" /><path d="M5 15V6a2 2 0 0 1 2-2h9" /></svg>
+
+/* -------------------- DESIGN TOKENS -------------------- */
+const UI = {
+  card: 'bg-white border border-zinc-200/80 rounded-2xl p-5 md:p-6',
+  input: 'w-full h-11 px-3.5 rounded-xl border border-zinc-200/80 bg-white text-[13.5px] text-zinc-900 placeholder:text-zinc-400 outline-none transition-[border-color,box-shadow] focus:border-zinc-900 focus:ring-4 focus:ring-[#E8FF86]/70',
+  chipMono: 'font-mono text-[11px] px-1.5 py-0.5 rounded-md bg-zinc-100 border border-zinc-200/80 text-zinc-700',
+  focus: 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAFAF9]',
+}
+const BTN = 'inline-flex items-center justify-center gap-2 shrink-0 rounded-full font-semibold tracking-[-0.01em] whitespace-nowrap cursor-pointer select-none transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAFAF9]'
+const BTN_DARK = `${BTN} bg-[#0A0A0A] text-white hover:bg-zinc-800`
+const BTN_LIGHT = `${BTN} bg-white text-zinc-900 border border-zinc-200/80 hover:bg-zinc-50 hover:border-zinc-300`
+const BTN_LIME = `${BTN} bg-[#E8FF86] text-black hover:brightness-95`
+
+/* -------------------- SMALL PRIMITIVES -------------------- */
+function PageHeader({ title, subtitle, actions }: { title: string; subtitle?: string; actions?: React.ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4 mb-6 md:mb-8">
+      <div className="min-w-0">
+        <h1 className="text-[30px] md:text-[40px] font-extrabold tracking-[-0.03em] leading-[1.02]">{title}</h1>
+        {subtitle && <p className="text-[13px] md:text-[14px] text-zinc-500 mt-2 max-w-xl leading-relaxed">{subtitle}</p>}
+      </div>
+      {actions && <div className="flex items-center gap-2 flex-wrap">{actions}</div>}
+    </div>
+  )
+}
+
+function SectionHead({ title, meta, action }: { title: string; meta?: React.ReactNode; action?: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-3 mb-4 md:mb-5">
+      <div className="flex items-baseline gap-2.5 min-w-0 flex-wrap">
+        <h3 className="text-[15px] font-semibold tracking-[-0.02em]">{title}</h3>
+        {meta && <span className="font-mono text-[11.5px] text-zinc-500">{meta}</span>}
+      </div>
+      {action}
+    </div>
+  )
+}
+
+function Field({ label, hint, className = '', children }: { label: string; hint?: string; className?: string; children: React.ReactNode }) {
+  return (
+    <label className={`block ${className}`}>
+      <span className="block text-[12px] font-medium text-zinc-600 mb-1.5">{label}</span>
+      {children}
+      {hint && <span className="block text-[11.5px] text-zinc-400 mt-1.5">{hint}</span>}
+    </label>
+  )
+}
+
+function BrowserFrame({ url, tone = 'light', children }: { url: string; tone?: 'light' | 'dark'; children: React.ReactNode }) {
+  const dark = tone === 'dark'
+  return (
+    <div className={`rounded-xl overflow-hidden border ${dark ? 'border-white/10 bg-[#18181B] shadow-[0_28px_60px_-24px_rgba(0,0,0,0.9)]' : 'border-zinc-200/80 bg-white'}`}>
+      <div className={`flex items-center gap-2 h-8 px-3 border-b ${dark ? 'border-white/10' : 'border-zinc-200/80 bg-zinc-50'}`}>
+        <div className="flex gap-1">
+          {[0, 1, 2].map(i => <span key={i} className={`w-1.5 h-1.5 rounded-full ${dark ? 'bg-white/20' : 'bg-zinc-300'}`} />)}
+        </div>
+        <div className={`flex-1 min-w-0 truncate font-mono text-[10px] text-center ${dark ? 'text-white/45' : 'text-zinc-400'}`}>{url}</div>
+        <div className="w-[22px]" />
+      </div>
+      <div className="aspect-[4/3] relative overflow-hidden">{children}</div>
+    </div>
+  )
+}
+
+function ThemeTile({ t, active, locked, label, lockPrice, onSelect }: { t: any; active: boolean; locked: boolean; label: string; lockPrice?: string; onSelect: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-pressed={active}
+      className={`group relative text-left w-full bg-white rounded-2xl overflow-hidden border cursor-pointer transition-all duration-200 ${UI.focus} ${active ? 'border-zinc-900 shadow-[0_0_0_1px_#0A0A0A,0_0_0_5px_#E8FF86]' : 'border-zinc-200/80 hover:border-zinc-400 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_-20px_rgba(10,10,10,0.3)]'}`}
+    >
+      <div className="aspect-[4/3] relative overflow-hidden border-b border-zinc-200/80">
+        <MiniStorefront theme={t} />
+        {locked && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 backdrop-blur-md bg-white/70">
+            <div className="w-9 h-9 rounded-xl bg-[#0A0A0A] flex items-center justify-center"><IconLock c="w-4 h-4 text-[#E8FF86]" /></div>
+            <div className="text-[11.5px] font-semibold tracking-[-0.01em] text-zinc-900">Locked</div>
+            {lockPrice && <div className="font-mono text-[10px] text-zinc-500">{lockPrice}</div>}
+          </div>
+        )}
+      </div>
+      <div className="p-3.5 flex items-center justify-between gap-2">
+        <div className="min-w-0">
+          <div className="font-semibold text-[13px] tracking-[-0.015em] truncate">{t.name}</div>
+          <div className="text-[11.5px] text-zinc-400 mt-0.5 capitalize">{label}</div>
+        </div>
+        {active && !locked && (
+          <span className="shrink-0 inline-flex items-center gap-1.5 h-5 px-2 rounded-full bg-[#E8FF86] text-black text-[10.5px] font-bold">
+            <span className="w-1 h-1 rounded-full bg-black" />Active
+          </span>
+        )}
+      </div>
+    </button>
+  )
+}
+
+const paymentStatusUI = (s: string) =>
+  s === 'pending'
+    ? { chip: 'bg-amber-50 text-amber-800 border-amber-200', dot: 'bg-amber-500 animate-pulse', label: 'Pending', right: 'Verifying', rightCls: 'text-zinc-500' }
+    : s === 'approved'
+      ? { chip: 'bg-[#0A0A0A] text-white border-[#0A0A0A]', dot: 'bg-[#E8FF86]', label: 'Approved', right: 'Active', rightCls: 'text-emerald-600' }
+      : { chip: 'bg-red-50 text-red-700 border-red-200', dot: 'bg-red-500', label: 'Rejected', right: 'Rejected', rightCls: 'text-red-600' }
+
 /* -------------------- PRODUCT CARD -------------------- */
 function PremiumProductCard({ p, onEdit, onDelete, imageLimit }: { p: any; onEdit: (p: any) => void; onDelete: (id: string) => void; imageLimit: number }) {
   const [idx, setIdx] = useState(0)
@@ -212,23 +319,23 @@ function PremiumProductCard({ p, onEdit, onDelete, imageLimit }: { p: any; onEdi
 
   return (
     <div
-      className="group bg-white border border-zinc-200/80 rounded-2xl overflow-hidden hover:border-black/60 hover:shadow-[0_16px_40px_-12px_rgba(0,0,0,0.12)] hover:-translate-y-0.5 transition-all duration-200"
+      className="group bg-white border border-zinc-200/80 rounded-2xl overflow-hidden transition-all duration-200 hover:border-zinc-400 hover:shadow-[0_20px_40px_-22px_rgba(10,10,10,0.35)]"
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
     >
-      <div className="relative aspect-square bg-[#F8F7F5] overflow-hidden">
+      <div className="relative aspect-square bg-[#F4F4F2] overflow-hidden">
         {images.length > 1 && <img src={images[(idx - 1 + images.length) % images.length]} className="absolute inset-0 w-full h-full object-cover opacity-0" alt="" />}
         {images.length > 0 ? (
           <img src={images[idx]} alt={p.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-zinc-300 text-[10px]">No image</div>
+          <div className="w-full h-full flex items-center justify-center text-zinc-400 text-[11px]">No image</div>
         )}
         {images.length > 1 && (
           <>
-            <div className="absolute top-2 left-2 bg-black/70 backdrop-blur text-white text-[9px] font-bold px-2 py-1 rounded-full">
-              {idx + 1}/{images.length}{hovering ? ' · AUTO' : ''}
+            <div className="absolute top-2.5 left-2.5 bg-black/55 backdrop-blur-md text-white font-mono text-[10px] px-2 h-6 rounded-full inline-flex items-center">
+              {idx + 1}/{images.length}{hovering ? ' · auto' : ''}
             </div>
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+            <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex gap-1">
               {images.map((_: any, i: number) => (
                 <div key={i} className={`h-1 rounded-full transition-all ${i === idx ? 'w-5 bg-white' : 'w-1.5 bg-white/50'}`} />
               ))}
@@ -236,34 +343,22 @@ function PremiumProductCard({ p, onEdit, onDelete, imageLimit }: { p: any; onEdi
           </>
         )}
         {imageLimit !== 999999 && images.length >= imageLimit && (
-          <div className="absolute top-2 right-2 bg-amber-100 border border-amber-200 text-amber-700 text-[9px] px-2 py-1 rounded-full font-bold">MAX {imageLimit}</div>
+          <div className="absolute top-2.5 right-2.5 bg-amber-100 border border-amber-200 text-amber-800 text-[10px] px-2 h-6 inline-flex items-center rounded-full font-semibold">Max {imageLimit}</div>
         )}
       </div>
-      <div className="p-3.5">
-        <div className="font-bold text-[13px] tracking-tight truncate">{p.name}</div>
+      <div className="p-4">
+        <div className="font-semibold text-[13.5px] tracking-[-0.015em] truncate">{p.name}</div>
         <div className="flex items-center justify-between mt-1.5">
-          <span className="font-black text-[14px] tracking-tight">Rs. {Number(p.price).toLocaleString()}</span>
-          <span className="text-[10px] text-zinc-400">{images.length} img</span>
+          <span className="font-extrabold text-[15px] tracking-[-0.03em] tabular-nums">Rs. {Number(p.price).toLocaleString()}</span>
+          <span className="font-mono text-[10.5px] text-zinc-400">{images.length} img</span>
         </div>
-        <div className="mt-3 flex gap-1.5">
-          <button onClick={() => onEdit(p)} className="flex-1 h-8 bg-black text-white rounded-full text-[11px] font-bold border-none cursor-pointer hover:bg-zinc-800 transition-colors">Edit</button>
-          <button onClick={() => onDelete(p.id)} className="w-8 h-8 rounded-full border border-zinc-200 text-zinc-500 hover:border-red-300 hover:text-red-500 hover:bg-red-50 transition-colors bg-white cursor-pointer flex items-center justify-center">✕</button>
+        <div className="mt-3.5 flex gap-1.5">
+          <button type="button" onClick={() => onEdit(p)} className={`${BTN_DARK} flex-1 h-9 text-[12px]`}>Edit</button>
+          <button type="button" aria-label="Delete product" onClick={() => onDelete(p.id)} className={`${BTN_LIGHT} w-9 h-9 !p-0 text-zinc-500 hover:!border-red-300 hover:!text-red-600 hover:!bg-red-50`}>
+            <IconX c="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
-    </div>
-  )
-}
-
-/* -------------------- PAGE HEADER -------------------- */
-function PageHeader({ eyebrow, title, subtitle, actions }: { eyebrow?: string; title: string; subtitle?: string; actions?: React.ReactNode }) {
-  return (
-    <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
-      <div className="min-w-0">
-        {eyebrow && <div className="text-[10px] font-black tracking-[0.2em] uppercase text-zinc-400 mb-1.5">{eyebrow}</div>}
-        <h1 className="text-[26px] md:text-[32px] font-black tracking-[-0.03em] leading-[1.05]">{title}</h1>
-        {subtitle && <p className="text-[12.5px] md:text-[13.5px] text-zinc-500 mt-1.5 max-w-xl">{subtitle}</p>}
-      </div>
-      {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
     </div>
   )
 }
@@ -615,14 +710,6 @@ Upgrade to unlock all 8 Advanced themes.`)
   const currentTier = finalAdvancedList.some(t => t.id === theme) ? 'Advanced'
     : standardThemes.some(t => t.id === theme) ? 'Standard' : 'Premium'
 
-  const CurrentPlanButton = () => (
-    <div className="flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 h-8 md:h-9 rounded-full border border-zinc-200 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)] cursor-default select-none">
-      <span className={`w-1.5 h-1.5 rounded-full ${isPremium ? 'bg-[#E8FF86] shadow-[0_0_8px_#E8FF86]' : isAdvanced ? 'bg-black' : 'bg-zinc-400'}`}></span>
-      <span className="text-[10px] md:text-[11px] font-black tracking-[0.12em]">{currentPlanDef.name.toUpperCase()}</span>
-      <span className="text-[10px] text-zinc-400 font-mono hidden md:inline">• {productLimit === 999999 ? '∞' : productLimit}p • {imageLimit === 999999 ? '∞' : imageLimit}i</span>
-      {isPremium && <span className="ml-0.5 bg-black text-[#E8FF86] text-[8px] px-1.5 h-4 rounded-full font-bold hidden md:flex items-center tracking-widest">LIVE</span>}
-    </div>
-  )
 
   const sidebarNav = [
     { id: 'themes', label: 'Themes', Icon: IconThemes },
@@ -632,154 +719,129 @@ Upgrade to unlock all 8 Advanced themes.`)
     { id: 'payments', label: 'Plans & Billing', Icon: IconBilling },
   ] as const
 
+  /* ---------------- SHARED VIEW HELPERS ---------------- */
+  const tabLabel: Record<string, string> = { themes: 'Themes', products: 'Products', store: 'Store', analytics: 'Analytics', payments: 'Plans & billing' }
+  const mobileLabel: Record<string, string> = { themes: 'Themes', products: 'Products', store: 'Store', analytics: 'Analytics', payments: 'Plans' }
+  const maxLabel = (n: number) => (n === 999999 ? '∞' : String(n))
+  const productPct = productLimit === 999999 ? 3 : Math.min(100, (products.length / productLimit) * 100)
+  const limitReached = products.length >= productLimit
+
+  const CurrentPlanButton = () => (
+    <button
+      type="button"
+      onClick={() => setActiveTab('payments')}
+      className={`flex items-center gap-2 h-9 pl-3 pr-3.5 rounded-full border border-zinc-200/80 bg-white cursor-pointer transition-colors hover:border-zinc-300 ${UI.focus}`}
+    >
+      <span className={`w-1.5 h-1.5 rounded-full ${isPremium ? 'bg-[#E8FF86] shadow-[0_0_0_3px_rgba(232,255,134,0.35),0_0_0_1px_#0A0A0A]' : isAdvanced ? 'bg-black' : 'bg-zinc-400'}`} />
+      <span className="text-[12.5px] font-semibold tracking-[-0.01em]">{currentPlanDef.name}</span>
+      <span className="text-[11px] text-zinc-400 font-mono hidden lg:inline">{maxLabel(productLimit)} products, {maxLabel(imageLimit)} img</span>
+      {isPremium && <span className="bg-[#0A0A0A] text-[#E8FF86] text-[10px] px-2 h-[18px] rounded-full font-bold hidden md:inline-flex items-center">Live</span>}
+    </button>
+  )
+
   /* ---------------- THEMES PAGE ---------------- */
   const themesPage = (
-    <div className="animate-[fadeIn_0.35s_ease]">
-      <style>{`
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-        .glass-container { position: relative; display: flex; justify-content: flex-start; align-items: center; min-height: 400px; padding: 40px 24px 40px 40px; gap: 0; overflow-x: auto; overflow-y: visible; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
-        .glass-container::-webkit-scrollbar { height: 5px; }
-        .glass-container::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.10); border-radius: 999px; }
-        .glass-container .glass { position: relative; width: 260px; height: 340px; flex-shrink: 0; background: rgba(255,255,255,0.9); border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 20px 50px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,1) inset; display: flex; justify-content: flex-start; align-items: center; flex-direction: column; transition: all 0.55s cubic-bezier(0.23,1,0.32,1); border-radius: 20px; margin: 0 -36px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); transform: rotate(calc(var(--r) * 1deg)) translateY(0); cursor: pointer; overflow: hidden; }
-        .glass-container .glass:hover { transform: rotate(0deg) translateY(-12px) scale(1.05); margin: 0 20px; box-shadow: 0 32px 80px rgba(0,0,0,0.14), 0 0 0 1px rgba(0,0,0,0.06); z-index: 10; background: #fff; }
-        .glass-container .glass::before { content: attr(data-text); position: absolute; bottom: 0; width: 100%; height: 46px; background: #fff; border-top: 1px solid rgba(0,0,0,0.06); display: flex; justify-content: center; align-items: center; color: #0A0A0A; font-size: 12px; font-weight: 700; letter-spacing: -0.01em; }
-        .glass-container .glass.selected { background: #0A0A0A; border: 2px solid #0A0A0A; transform: rotate(0deg) translateY(-16px) scale(1.07); margin: 0 24px; z-index: 20; box-shadow: 0 32px 80px rgba(0,0,0,0.22), 0 0 0 4px #E8FF86; }
-        .glass-container .glass.selected::before { background: #0A0A0A; color: #fff; border-top: 1px solid rgba(255,255,255,0.1); }
-        .glass-lock-overlay { position: absolute; inset: 0; background: rgba(255,255,255,0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; z-index: 10; border-radius: 20px; }
-        @media (max-width: 768px) {
-          .glass-container .glass { width: 190px; height: 260px; margin: 0 -22px; }
-          .glass-container { min-height: 320px; padding: 20px 0 30px; }
-        }
-      `}</style>
-
+    <div className="dw-page">
       <PageHeader
-        eyebrow="Theme Studio"
-        title="Pick your storefront theme"
-        subtitle={currentPlanId === 'basic' ? '3 of 8 Advanced unlocked · Premium locked'
-          : currentPlanId === 'advanced' ? 'All 8 Advanced unlocked · Premium locked'
-            : 'All themes unlocked'}
+        title="Themes"
+        subtitle={currentPlanId === 'basic' ? '3 of 8 Advanced themes unlocked. Premium is locked.'
+          : currentPlanId === 'advanced' ? 'All 8 Advanced themes unlocked. Premium is locked.'
+            : 'All themes unlocked.'}
         actions={
           <>
-            {saved && <span className="h-10 px-3.5 flex items-center text-[12px] text-emerald-700 font-semibold bg-emerald-50 rounded-full border border-emerald-200">✓ Saved — {getTheme(theme).name}</span>}
-            <button onClick={saveStore} disabled={saving} className="h-10 px-5 bg-black text-white text-[12.5px] font-bold rounded-full border-none cursor-pointer hover:bg-zinc-800 transition-colors disabled:opacity-50">
-              {saving ? 'Saving...' : 'Save & Publish'}
+            {saved && (
+              <span className="h-10 px-3.5 inline-flex items-center gap-1.5 text-[12.5px] text-emerald-700 font-medium bg-emerald-50 rounded-full border border-emerald-200">
+                <IconCheck c="w-3.5 h-3.5" /> Saved — {getTheme(theme).name}
+              </span>
+            )}
+            <button type="button" onClick={saveStore} disabled={saving} className={`${BTN_DARK} h-10 px-5 text-[13px]`}>
+              {saving ? 'Saving...' : 'Save & publish'}
             </button>
           </>
         }
       />
 
-      {/* Active theme hero */}
-      <div className="relative rounded-3xl overflow-hidden mb-6" style={{ background: 'linear-gradient(135deg, #0A0A0A 0%, #18181B 50%, #0A0A0A 100%)' }}>
-        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '22px 22px' }} />
-        <div className="relative p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-6">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 text-[10px] font-black tracking-[0.2em] uppercase text-[#E8FF86]">
-              <span className="w-1.5 h-1.5 rounded-full animate-pulse bg-[#E8FF86]" />
-              Currently Active
+      {/* Active theme — the one bold moment on this screen */}
+      <section className="relative rounded-[28px] overflow-hidden mb-6 md:mb-8 bg-[#0A0A0A] text-white border border-zinc-900">
+        <div className="absolute inset-0 opacity-[0.07] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, #fff 1px, transparent 0)', backgroundSize: '20px 20px' }} />
+        <div className="relative grid md:grid-cols-[1fr_340px] gap-8 md:gap-10 p-6 md:p-10 items-center">
+          <div className="min-w-0">
+            <div className="inline-flex items-center gap-2 h-7 px-3 rounded-full bg-white/[0.06] border border-white/10 backdrop-blur-md text-[12px] font-medium text-white/80">
+              <LiveDot /> Active theme
             </div>
-            <h2 className="text-white text-[24px] md:text-[30px] font-black tracking-[-0.02em] mt-2 leading-tight">{currentTheme.name}</h2>
-            <p className="text-white/50 text-[12.5px] mt-1">{currentTier} tier · <span className="font-mono text-white/40">/s/{slug || 'your-slug'}</span></p>
-            <div className="flex gap-2 mt-4 flex-wrap">
-              <Link href={slug ? `/s/${slug}` : '#'} target="_blank" className="h-9 px-4 bg-white text-black rounded-full text-[11.5px] font-bold no-underline flex items-center gap-1.5">
-                View Live <IconExternal c="w-3 h-3" />
+            <h2 className="mt-5 text-[40px] md:text-[60px] font-extrabold tracking-[-0.045em] leading-[0.95] break-words">{currentTheme.name}</h2>
+            <div className="mt-4 flex items-center gap-2.5 flex-wrap">
+              <span className="text-[12.5px] font-medium text-white/60">{currentTier} tier</span>
+              <span className="font-mono text-[12px] text-[#E8FF86] bg-white/[0.06] border border-white/10 rounded-md px-2 py-0.5">/s/{slug || 'your-slug'}</span>
+            </div>
+            <div className="flex gap-2 mt-7 flex-wrap">
+              <Link href={slug ? `/s/${slug}` : '#'} target="_blank" className={`${BTN} h-10 px-5 bg-[#E8FF86] text-black text-[13px] no-underline hover:brightness-95`}>
+                View live <IconExternal c="w-3.5 h-3.5" />
               </Link>
-              <button onClick={saveStore} disabled={saving} className="h-9 px-4 bg-white/10 text-white border border-white/15 rounded-full text-[11.5px] font-semibold cursor-pointer hover:bg-white/15 transition-colors">Republish</button>
+              <button type="button" onClick={saveStore} disabled={saving} className={`${BTN} h-10 px-5 bg-white/10 text-white border border-white/15 text-[13px] hover:bg-white/15 backdrop-blur-md`}>
+                {saving ? 'Publishing...' : 'Republish'}
+              </button>
             </div>
           </div>
-          <div className="w-44 h-32 md:w-56 md:h-40 rounded-2xl overflow-hidden shrink-0 border border-white/10 shadow-[0_16px_40px_rgba(0,0,0,0.4)]">
+          <BrowserFrame tone="dark" url={`dukaanwhats.pk/s/${slug || 'your-slug'}`}>
             <MiniStorefront theme={currentTheme} />
-          </div>
+          </BrowserFrame>
         </div>
-      </div>
+      </section>
 
       {/* Advanced */}
-      <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 md:p-6 mb-4">
-        <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
-          <div className="flex items-center gap-2.5">
-            <span className="text-[10px] font-black tracking-[0.15em] bg-black text-white px-2.5 h-6 rounded-full flex items-center">ADVANCED</span>
-            <span className="text-[12px] text-zinc-500 font-medium">{currentPlanId === 'basic' ? `${basicAllowedAdvancedIds.length}/8 unlocked` : '8/8 unlocked'}</span>
-          </div>
-          {currentPlanId === 'basic' && (
-            <button onClick={() => setActiveTab('payments')} className="text-[11px] font-bold text-zinc-900 hover:underline bg-transparent border-none cursor-pointer">Unlock all →</button>
-          )}
+      <section className={`${UI.card} mb-4`}>
+        <SectionHead
+          title="Advanced"
+          meta={currentPlanId === 'basic' ? `${basicAllowedAdvancedIds.length}/8 unlocked` : '8/8 unlocked'}
+          action={currentPlanId === 'basic' ? (
+            <button type="button" onClick={() => setActiveTab('payments')} className={`${BTN_LIGHT} h-8 px-3.5 text-[12px]`}>Unlock all</button>
+          ) : undefined}
+        />
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 p-1">
+          {finalAdvancedList.map(t => (
+            <ThemeTile
+              key={t.id}
+              t={t}
+              active={theme === t.id}
+              locked={isThemeLocked(t)}
+              label="Advanced"
+              lockPrice="Rs. 899/mo"
+              onSelect={() => handleThemeClick(t)}
+            />
+          ))}
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
-          {finalAdvancedList.map(t => {
-            const isActive = theme === t.id
-            const locked = isThemeLocked(t)
-            return (
-              <button
-                key={t.id}
-                onClick={() => handleThemeClick(t)}
-                className={`group relative bg-white border rounded-2xl overflow-hidden text-left w-full cursor-pointer transition-all hover:-translate-y-1 ${isActive ? 'border-black ring-2 ring-black ring-offset-2 ring-offset-[#FAFAF9]' : 'border-zinc-200/80 hover:border-black/50 hover:shadow-[0_12px_32px_-8px_rgba(0,0,0,0.1)]'}`}
-              >
-                <div className="aspect-[4/3] relative overflow-hidden">
-                  <MiniStorefront theme={t} />
-                  {isActive && <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black text-white flex items-center justify-center shadow-md"><IconCheck c="w-3.5 h-3.5" /></div>}
-                  {locked && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 backdrop-blur-md bg-white/75">
-                      <div className="w-9 h-9 rounded-xl bg-black flex items-center justify-center"><IconLock c="w-4 h-4 text-white" /></div>
-                      <div className="text-[9.5px] font-black tracking-widest text-zinc-900">LOCKED</div>
-                      <div className="text-[9px] text-zinc-500 font-medium">Rs. 899/mo</div>
-                    </div>
-                  )}
-                </div>
-                <div className="p-3.5 flex items-center justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="font-bold text-[12.5px] tracking-tight truncate">{t.name}</div>
-                    <div className="text-[9px] text-zinc-400 uppercase tracking-[0.15em] font-semibold mt-0.5">ADVANCED</div>
-                  </div>
-                  {isActive && !locked && <span className="shrink-0 text-[9px] font-black tracking-widest px-1.5 py-0.5 rounded bg-[#E8FF86] text-black">ACTIVE</span>}
-                </div>
-              </button>
-            )
-          })}
-        </div>
-      </div>
+      </section>
 
       {/* Standard */}
       {standardThemes.length > 0 && (
-        <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 md:p-6 mb-4">
-          <div className="flex items-center gap-2.5 mb-4">
-            <span className="text-[10px] font-black tracking-[0.15em] bg-zinc-100 border border-zinc-200 px-2.5 h-6 rounded-full flex items-center">STANDARD</span>
-            <span className="text-[12px] text-zinc-500 font-medium">Included with every plan</span>
+        <section className={`${UI.card} mb-4`}>
+          <SectionHead title="Standard" meta="included with every plan" />
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 p-1">
+            {standardThemes.slice(0, 6).map(t => (
+              <ThemeTile
+                key={t.id}
+                t={t}
+                active={theme === t.id}
+                locked={false}
+                label={String(t.category)}
+                onSelect={() => handleThemeClick(t)}
+              />
+            ))}
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
-            {standardThemes.slice(0, 6).map(t => {
-              const isActive = theme === t.id
-              return (
-                <button
-                  key={t.id}
-                  onClick={() => handleThemeClick(t)}
-                  className={`group relative bg-white border rounded-2xl overflow-hidden text-left w-full cursor-pointer transition-all hover:-translate-y-1 ${isActive ? 'border-black ring-2 ring-black ring-offset-2 ring-offset-[#FAFAF9]' : 'border-zinc-200/80 hover:border-black/50 hover:shadow-[0_12px_32px_-8px_rgba(0,0,0,0.1)]'}`}
-                >
-                  <div className="aspect-[4/3] relative overflow-hidden">
-                    <MiniStorefront theme={t} />
-                    {isActive && <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black text-white flex items-center justify-center shadow-md"><IconCheck c="w-3.5 h-3.5" /></div>}
-                  </div>
-                  <div className="p-3 flex items-center justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="font-bold text-[11.5px] tracking-tight truncate">{t.name}</div>
-                      <div className="text-[8.5px] text-zinc-400 uppercase tracking-[0.15em] font-semibold mt-0.5">{t.category}</div>
-                    </div>
-                  </div>
-                </button>
-              )
-            })}
-          </div>
-        </div>
+        </section>
       )}
 
       {/* Premium glass */}
-      <div className="rounded-2xl border-2 border-black overflow-hidden bg-white">
-        <div className="p-5 md:p-6 bg-black text-white flex flex-wrap items-center justify-between gap-3 border-b border-black/20">
-          <div className="flex items-center gap-3">
-            <span className="text-black text-[10px] font-black px-2.5 h-6 rounded-full tracking-[0.15em] flex items-center bg-[#E8FF86]">PREMIUM</span>
-            <span className="font-bold text-[14px] tracking-tight">Glass Collection</span>
-            <span className="text-[11px] text-white/40 hidden md:inline">· animated showcase themes</span>
+      <section className="rounded-2xl border border-zinc-900 overflow-hidden bg-white">
+        <div className="px-5 md:px-6 py-4 md:py-5 bg-[#0A0A0A] text-white flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="text-black text-[11px] font-bold px-2.5 h-6 rounded-full flex items-center bg-[#E8FF86]">Premium</span>
+            <span className="font-semibold text-[15px] tracking-[-0.02em]">Glass collection</span>
+            <span className="text-[12px] text-white/40 hidden md:inline">Animated showcase themes</span>
           </div>
-          <span className="bg-white/10 border border-white/15 text-white text-[11px] px-3 h-7 rounded-full font-medium flex items-center">
-            {isPremium ? '✓ All unlocked' : `Locked · Rs. 2999/mo`}
+          <span className="bg-white/10 border border-white/15 backdrop-blur-md text-white text-[12px] px-3 h-7 rounded-full font-medium inline-flex items-center gap-1.5">
+            {isPremium ? <><IconCheck c="w-3 h-3 text-[#E8FF86]" /> All unlocked</> : <>Locked <span className="font-mono text-white/50">Rs. 2999/mo</span></>}
           </span>
         </div>
         <div className="bg-[#FAFAF9] relative">
@@ -791,16 +853,27 @@ Upgrade to unlock all 8 Advanced themes.`)
               const r = isActive ? 0 : GLASS_TILTS[i % GLASS_TILTS.length]
               const styleObj: any = { '--r': r, scrollSnapAlign: 'start' }
               return (
-                <div key={t.id} className={`glass ${isActive ? 'selected' : ''}`} data-text={t.name} style={styleObj} onClick={() => handleThemeClick(t)}>
+                <div
+                  key={t.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={isActive}
+                  aria-label={t.name}
+                  className={`glass ${isActive ? 'selected' : ''}`}
+                  data-text={t.name}
+                  style={styleObj}
+                  onClick={() => handleThemeClick(t)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleThemeClick(t) } }}
+                >
                   <div className="w-[88%] h-[230px] rounded-2xl overflow-hidden border border-black/[0.06] mt-4">
                     <MiniStorefront theme={t} />
                   </div>
-                  {isActive && <div className="absolute top-3 right-3 w-7 h-7 bg-black text-white rounded-full flex items-center justify-center shadow-lg"><IconCheck c="w-3.5 h-3.5" /></div>}
+                  {isActive && <div className="absolute top-3 right-3 w-7 h-7 bg-[#E8FF86] text-black rounded-full flex items-center justify-center shadow-lg"><IconCheck c="w-3.5 h-3.5" /></div>}
                   {locked && (
                     <div className="glass-lock-overlay">
-                      <div className="w-12 h-12 rounded-2xl bg-black flex items-center justify-center shadow-xl"><IconLock c="w-6 h-6 text-white" /></div>
-                      <div className="text-[11px] font-black tracking-widest text-zinc-900 mt-1">PREMIUM</div>
-                      <div className="text-[9px] text-zinc-500 text-center leading-tight">Rs. 2999/mo</div>
+                      <div className="w-12 h-12 rounded-2xl bg-[#0A0A0A] flex items-center justify-center shadow-xl"><IconLock c="w-6 h-6 text-[#E8FF86]" /></div>
+                      <div className="text-[12px] font-semibold text-zinc-900 mt-1">Premium</div>
+                      <div className="font-mono text-[10px] text-zinc-500 text-center leading-tight">Rs. 2999/mo</div>
                     </div>
                   )}
                 </div>
@@ -808,7 +881,7 @@ Upgrade to unlock all 8 Advanced themes.`)
             })}
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Premium theme editor — THEME-SPECIFIC REAL PREVIEW — AUTO-SWITCH */}
       <div id="premium-editor-anchor" />
@@ -825,84 +898,136 @@ Upgrade to unlock all 8 Advanced themes.`)
 
   /* ---------------- PRODUCTS PAGE ---------------- */
   const productsPage = (
-    <div className="animate-[fadeIn_0.35s_ease]">
+    <div className="dw-page">
       <PageHeader
-        eyebrow="Catalog"
         title="Products"
-        subtitle={`${products.length} of ${productLimit === 999999 ? '∞' : productLimit} used · ${imageLimit === 999999 ? 'Unlimited' : imageLimit} image${imageLimit !== 1 ? 's' : ''} per product`}
-        actions={
-          <span className={`text-[10px] font-black tracking-widest px-3 h-8 rounded-full flex items-center ${products.length >= productLimit ? 'bg-red-500 text-white' : 'bg-black text-white'}`}>
-            {products.length >= productLimit ? 'LIMIT REACHED' : `${productLimit === 999999 ? '∞' : (productLimit - products.length)} LEFT`}
-          </span>
-        }
+        subtitle={`${products.length} of ${productLimit === 999999 ? '∞' : productLimit} used, ${imageLimit === 999999 ? 'unlimited' : imageLimit} image${imageLimit !== 1 ? 's' : ''} per product`}
       />
 
-      <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 md:p-6 mb-5">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-[13px] font-bold tracking-tight">{editingId ? 'Editing Product' : 'Add New Product'}</h3>
-          {editingId && <button onClick={cancelEdit} className="text-[11px] font-bold text-zinc-500 hover:text-black bg-transparent border-none cursor-pointer">Cancel edit</button>}
+      {/* Usage strip */}
+      <div className="grid grid-cols-3 divide-x divide-zinc-200/80 bg-white border border-zinc-200/80 rounded-2xl mb-5">
+        <div className="p-4 md:p-5">
+          <div className="text-[12px] text-zinc-500 font-medium">Products</div>
+          <div className="mt-1 text-[22px] md:text-[28px] font-extrabold tracking-[-0.035em] tabular-nums leading-none">
+            {products.length}<span className="text-zinc-300 font-semibold">/{maxLabel(productLimit)}</span>
+          </div>
+          <div className="mt-3 h-1 rounded-full bg-zinc-100 overflow-hidden">
+            <div className={`h-full rounded-full transition-all duration-500 ${limitReached ? 'bg-red-500' : 'bg-[#0A0A0A]'}`} style={{ width: `${productPct}%` }} />
+          </div>
         </div>
-
-        <label className="block border-2 border-dashed border-zinc-200 rounded-2xl p-6 text-center cursor-pointer hover:border-black hover:bg-zinc-50/50 transition-all">
-          <input type="file" accept="image/*" multiple onChange={handleFile} className="hidden" />
-          {previews.length ? (
-            <div className="grid grid-cols-4 md:grid-cols-5 gap-2.5">
-              {previews.map((src, i) => (
-                <div key={i} className="relative group/img">
-                  <img src={src} alt="" className="w-full aspect-square object-cover rounded-xl border border-zinc-200" />
-                  <button type="button" onClick={(e) => { e.preventDefault(); removeFileAt(i) }} className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-black text-white text-[10px] rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity border-none cursor-pointer">✕</button>
-                </div>
-              ))}
-              <div className="aspect-square rounded-xl border-2 border-dashed border-zinc-200 bg-white flex flex-col items-center justify-center hover:border-black hover:bg-zinc-50 transition-colors">
-                <IconPlus c="w-4 h-4 text-zinc-400" />
-                <span className="text-[9px] font-bold mt-1 tracking-widest text-zinc-400">ADD</span>
-              </div>
-            </div>
+        <div className="p-4 md:p-5">
+          <div className="text-[12px] text-zinc-500 font-medium">Images each</div>
+          <div className="mt-1 text-[22px] md:text-[28px] font-extrabold tracking-[-0.035em] tabular-nums leading-none">{maxLabel(imageLimit)}</div>
+          <div className="mt-3 text-[11.5px] text-zinc-400">{currentPlanDef.name} plan</div>
+        </div>
+        <div className="p-4 md:p-5">
+          <div className="text-[12px] text-zinc-500 font-medium">Remaining</div>
+          {limitReached ? (
+            <span className="mt-1.5 inline-flex items-center h-7 px-2.5 rounded-full bg-red-500 text-white text-[11px] font-bold">Limit reached</span>
           ) : (
-            <>
-              <div className="w-12 h-12 rounded-2xl bg-black mx-auto flex items-center justify-center mb-3 shadow-lg"><IconUpload c="w-5 h-5 text-white" /></div>
-              <div className="font-bold text-[13.5px] tracking-tight">Drop images or click to upload</div>
-              <div className="text-[11px] text-zinc-500 mt-1.5">PNG, JPG, WEBP · up to 5MB each</div>
-              <div className="flex items-center justify-center gap-1.5 mt-3 flex-wrap">
-                <span className="text-[9.5px] font-bold px-2 py-1 rounded-full bg-zinc-100 border border-zinc-200 text-zinc-600">Basic · 1</span>
-                <span className="text-[9.5px] font-bold px-2 py-1 rounded-full bg-zinc-900 text-white">Advanced · 5</span>
-                <span className="text-[9.5px] font-bold px-2 py-1 rounded-full text-black bg-[#E8FF86]">Premium · ∞</span>
-              </div>
-            </>
+            <div className="mt-1 text-[22px] md:text-[28px] font-extrabold tracking-[-0.035em] tabular-nums leading-none">
+              {productLimit === 999999 ? '∞' : (productLimit - products.length)}
+              <span className="text-zinc-300 font-semibold text-[14px] md:text-[16px] ml-1">left</span>
+            </div>
           )}
-        </label>
+          <div className="mt-3 text-[11.5px] text-zinc-400">{limitReached ? 'Upgrade to add more' : 'before upgrade'}</div>
+        </div>
+      </div>
 
-        <div className="grid md:grid-cols-2 gap-3 mt-4">
-          <input placeholder="Product name *" value={prodName} onChange={e => setProdName(e.target.value)} className="h-11 px-4 border border-zinc-200 rounded-xl text-[13px] bg-white focus:outline-none focus:border-black transition-colors" />
-          <input placeholder="Price Rs. 3500 *" type="number" value={prodPrice} onChange={e => setProdPrice(e.target.value)} className="h-11 px-4 border border-zinc-200 rounded-xl text-[13px] bg-white focus:outline-none focus:border-black transition-colors" />
-          <input placeholder="Compare price (optional)" type="number" value={prodOrigPrice} onChange={e => setProdOrigPrice(e.target.value)} className="h-11 px-4 border border-zinc-200 rounded-xl text-[13px] bg-white focus:outline-none focus:border-black transition-colors" />
-          <select value={prodCategory} onChange={e => setProdCategory(e.target.value)} className="h-11 px-4 border border-zinc-200 rounded-xl text-[13px] bg-white focus:outline-none focus:border-black transition-colors">
-            <option>General</option><option>Clothing</option><option>Shoes</option><option>Bags</option><option>Beauty</option><option>Electronics</option><option>Food</option><option>Other</option>
-          </select>
-          <input placeholder="Stock qty" type="number" value={prodStock} onChange={e => setProdStock(e.target.value)} className="h-11 px-4 border border-zinc-200 rounded-xl text-[13px] bg-white focus:outline-none focus:border-black transition-colors" />
-          <input placeholder="Sizes (S, M, L, XL) — comma separated" value={prodSizes} onChange={e => setProdSizes(e.target.value)} className="h-11 px-4 border border-zinc-200 rounded-xl text-[13px] bg-white focus:outline-none focus:border-black transition-colors" />
-          <input placeholder="Colors (Black, White, Red) — comma separated" value={prodColors} onChange={e => setProdColors(e.target.value)} className="md:col-span-2 h-11 px-4 border border-zinc-200 rounded-xl text-[13px] bg-white focus:outline-none focus:border-black transition-colors" />
-          <textarea placeholder="Product description, materials, care instructions..." value={prodDesc} onChange={e => setProdDesc(e.target.value)} className="md:col-span-2 min-h-[88px] p-4 border border-zinc-200 rounded-xl text-[13px] bg-white focus:outline-none focus:border-black transition-colors resize-none" />
+      {/* Editor */}
+      <div className={`${UI.card} mb-6`}>
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-[15px] font-semibold tracking-[-0.02em]">{editingId ? 'Edit product' : 'New product'}</h3>
+          {editingId && <button type="button" onClick={cancelEdit} className="text-[12px] font-semibold text-zinc-500 hover:text-black bg-transparent border-none cursor-pointer">Cancel edit</button>}
         </div>
 
-        <div className="flex justify-end gap-2 mt-4">
-          {editingId && <button onClick={cancelEdit} className="h-10 px-5 border border-zinc-200 bg-white rounded-full text-[12.5px] font-semibold hover:bg-zinc-50 transition-colors cursor-pointer">Cancel</button>}
+        <div className="grid lg:grid-cols-[300px_1fr] gap-6">
+          <label className="group/drop block self-start rounded-2xl border border-dashed border-zinc-300 bg-[#FAFAF9] p-4 cursor-pointer hover:border-zinc-900 hover:bg-white transition-colors focus-within:ring-2 focus-within:ring-black focus-within:ring-offset-2">
+            <input type="file" accept="image/*" multiple onChange={handleFile} className="sr-only" />
+            {previews.length ? (
+              <div className="grid grid-cols-3 gap-2">
+                {previews.map((src, i) => (
+                  <div key={i} className="relative group/img">
+                    <img src={src} alt="" className="w-full aspect-square object-cover rounded-xl border border-zinc-200/80" />
+                    <button type="button" aria-label="Remove image" onClick={(e) => { e.preventDefault(); removeFileAt(i) }} className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-[#0A0A0A] text-white rounded-full opacity-100 md:opacity-0 md:group-hover/img:opacity-100 transition-opacity border-none cursor-pointer flex items-center justify-center">
+                      <IconX c="w-2.5 h-2.5" />
+                    </button>
+                  </div>
+                ))}
+                <div className="aspect-square rounded-xl border border-dashed border-zinc-300 bg-white flex flex-col items-center justify-center group-hover/drop:border-zinc-900 transition-colors">
+                  <IconPlus c="w-4 h-4 text-zinc-400" />
+                  <span className="text-[10.5px] font-medium mt-1 text-zinc-400">Add</span>
+                </div>
+              </div>
+            ) : (
+              <div className="py-4 text-center">
+                <div className="w-12 h-12 rounded-2xl bg-[#0A0A0A] mx-auto flex items-center justify-center mb-3.5"><IconUpload c="w-5 h-5 text-[#E8FF86]" /></div>
+                <div className="font-semibold text-[13.5px] tracking-[-0.015em]">Drop images or click to upload</div>
+                <div className="text-[11.5px] text-zinc-500 mt-1">PNG, JPG, WEBP, up to 5MB each</div>
+                <div className="flex items-center justify-center gap-1.5 mt-4 flex-wrap">
+                  {[['basic', 'Basic', '1'], ['advanced', 'Advanced', '5'], ['premium', 'Premium', '∞']].map(([id, n, v]) => (
+                    <span key={id} className={`font-mono text-[10.5px] px-2 h-6 rounded-full inline-flex items-center border ${currentPlanId === id ? 'bg-[#E8FF86] border-[#E8FF86] text-black font-semibold' : 'bg-white border-zinc-200/80 text-zinc-500'}`}>{n} {v}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </label>
+
+          <div className="grid md:grid-cols-2 gap-x-3.5 gap-y-4 content-start">
+            <Field label="Product name *" className="md:col-span-2">
+              <input placeholder="Linen kurta" value={prodName} onChange={e => setProdName(e.target.value)} className={UI.input} />
+            </Field>
+            <Field label="Price *">
+              <div className="relative">
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-[12px] text-zinc-400 pointer-events-none">Rs.</span>
+                <input placeholder="3500" type="number" value={prodPrice} onChange={e => setProdPrice(e.target.value)} className={`${UI.input} !pl-11 tabular-nums`} />
+              </div>
+            </Field>
+            <Field label="Compare price (optional)">
+              <div className="relative">
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-[12px] text-zinc-400 pointer-events-none">Rs.</span>
+                <input placeholder="4500" type="number" value={prodOrigPrice} onChange={e => setProdOrigPrice(e.target.value)} className={`${UI.input} !pl-11 tabular-nums`} />
+              </div>
+            </Field>
+            <Field label="Category">
+              <select value={prodCategory} onChange={e => setProdCategory(e.target.value)} className={UI.input}>
+                <option>General</option><option>Clothing</option><option>Shoes</option><option>Bags</option><option>Beauty</option><option>Electronics</option><option>Food</option><option>Other</option>
+              </select>
+            </Field>
+            <Field label="Stock quantity">
+              <input placeholder="100" type="number" value={prodStock} onChange={e => setProdStock(e.target.value)} className={`${UI.input} tabular-nums`} />
+            </Field>
+            <Field label="Sizes" hint="Comma separated">
+              <input placeholder="S, M, L, XL" value={prodSizes} onChange={e => setProdSizes(e.target.value)} className={UI.input} />
+            </Field>
+            <Field label="Colors" hint="Comma separated">
+              <input placeholder="Black, White, Red" value={prodColors} onChange={e => setProdColors(e.target.value)} className={UI.input} />
+            </Field>
+            <Field label="Description" className="md:col-span-2">
+              <textarea placeholder="Materials, fit, care instructions..." value={prodDesc} onChange={e => setProdDesc(e.target.value)} className={`${UI.input} !h-auto min-h-[96px] py-3 resize-none`} />
+            </Field>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-2 mt-6 pt-5 border-t border-zinc-200/80">
+          {editingId && <button type="button" onClick={cancelEdit} className={`${BTN_LIGHT} h-10 px-5 text-[13px]`}>Cancel</button>}
           <button
+            type="button"
             onClick={addProduct}
             disabled={uploading || (!editingId && products.length >= productLimit)}
-            className="h-10 px-6 bg-black text-white text-[12.5px] font-bold rounded-full border-none cursor-pointer hover:bg-zinc-800 transition-colors disabled:opacity-40"
+            className={`${BTN_DARK} h-10 px-6 text-[13px]`}
           >
-            {uploading ? 'Uploading...' : !editingId && products.length >= productLimit ? `Limit ${productLimit === 999999 ? '∞' : productLimit} — Upgrade` : `${editingId ? 'Update' : 'Add'} Product →`}
+            {uploading ? 'Uploading...' : !editingId && products.length >= productLimit ? `Limit ${productLimit === 999999 ? '∞' : productLimit} — Upgrade` : `${editingId ? 'Update' : 'Add'} product`}
           </button>
         </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
         {products.length === 0 ? (
-          <div className="col-span-2 md:col-span-4 bg-white border border-dashed border-zinc-200 rounded-2xl p-12 flex flex-col items-center justify-center text-center">
-            <div className="w-12 h-12 rounded-2xl bg-black flex items-center justify-center mb-3"><IconUpload c="w-5 h-5 text-white" /></div>
-            <div className="font-bold text-[14px]">No products yet</div>
-            <div className="text-[11.5px] text-zinc-500 mt-1">Add your first product — {productLimit === 999999 ? 'Unlimited' : productLimit} allowed on {currentPlanDef.name}</div>
+          <div className="col-span-2 md:col-span-3 lg:col-span-4 bg-white border border-dashed border-zinc-300 rounded-2xl p-12 flex flex-col items-center justify-center text-center">
+            <div className="w-12 h-12 rounded-2xl bg-[#0A0A0A] flex items-center justify-center mb-3.5"><IconProducts c="w-5 h-5 text-[#E8FF86]" /></div>
+            <div className="font-semibold text-[15px] tracking-[-0.02em]">No products yet</div>
+            <div className="text-[12.5px] text-zinc-500 mt-1">Add your first product above. {productLimit === 999999 ? 'Unlimited' : productLimit} allowed on {currentPlanDef.name}.</div>
           </div>
         ) : products.map(p => (
           <PremiumProductCard key={p.id} p={p} imageLimit={imageLimit} onEdit={startEdit} onDelete={deleteProduct} />
@@ -913,54 +1038,54 @@ Upgrade to unlock all 8 Advanced themes.`)
 
   /* ---------------- STORE PAGE ---------------- */
   const storePage = (
-    <div className="animate-[fadeIn_0.35s_ease]">
+    <div className="dw-page">
       <PageHeader
-        eyebrow="Settings"
-        title="Store identity"
-        subtitle="How customers see and reach your business"
-        actions={<button onClick={saveStore} disabled={saving} className="h-10 px-5 bg-black text-white text-[12.5px] font-bold rounded-full border-none cursor-pointer hover:bg-zinc-800 transition-colors disabled:opacity-50">{saving ? 'Saving...' : saved ? '✓ Saved' : 'Save Changes'}</button>}
+        title="Store"
+        subtitle="How customers see and reach your business."
+        actions={<button type="button" onClick={saveStore} disabled={saving} className={`${BTN_DARK} h-10 px-5 text-[13px]`}>{saving ? 'Saving...' : saved ? 'Saved' : 'Save changes'}</button>}
       />
 
-      <div className="grid lg:grid-cols-[1fr_320px] gap-4">
-        <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 md:p-7 space-y-5">
-          <div>
-            <label className="text-[10px] font-black tracking-[0.15em] uppercase text-zinc-400">Business Name</label>
-            <input value={businessName} onChange={e => setBusinessName(e.target.value)} className="mt-2 w-full h-11 px-4 border border-zinc-200 rounded-xl bg-white text-[13px] focus:outline-none focus:border-black transition-colors" />
-          </div>
-          <div>
-            <label className="text-[10px] font-black tracking-[0.15em] uppercase text-zinc-400">WhatsApp Number</label>
-            <input value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="923001234567" className="mt-2 w-full h-11 px-4 border border-zinc-200 rounded-xl bg-white text-[13px] focus:outline-none focus:border-black transition-colors font-mono" />
-            <div className="text-[10.5px] text-zinc-400 mt-1.5">Include country code, no spaces (e.g. 923001234567)</div>
-          </div>
-          <div>
-            <label className="text-[10px] font-black tracking-[0.15em] uppercase text-zinc-400">Store URL</label>
-            <div className="mt-2 flex items-center border border-zinc-200 rounded-xl overflow-hidden bg-white focus-within:border-black transition-colors">
-              <span className="pl-4 pr-1 text-[12.5px] text-zinc-400 font-mono shrink-0">/s/</span>
-              <input value={slug} onChange={e => setSlug(e.target.value)} className="flex-1 h-11 pr-4 bg-transparent text-[13px] font-mono focus:outline-none border-none" />
+      <div className="grid lg:grid-cols-[1fr_340px] gap-4">
+        <div className={`${UI.card} space-y-5`}>
+          <Field label="Business name">
+            <input value={businessName} onChange={e => setBusinessName(e.target.value)} className={UI.input} />
+          </Field>
+          <Field label="WhatsApp number" hint="Include country code, no spaces (e.g. 923001234567)">
+            <input value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="923001234567" className={`${UI.input} font-mono`} />
+          </Field>
+          <Field label="Store URL">
+            <div className="flex items-center rounded-xl border border-zinc-200/80 overflow-hidden bg-white transition-[border-color,box-shadow] focus-within:border-zinc-900 focus-within:ring-4 focus-within:ring-[#E8FF86]/70">
+              <span className="pl-3.5 pr-3 mr-2.5 self-stretch flex items-center text-[12.5px] text-zinc-400 font-mono shrink-0 bg-zinc-50 border-r border-zinc-200/80">dukaanwhats.pk/s/</span>
+              <input value={slug} onChange={e => setSlug(e.target.value)} className="flex-1 min-w-0 h-11 pr-3.5 bg-transparent text-[13.5px] font-mono outline-none border-none" />
             </div>
-          </div>
-          <div className="flex gap-2 pt-2 flex-wrap">
-            <button onClick={copyLink} className="h-10 px-5 border border-zinc-200 bg-white rounded-full text-[12.5px] font-semibold hover:bg-zinc-50 transition-colors cursor-pointer">{copied ? '✓ Copied' : 'Copy Link'}</button>
-            <Link href={slug ? `/s/${slug}` : '#'} target="_blank" className="h-10 px-5 bg-white border border-zinc-200 rounded-full text-[12.5px] font-semibold flex items-center gap-1.5 hover:bg-zinc-50 transition-colors no-underline text-inherit">Preview <IconExternal c="w-3 h-3" /></Link>
+          </Field>
+          <div className="flex gap-2 pt-1 flex-wrap">
+            <button type="button" onClick={copyLink} className={`${BTN_LIGHT} h-10 px-5 text-[13px]`}>
+              {copied ? <><IconCheck c="w-3.5 h-3.5" /> Copied</> : <><IconCopy c="w-3.5 h-3.5" /> Copy link</>}
+            </button>
+            <Link href={slug ? `/s/${slug}` : '#'} target="_blank" className={`${BTN_LIGHT} h-10 px-5 text-[13px] no-underline`}>Preview <IconExternal c="w-3 h-3" /></Link>
           </div>
         </div>
 
         <div className="space-y-4">
-          <div className="bg-white border border-zinc-200/80 rounded-2xl p-5">
-            <div className="text-[10px] font-black tracking-[0.15em] uppercase text-zinc-400 mb-2">Current Plan</div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-[22px] font-black tracking-tight">{currentPlanDef.name}</span>
-              {currentPlanId === 'advanced' && <span className="text-[9px] font-black tracking-widest px-1.5 py-0.5 rounded text-black bg-[#E8FF86]">POPULAR</span>}
+          <div className={UI.card}>
+            <div className="text-[12px] font-medium text-zinc-500">Current plan</div>
+            <div className="flex items-center gap-2 mt-1.5">
+              <span className="text-[26px] font-extrabold tracking-[-0.035em] leading-none">{currentPlanDef.name}</span>
+              {currentPlanId === 'advanced' && <span className="text-[10.5px] font-bold px-2 h-5 inline-flex items-center rounded-full text-black bg-[#E8FF86]">Popular</span>}
             </div>
-            <div className="text-[11.5px] text-zinc-500 mt-1.5 leading-relaxed">{currentPlanDef.features.slice(0, 3).join(' · ')}</div>
-            {!isPremium && <button onClick={() => setActiveTab('payments')} className="mt-4 w-full h-9 bg-black text-white text-[12px] font-bold rounded-full border-none cursor-pointer">Upgrade Plan →</button>}
+            <ul className="mt-4 space-y-2">
+              {currentPlanDef.features.slice(0, 3).map(f => (
+                <li key={f} className="flex items-center gap-2 text-[12.5px] text-zinc-600"><IconCheck c="w-3 h-3 text-zinc-900 shrink-0" />{f}</li>
+              ))}
+            </ul>
+            {!isPremium && <button type="button" onClick={() => setActiveTab('payments')} className={`${BTN_DARK} mt-5 w-full h-10 text-[13px]`}>Upgrade plan</button>}
           </div>
-          <div className="bg-white border border-zinc-200/80 rounded-2xl p-5">
-            <div className="text-[10px] font-black tracking-[0.15em] uppercase text-zinc-400 mb-3">Store Preview</div>
-            <div className="aspect-[4/3] rounded-xl overflow-hidden border border-zinc-200">
+          <div className={UI.card}>
+            <div className="text-[12px] font-medium text-zinc-500 mb-3">Store preview</div>
+            <BrowserFrame url={`dukaanwhats.pk/s/${slug || 'your-slug'}`}>
               <MiniStorefront theme={currentTheme} />
-            </div>
-            <div className="text-[10.5px] text-zinc-400 mt-2 truncate font-mono">dukaanwhats.pk/s/{slug || 'your-slug'}</div>
+            </BrowserFrame>
           </div>
         </div>
       </div>
@@ -969,29 +1094,43 @@ Upgrade to unlock all 8 Advanced themes.`)
 
   /* ---------------- ANALYTICS PAGE ---------------- */
   const analyticsPage = (
-    <div className="animate-[fadeIn_0.35s_ease]">
-      <PageHeader eyebrow="Insights" title="Analytics" subtitle="Real-time store performance" />
+    <div className="dw-page">
+      <PageHeader title="Analytics" subtitle="Real-time store performance." />
       {!profile ? (
         <div className="p-8 text-center text-zinc-500 text-[13px]">Loading analytics...</div>
       ) : currentPlanId === 'premium' ? (
         <RealAnalytics userId={profile.id} currentPlanId={currentPlanId} />
       ) : (
-        <div className="bg-white border border-zinc-200/80 rounded-2xl p-8 md:p-12 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-black flex items-center justify-center mx-auto shadow-[0_8px_24px_rgba(0,0,0,0.15)]">
-            <IconAnalytics c="w-7 h-7 text-[#E8FF86]" />
-          </div>
-          <h3 className="font-black text-[22px] tracking-tight mt-4">Analytics is Premium</h3>
-          <p className="text-[13px] text-zinc-500 mt-2 max-w-[380px] mx-auto leading-relaxed">
-            You're on <b className="text-black">{currentPlanDef.name}</b>. Upgrade to Premium to unlock real-time visitors, orders, conversion rate and revenue insights.
-          </p>
-          <div className="flex flex-wrap gap-1.5 justify-center mt-5">
-            {['Live Visitors', 'Conversion Rate', 'Revenue', 'Orders', 'Traffic Sources', 'Retention'].map(f => (
-              <span key={f} className="text-[10px] font-semibold bg-zinc-100 border border-zinc-200 px-2.5 h-6 rounded-full flex items-center text-zinc-600">{f}</span>
+        <div className={`${UI.card} relative overflow-hidden min-h-[440px]`}>
+          <div aria-hidden className="grid grid-cols-2 md:grid-cols-4 gap-3 blur-[3px] opacity-60 select-none pointer-events-none">
+            {[0, 1, 2, 3].map(i => (
+              <div key={i} className="rounded-xl border border-zinc-200/80 p-4">
+                <div className="h-2 w-14 rounded bg-zinc-200" />
+                <div className="h-6 w-20 rounded bg-zinc-900/80 mt-3" />
+                <div className="h-9 mt-4 rounded bg-zinc-100" />
+              </div>
             ))}
+            <div className="col-span-2 md:col-span-4 h-32 rounded-xl border border-zinc-200/80 bg-zinc-50" />
           </div>
-          <button onClick={() => setActiveTab('payments')} className="mt-6 h-11 px-7 bg-black text-white rounded-full text-[13px] font-bold border-none cursor-pointer inline-flex items-center gap-2 hover:bg-zinc-800 transition-colors">
-            Upgrade to Premium <span className="text-[#E8FF86]">→</span>
-          </button>
+          <div className="absolute inset-0 flex items-center justify-center p-5">
+            <div className="w-full max-w-[420px] rounded-2xl border border-zinc-200/80 bg-white/85 backdrop-blur-md p-6 md:p-7 text-center shadow-[0_24px_60px_-28px_rgba(10,10,10,0.4)]">
+              <div className="w-12 h-12 rounded-2xl bg-[#0A0A0A] flex items-center justify-center mx-auto">
+                <IconAnalytics c="w-6 h-6 text-[#E8FF86]" />
+              </div>
+              <h3 className="font-extrabold text-[22px] tracking-[-0.03em] mt-4">Analytics is Premium</h3>
+              <p className="text-[13px] text-zinc-500 mt-2 leading-relaxed">
+                You&apos;re on <b className="text-black font-semibold">{currentPlanDef.name}</b>. Upgrade to Premium to unlock real-time visitors, orders, conversion rate and revenue insights.
+              </p>
+              <div className="flex flex-wrap gap-1.5 justify-center mt-4">
+                {['Live Visitors', 'Conversion Rate', 'Revenue', 'Orders', 'Traffic Sources', 'Retention'].map(f => (
+                  <span key={f} className="text-[11px] font-medium bg-zinc-100 border border-zinc-200/80 px-2.5 h-6 rounded-full flex items-center text-zinc-600">{f}</span>
+                ))}
+              </div>
+              <button type="button" onClick={() => setActiveTab('payments')} className={`${BTN_DARK} mt-6 h-11 px-7 text-[13px]`}>
+                Upgrade to Premium
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -999,58 +1138,53 @@ Upgrade to unlock all 8 Advanced themes.`)
 
   /* ---------------- PAYMENTS PAGE ---------------- */
   const paymentsPage = (
-    <div className="animate-[fadeIn_0.35s_ease]">
-      <PageHeader eyebrow="Subscription" title="Plans & Billing" subtitle={`You are on ${currentPlanDef.name}`} />
+    <div className="dw-page">
+      <PageHeader title="Plans & billing" subtitle={`You are on ${currentPlanDef.name}.`} />
 
       {myPayments.length > 0 && (
-        <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 mb-4">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-[13px] font-bold tracking-tight">Payment History</h3>
-            {myPayments.filter((p: any) => p.status === 'pending').length > 0 && (
-              <span className="text-[10px] font-bold bg-amber-50 border border-amber-200 text-amber-700 px-2.5 h-6 rounded-full flex items-center gap-1.5">
+        <div className={`${UI.card} mb-4`}>
+          <SectionHead
+            title="Payment history"
+            action={myPayments.filter((p: any) => p.status === 'pending').length > 0 ? (
+              <span className="text-[11.5px] font-medium bg-amber-50 border border-amber-200 text-amber-800 px-2.5 h-6 rounded-full flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />
                 {myPayments.filter((p: any) => p.status === 'pending').length} pending
               </span>
-            )}
-          </div>
-          <div className="space-y-2">
-            {myPayments.slice(0, 5).map((p: any) => (
-              <div key={p.id} className="flex items-center justify-between gap-3 bg-[#FAFAF9] border border-zinc-100 rounded-xl p-3.5">
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <span
-                    className="shrink-0 h-6 px-2.5 rounded-full text-[9px] font-black tracking-widest flex items-center border"
-                    style={{
-                      background: p.status === 'pending' ? '#fef3c7' : p.status === 'approved' ? '#000' : '#fef2f2',
-                      color: p.status === 'pending' ? '#a16207' : p.status === 'approved' ? '#fff' : '#dc2626',
-                      borderColor: p.status === 'pending' ? '#fde68a' : p.status === 'approved' ? '#000' : '#fecaca',
-                    }}
-                  >
-                    {p.status === 'pending' ? '⏳ PENDING' : p.status === 'approved' ? '✓ APPROVED' : '✕ REJECTED'}
-                  </span>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[12.5px] font-black tracking-tight">{p.plan_id.toUpperCase()}</span>
-                      <span className="text-[12px] font-bold text-zinc-600">Rs. {p.amount}</span>
-                    </div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="font-mono text-[10px] bg-white border border-zinc-200 px-1.5 py-0.5 rounded">{p.txn_id}</span>
-                      <span className="text-[10px] text-zinc-400 hidden md:inline">{new Date(p.created_at).toLocaleDateString()} · Till {p.till_id}</span>
+            ) : undefined}
+          />
+          <div className="divide-y divide-zinc-200/80 border border-zinc-200/80 rounded-xl overflow-hidden">
+            {myPayments.slice(0, 5).map((p: any) => {
+              const s = paymentStatusUI(p.status)
+              return (
+                <div key={p.id} className="flex items-center justify-between gap-3 bg-[#FAFAF9] p-3.5">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <span className={`shrink-0 h-6 px-2.5 rounded-full text-[11px] font-semibold flex items-center gap-1.5 border ${s.chip}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+                      {s.label}
+                    </span>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[13px] font-bold tracking-[-0.01em]">{p.plan_id.toUpperCase()}</span>
+                        <span className="text-[12.5px] font-medium text-zinc-600 tabular-nums">Rs. {p.amount}</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        <span className={UI.chipMono}>{p.txn_id}</span>
+                        <span className="font-mono text-[10.5px] text-zinc-400 hidden md:inline">{new Date(p.created_at).toLocaleDateString()} · Till {p.till_id}</span>
+                      </div>
                     </div>
                   </div>
+                  <div className={`text-[12px] font-semibold shrink-0 text-right ${s.rightCls}`}>{s.right}</div>
                 </div>
-                <div className="text-[10px] font-bold shrink-0 text-right" style={{ color: p.status === 'approved' ? '#16a34a' : p.status === 'rejected' ? '#dc2626' : '#71717a' }}>
-                  {p.status === 'pending' ? 'Verifying' : p.status === 'approved' ? 'Active' : 'Rejected'}
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
           {justSubmitted && justSubmitted.status === 'pending' && (
-            <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2.5">
-              <span className="w-6 h-6 bg-amber-100 border border-amber-200 rounded-full flex items-center justify-center text-[12px] shrink-0">⏳</span>
+            <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3.5 flex items-start gap-3">
+              <span className="w-2 h-2 mt-1.5 bg-amber-500 rounded-full animate-pulse shrink-0" />
               <div>
-                <div className="text-[12px] font-bold text-amber-800">Payment submitted — Pending verification</div>
-                <div className="text-[11px] text-amber-700/80 mt-0.5 leading-[1.5]">
-                  Verifying Txn ID <span className="font-mono bg-white px-1 py-0.5 rounded border">{justSubmitted.txn_id}</span>. WhatsApp notification within 1 hour.
+                <div className="text-[13px] font-semibold text-amber-900">Payment submitted — pending verification</div>
+                <div className="text-[12px] text-amber-800/80 mt-0.5 leading-[1.55]">
+                  Verifying Txn ID <span className="font-mono bg-white px-1.5 py-0.5 rounded-md border border-amber-200">{justSubmitted.txn_id}</span>. WhatsApp notification within 1 hour.
                 </div>
               </div>
             </div>
@@ -1058,35 +1192,37 @@ Upgrade to unlock all 8 Advanced themes.`)
         </div>
       )}
 
-      <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 md:p-6">
-        <div className="flex flex-wrap items-start justify-between gap-4 mb-5">
+      <div className={UI.card}>
+        <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
           <div>
-            <h3 className="text-[15px] font-black tracking-tight">Pay to JazzCash Till <span className="font-mono text-zinc-400">{TILL_ID}</span></h3>
-            <p className="text-[11.5px] text-zinc-500 mt-1">Send payment, then submit the Transaction ID</p>
+            <h3 className="text-[17px] font-extrabold tracking-[-0.025em]">Pay to JazzCash Till <span className="font-mono font-medium text-zinc-400">{TILL_ID}</span></h3>
+            <p className="text-[12.5px] text-zinc-500 mt-1">Send payment, then submit the Transaction ID.</p>
           </div>
-          <div className="flex bg-black rounded-full p-1 gap-1">
-            <button onClick={() => setBilling('monthly')} className={`h-8 px-4 rounded-full text-[11.5px] font-bold border-none cursor-pointer transition-all ${billing === 'monthly' ? 'bg-white text-black' : 'bg-transparent text-white/60'}`}>Monthly</button>
-            <button onClick={() => setBilling('yearly')} className={`h-8 px-4 rounded-full text-[11.5px] font-bold border-none cursor-pointer transition-all flex items-center gap-1.5 ${billing === 'yearly' ? 'bg-white text-black' : 'bg-transparent text-white/60'}`}>
-              Yearly <span className="text-[9px] px-1.5 py-0.5 rounded-full text-black font-black bg-[#E8FF86]">-22%</span>
+          <div role="group" aria-label="Billing period" className="flex bg-zinc-100 border border-zinc-200/80 rounded-full p-1 gap-1">
+            <button type="button" aria-pressed={billing === 'monthly'} onClick={() => setBilling('monthly')} className={`h-8 px-4 rounded-full text-[12.5px] font-semibold border-none cursor-pointer transition-all ${billing === 'monthly' ? 'bg-[#0A0A0A] text-white' : 'bg-transparent text-zinc-500 hover:text-zinc-900'}`}>Monthly</button>
+            <button type="button" aria-pressed={billing === 'yearly'} onClick={() => setBilling('yearly')} className={`h-8 px-4 rounded-full text-[12.5px] font-semibold border-none cursor-pointer transition-all flex items-center gap-1.5 ${billing === 'yearly' ? 'bg-[#0A0A0A] text-white' : 'bg-transparent text-zinc-500 hover:text-zinc-900'}`}>
+              Yearly <span className="text-[10px] px-1.5 py-0.5 rounded-full text-black font-bold bg-[#E8FF86]">-22%</span>
             </button>
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-[320px_1fr] gap-4">
-          <div className="bg-black rounded-2xl p-5 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-40 h-40 bg-white/[0.03] rounded-full -mr-20 -mt-20" />
+        <div className="grid lg:grid-cols-[320px_1fr] gap-5">
+          <div className="bg-[#0A0A0A] text-white rounded-2xl p-5 relative overflow-hidden self-start">
+            <div className="absolute inset-0 opacity-[0.07] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, #fff 1px, transparent 0)', backgroundSize: '18px 18px' }} />
             <div className="relative">
               <div className="flex justify-between items-center mb-3">
-                <div className="text-[9px] tracking-[0.2em] uppercase text-white/50 font-bold">JazzCash Till</div>
-                <button onClick={copyTill} className="h-6 px-2.5 bg-white/10 border border-white/10 rounded-full text-[10px] font-semibold text-white hover:bg-white/20 transition-colors cursor-pointer">{copiedTill ? '✓' : 'Copy'}</button>
+                <div className="text-[12px] font-medium text-white/55">JazzCash till</div>
+                <button type="button" onClick={copyTill} className="h-7 px-3 bg-white/10 border border-white/10 backdrop-blur-md rounded-full text-[11.5px] font-semibold text-white hover:bg-white/20 transition-colors cursor-pointer inline-flex items-center gap-1.5">
+                  {copiedTill ? <><IconCheck c="w-3 h-3 text-[#E8FF86]" /> Copied</> : <><IconCopy c="w-3 h-3" /> Copy</>}
+                </button>
               </div>
               <div className="bg-white/[0.06] border border-white/[0.08] rounded-xl p-4">
-                <div className="text-[9px] uppercase text-white/40 tracking-widest">Till ID</div>
-                <div className="text-[26px] font-black font-mono tracking-[0.08em] text-white mt-0.5">{TILL_ID}</div>
+                <div className="text-[11px] text-white/40">Till ID</div>
+                <div className="text-[28px] font-semibold font-mono tracking-[0.04em] text-[#E8FF86] mt-0.5">{TILL_ID}</div>
               </div>
               <div className="mt-3 bg-white rounded-xl p-3">
                 <img src={`https://barcodeapi.org/api/code128/${TILL_ID}`} alt="Barcode" className="w-full h-[40px] object-contain" />
-                <div className="text-center text-[10px] font-mono text-black font-black tracking-[0.3em] mt-1">{TILL_ID}</div>
+                <div className="text-center text-[10.5px] font-mono text-black font-semibold tracking-[0.3em] mt-1">{TILL_ID}</div>
               </div>
               <div className="mt-3 bg-white rounded-xl p-2.5 flex justify-center">
                 <img src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=JAZZCASH_TILL_${TILL_ID}`} alt="QR" className="w-[100px] h-[100px]" />
@@ -1094,29 +1230,41 @@ Upgrade to unlock all 8 Advanced themes.`)
             </div>
           </div>
 
-          <div className="space-y-2.5">
+          <div role="radiogroup" aria-label="Choose a plan" className="space-y-3">
             {plans.map(p => {
               const displayPrice = getDisplayPrice(p)
               const isCurrent = currentPlanId === p.id
               const isSelected = selectedPlan?.id === p.id
               return (
                 <button
+                  type="button"
+                  role="radio"
+                  aria-checked={isSelected}
                   key={p.id}
                   onClick={() => setSelectedPlan(p)}
-                  className={`w-full text-left rounded-xl border p-4 transition-all cursor-pointer bg-white ${isSelected ? 'border-black shadow-[0_2px_12px_rgba(0,0,0,0.06)]' : isCurrent ? 'border-black/30 bg-[#FAFAF9]' : 'border-zinc-200 hover:border-zinc-400'}`}
+                  className={`w-full text-left rounded-2xl border p-4 md:p-5 transition-all cursor-pointer bg-white ${UI.focus} ${isSelected ? 'border-zinc-900 shadow-[0_0_0_1px_#0A0A0A,0_0_0_5px_#E8FF86]' : isCurrent ? 'border-zinc-400 bg-[#FAFAF9]' : 'border-zinc-200/80 hover:border-zinc-400'}`}
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-black text-[14px] tracking-tight">{p.name}</span>
-                        {isCurrent && <span className="bg-black text-white text-[8px] px-2 h-4 rounded-full font-bold flex items-center tracking-widest">CURRENT</span>}
-                        {p.id === 'advanced' && <span className="text-black text-[8px] px-2 h-4 rounded-full font-bold flex items-center tracking-widest bg-[#E8FF86]">POPULAR</span>}
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3 min-w-0 flex-1">
+                      <span className={`mt-1 w-4 h-4 rounded-full border grid place-items-center shrink-0 transition-colors ${isSelected ? 'border-zinc-900 bg-[#0A0A0A]' : 'border-zinc-300 bg-white'}`}>
+                        {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-[#E8FF86]" />}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-extrabold text-[16px] tracking-[-0.025em]">{p.name}</span>
+                          {isCurrent && <span className="bg-[#0A0A0A] text-white text-[10px] px-2 h-[18px] rounded-full font-semibold flex items-center">Current</span>}
+                          {p.id === 'advanced' && <span className="text-black text-[10px] px-2 h-[18px] rounded-full font-bold flex items-center bg-[#E8FF86]">Popular</span>}
+                        </div>
+                        <ul className="mt-3 grid sm:grid-cols-2 gap-x-4 gap-y-1.5">
+                          {p.features.map(f => (
+                            <li key={f} className="flex items-center gap-2 text-[12px] text-zinc-600"><IconCheck c="w-3 h-3 text-zinc-900 shrink-0" />{f}</li>
+                          ))}
+                        </ul>
                       </div>
-                      <div className="text-[11px] mt-1.5 text-zinc-600 leading-[1.4]">{p.features.join(' · ')}</div>
                     </div>
                     <div className="text-right shrink-0">
-                      <div className="font-black text-[16px] tracking-tight">Rs. {displayPrice}</div>
-                      <div className="text-[10px] text-zinc-400">{billing === 'yearly' && p.yearlyTotal > 0 ? `Rs. ${p.yearlyTotal.toLocaleString()}/yr` : '/month'}</div>
+                      <div className="font-extrabold text-[18px] tracking-[-0.035em] tabular-nums">Rs. {displayPrice}</div>
+                      <div className="text-[11px] text-zinc-400 font-mono mt-0.5">{billing === 'yearly' && p.yearlyTotal > 0 ? `Rs. ${p.yearlyTotal.toLocaleString()}/yr` : '/month'}</div>
                     </div>
                   </div>
                 </button>
@@ -1126,25 +1274,29 @@ Upgrade to unlock all 8 Advanced themes.`)
         </div>
 
         {selectedPlan && selectedPlan.monthly > 0 && (
-          <div className="mt-4 rounded-xl border-2 border-black bg-[#FFFEF5] p-4 md:p-5">
-            <div className="flex items-center gap-2 flex-wrap">
-              <div className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-[11px] font-bold">₨</div>
-              <div className="text-[13px] font-bold tracking-tight">Pay Rs. {(billing === 'monthly' ? selectedPlan.monthly : selectedPlan.yearlyTotal).toLocaleString()} → Till {TILL_ID}</div>
-              <span className="ml-auto text-[10px] font-bold bg-black text-white px-2 h-5 rounded-full flex items-center">{billing.toUpperCase()}</span>
+          <div className="mt-5 rounded-2xl border border-zinc-900 bg-white p-5 md:p-6 shadow-[0_0_0_5px_rgba(232,255,134,0.55)]">
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="w-8 h-8 rounded-full bg-[#0A0A0A] text-[#E8FF86] flex items-center justify-center text-[12px] font-bold">₨</div>
+              <div className="text-[14px] font-semibold tracking-[-0.015em]">Pay Rs. {(billing === 'monthly' ? selectedPlan.monthly : selectedPlan.yearlyTotal).toLocaleString()} to Till <span className="font-mono">{TILL_ID}</span></div>
+              <span className="ml-auto text-[11px] font-semibold bg-zinc-100 border border-zinc-200/80 text-zinc-700 px-2.5 h-6 rounded-full flex items-center capitalize">{billing}</span>
             </div>
-            <input
-              value={txnId}
-              onChange={e => setTxnId(e.target.value)}
-              placeholder="Enter Transaction ID from JazzCash SMS"
-              className="mt-3 w-full h-11 px-4 rounded-xl border-2 border-zinc-200 bg-white text-[12px] font-mono focus:outline-none focus:border-black transition-colors"
-            />
+            <div className="mt-4">
+              <Field label="Transaction ID" hint="Find it in the JazzCash confirmation SMS.">
+                <input
+                  value={txnId}
+                  onChange={e => setTxnId(e.target.value)}
+                  placeholder="Enter Transaction ID from JazzCash SMS"
+                  className={`${UI.input} font-mono !text-[13px]`}
+                />
+              </Field>
+            </div>
             <button
+              type="button"
               onClick={handleBuyPlan}
               disabled={purchasing}
-              className="mt-3 w-full h-11 bg-black text-white rounded-full font-bold text-[12.5px] flex items-center justify-center gap-2 hover:bg-zinc-800 transition-colors border-none cursor-pointer disabled:opacity-60"
+              className={`${BTN_DARK} mt-4 w-full h-11 text-[13px]`}
             >
               {purchasing ? 'Submitting...' : `I Paid — Activate ${selectedPlan.name}`}
-              <span className="w-5 h-5 bg-white text-black rounded-full flex items-center justify-center text-[10px]">↗</span>
             </button>
           </div>
         )}
@@ -1154,131 +1306,149 @@ Upgrade to unlock all 8 Advanced themes.`)
 
   /* ---------------- LAYOUT ---------------- */
   return (
-    <div className="min-h-screen bg-[#F7F7F5] text-[#0A0A0A] selection:bg-[#E8FF86] selection:text-black">
-      <style jsx global>{`
-        * { -webkit-tap-highlight-color: transparent; }
-        button, a, input, select, textarea { outline-offset: 3px; }
-        button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
-          outline: 2px solid #A3C84B;
+    <div className="dw-root min-h-screen bg-[#FAFAF9] text-zinc-900">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap');
+        .dw-root { font-family: 'Inter Tight', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+        .dw-root input, .dw-root select, .dw-root textarea, .dw-root button { font-family: inherit; }
+        .dw-root .font-mono { font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
+        .dw-root .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+        .dw-root .no-scrollbar::-webkit-scrollbar { display: none; }
+        @keyframes dwIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+        .dw-page { animation: dwIn 0.22s ease-out both; }
+
+        .glass-container { position: relative; display: flex; justify-content: flex-start; align-items: center; min-height: 400px; padding: 40px 24px 40px 56px; gap: 0; overflow-x: auto; overflow-y: visible; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
+        .glass-container::-webkit-scrollbar { height: 5px; }
+        .glass-container::-webkit-scrollbar-thumb { background: rgba(10,10,10,0.12); border-radius: 999px; }
+        .glass-container .glass { position: relative; width: 260px; height: 340px; flex-shrink: 0; background: rgba(255,255,255,0.9); border: 1px solid rgba(10,10,10,0.08); box-shadow: 0 20px 50px rgba(10,10,10,0.08), 0 1px 0 rgba(255,255,255,1) inset; display: flex; justify-content: flex-start; align-items: center; flex-direction: column; transition: all 0.55s cubic-bezier(0.23,1,0.32,1); border-radius: 20px; margin: 0 -36px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); transform: rotate(calc(var(--r) * 1deg)) translateY(0); cursor: pointer; overflow: hidden; outline: none; }
+        .glass-container .glass:hover, .glass-container .glass:focus-visible { transform: rotate(0deg) translateY(-12px) scale(1.05); margin: 0 20px; box-shadow: 0 32px 80px rgba(10,10,10,0.16), 0 0 0 1px rgba(10,10,10,0.06); z-index: 10; background: #fff; }
+        .glass-container .glass:focus-visible { box-shadow: 0 0 0 2px #0A0A0A, 0 0 0 5px #E8FF86; }
+        .glass-container .glass::before { content: attr(data-text); position: absolute; bottom: 0; width: 100%; height: 46px; background: #fff; border-top: 1px solid rgba(10,10,10,0.06); display: flex; justify-content: center; align-items: center; color: #0A0A0A; font-size: 13px; font-weight: 600; letter-spacing: -0.015em; }
+        .glass-container .glass.selected { background: #0A0A0A; border: 1px solid #0A0A0A; transform: rotate(0deg) translateY(-16px) scale(1.07); margin: 0 24px; z-index: 20; box-shadow: 0 32px 80px rgba(10,10,10,0.25), 0 0 0 5px #E8FF86; }
+        .glass-container .glass.selected::before { background: #0A0A0A; color: #fff; border-top: 1px solid rgba(255,255,255,0.1); }
+        .glass-lock-overlay { position: absolute; inset: 0; background: rgba(255,255,255,0.8); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; z-index: 10; border-radius: 20px; }
+        @media (max-width: 768px) {
+          .glass-container .glass { width: 190px; height: 260px; margin: 0 -22px; }
+          .glass-container { min-height: 320px; padding: 20px 32px 30px 40px; }
         }
         @media (prefers-reduced-motion: reduce) {
-          *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+          .dw-root *, .dw-root *::before, .dw-root *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
         }
       `}</style>
-      {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-[272px] bg-[#0A0A0A] text-white fixed left-0 top-0 bottom-0 z-40 border-r border-white/[0.06]">
+
+      {/* Desktop sidebar */}
+      <aside className="hidden md:flex flex-col w-64 bg-[#0A0A0A] text-white fixed inset-y-0 left-0 z-40 border-r border-white/[0.06]">
         <div className="px-5 pt-6 pb-5 border-b border-white/[0.06]">
-          <Link href="/" className="flex items-center gap-2.5 no-underline text-inherit">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-[15px] text-black bg-[#E8FF86]">D</div>
+          <Link href="/" className="flex items-center gap-3 no-underline text-inherit">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center font-extrabold text-[15px] text-black bg-[#E8FF86]">D</div>
             <div>
-              <div className="font-bold text-[14px] tracking-tight leading-none">DukaanWhats</div>
-              <div className="text-[10px] text-white/40 tracking-widest uppercase mt-1">Dashboard</div>
+              <div className="font-bold text-[15px] tracking-[-0.025em] leading-none">DukaanWhats</div>
+              <div className="text-[11.5px] text-white/40 mt-1">Dashboard</div>
             </div>
           </Link>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        <nav aria-label="Dashboard" className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
           {sidebarNav.map(item => {
             const active = activeTab === item.id
             return (
               <button
+                type="button"
                 key={item.id}
                 onClick={() => setActiveTab(item.id as any)}
-                className={`relative w-full flex items-center gap-3 px-3.5 h-11 rounded-xl text-[13px] font-medium transition-all border-none cursor-pointer ${active ? 'bg-white/[0.08] text-white' : 'text-white/55 hover:text-white hover:bg-white/[0.04]'}`}
+                aria-current={active ? 'page' : undefined}
+                className={`relative w-full flex items-center gap-3 px-3 h-10 rounded-xl text-[13.5px] font-medium tracking-[-0.01em] transition-colors border-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8FF86]/70 ${active ? 'bg-white/[0.07] text-white' : 'text-white/55 hover:text-white hover:bg-white/[0.04]'}`}
               >
-                {active && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-[#E8FF86]" />}
+                {active && <span className="absolute left-0 top-2.5 bottom-2.5 w-[3px] rounded-full bg-[#E8FF86]" />}
                 <item.Icon c={`w-[17px] h-[17px] ${active ? 'text-[#E8FF86]' : ''}`} />
                 <span className="flex-1 text-left">{item.label}</span>
-                {'badge' in item && item.badge && <span className="text-[10px] font-mono text-white/35">{item.badge}</span>}
-                {'pro' in item && item.pro && <span className="text-[8px] font-black text-black px-1.5 py-0.5 rounded tracking-widest bg-[#E8FF86]">PRO</span>}
+                {'badge' in item && item.badge && <span className="text-[11px] font-mono text-white/40">{item.badge}</span>}
+                {'pro' in item && item.pro && <span className="text-[10px] font-bold text-black px-1.5 h-4 inline-flex items-center rounded-full bg-[#E8FF86]">Pro</span>}
               </button>
             )
           })}
         </nav>
 
         <div className="p-3 border-t border-white/[0.06]">
-          <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-3.5">
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#E8FF86] shadow-[0_0_6px_#E8FF86]" />
-              <span className="text-[9.5px] font-black tracking-widest text-white/70 uppercase">{currentPlanDef.name} Plan</span>
+          <div className="bg-[#18181B] border border-white/[0.07] rounded-2xl p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                {isPremium ? <LiveDot /> : <span className="w-2 h-2 rounded-full bg-white/30" />}
+                <span className="text-[12.5px] font-semibold tracking-[-0.01em]">{currentPlanDef.name} plan</span>
+              </div>
+              <span className="font-mono text-[11px] text-white/40">{products.length}/{maxLabel(productLimit)}</span>
             </div>
-            <div className="text-[10.5px] text-white/40 leading-snug mb-3">
-              {productLimit === 999999 ? '∞' : productLimit} products · {imageLimit === 999999 ? '∞' : imageLimit} img
+            <div className="h-1 rounded-full bg-white/10 overflow-hidden">
+              <div className="h-full rounded-full bg-[#E8FF86] transition-all duration-500" style={{ width: `${productPct}%` }} />
+            </div>
+            <div className="text-[11.5px] text-white/40 leading-snug mt-2.5 mb-3.5">
+              {maxLabel(productLimit)} products, {maxLabel(imageLimit)} img each
             </div>
             {!isPremium ? (
-              <button onClick={() => setActiveTab('payments')} className="w-full h-8 rounded-lg text-[11px] font-bold text-black border-none cursor-pointer transition-colors hover:opacity-90 bg-[#E8FF86]">
-                Upgrade plan →
+              <button type="button" onClick={() => setActiveTab('payments')} className={`${BTN_LIME} w-full h-9 text-[12.5px] !rounded-xl focus-visible:!ring-offset-[#18181B] focus-visible:!ring-[#E8FF86]`}>
+                Upgrade plan
               </button>
             ) : (
-              <div className="w-full h-8 rounded-lg text-[10.5px] font-bold text-black flex items-center justify-center tracking-widest bg-[#E8FF86]">PREMIUM ✓</div>
+              <div className="w-full h-9 rounded-xl text-[12.5px] font-semibold text-[#E8FF86] border border-[#E8FF86]/30 bg-[#E8FF86]/10 flex items-center justify-center gap-1.5">
+                <IconCheck c="w-3.5 h-3.5" /> Premium active
+              </div>
             )}
           </div>
         </div>
 
-        <div className="p-3 border-t border-white/[0.06]">
-          <div className="flex items-center gap-2.5 px-1">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center font-black text-[12px] text-black shrink-0 bg-[#E8FF86]">{(businessName || 'S')[0].toUpperCase()}</div>
+        <div className="px-3 pb-3 pt-0">
+          <div className="flex items-center gap-2.5 px-2 py-2">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center font-extrabold text-[12.5px] text-black shrink-0 bg-[#E8FF86]">{(businessName || 'S')[0].toUpperCase()}</div>
             <div className="min-w-0 flex-1">
-              <div className="text-[12px] font-semibold truncate">{businessName || 'Your Store'}</div>
-              <div className="text-[10px] text-white/35 font-mono truncate">/s/{slug || 'your-slug'}</div>
+              <div className="text-[13px] font-semibold truncate tracking-[-0.01em]">{businessName || 'Your Store'}</div>
+              <div className="text-[11px] text-white/40 font-mono truncate">/s/{slug || 'your-slug'}</div>
             </div>
           </div>
         </div>
       </aside>
 
-      {/* Mobile Header */}
-      <header className="md:hidden sticky top-0 z-30 bg-[#FAFAF9]/95 backdrop-blur-xl border-b border-zinc-200/80 shadow-[0_4px_18px_rgba(0,0,0,0.025)]">
+      {/* Mobile top bar */}
+      <header className="md:hidden sticky top-0 z-30 bg-[#FAFAF9]/80 backdrop-blur-md border-b border-zinc-200/80 pt-[env(safe-area-inset-top)]">
         <div className="flex items-center justify-between px-4 h-14">
-          <Link href="/" className="flex items-center gap-2 no-underline text-inherit">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-[13px] text-black bg-[#E8FF86]">D</div>
-            <span className="font-bold text-[14px] tracking-tight">DukaanWhats</span>
+          <Link href="/" className="flex items-center gap-2.5 no-underline text-inherit">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center font-extrabold text-[13px] text-black bg-[#E8FF86]">D</div>
+            <span className="font-bold text-[15px] tracking-[-0.025em]">DukaanWhats</span>
           </Link>
-          <button onClick={() => setActiveTab('payments')} className="h-7 px-2.5 rounded-full text-[10px] font-black tracking-widest bg-black text-white border-none cursor-pointer">
-            {currentPlanDef.name.toUpperCase()}
-          </button>
-        </div>
-        <div className="flex gap-1.5 px-3 pb-3 overflow-x-auto no-scrollbar snap-x">
-          {[
-            { id: 'themes', label: 'Themes' },
-            { id: 'products', label: 'Products' },
-            { id: 'store', label: 'Store' },
-            { id: 'analytics', label: 'Analytics' },
-          ].map(t => (
-            <button
-              key={t.id}
-              onClick={() => setActiveTab(t.id as any)}
-              className={`h-8 px-3.5 rounded-full text-[12px] font-semibold whitespace-nowrap border-none cursor-pointer transition-all ${activeTab === t.id ? 'bg-black text-white' : 'bg-white text-zinc-600 border border-zinc-200'}`}
-            >
-              {t.label}
+          <div className="flex items-center gap-1.5">
+            <button type="button" onClick={() => setActiveTab('payments')} className={`${BTN} h-8 px-3 text-[11.5px] bg-[#0A0A0A] text-white`}>
+              {currentPlanDef.name}
             </button>
-          ))}
-          <button
-            onClick={() => setActiveTab('payments')}
-            className={`h-8 px-3.5 rounded-full text-[12px] font-bold whitespace-nowrap border-none cursor-pointer ${activeTab === 'payments' ? 'bg-black text-white' : 'text-black'}`}
-            style={{ background: activeTab === 'payments' ? '#000' : '#E8FF86' }}
-          >
-            {isPremium ? 'Plans' : 'Upgrade'}
-          </button>
+            {!isPremium && (
+              <button type="button" onClick={() => setActiveTab('payments')} className={`${BTN_LIME} h-8 px-3 text-[11.5px]`}>Upgrade</button>
+            )}
+          </div>
         </div>
       </header>
 
-      <div className="md:ml-[272px] min-h-screen">
-        {/* Desktop command bar */}
-        <div className="hidden md:flex sticky top-0 z-30 h-[68px] items-center justify-between border-b border-zinc-200/80 bg-[#FAFAF9]/90 px-8 backdrop-blur-md">
-          <div className="flex items-center gap-2 text-[11px] font-medium text-zinc-400">
-            <span className="text-zinc-900 font-semibold">Workspace</span>
-            <span>/</span>
-            <span className="capitalize">{activeTab === 'payments' ? 'Plans & Billing' : activeTab}</span>
+      <div className="md:pl-64">
+        {/* Desktop top bar */}
+        <div className="hidden md:flex sticky top-0 z-30 h-14 items-center justify-between px-8 bg-[#FAFAF9]/80 backdrop-blur-md border-b border-zinc-200/80">
+          <div className="flex items-center gap-2 text-[13px]">
+            <span className="text-zinc-400">Dashboard</span>
+            <span className="text-zinc-300">/</span>
+            <span className="font-semibold tracking-[-0.01em]">{tabLabel[activeTab]}</span>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="hidden lg:flex items-center gap-2 rounded-full border border-zinc-200/80 bg-white px-3 py-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#E8FF86]" />
-              <span className="text-[10px] font-semibold tracking-[0.12em] text-zinc-500">DUKAANWHATS WORKSPACE</span>
-            </div>
+          <div className="flex items-center gap-2">
             <CurrentPlanButton />
+            <button
+              type="button"
+              onClick={copyLink}
+              title="Copy store link"
+              className={`flex items-center gap-2 h-9 pl-3 pr-3 rounded-full border border-zinc-200/80 bg-white cursor-pointer transition-colors hover:border-zinc-300 ${UI.focus}`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-[#E8FF86] shadow-[0_0_0_1px_#0A0A0A]" />
+              <span className="font-mono text-[11.5px] text-zinc-600 max-w-[160px] truncate">/s/{slug || 'your-slug'}</span>
+              {copied ? <IconCheck c="w-3.5 h-3.5 text-emerald-600" /> : <IconCopy c="w-3.5 h-3.5 text-zinc-400" />}
+            </button>
           </div>
         </div>
-        <main className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-10 py-6 md:py-8 lg:py-10 pb-10">
+
+        <main className="max-w-6xl mx-auto px-4 md:px-8 py-6 md:py-10 pb-28 md:pb-14">
           {activeTab === 'themes' && themesPage}
           {activeTab === 'products' && productsPage}
           {activeTab === 'store' && storePage}
@@ -1287,43 +1457,67 @@ Upgrade to unlock all 8 Advanced themes.`)
         </main>
       </div>
 
+      {/* Mobile bottom navigation */}
+      <nav aria-label="Primary" className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/80 backdrop-blur-md border-t border-zinc-200/80 pb-[env(safe-area-inset-bottom)]">
+        <div className="grid grid-cols-5 px-1.5 pt-2 pb-2">
+          {sidebarNav.map(item => {
+            const active = activeTab === item.id
+            return (
+              <button
+                type="button"
+                key={item.id}
+                onClick={() => setActiveTab(item.id as any)}
+                aria-current={active ? 'page' : undefined}
+                className="flex flex-col items-center gap-1 py-0.5 bg-transparent border-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black rounded-xl"
+              >
+                <span className={`relative h-7 w-12 rounded-full grid place-items-center transition-colors ${active ? 'bg-[#E8FF86] text-black' : 'text-zinc-500'}`}>
+                  <item.Icon c="w-[19px] h-[19px]" />
+                  {'pro' in item && item.pro && !active && <span className="absolute top-0.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#0A0A0A]" />}
+                </span>
+                <span className={`text-[10.5px] tracking-[-0.01em] ${active ? 'font-semibold text-zinc-900' : 'font-medium text-zinc-500'}`}>{mobileLabel[item.id]}</span>
+              </button>
+            )
+          })}
+        </div>
+      </nav>
+
       {/* Toast for errorMsg */}
       {errorMsg && (
-        <div className="fixed bottom-4 right-4 md:bottom-5 md:right-5 z-[100] max-w-[calc(100vw-2rem)] bg-[#0A0A0A] text-white pl-3.5 pr-4 py-2.5 rounded-full text-[12.5px] font-medium shadow-[0_12px_32px_rgba(0,0,0,0.25)] border border-white/10 flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#E8FF86]" />
+        <div role="status" className="fixed bottom-24 md:bottom-6 left-4 right-4 md:left-auto md:right-6 z-[100] bg-[#0A0A0A] text-white pl-4 pr-5 py-3 rounded-2xl text-[13px] font-medium shadow-[0_16px_40px_rgba(0,0,0,0.3)] border border-white/10 flex items-center gap-2.5 md:max-w-sm">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#E8FF86] shrink-0" />
           {errorMsg}
         </div>
       )}
 
-      {/* Status Modal */}
+      {/* Status modal */}
       {showStatusModal && (
-        <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-[380px] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
+        <div role="dialog" aria-modal="true" className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-[400px] overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,0.4)]">
             {showStatusModal.type === 'approved' ? (
               <div>
-                <div className="bg-black text-white p-8 text-center">
-                  <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto bg-[#E8FF86] shadow-[0_8px_24px_rgba(232,255,134,0.3)]"><span className="text-[28px]">✓</span></div>
-                  <h2 className="font-black text-[22px] tracking-tight mt-4">Payment Approved!</h2>
-                  <p className="text-[13px] text-white/60 mt-1">Your store is now {showStatusModal.payment.plan_id.toUpperCase()}</p>
+                <div className="bg-[#0A0A0A] text-white p-8 text-center">
+                  <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto bg-[#E8FF86] text-black shadow-[0_0_0_8px_rgba(232,255,134,0.15)]"><IconCheck c="w-7 h-7" /></div>
+                  <h2 className="font-extrabold text-[24px] tracking-[-0.035em] mt-5">Payment approved</h2>
+                  <p className="text-[13px] text-white/60 mt-1.5">Your store is now {showStatusModal.payment.plan_id.toUpperCase()}</p>
                 </div>
                 <div className="p-6">
-                  <div className="bg-[#FAFAF9] border border-zinc-100 rounded-xl p-4 space-y-2">
-                    <div className="flex justify-between"><span className="text-[11px] text-zinc-500">Plan</span><span className="text-[12.5px] font-black">{showStatusModal.payment.plan_id.toUpperCase()} • Rs. {showStatusModal.payment.amount}</span></div>
-                    <div className="flex justify-between items-center"><span className="text-[11px] text-zinc-500">Txn ID</span><span className="font-mono text-[11px] bg-white border border-zinc-200 px-2 py-1 rounded-lg">{showStatusModal.payment.txn_id}</span></div>
+                  <div className="bg-[#FAFAF9] border border-zinc-200/80 rounded-xl divide-y divide-zinc-200/80">
+                    <div className="flex justify-between items-center px-4 py-3"><span className="text-[12px] text-zinc-500">Plan</span><span className="text-[13px] font-bold tracking-[-0.01em]">{showStatusModal.payment.plan_id.toUpperCase()} · Rs. {showStatusModal.payment.amount}</span></div>
+                    <div className="flex justify-between items-center px-4 py-3"><span className="text-[12px] text-zinc-500">Txn ID</span><span className={UI.chipMono}>{showStatusModal.payment.txn_id}</span></div>
                   </div>
-                  <button onClick={() => setShowStatusModal(null)} className="mt-5 w-full h-11 bg-black text-white rounded-full font-bold text-[13px] hover:bg-zinc-800 transition-colors border-none cursor-pointer">Continue →</button>
+                  <button type="button" onClick={() => setShowStatusModal(null)} className={`${BTN_DARK} mt-5 w-full h-11 text-[13px]`}>Continue</button>
                 </div>
               </div>
             ) : (
               <div>
-                <div className="bg-[#FFFBF0] p-8 text-center border-b border-zinc-100">
-                  <div className="w-16 h-16 bg-red-50 border border-red-200 rounded-full flex items-center justify-center mx-auto"><span className="text-[24px]">✕</span></div>
-                  <h2 className="font-black text-[20px] tracking-tight mt-4">Payment Rejected</h2>
-                  <p className="text-[12px] text-zinc-500 mt-1">Check Txn ID and try again</p>
+                <div className="bg-[#FAFAF9] p-8 text-center border-b border-zinc-200/80">
+                  <div className="w-16 h-16 bg-red-50 border border-red-200 text-red-600 rounded-full flex items-center justify-center mx-auto"><IconX c="w-6 h-6" /></div>
+                  <h2 className="font-extrabold text-[22px] tracking-[-0.035em] mt-5">Payment rejected</h2>
+                  <p className="text-[13px] text-zinc-500 mt-1.5">Check the Txn ID and try again</p>
                 </div>
                 <div className="p-6">
-                  <p className="text-[12px] text-zinc-600 leading-relaxed">Txn ID could not be verified in Till {TILL_ID}. Please ensure correct amount and ID.</p>
-                  <button onClick={() => setShowStatusModal(null)} className="mt-5 w-full h-11 bg-black text-white rounded-full font-bold text-[13px] hover:bg-zinc-800 transition-colors border-none cursor-pointer">Try Again →</button>
+                  <p className="text-[13px] text-zinc-600 leading-relaxed">Txn ID could not be verified in Till <span className="font-mono">{TILL_ID}</span>. Please ensure correct amount and ID.</p>
+                  <button type="button" onClick={() => setShowStatusModal(null)} className={`${BTN_DARK} mt-5 w-full h-11 text-[13px]`}>Try again</button>
                 </div>
               </div>
             )}
