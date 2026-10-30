@@ -27,9 +27,10 @@ const IconPlus = ({ c = '' }: any) => <svg className={c} viewBox="0 0 24 24" fil
 const IconExternal = ({ c = '' }: any) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" /></svg>
 
 const LiveDot = () => (
-  <span className="relative flex h-2 w-2">
-    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#E8FF86] opacity-75" />
-    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#E8FF86]" />
+  <span className="relative flex h-2.5 w-2.5">
+    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#E8FF86] opacity-60" />
+    <span className="absolute inline-flex h-full w-full rounded-full bg-[#E8FF86]/20 animate-[glowPulse_2s_ease-in-out_infinite]" />
+    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#E8FF86] shadow-[0_0_12px_#E8FF86]" />
   </span>
 )
 
@@ -145,7 +146,7 @@ function PremiumProductCard({ p, onEdit, onDelete, imageLimit }: { p: any; onEdi
 
   return (
     <div
-      className="group relative bg-white border border-zinc-200/80 rounded-[20px] overflow-hidden hover:border-zinc-900/20 hover:shadow-[0_16px_40px_-16px_rgba(0,0,0,0.15)] transition-all duration-300"
+      className="group premium-card relative bg-white border border-zinc-200/80 rounded-[20px] overflow-hidden hover:border-zinc-900/20 hover:shadow-[0_20px_48px_-16px_rgba(0,0,0,0.18)] transition-all duration-500 hover:-translate-y-1"
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
     >
@@ -383,10 +384,10 @@ export default function Dashboard() {
         @media (max-width: 768px) { .glass-container .glass { width: 200px; height: 280px; margin: 0 -20px; } .glass-container { min-height: 340px; padding: 24px 0 32px; } }
       `}</style>
 
-      <PageHeader eyebrow="Theme Studio" title="Craft your storefront" subtitle={currentPlanId === 'basic' ? '3 of 8 Advanced unlocked · Premium locked' : currentPlanId === 'advanced' ? 'All 8 Advanced unlocked · Premium locked' : 'All 11 themes unlocked — you’re limitless'} actions={<><div className="hidden md:flex items-center gap-2 h-10 px-3 rounded-full bg-white border border-zinc-200/80 text-[11px] font-mono text-zinc-500"><LiveDot /> <span>/s/{slug || 'your-slug'}</span></div><button onClick={saveStore} disabled={saving} className="h-10 px-5 bg-[#0A0A0A] text-white text-[12.5px] font-semibold tracking-[-0.01em] rounded-full hover:bg-black transition-all disabled:opacity-50 shadow-[0_4px_16px_rgba(0,0,0,0.12)]">{saving ? 'Saving...' : saved ? '✓ Published' : 'Save & Publish'}</button></>} />
+      <PageHeader eyebrow="Theme Studio" title="Craft your storefront" subtitle={currentPlanId === 'basic' ? '3 of 8 Advanced unlocked · Premium locked' : currentPlanId === 'advanced' ? 'All 8 Advanced unlocked · Premium locked' : 'All 11 themes unlocked — you’re limitless'} actions={<><div className="hidden md:flex items-center gap-2 h-10 px-3 rounded-full bg-white border border-zinc-200/80 text-[11px] font-mono text-zinc-500"><LiveDot /> <span>/s/{slug || 'your-slug'}</span></div><button onClick={saveStore} disabled={saving} className="premium-button magnetic h-10 px-5 bg-[#0A0A0A] text-white text-[12.5px] font-semibold tracking-[-0.01em] rounded-full hover:bg-black transition-all duration-300 disabled:opacity-50 shadow-[0_4px_16px_rgba(0,0,0,0.12)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.18)] hover:-translate-y-0.5">{saving ? 'Saving...' : saved ? '✓ Published' : 'Save & Publish'}</button></>} />
 
       {/* Active theme hero - obsidian */}
-      <div className="relative rounded-[24px] overflow-hidden mb-6 bg-[#0A0A0A] border border-white/[0.06]">
+      <div className="relative rounded-[24px] overflow-hidden mb-6 bg-[#0A0A0A] border border-white/[0.06] premium-card animate-[scaleIn_0.6s_cubic-bezier(0.23,1,0.32,1)]">
         <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }} />
         <div className="absolute top-0 right-0 w-[420px] h-[420px] bg-[#E8FF86]/[0.06] rounded-full blur-[80px] -mr-32 -mt-32" />
         <div className="relative p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-7">
@@ -410,7 +411,7 @@ export default function Dashboard() {
           {finalAdvancedList.map(t => {
             const isActive = theme === t.id; const locked = isThemeLocked(t)
             return (
-              <button key={t.id} onClick={() => handleThemeClick(t)} className={`group relative bg-white border rounded-[20px] overflow-hidden text-left w-full cursor-pointer transition-all duration-300 hover:-translate-y-1 ${isActive ? 'border-[#0A0A0A] ring-[3px] ring-[#0A0A0A]/10 shadow-[0_12px_32px_-8px_rgba(0,0,0,0.18)]' : 'border-zinc-200/80 hover:border-zinc-900/20 hover:shadow-[0_12px_32px_-8px_rgba(0,0,0,0.12)]'}`}>
+              <button key={t.id} onClick={() => handleThemeClick(t)} style={{ animationDelay: `${i * 60}ms` }} className={`group premium-card relative bg-white border rounded-[20px] overflow-hidden text-left w-full cursor-pointer transition-all duration-500 hover:-translate-y-1.5 animate-[fadeInUp_0.6s_ease_both] ${isActive ? 'border-[#0A0A0A] ring-[3px] ring-[#0A0A0A]/10 shadow-[0_16px_40px_-12px_rgba(0,0,0,0.22)] premium-glow' : 'border-zinc-200/80 hover:border-zinc-900/20 hover:shadow-[0_16px_40px_-12px_rgba(0,0,0,0.14)]'}`}>
                 <div className="aspect-[4/3] relative overflow-hidden bg-[#FAFAF9]"><MiniStorefront theme={t} />{isActive && <div className="absolute top-2.5 right-2.5 w-6 h-6 rounded-full bg-[#0A0A0A] text-white flex items-center justify-center shadow-lg"><IconCheck c="w-3 h-3" /></div>}{locked && (<div className="absolute inset-0 flex flex-col items-center justify-center gap-2.5 backdrop-blur-xl bg-white/80"><div className="w-10 h-10 rounded-[12px] bg-[#0A0A0A] flex items-center justify-center shadow-[0_8px_20px_rgba(0,0,0,0.15)]"><IconLock c="w-4.5 h-4.5 text-white" /></div><div className="text-[10px] font-black tracking-widest text-zinc-900">LOCKED</div><div className="text-[10px] text-zinc-500 font-mono">Rs. 899/mo</div></div>)}</div>
                 <div className="p-3.5 flex items-center justify-between gap-2"><div className="min-w-0"><div className="font-semibold text-[12.5px] tracking-[-0.01em] truncate">{t.name}</div><div className="text-[9px] text-zinc-400 uppercase tracking-[0.14em] font-bold mt-1">ADVANCED</div></div>{isActive && !locked && <span className="shrink-0 text-[9px] font-black tracking-widest px-2 h-5 rounded-full bg-[#E8FF86] text-black flex items-center">ACTIVE</span>}</div>
               </button>
@@ -622,8 +623,57 @@ export default function Dashboard() {
   )
 
   return (
-    <div className="min-h-screen bg-[#FAFAF9] text-[#0A0A0A] antialiased selection:bg-[#E8FF86] selection:text-black">
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap'); *{font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;} .font-mono{font-family: 'JetBrains Mono', monospace !important;} .no-scrollbar::-webkit-scrollbar{display:none} .no-scrollbar{-ms-overflow-style:none; scrollbar-width:none}`}</style>
+    <div className="min-h-screen bg-[#FAFAF9] text-[#0A0A0A] antialiased selection:bg-[#E8FF86] selection:text-black relative overflow-hidden">
+      {/* PREMIUM BACKGROUND ORBS - animated mesh */}
+      <div className="pointer-events-none fixed inset-0 z-0">
+        <div className="absolute top-[-10%] left-[-5%] w-[480px] h-[480px] bg-[#E8FF86]/[0.06] rounded-full blur-[120px] animate-[floatSlow_12s_ease-in-out_infinite]" />
+        <div className="absolute top-[20%] right-[-10%] w-[600px] h-[600px] bg-[#0A0A0A]/[0.03] rounded-full blur-[140px] animate-[floatSlow_16s_ease-in-out_infinite_reverse]" />
+        <div className="absolute bottom-[-15%] left-[20%] w-[700px] h-[700px] bg-[#E8FF86]/[0.04] rounded-full blur-[160px] animate-[float_10s_ease-in-out_infinite]" />
+      </div>
+      <style>{`
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
+*{font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;}
+.font-mono{font-family: 'JetBrains Mono', monospace !important;}
+.no-scrollbar::-webkit-scrollbar{display:none}
+.no-scrollbar{-ms-overflow-style:none; scrollbar-width:none}
+
+/* PREMIUM ANIMATION SYSTEM - Vercel/Linear grade */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+@keyframes slideInRight { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes shimmerSlide { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
+@keyframes float { 0%,100% { transform: translateY(0) rotate(var(--r, 0deg)); } 50% { transform: translateY(-6px) rotate(var(--r, 0deg)); } }
+@keyframes floatSlow { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes glowPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(232,255,134,0.4); } 50% { box-shadow: 0 0 0 8px rgba(232,255,134,0); } }
+@keyframes limeGlow { 0%,100% { box-shadow: 0 0 20px rgba(232,255,134,0.15), 0 0 0 1px rgba(232,255,134,0.2); } 50% { box-shadow: 0 0 32px rgba(232,255,134,0.25), 0 0 0 1px rgba(232,255,134,0.3); } }
+@keyframes borderSpin { to { transform: rotate(360deg); } }
+@keyframes spotlight { 0% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.8); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.4); } }
+@keyframes progressShimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+.premium-card { position: relative; overflow: hidden; }
+.premium-card::after { content: ''; position: absolute; top: 0; left: 0; width: 60%; height: 100%; background: linear-gradient(100deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%); transform: translateX(-150%) skewX(-12deg); transition: transform 0.8s cubic-bezier(0.23,1,0.32,1); pointer-events: none; }
+.premium-card:hover::after { transform: translateX(250%) skewX(-12deg); }
+
+.premium-button { position: relative; overflow: hidden; isolation: isolate; }
+.premium-button::before { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 20%, rgba(255,255,255,0.15) 50%, transparent 80%); transform: translateX(-100%); transition: transform 0.6s cubic-bezier(0.23,1,0.32,1); z-index: 1; }
+.premium-button:hover::before { transform: translateX(100%); }
+.premium-button:active { transform: scale(0.98); }
+
+.premium-float { animation: float 6s ease-in-out infinite; }
+.premium-float-slow { animation: floatSlow 8s ease-in-out infinite; }
+.premium-glow { animation: limeGlow 3s ease-in-out infinite; }
+
+.magnetic { transition: transform 0.3s cubic-bezier(0.23,1,0.32,1); }
+.magnetic:hover { transform: translateY(-1px) scale(1.01); }
+
+.stagger-1 { animation-delay: 60ms; }
+.stagger-2 { animation-delay: 120ms; }
+.stagger-3 { animation-delay: 180ms; }
+.stagger-4 { animation-delay: 240ms; }
+.stagger-5 { animation-delay: 300ms; }
+.stagger-6 { animation-delay: 360ms; }
+`}</style>
 
       {/* DESKTOP SIDEBAR - Obsidian */}
       <aside className="hidden md:flex fixed left-0 top-0 h-screen w-[280px] bg-[#0A0A0A] text-white flex-col z-40 border-r border-white/[0.06]">
@@ -640,7 +690,7 @@ export default function Dashboard() {
             {sidebarNav.map(item => {
               const isActive = activeTab === item.id; const Icon = item.Icon
               return (
-                <button key={item.id} onClick={() => setActiveTab(item.id as any)} className={`w-full flex items-center gap-3 px-3 h-10 rounded-[12px] text-[13.5px] font-[500] tracking-[-0.01em] transition-all ${isActive ? 'bg-white text-black shadow-[0_2px_12px_rgba(255,255,255,0.08)]' : 'text-white/60 hover:text-white hover:bg-white/[0.06]'}`}>
+                <button key={item.id} onClick={() => setActiveTab(item.id as any)} className={`group/nav magnetic w-full flex items-center gap-3 px-3 h-10 rounded-[12px] text-[13.5px] font-[500] tracking-[-0.01em] transition-all duration-300 ${isActive ? 'bg-white text-black shadow-[0_4px_20px_rgba(255,255,255,0.12)] premium-glow' : 'text-white/60 hover:text-white hover:bg-white/[0.06] hover:translate-x-0.5'}`}>
                   <Icon c={`w-[18px] h-[18px] ${isActive ? 'text-black' : 'text-white/40'}`} />
                   <span className="flex-1 text-left">{item.label}</span>
                   {item.badge && <span className={`text-[10px] font-mono px-1.5 h-5 rounded-full flex items-center ${isActive ? 'bg-black text-white' : 'bg-white/10 text-white/60 border border-white/10'}`}>{item.badge}</span>}
@@ -688,7 +738,7 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <div className="md:ml-[280px]">
+      <div className="md:ml-[280px] relative z-10">
         <main className="max-w-[1160px] mx-auto px-4 md:px-8 py-6 md:py-10 pb-[88px] md:pb-10">
           {activeTab === 'themes' && themesPage}
           {activeTab === 'products' && productsPage}
