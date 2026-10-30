@@ -358,13 +358,13 @@ export default function Dashboard() {
   const currentTheme: any = [...finalAdvancedList, ...standardThemes, ...premiumThemes].find(t => t.id === theme) || finalAdvancedList[0] || standardThemes[0] || { name: 'Theme', colors: { bg: '#F8F7F5', accent: '#000' } }
   const currentTier = finalAdvancedList.some(t => t.id === theme) ? 'Advanced' : standardThemes.some(t => t.id === theme) ? 'Standard' : 'Premium'
 
-  const sidebarNav = [
+  const sidebarNav: { id: string; label: string; Icon: any; badge?: string; pro?: boolean }[] = [
     { id: 'themes', label: 'Themes', Icon: IconThemes },
     { id: 'products', label: 'Products', Icon: IconProducts, badge: `${products.length}/${productLimit === 999999 ? '∞' : productLimit}` },
     { id: 'store', label: 'Store', Icon: IconStore },
     { id: 'analytics', label: 'Analytics', Icon: IconAnalytics, pro: !isPremium },
     { id: 'payments', label: 'Plans & Billing', Icon: IconBilling },
-  ] as const
+  ]
 
   /* ---------------- THEMES PAGE - BREATHTAKING REDESIGN -------------------- */
   const themesPage = (
@@ -637,7 +637,7 @@ export default function Dashboard() {
         <div className="flex-1 p-3 overflow-y-auto">
           <div className="px-2 py-2 text-[10px] font-bold tracking-[0.14em] uppercase text-white/30">Workspace</div>
           <div className="space-y-1">
-            {(sidebarNav as any[]).map(item => {
+            {sidebarNav.map(item => {
               const isActive = activeTab === item.id; const Icon = item.Icon
               return (
                 <button key={item.id} onClick={() => setActiveTab(item.id as any)} className={`w-full flex items-center gap-3 px-3 h-10 rounded-[12px] text-[13.5px] font-[500] tracking-[-0.01em] transition-all ${isActive ? 'bg-white text-black shadow-[0_2px_12px_rgba(255,255,255,0.08)]' : 'text-white/60 hover:text-white hover:bg-white/[0.06]'}`}>
@@ -701,7 +701,7 @@ export default function Dashboard() {
       {/* MOBILE BOTTOM NAV - Linear style */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-2xl border-t border-zinc-200/80 px-2 py-2 pb-[max(8px,env(safe-area-inset-bottom))]">
         <div className="flex justify-around">
-          {(sidebarNav as any[]).map(item => {
+          {sidebarNav.map(item => {
             const isActive = activeTab === item.id; const Icon = item.Icon
             return (
               <button key={item.id} onClick={() => setActiveTab(item.id as any)} className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-[12px] transition-all ${isActive ? 'text-black' : 'text-zinc-400'}`}>
