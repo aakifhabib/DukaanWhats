@@ -1154,9 +1154,19 @@ Upgrade to unlock all 8 Advanced themes.`)
 
   /* ---------------- LAYOUT ---------------- */
   return (
-    <div className="min-h-screen bg-[#FAFAF9] text-zinc-900">
+    <div className="min-h-screen bg-[#F7F7F5] text-[#0A0A0A] selection:bg-[#E8FF86] selection:text-black">
+      <style jsx global>{`
+        * { -webkit-tap-highlight-color: transparent; }
+        button, a, input, select, textarea { outline-offset: 3px; }
+        button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+          outline: 2px solid #A3C84B;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+        }
+      `}</style>
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 bg-[#0A0A0A] text-white fixed left-0 top-0 bottom-0 z-40">
+      <aside className="hidden md:flex flex-col w-[272px] bg-[#0A0A0A] text-white fixed left-0 top-0 bottom-0 z-40 border-r border-white/[0.06]">
         <div className="px-5 pt-6 pb-5 border-b border-white/[0.06]">
           <Link href="/" className="flex items-center gap-2.5 no-underline text-inherit">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-[15px] text-black bg-[#E8FF86]">D</div>
@@ -1167,14 +1177,14 @@ Upgrade to unlock all 8 Advanced themes.`)
           </Link>
         </div>
 
-        <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {sidebarNav.map(item => {
             const active = activeTab === item.id
             return (
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id as any)}
-                className={`relative w-full flex items-center gap-3 px-3 h-10 rounded-lg text-[13px] font-medium transition-all border-none cursor-pointer ${active ? 'bg-white/[0.08] text-white' : 'text-white/55 hover:text-white hover:bg-white/[0.04]'}`}
+                className={`relative w-full flex items-center gap-3 px-3.5 h-11 rounded-xl text-[13px] font-medium transition-all border-none cursor-pointer ${active ? 'bg-white/[0.08] text-white' : 'text-white/55 hover:text-white hover:bg-white/[0.04]'}`}
               >
                 {active && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-[#E8FF86]" />}
                 <item.Icon c={`w-[17px] h-[17px] ${active ? 'text-[#E8FF86]' : ''}`} />
@@ -1217,7 +1227,7 @@ Upgrade to unlock all 8 Advanced themes.`)
       </aside>
 
       {/* Mobile Header */}
-      <header className="md:hidden sticky top-0 z-30 bg-[#FAFAF9]/95 backdrop-blur-xl border-b border-zinc-200/70">
+      <header className="md:hidden sticky top-0 z-30 bg-[#FAFAF9]/95 backdrop-blur-xl border-b border-zinc-200/80 shadow-[0_4px_18px_rgba(0,0,0,0.025)]">
         <div className="flex items-center justify-between px-4 h-14">
           <Link href="/" className="flex items-center gap-2 no-underline text-inherit">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-[13px] text-black bg-[#E8FF86]">D</div>
@@ -1227,7 +1237,7 @@ Upgrade to unlock all 8 Advanced themes.`)
             {currentPlanDef.name.toUpperCase()}
           </button>
         </div>
-        <div className="flex gap-1.5 px-3 pb-3 overflow-x-auto no-scrollbar">
+        <div className="flex gap-1.5 px-3 pb-3 overflow-x-auto no-scrollbar snap-x">
           {[
             { id: 'themes', label: 'Themes' },
             { id: 'products', label: 'Products' },
@@ -1252,8 +1262,23 @@ Upgrade to unlock all 8 Advanced themes.`)
         </div>
       </header>
 
-      <div className="md:ml-64">
-        <main className="max-w-5xl mx-auto px-4 md:px-8 py-6 md:py-10">
+      <div className="md:ml-[272px] min-h-screen">
+        {/* Desktop command bar */}
+        <div className="hidden md:flex sticky top-0 z-30 h-[68px] items-center justify-between border-b border-zinc-200/80 bg-[#FAFAF9]/90 px-8 backdrop-blur-md">
+          <div className="flex items-center gap-2 text-[11px] font-medium text-zinc-400">
+            <span className="text-zinc-900 font-semibold">Workspace</span>
+            <span>/</span>
+            <span className="capitalize">{activeTab === 'payments' ? 'Plans & Billing' : activeTab}</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="hidden lg:flex items-center gap-2 rounded-full border border-zinc-200/80 bg-white px-3 py-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#E8FF86]" />
+              <span className="text-[10px] font-semibold tracking-[0.12em] text-zinc-500">DUKAANWHATS WORKSPACE</span>
+            </div>
+            <CurrentPlanButton />
+          </div>
+        </div>
+        <main className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-10 py-6 md:py-8 lg:py-10 pb-10">
           {activeTab === 'themes' && themesPage}
           {activeTab === 'products' && productsPage}
           {activeTab === 'store' && storePage}
@@ -1264,7 +1289,7 @@ Upgrade to unlock all 8 Advanced themes.`)
 
       {/* Toast for errorMsg */}
       {errorMsg && (
-        <div className="fixed bottom-5 right-5 z-[100] bg-[#0A0A0A] text-white pl-3.5 pr-4 py-2.5 rounded-full text-[12.5px] font-medium shadow-[0_12px_32px_rgba(0,0,0,0.25)] border border-white/10 flex items-center gap-2">
+        <div className="fixed bottom-4 right-4 md:bottom-5 md:right-5 z-[100] max-w-[calc(100vw-2rem)] bg-[#0A0A0A] text-white pl-3.5 pr-4 py-2.5 rounded-full text-[12.5px] font-medium shadow-[0_12px_32px_rgba(0,0,0,0.25)] border border-white/10 flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-[#E8FF86]" />
           {errorMsg}
         </div>
