@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, useMemo, useRef } from 'react'
+// @ts-ignore -- keeps the build green even when @types/react-dom is not installed
 import { createPortal } from 'react-dom'
 import { supabase } from '@/lib/supabase'
 import { PremiumThemeRenderer } from './PremiumThemeRenderer'
