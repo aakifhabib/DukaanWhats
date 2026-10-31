@@ -197,17 +197,24 @@ function MiniStorefront({ theme }: { theme: any }) {
 const IconX = ({ c = '' }) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
 const IconCopy = ({ c = '' }) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="12" height="12" rx="2.5" /><path d="M5 15V6a2 2 0 0 1 2-2h9" /></svg>
 
+const Spinner = ({ c = 'w-3.5 h-3.5' }) => (
+  <svg className={`${c} animate-spin`} viewBox="0 0 24 24" fill="none" aria-hidden>
+    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity="0.25" strokeWidth="3" />
+    <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+  </svg>
+)
+
 /* -------------------- DESIGN TOKENS -------------------- */
 const UI = {
-  card: 'bg-white border border-zinc-200/80 rounded-2xl p-5 md:p-6',
+  card: 'dw-spot-card relative bg-white border border-zinc-200/80 rounded-2xl p-5 md:p-6',
   input: 'w-full h-11 px-3.5 rounded-xl border border-zinc-200/80 bg-white text-[13.5px] text-zinc-900 placeholder:text-zinc-400 outline-none transition-[border-color,box-shadow] focus:border-zinc-900 focus:ring-4 focus:ring-[#E8FF86]/70',
   chipMono: 'font-mono text-[11px] px-1.5 py-0.5 rounded-md bg-zinc-100 border border-zinc-200/80 text-zinc-700',
   focus: 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAFAF9]',
 }
-const BTN = 'relative overflow-hidden inline-flex items-center justify-center gap-2 shrink-0 rounded-full font-semibold tracking-[-0.01em] whitespace-nowrap cursor-pointer select-none transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAFAF9]'
-const BTN_DARK = `${BTN} dw-shine bg-[#0A0A0A] text-white hover:bg-zinc-800`
-const BTN_LIGHT = `${BTN} bg-white text-zinc-900 border border-zinc-200/80 hover:bg-zinc-50 hover:border-zinc-300`
-const BTN_LIME = `${BTN} dw-shine bg-[#E8FF86] text-black hover:brightness-95`
+const BTN = 'dw-btn dw-ripple relative overflow-hidden inline-flex items-center justify-center gap-2 shrink-0 rounded-full font-semibold tracking-[-0.01em] whitespace-nowrap cursor-pointer select-none transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAFAF9]'
+const BTN_DARK = `${BTN} dw-shine dw-magnet bg-[#0A0A0A] text-white hover:bg-zinc-800 hover:shadow-[0_14px_28px_-12px_rgba(10,10,10,0.65)]`
+const BTN_LIGHT = `${BTN} bg-white text-zinc-900 border border-zinc-200/80 hover:bg-zinc-50 hover:border-zinc-400 hover:shadow-[0_10px_22px_-14px_rgba(10,10,10,0.35)]`
+const BTN_LIME = `${BTN} dw-shine dw-magnet bg-[#E8FF86] text-black hover:brightness-95 hover:shadow-[0_14px_30px_-10px_rgba(232,255,134,0.9)]`
 
 /* -------------------- SMALL PRIMITIVES -------------------- */
 /* -------------------- SCALED PREVIEW (fixes cropped / mis-proportioned previews) -------------------- */
@@ -396,7 +403,7 @@ function PremiumProductCard({ p, onEdit, onDelete, imageLimit }: { p: any; onEdi
 
   return (
     <div
-      className="group bg-white border border-zinc-200/80 rounded-2xl overflow-hidden transition-all duration-200 hover:border-zinc-400 hover:shadow-[0_20px_40px_-22px_rgba(10,10,10,0.35)]"
+      className="group bg-white border border-zinc-200/80 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-zinc-400 hover:shadow-[0_24px_44px_-22px_rgba(10,10,10,0.4)]"
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
     >
@@ -833,7 +840,7 @@ Upgrade to unlock all 8 Advanced themes.`)
               </span>
             )}
             <button type="button" onClick={saveStore} disabled={saving} className={`${BTN_DARK} h-10 px-5 text-[13px]`}>
-              {saving ? 'Saving...' : 'Save & publish'}
+              {saving ? <><Spinner /> Saving...</> : 'Save & publish'}
             </button>
           </>
         }
@@ -876,7 +883,7 @@ Upgrade to unlock all 8 Advanced themes.`)
                 View live <IconExternal c="w-3.5 h-3.5" />
               </Link>
               <button type="button" onClick={saveStore} disabled={saving} className={`${BTN} h-10 px-5 bg-white/10 text-white border border-white/15 text-[13px] hover:bg-white/15 backdrop-blur-md`}>
-                {saving ? 'Publishing...' : 'Republish'}
+                {saving ? <><Spinner /> Publishing...</> : 'Republish'}
               </button>
             </div>
           </div>
@@ -985,7 +992,7 @@ Upgrade to unlock all 8 Advanced themes.`)
       {/* Premium theme editor — THEME-SPECIFIC REAL PREVIEW — AUTO-SWITCH */}
       <div id="premium-editor-anchor" />
       {profile && (
-        <div className="mt-6">
+        <div className="dw-static mt-6">
           <PremiumThemeEditor
             profile={{ ...profile, premium_custom: premiumCustom }}
             onSave={(d: any) => { setPremiumCustom(d); setProfile({ ...profile, premium_custom: d } as any) }}
@@ -1060,7 +1067,7 @@ Upgrade to unlock all 8 Advanced themes.`)
               </div>
             ) : (
               <div className="py-4 text-center">
-                <div className="w-12 h-12 rounded-2xl bg-[#0A0A0A] mx-auto flex items-center justify-center mb-3.5"><IconUpload c="w-5 h-5 text-[#E8FF86]" /></div>
+                <div className="w-12 h-12 rounded-2xl bg-[#0A0A0A] mx-auto flex items-center justify-center mb-3.5 transition-transform duration-300 group-hover/drop:-translate-y-1.5 group-hover/drop:rotate-[-6deg]"><IconUpload c="w-5 h-5 text-[#E8FF86]" /></div>
                 <div className="font-semibold text-[13.5px] tracking-[-0.015em]">Drop images or click to upload</div>
                 <div className="text-[11.5px] text-zinc-500 mt-1">PNG, JPG, WEBP, up to 5MB each</div>
                 <div className="flex items-center justify-center gap-1.5 mt-4 flex-wrap">
@@ -1116,7 +1123,7 @@ Upgrade to unlock all 8 Advanced themes.`)
             disabled={uploading || (!editingId && products.length >= productLimit)}
             className={`${BTN_DARK} h-10 px-6 text-[13px]`}
           >
-            {uploading ? 'Uploading...' : !editingId && products.length >= productLimit ? `Limit ${productLimit === 999999 ? '∞' : productLimit} — Upgrade` : `${editingId ? 'Update' : 'Add'} product`}
+            {uploading ? <><Spinner /> Uploading...</> : !editingId && products.length >= productLimit ? `Limit ${productLimit === 999999 ? '∞' : productLimit} — Upgrade` : `${editingId ? 'Update' : 'Add'} product`}
           </button>
         </div>
       </div>
@@ -1124,7 +1131,7 @@ Upgrade to unlock all 8 Advanced themes.`)
       <div className="dw-sg grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
         {products.length === 0 ? (
           <div className="col-span-2 md:col-span-3 lg:col-span-4 bg-white border border-dashed border-zinc-300 rounded-2xl p-12 flex flex-col items-center justify-center text-center">
-            <div className="w-12 h-12 rounded-2xl bg-[#0A0A0A] flex items-center justify-center mb-3.5"><IconProducts c="w-5 h-5 text-[#E8FF86]" /></div>
+            <div className="dw-float w-12 h-12 rounded-2xl bg-[#0A0A0A] flex items-center justify-center mb-3.5"><IconProducts c="w-5 h-5 text-[#E8FF86]" /></div>
             <div className="font-semibold text-[15px] tracking-[-0.02em]">No products yet</div>
             <div className="text-[12.5px] text-zinc-500 mt-1">Add your first product above. {productLimit === 999999 ? 'Unlimited' : productLimit} allowed on {currentPlanDef.name}.</div>
           </div>
@@ -1141,7 +1148,7 @@ Upgrade to unlock all 8 Advanced themes.`)
       <PageHeader
         title="Store"
         subtitle="How customers see and reach your business."
-        actions={<button type="button" onClick={saveStore} disabled={saving} className={`${BTN_DARK} h-10 px-5 text-[13px]`}>{saving ? 'Saving...' : saved ? 'Saved' : 'Save changes'}</button>}
+        actions={<button type="button" onClick={saveStore} disabled={saving} className={`${BTN_DARK} h-10 px-5 text-[13px]`}>{saving ? <><Spinner /> Saving...</> : saved ? <><IconCheck c="w-3.5 h-3.5" /> Saved</> : 'Save changes'}</button>}
       />
 
       <div className="grid lg:grid-cols-[1fr_340px] gap-4">
@@ -1201,17 +1208,17 @@ Upgrade to unlock all 8 Advanced themes.`)
         <div className={`${UI.card} relative overflow-hidden min-h-[440px]`}>
           <div aria-hidden className="grid grid-cols-2 md:grid-cols-4 gap-3 blur-[3px] opacity-60 select-none pointer-events-none">
             {[0, 1, 2, 3].map(i => (
-              <div key={i} className="rounded-xl border border-zinc-200/80 p-4">
+              <div key={i} className="dw-skel rounded-xl border border-zinc-200/80 p-4">
                 <div className="h-2 w-14 rounded bg-zinc-200" />
                 <div className="h-6 w-20 rounded bg-zinc-900/80 mt-3" />
                 <div className="h-9 mt-4 rounded bg-zinc-100" />
               </div>
             ))}
-            <div className="col-span-2 md:col-span-4 h-32 rounded-xl border border-zinc-200/80 bg-zinc-50" />
+            <div className="dw-skel col-span-2 md:col-span-4 h-32 rounded-xl border border-zinc-200/80 bg-zinc-50" />
           </div>
           <div className="absolute inset-0 flex items-center justify-center p-5">
             <div className="w-full max-w-[420px] rounded-2xl border border-zinc-200/80 bg-white/85 backdrop-blur-md p-6 md:p-7 text-center shadow-[0_24px_60px_-28px_rgba(10,10,10,0.4)]">
-              <div className="w-12 h-12 rounded-2xl bg-[#0A0A0A] flex items-center justify-center mx-auto">
+              <div className="dw-float w-12 h-12 rounded-2xl bg-[#0A0A0A] flex items-center justify-center mx-auto">
                 <IconAnalytics c="w-6 h-6 text-[#E8FF86]" />
               </div>
               <h3 className="font-extrabold text-[22px] tracking-[-0.03em] mt-4">Analytics is Premium</h3>
@@ -1223,7 +1230,7 @@ Upgrade to unlock all 8 Advanced themes.`)
                   <span key={f} className="text-[11px] font-medium bg-zinc-100 border border-zinc-200/80 px-2.5 h-6 rounded-full flex items-center text-zinc-600">{f}</span>
                 ))}
               </div>
-              <button type="button" onClick={() => setActiveTab('payments')} className={`${BTN_DARK} mt-6 h-11 px-7 text-[13px]`}>
+              <button type="button" onClick={() => setActiveTab('payments')} className={`${BTN_DARK} dw-idle mt-6 h-11 px-7 text-[13px]`}>
                 Upgrade to Premium
               </button>
             </div>
@@ -1295,9 +1302,10 @@ Upgrade to unlock all 8 Advanced themes.`)
             <h3 className="text-[17px] font-extrabold tracking-[-0.025em]">Pay to JazzCash Till <span className="font-mono font-medium text-zinc-400">{TILL_ID}</span></h3>
             <p className="text-[12.5px] text-zinc-500 mt-1">Send payment, then submit the Transaction ID.</p>
           </div>
-          <div role="group" aria-label="Billing period" className="flex bg-zinc-100 border border-zinc-200/80 rounded-full p-1 gap-1">
-            <button type="button" aria-pressed={billing === 'monthly'} onClick={() => setBilling('monthly')} className={`h-8 px-4 rounded-full text-[12.5px] font-semibold border-none cursor-pointer transition-all ${billing === 'monthly' ? 'bg-[#0A0A0A] text-white' : 'bg-transparent text-zinc-500 hover:text-zinc-900'}`}>Monthly</button>
-            <button type="button" aria-pressed={billing === 'yearly'} onClick={() => setBilling('yearly')} className={`h-8 px-4 rounded-full text-[12.5px] font-semibold border-none cursor-pointer transition-all flex items-center gap-1.5 ${billing === 'yearly' ? 'bg-[#0A0A0A] text-white' : 'bg-transparent text-zinc-500 hover:text-zinc-900'}`}>
+          <div role="group" aria-label="Billing period" className="relative grid grid-cols-2 bg-zinc-100 border border-zinc-200/80 rounded-full p-1 min-w-[220px]">
+            <span aria-hidden className="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-full bg-[#0A0A0A] shadow-[0_6px_16px_-6px_rgba(10,10,10,0.6)] transition-transform duration-500 ease-[cubic-bezier(.2,.9,.25,1.1)]" style={{ transform: billing === 'yearly' ? 'translateX(100%)' : 'translateX(0)' }} />
+            <button type="button" aria-pressed={billing === 'monthly'} onClick={() => setBilling('monthly')} className={`relative z-10 h-8 px-4 rounded-full text-[12.5px] font-semibold border-none cursor-pointer bg-transparent transition-colors duration-300 ${billing === 'monthly' ? 'text-white' : 'text-zinc-500 hover:text-zinc-900'}`}>Monthly</button>
+            <button type="button" aria-pressed={billing === 'yearly'} onClick={() => setBilling('yearly')} className={`relative z-10 h-8 px-4 rounded-full text-[12.5px] font-semibold border-none cursor-pointer bg-transparent transition-colors duration-300 flex items-center justify-center gap-1.5 ${billing === 'yearly' ? 'text-white' : 'text-zinc-500 hover:text-zinc-900'}`}>
               Yearly <span className="text-[10px] px-1.5 py-0.5 rounded-full text-black font-bold bg-[#E8FF86]">-22%</span>
             </button>
           </div>
@@ -1344,7 +1352,7 @@ Upgrade to unlock all 8 Advanced themes.`)
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3 min-w-0 flex-1">
                       <span className={`mt-1 w-4 h-4 rounded-full border grid place-items-center shrink-0 transition-colors ${isSelected ? 'border-zinc-900 bg-[#0A0A0A]' : 'border-zinc-300 bg-white'}`}>
-                        {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-[#E8FF86]" />}
+                        {isSelected && <span className="dw-dot w-1.5 h-1.5 rounded-full bg-[#E8FF86]" />}
                       </span>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -1393,7 +1401,7 @@ Upgrade to unlock all 8 Advanced themes.`)
               disabled={purchasing}
               className={`${BTN_DARK} mt-4 w-full h-11 text-[13px]`}
             >
-              {purchasing ? 'Submitting...' : `I Paid — Activate ${selectedPlan.name}`}
+              {purchasing ? <><Spinner /> Submitting...</> : `I Paid — Activate ${selectedPlan.name}`}
             </button>
           </div>
         )}
@@ -1403,7 +1411,40 @@ Upgrade to unlock all 8 Advanced themes.`)
 
   /* ---------------- LAYOUT ---------------- */
   return (
-    <div className="dw-root min-h-screen bg-[#FAFAF9] text-zinc-900">
+    <div
+      className="dw-root min-h-screen bg-[#FAFAF9] text-zinc-900"
+      onPointerMove={(e) => {
+        const t = e.target as HTMLElement
+        const card = t.closest?.('.dw-spot-card') as HTMLElement | null
+        if (card) {
+          const r = card.getBoundingClientRect()
+          card.style.setProperty('--px', `${e.clientX - r.left}px`)
+          card.style.setProperty('--py', `${e.clientY - r.top}px`)
+        }
+        const m = t.closest?.('.dw-magnet') as HTMLElement | null
+        if (m && e.pointerType === 'mouse') {
+          const r = m.getBoundingClientRect()
+          m.style.setProperty('--tx', `${(((e.clientX - (r.left + r.width / 2)) / r.width) * 7).toFixed(1)}px`)
+          m.style.setProperty('--ty', `${(((e.clientY - (r.top + r.height / 2)) / r.height) * 6).toFixed(1)}px`)
+        }
+      }}
+      onPointerOut={(e) => {
+        const m = (e.target as HTMLElement).closest?.('.dw-magnet') as HTMLElement | null
+        if (m && !m.contains(e.relatedTarget as Node | null)) { m.style.setProperty('--tx', '0px'); m.style.setProperty('--ty', '0px') }
+      }}
+      onPointerDown={(e) => {
+        const b = (e.target as HTMLElement).closest?.('.dw-ripple') as HTMLButtonElement | null
+        if (!b || b.disabled) return
+        const r = b.getBoundingClientRect()
+        const size = Math.max(r.width, r.height) * 2
+        const dot = document.createElement('span')
+        dot.className = 'dw-ripple-dot'
+        dot.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX - r.left - size / 2}px;top:${e.clientY - r.top - size / 2}px`
+        b.appendChild(dot)
+        dot.addEventListener('animationend', () => dot.remove())
+      }}
+    >
+      <div aria-hidden className="dw-progress" />
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap');
         .dw-root { font-family: 'Inter Tight', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
@@ -1411,6 +1452,13 @@ Upgrade to unlock all 8 Advanced themes.`)
         .dw-root .font-mono { font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
         .dw-root .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
         .dw-root .no-scrollbar::-webkit-scrollbar { display: none; }
+        /* ---------- safety: nothing may ever widen the page ---------- */
+        body { overflow-x: hidden; }
+        .dw-root { overflow-x: clip; }
+        .dw-root ::selection { background: #E8FF86; color: #0A0A0A; }
+        /* wrappers around third-party previews must never carry a transform/filter (they would re-anchor fixed drawers) */
+        .dw-root .dw-stagger > .dw-static { animation: none !important; transform: none !important; filter: none !important; opacity: 1 !important; }
+
         /* ---------- motion system ---------- */
         @keyframes dwRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
         .dw-stagger > * { animation: dwRise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
@@ -1466,6 +1514,39 @@ Upgrade to unlock all 8 Advanced themes.`)
         @keyframes dwBurst { 0% { opacity: 1; transform: rotate(var(--a)) translateX(0) scale(1); } 100% { opacity: 0; transform: rotate(var(--a)) translateX(var(--d)) scale(0.35); } }
         .dw-confetti { position: absolute; width: 6px; height: 6px; border-radius: 2px; opacity: 0; animation: dwBurst 0.95s cubic-bezier(0.15, 0.8, 0.3, 1) both; }
 
+        /* ---------- buttons & surfaces ---------- */
+        .dw-root .dw-magnet { translate: var(--tx, 0px) var(--ty, 0px); }
+        .dw-btn svg { transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .dw-btn:hover svg { transform: translate(1.5px, -1.5px); }
+        .dw-ripple-dot { position: absolute; border-radius: 9999px; background: currentColor; opacity: 0.22; pointer-events: none; transform: scale(0); animation: dwRipple 0.65s cubic-bezier(0.2, 0.7, 0.3, 1) forwards; }
+        @keyframes dwRipple { to { transform: scale(1); opacity: 0; } }
+        .dw-idle::before { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(110deg, transparent 38%, rgba(255,255,255,0.65) 50%, transparent 62%); transform: translateX(-130%); animation: dwIdle 4.4s ease-in-out 1.6s infinite; }
+        @keyframes dwIdle { 0%, 55% { transform: translateX(-130%); } 100% { transform: translateX(130%); } }
+        .dw-spot-card::before { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity 0.35s; background: radial-gradient(340px circle at var(--px, 50%) var(--py, 50%), rgba(232,255,134,0.26), transparent 65%); }
+        .dw-spot-card:hover::before { opacity: 1; }
+        .dw-spot-card { transition: border-color 0.25s, box-shadow 0.3s; }
+        .dw-spot-card:hover { border-color: rgba(10,10,10,0.22); box-shadow: 0 18px 40px -26px rgba(10,10,10,0.3); }
+        @keyframes dwSkel { to { transform: translateX(100%); } }
+        .dw-skel { position: relative; overflow: hidden; }
+        .dw-skel::after { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,0.8) 50%, transparent 70%); transform: translateX(-100%); animation: dwSkel 2.2s ease-in-out infinite; }
+        @keyframes dwFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+        .dw-float { animation: dwFloat 3.4s ease-in-out infinite; }
+        @keyframes dwDot { 0% { transform: scale(0); } 60% { transform: scale(1.9); } 100% { transform: scale(1); } }
+        .dw-dot { animation: dwDot 0.45s cubic-bezier(0.2, 0.9, 0.25, 1.3) both; }
+        @keyframes dwBounce { 0% { transform: scale(0.65) translateY(3px); } 55% { transform: scale(1.2) translateY(-2px); } 100% { transform: none; } }
+        .dw-nav-on svg { animation: dwBounce 0.55s cubic-bezier(0.2, 0.9, 0.25, 1.2) both; }
+        .dw-logo { transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.25, 1.5); }
+        a:hover > .dw-logo { transform: rotate(-10deg) scale(1.08); }
+
+        /* scroll-linked chrome: progress bar + top-bar shadow (progressive enhancement) */
+        .dw-progress { display: none; }
+        @supports (animation-timeline: scroll()) {
+          .dw-progress { display: block; position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 70; pointer-events: none; background: linear-gradient(90deg, #0A0A0A, #E8FF86); box-shadow: 0 0 12px rgba(232,255,134,0.8); transform: scaleX(0); transform-origin: left; animation: dwProg linear both; animation-timeline: scroll(root); }
+          @keyframes dwProg { to { transform: scaleX(1); } }
+          .dw-bar { animation: dwBar linear both; animation-timeline: scroll(root); animation-range: 0 90px; }
+          @keyframes dwBar { from { box-shadow: 0 0 0 rgba(10,10,10,0); } to { box-shadow: 0 10px 28px -18px rgba(10,10,10,0.35); } }
+        }
+
         .glass-container { position: relative; display: flex; justify-content: flex-start; align-items: center; min-height: 480px; padding: 76px 56px 84px 96px; gap: 0; overflow-x: auto; overflow-y: visible; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
         .glass-container::-webkit-scrollbar { height: 5px; }
         .glass-container::-webkit-scrollbar-thumb { background: rgba(10,10,10,0.12); border-radius: 999px; }
@@ -1493,7 +1574,7 @@ Upgrade to unlock all 8 Advanced themes.`)
       <aside className="hidden md:flex flex-col w-64 bg-[#0A0A0A] text-white fixed inset-y-0 left-0 z-40 border-r border-white/[0.06]">
         <div className="px-5 pt-6 pb-5 border-b border-white/[0.06]">
           <Link href="/" className="flex items-center gap-3 no-underline text-inherit">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center font-extrabold text-[15px] text-black bg-[#E8FF86]">D</div>
+            <div className="dw-logo w-9 h-9 rounded-xl flex items-center justify-center font-extrabold text-[15px] text-black bg-[#E8FF86]">D</div>
             <div>
               <div className="font-bold text-[15px] tracking-[-0.025em] leading-none">DukaanWhats</div>
               <div className="text-[11.5px] text-white/40 mt-1">Dashboard</div>
@@ -1513,10 +1594,10 @@ Upgrade to unlock all 8 Advanced themes.`)
                 key={item.id}
                 onClick={() => setActiveTab(item.id as any)}
                 aria-current={active ? 'page' : undefined}
-                className={`relative z-10 w-full flex items-center gap-3 px-3 h-10 rounded-xl text-[13.5px] font-medium tracking-[-0.01em] transition-colors border-none cursor-pointer bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8FF86]/70 ${active ? 'text-white' : 'text-white/55 hover:text-white hover:bg-white/[0.04]'}`}
+                className={`group relative z-10 w-full flex items-center gap-3 px-3 h-10 rounded-xl text-[13.5px] font-medium tracking-[-0.01em] transition-colors border-none cursor-pointer bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8FF86]/70 ${active ? 'text-white' : 'text-white/55 hover:text-white hover:bg-white/[0.04]'}`}
               >
                 <item.Icon c={`w-[17px] h-[17px] transition-colors duration-300 ${active ? 'text-[#E8FF86]' : ''}`} />
-                <span className="flex-1 text-left">{item.label}</span>
+                <span className="flex-1 text-left transition-transform duration-300 group-hover:translate-x-0.5">{item.label}</span>
                 {'badge' in item && item.badge && <span className="text-[11px] font-mono text-white/40">{item.badge}</span>}
                 {'pro' in item && item.pro && <span className="text-[10px] font-bold text-black px-1.5 h-4 inline-flex items-center rounded-full bg-[#E8FF86]">Pro</span>}
               </button>
@@ -1540,11 +1621,11 @@ Upgrade to unlock all 8 Advanced themes.`)
               {maxLabel(productLimit)} products, {maxLabel(imageLimit)} img each
             </div>
             {!isPremium ? (
-              <button type="button" onClick={() => setActiveTab('payments')} className={`${BTN_LIME} w-full h-9 text-[12.5px] !rounded-xl focus-visible:!ring-offset-[#18181B] focus-visible:!ring-[#E8FF86]`}>
+              <button type="button" onClick={() => setActiveTab('payments')} className={`${BTN_LIME} dw-idle w-full h-9 text-[12.5px] !rounded-xl focus-visible:!ring-offset-[#18181B] focus-visible:!ring-[#E8FF86]`}>
                 Upgrade plan
               </button>
             ) : (
-              <div className="w-full h-9 rounded-xl text-[12.5px] font-semibold text-[#E8FF86] border border-[#E8FF86]/30 bg-[#E8FF86]/10 flex items-center justify-center gap-1.5">
+              <div className="dw-idle relative overflow-hidden w-full h-9 rounded-xl text-[12.5px] font-semibold text-[#E8FF86] border border-[#E8FF86]/30 bg-[#E8FF86]/10 flex items-center justify-center gap-1.5">
                 <IconCheck c="w-3.5 h-3.5" /> Premium active
               </div>
             )}
@@ -1563,10 +1644,10 @@ Upgrade to unlock all 8 Advanced themes.`)
       </aside>
 
       {/* Mobile top bar */}
-      <header className="md:hidden sticky top-0 z-30 bg-[#FAFAF9]/80 backdrop-blur-md border-b border-zinc-200/80 pt-[env(safe-area-inset-top)]">
+      <header className="dw-bar md:hidden sticky top-0 z-30 bg-[#FAFAF9]/80 backdrop-blur-md border-b border-zinc-200/80 pt-[env(safe-area-inset-top)]">
         <div className="flex items-center justify-between px-4 h-14">
           <Link href="/" className="flex items-center gap-2.5 no-underline text-inherit">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center font-extrabold text-[13px] text-black bg-[#E8FF86]">D</div>
+            <div className="dw-logo w-8 h-8 rounded-lg flex items-center justify-center font-extrabold text-[13px] text-black bg-[#E8FF86]">D</div>
             <span className="font-bold text-[15px] tracking-[-0.025em]">DukaanWhats</span>
           </Link>
           <div className="flex items-center gap-1.5">
@@ -1574,7 +1655,7 @@ Upgrade to unlock all 8 Advanced themes.`)
               {currentPlanDef.name}
             </button>
             {!isPremium && (
-              <button type="button" onClick={() => setActiveTab('payments')} className={`${BTN_LIME} h-8 px-3 text-[11.5px]`}>Upgrade</button>
+              <button type="button" onClick={() => setActiveTab('payments')} className={`${BTN_LIME} dw-idle h-8 px-3 text-[11.5px]`}>Upgrade</button>
             )}
           </div>
         </div>
@@ -1582,7 +1663,7 @@ Upgrade to unlock all 8 Advanced themes.`)
 
       <div className="md:pl-64">
         {/* Desktop top bar */}
-        <div className="hidden md:flex sticky top-0 z-30 h-14 items-center justify-between px-8 bg-[#FAFAF9]/80 backdrop-blur-md border-b border-zinc-200/80">
+        <div className="dw-bar hidden md:flex sticky top-0 z-30 h-14 items-center justify-between px-8 bg-[#FAFAF9]/80 backdrop-blur-md border-b border-zinc-200/80">
           <div className="flex items-center gap-2 text-[13px]">
             <span className="text-zinc-400">Dashboard</span>
             <span className="text-zinc-300">/</span>
@@ -1626,7 +1707,7 @@ Upgrade to unlock all 8 Advanced themes.`)
                 aria-current={active ? 'page' : undefined}
                 className="flex flex-col items-center gap-1 py-0.5 bg-transparent border-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black rounded-xl"
               >
-                <span className={`relative z-10 h-7 w-12 rounded-full grid place-items-center transition-colors duration-300 ${active ? 'text-black' : 'text-zinc-500'}`}>
+                <span className={`relative z-10 h-7 w-12 rounded-full grid place-items-center transition-colors duration-300 ${active ? 'dw-nav-on text-black' : 'text-zinc-500'}`}>
                   <item.Icon c="w-[19px] h-[19px]" />
                   {'pro' in item && item.pro && !active && <span className="absolute top-0.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#0A0A0A]" />}
                 </span>
