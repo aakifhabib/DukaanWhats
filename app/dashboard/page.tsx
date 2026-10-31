@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { RealAnalytics } from '@/components/RealAnalytics'
 import Link from 'next/link'
@@ -14,31 +14,27 @@ type Product = { id: string; name: string; price: number; image_url: string; ima
 type Billing = 'monthly' | 'yearly'
 type PlanDef = { id: 'basic' | 'advanced' | 'premium'; name: string; monthly: number; yearlyMonthly: number; yearlyTotal: number; products: number; imagesPerProduct: number; advancedAllowed: number | 'all'; premiumAllowed: number | 'all'; stores: number; features: string[] }
 
-/* -------------------- ICONS — 1.5px refined stroke set -------------------- */
-const IconThemes = ({ c = '' }: any) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg>
-const IconProducts = ({ c = '' }: any) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /><path d="M3.27 6.96 12 12.01l8.73-5.05M12 22.08V12" /></svg>
-const IconStore = ({ c = '' }: any) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l1.5-5h15L21 9M3 9h18M3 9v11a1 1 0 0 0 1 1h4v-6h8v6h4a1 1 0 0 0 1-1V9" /></svg>
-const IconAnalytics = ({ c = '' }: any) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18M7 14l4-4 4 4 6-6" /></svg>
-const IconBilling = ({ c = '' }: any) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2.5" /><path d="M2 10h20" /></svg>
-const IconLock = ({ c = '' }: any) => <svg className={c} viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="10" width="14" height="10" rx="3" /><path d="M8 10V7.5C8 5.3 9.8 3.5 12 3.5C14.2 3.5 16 5.3 16 7.5V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" /></svg>
-const IconCheck = ({ c = '' }: any) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-const IconUpload = ({ c = '' }: any) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" /></svg>
-const IconPlus = ({ c = '' }: any) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
-const IconExternal = ({ c = '' }: any) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" /></svg>
-const IconTrash = ({ c = '' }: any) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6" /></svg>
-const IconArrowRight = ({ c = '' }: any) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-const IconCopy = ({ c = '' }: any) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="12" height="12" rx="2.5" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
-const IconClock = ({ c = '' }: any) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 2" /></svg>
-const IconX = ({ c = '' }: any) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+/* -------------------- ICONS -------------------- */
+const IconThemes = ({ c = '' }) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg>
+const IconProducts = ({ c = '' }) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /><path d="M3.27 6.96 12 12.01l8.73-5.05M12 22.08V12" /></svg>
+const IconStore = ({ c = '' }) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l1.5-5h15L21 9M3 9h18M3 9v11a1 1 0 0 0 1 1h4v-6h8v6h4a1 1 0 0 0 1-1V9" /></svg>
+const IconAnalytics = ({ c = '' }) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18M7 14l4-4 4 4 6-6" /></svg>
+const IconBilling = ({ c = '' }) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></svg>
+const IconLock = ({ c = '' }) => <svg className={c} viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="10" width="14" height="10" rx="3" /><path d="M8 10V7.5C8 5.3 9.8 3.5 12 3.5C14.2 3.5 16 5.3 16 7.5V10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" fill="none" /></svg>
+const IconCheck = ({ c = '' }) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+const IconUpload = ({ c = '' }) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" /></svg>
+const IconPlus = ({ c = '' }) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
+const IconExternal = ({ c = '' }) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" /></svg>
 
 const LiveDot = () => (
-  <span className="relative flex h-1.5 w-1.5">
-    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#D9FF4B] opacity-70" />
-    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#D9FF4B]" />
+  <span className="relative flex h-2 w-2">
+    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#E8FF86] opacity-75" />
+    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#E8FF86]" />
   </span>
 )
 
-/* -------------------- MINI STOREFRONT - preserved 100% -------------------- */
+/* -------------------- MINI STOREFRONT -------------------- */
+
 function MiniStorefront({ theme }: { theme: any }) {
   const id = theme?.id || ''
   const c = theme?.colors || {}
@@ -64,60 +60,118 @@ function MiniStorefront({ theme }: { theme: any }) {
             <div className="h-3 px-1 bg-black text-white text-[5px] rounded-full inline-flex items-center font-bold">MINIMAL • 2024</div>
             <div className="mt-1 text-[10px] font-black leading-[0.9] tracking-[-0.02em]">Cool and<br/>Aakif style</div>
             <div className="mt-1 text-[5px] text-black/50 leading-[1.2] w-[90%]">Clean lines, intentional whitespace, premium finish.</div>
-            <div className="mt-1.5 flex gap-1">{['All','Nike','Adidas'].map(b=> <div key={b} className="h-3 px-1.5 bg-black text-white rounded-full text-[5px] font-bold flex items-center">{b}</div>)}</div>
+            <div className="mt-1.5 flex gap-1">
+              {['All','Nike','Adidas'].map(b=> <div key={b} className="h-3 px-1.5 bg-black text-white rounded-full text-[5px] font-bold flex items-center">{b}</div>)}
+            </div>
           </div>
           <div className="w-[46%] aspect-[4/5] rounded-[10px] overflow-hidden border border-black/10 bg-white"><img src={img1} className="w-full h-full object-cover" alt="" /></div>
         </div>
-        <div className="px-2 pb-2 grid grid-cols-3 gap-1 mt-auto">{[img1,img2,img3].map((im,i)=><div key={i} className="aspect-square rounded-[6px] overflow-hidden bg-white border"><img src={im} className="w-full h-full object-cover" alt="" /></div>)}</div>
+        <div className="px-2 pb-2 grid grid-cols-3 gap-1 mt-auto">
+          {[img1,img2,img3].map((im,i)=><div key={i} className="aspect-square rounded-[6px] overflow-hidden bg-white border"><img src={im} className="w-full h-full object-cover" alt="" /></div>)}
+        </div>
       </div>
     )
   }
+
   if (id === 'shoe-app-premium') {
     return (
       <div className="h-full w-full flex flex-col bg-[#F2F0FF] p-1.5 gap-1 overflow-hidden">
-        <div className="flex items-center justify-between"><div className="text-[6px] font-black tracking-[0.15em]">SHOE • APP</div><div className="h-2.5 px-1 bg-black text-white rounded-full text-[4px] flex items-center">Live</div></div>
-        <div className="flex-1 bg-white rounded-[10px] border p-1 flex flex-col"><div className="flex-1 rounded-[6px] overflow-hidden bg-[#F5F5F5]"><img src={img2} className="w-full h-full object-cover" alt="" /></div><div className="h-4 mt-1 bg-black rounded-full" /></div>
+        <div className="h-6 bg-white rounded-[8px] border border-black/5 flex items-center justify-between px-1.5">
+          <div className="flex items-center gap-1"><div className="w-3 h-3 bg-black text-white rounded-[4px] grid place-items-center text-[6px] font-black">S</div><div className="flex gap-0.5">{['All','Nike'].map(f=> <div key={f} className="h-2.5 px-1 bg-black text-white rounded-full text-[5px] font-bold flex items-center">{f}</div>)}</div></div>
+          <div className="w-3 h-3 bg-black rounded-full grid place-items-center text-[5px] text-white">2</div>
+        </div>
+        <div className="flex-1 grid grid-cols-[28%_1fr_28%] gap-1">
+          <div className="bg-[#7C3AED] rounded-[8px] p-1 flex flex-col justify-between text-white">
+            <div className="text-[5px] font-black bg-black/20 rounded-full px-1 h-2.5 flex items-center w-fit">BLACK FRIDAY</div>
+            <div className="text-[8px] font-black leading-[0.9]">GET UP TO<br/>50% OFF</div>
+            <div className="h-3 bg-white text-black rounded-full text-[5px] font-bold grid place-items-center">Shop Sale →</div>
+          </div>
+          <div className="grid grid-cols-2 gap-1">
+            {[img1,img2,img3,img1].map((im,i)=><div key={i} className="aspect-square rounded-[6px] overflow-hidden bg-white border"><img src={im} className="w-full h-full object-cover" alt="" /></div>)}
+          </div>
+          <div className="bg-black rounded-[8px] p-1 flex flex-col text-white">
+            <div className="text-[6px] font-bold leading-[1.1]">Free Shipping<br/>+ 7 Days Return</div>
+            <div className="mt-1 text-[4px] text-white/50">Early access</div>
+            <div className="mt-auto h-3 bg-white text-black rounded-full text-[4px] font-bold grid place-items-center">Join Premium</div>
+          </div>
+        </div>
       </div>
     )
   }
+
   if (id === 'trenzo-luxury') {
     return (
       <div className="h-full w-full bg-[#0A0A0A] text-white p-1.5 flex flex-col overflow-hidden">
-        <div className="h-3 flex items-center justify-between"><div className="text-[5px] font-black tracking-[0.2em]">TRENZO</div><div className="w-2 h-2 bg-[#E8FF86] rounded-full" /></div>
-        <div className="mt-1 flex-1 rounded-[10px] overflow-hidden bg-[#141414] border border-white/10"><img src={img3} className="w-full h-full object-cover" alt="" /></div>
-        <div className="mt-auto grid grid-cols-3 gap-1">{['Craftsmanship','Heritage','Sustainability'].map(t=> <div key={t} className="h-6 bg-[#141414] border border-white/10 rounded-[6px] px-1 flex flex-col justify-center"><div className="text-[5px] font-bold">{t}</div><div className="text-[3.5px] text-white/40 truncate">Hand-stitched</div></div>)}</div>
+        <div className="flex justify-between items-center"><div className="text-[6px] font-black tracking-[0.2em]">✦ TRENZO • LUXURY</div><div className="w-3 h-1.5 bg-white/10 rounded-full" /></div>
+        <div className="mt-1 flex gap-1.5">
+          <div className="flex-1">
+            <div className="text-[5px] tracking-[0.2em] text-white/40">EST. 2018 • LUXURY CURATED</div>
+            <div className="mt-1 text-[11px] font-[300] leading-[0.9] font-serif">A reflection<br/>of personal<br/>styling</div>
+            <div className="mt-2 h-3 px-1.5 border border-white/20 rounded-full text-[5px] flex items-center w-fit">Explore Collection →</div>
+          </div>
+          <div className="w-[46%] aspect-[4/5] rounded-[14px] overflow-hidden border border-white/10 relative bg-[#141414]"><img src={img2} className="w-full h-full object-cover opacity-90" alt="" /><div className="absolute top-1 left-1 h-2 px-1 bg-white text-black rounded-full text-[4px] font-bold grid place-items-center">FEATURED • NEW</div><div className="absolute bottom-1 right-1 w-5 h-5 bg-white text-black rounded-full grid place-items-center text-[6px] font-black">✦</div></div>
+        </div>
+        <div className="mt-auto grid grid-cols-3 gap-1">
+          {['Craftsmanship','Heritage','Sustainability'].map(t=> <div key={t} className="h-6 bg-[#141414] border border-white/10 rounded-[6px] px-1 flex flex-col justify-center"><div className="text-[5px] font-bold">{t}</div><div className="text-[3.5px] text-white/40 truncate">Hand-stitched</div></div>)}
+        </div>
       </div>
     )
   }
+
   if (id === 'sleek-beige') {
     return (
       <div className="h-full w-full bg-[#F5F1EB] text-[#0A0A0A] p-1.5 flex flex-col overflow-hidden">
         <div className="h-2.5 bg-black text-[#E8FF86] text-[4px] flex items-center justify-center font-bold tracking-[0.2em]">FREE SHIPPING • NEW DROP • COD • PREMIUM BEIGE</div>
         <div className="mt-1 flex justify-between items-center"><div className="text-[6px] font-black tracking-[0.2em]">BEIGE • Studio</div><div className="h-3 px-1 bg-black text-white rounded-full text-[5px] flex items-center">Cart (2)</div></div>
-        <div className="mt-1 flex gap-1.5"><div className="flex-1"><div className="h-2.5 px-1 bg-white border rounded-full text-[4px] font-bold inline-flex items-center">EDITORIAL • BEIGE • 2024</div><div className="mt-1 text-[10px] font-black leading-[0.9]">Warm minimal<br/>luxury, everyday<br/>icon.</div><div className="mt-1 h-3 px-2 bg-black text-white rounded-full text-[5px] font-bold flex items-center w-fit">Shop Beige →</div></div><div className="w-[44%] aspect-[4/5] rounded-[14px] overflow-hidden border shadow-[0_8px_16px_rgba(0,0,0,0.08)] bg-white"><img src={img1} className="w-full h-full object-cover" alt="" /></div></div>
+        <div className="mt-1 flex gap-1.5">
+          <div className="flex-1">
+            <div className="h-2.5 px-1 bg-white border rounded-full text-[4px] font-bold inline-flex items-center">EDITORIAL • BEIGE • 2024</div>
+            <div className="mt-1 text-[10px] font-black leading-[0.9]">Warm minimal<br/>luxury, everyday<br/>icon.</div>
+            <div className="mt-1 h-3 px-2 bg-black text-white rounded-full text-[5px] font-bold flex items-center w-fit">Shop Beige →</div>
+          </div>
+          <div className="w-[44%] aspect-[4/5] rounded-[14px] overflow-hidden border shadow-[0_8px_16px_rgba(0,0,0,0.08)] bg-white"><img src={img1} className="w-full h-full object-cover" alt="" /></div>
+        </div>
         <div className="mt-auto grid grid-cols-3 gap-1">{[img1,img2,img3].map((im,i)=><div key={i} className="aspect-square rounded-[5px] overflow-hidden bg-white border"><img src={im} className="w-full h-full object-cover" alt="" /></div>)}</div>
       </div>
     )
   }
+
   if (id === 'sleek-dark') {
     return (
       <div className="h-full w-full bg-[#0A0A0A] text-white p-1.5 flex flex-col overflow-hidden">
         <div className="h-2.5 bg-[#E8FF86] text-black text-[4px] flex items-center justify-center font-bold tracking-[0.2em]">DARK MODE • LUXURY • FREE SHIPPING • COD</div>
         <div className="mt-1 flex justify-between items-center"><div className="text-[6px] font-black tracking-[0.2em]">DARK • Studio</div><div className="h-3 px-1 bg-white text-black rounded-full text-[5px] flex items-center">Cart (2)</div></div>
-        <div className="mt-1 flex gap-1.5"><div className="flex-1"><div className="h-2.5 px-1 bg-white/10 border border-white/20 rounded-full text-[4px] font-bold inline-flex items-center">NOIR • DARK • 2024</div><div className="mt-1 text-[10px] font-black leading-[0.9]">Noir luxury,<br/>midnight<br/>icon.</div><div className="mt-1 h-3 px-2 bg-white text-black rounded-full text-[5px] font-bold flex items-center w-fit">Shop Dark →</div></div><div className="w-[44%] aspect-[4/5] rounded-[14px] overflow-hidden border border-white/10 bg-[#141414]"><img src={img2} className="w-full h-full object-cover" alt="" /></div></div>
+        <div className="mt-1 flex gap-1.5">
+          <div className="flex-1">
+            <div className="h-2.5 px-1 bg-white/10 border border-white/20 rounded-full text-[4px] font-bold inline-flex items-center">NOIR • DARK • 2024</div>
+            <div className="mt-1 text-[10px] font-black leading-[0.9]">Noir luxury,<br/>midnight<br/>icon.</div>
+            <div className="mt-1 h-3 px-2 bg-white text-black rounded-full text-[5px] font-bold flex items-center w-fit">Shop Dark →</div>
+          </div>
+          <div className="w-[44%] aspect-[4/5] rounded-[14px] overflow-hidden border border-white/10 bg-[#141414]"><img src={img2} className="w-full h-full object-cover" alt="" /></div>
+        </div>
         <div className="mt-auto grid grid-cols-3 gap-1">{[img1,img2,img3].map((im,i)=><div key={i} className="aspect-square rounded-[5px] overflow-hidden bg-[#141414] border border-white/10"><img src={im} className="w-full h-full object-cover" alt="" /></div>)}</div>
       </div>
     )
   }
+
   if (id === 'sleek-editorial') {
     return (
       <div className="h-full w-full bg-[#FCFBF9] text-[#0A0A0A] p-1.5 flex flex-col overflow-hidden">
         <div className="h-2.5 bg-black text-white text-[4px] flex items-center justify-center font-bold tracking-[0.2em]">EDITORIAL • MINIMAL • LUXURY • FREE SHIPPING</div>
         <div className="mt-1 flex justify-between items-center"><div className="text-[6px] font-black tracking-[0.2em]">EDITORIAL • Studio <span className="ml-1 h-2 px-1 bg-black text-white rounded-full text-[3px]">PREMIUM • EDITORIAL</span></div><div className="w-2 h-2 bg-black rounded-full" /></div>
-        <div className="mt-1 flex gap-1.5"><div className="flex-1"><div className="h-2.5 px-1 bg-white border rounded-full text-[4px] font-bold inline-flex items-center">MINIMAL • 2024</div><div className="mt-1 text-[11px] font-black leading-[0.85] tracking-[-0.02em]">Cool and<br/>Aakif style</div><div className="mt-1 text-[5px] text-black/50">Clean lines, intentional whitespace, premium finish.</div><div className="mt-1 h-3 px-2 bg-black text-white rounded-full text-[5px] font-bold flex items-center w-fit">Shop Editorial →</div></div><div className="w-[44%] aspect-[4/5] rounded-[14px] overflow-hidden border bg-white"><img src={img1} className="w-full h-full object-cover" alt="" /></div></div>
+        <div className="mt-1 flex gap-1.5">
+          <div className="flex-1">
+            <div className="h-2.5 px-1 bg-white border rounded-full text-[4px] font-bold inline-flex items-center">MINIMAL • 2024</div>
+            <div className="mt-1 text-[11px] font-black leading-[0.85] tracking-[-0.02em]">Cool and<br/>Aakif style</div>
+            <div className="mt-1 text-[5px] text-black/50">Clean lines, intentional whitespace, premium finish.</div>
+            <div className="mt-1 h-3 px-2 bg-black text-white rounded-full text-[5px] font-bold flex items-center w-fit">Shop Editorial →</div>
+          </div>
+          <div className="w-[44%] aspect-[4/5] rounded-[14px] overflow-hidden border bg-white"><img src={img1} className="w-full h-full object-cover" alt="" /></div>
+        </div>
       </div>
     )
   }
+
   return (
     <div className="h-full w-full flex flex-col overflow-hidden" style={{ background: bg }}>
       <div className="h-2 w-full" style={{ background: accent }} />
@@ -125,11 +179,203 @@ function MiniStorefront({ theme }: { theme: any }) {
         <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full" style={{ background: accent }} /><div className="text-[6px] font-black tracking-[0.15em]" style={{ color: text }}>{theme?.name?.toUpperCase()}</div></div>
         <div className="w-3 h-1.5 rounded-full opacity-30" style={{ background: text }} />
       </div>
-      <div className="flex-1 p-1.5 grid grid-cols-3 gap-1">{[img1,img2,img3].map((im,i)=> (<div key={i} className="rounded-[6px] overflow-hidden flex flex-col" style={{ background: card, border: `1px solid ${border}` }}><div className="flex-1 overflow-hidden"><img src={im} className="w-full h-full object-cover" alt="" /></div><div className="h-3 px-1 flex flex-col justify-center"><div className="h-0.5 w-full rounded" style={{ background: text, opacity: 0.3 }} /><div className="mt-0.5 h-0.5 w-2/3 rounded" style={{ background: accent }} /></div></div>))}</div>
+      <div className="flex-1 p-1.5 grid grid-cols-3 gap-1">
+        {[img1,img2,img3].map((im,i)=> (
+          <div key={i} className="rounded-[6px] overflow-hidden flex flex-col" style={{ background: card, border: `1px solid ${border}` }}>
+            <div className="flex-1 overflow-hidden"><img src={im} className="w-full h-full object-cover" alt="" /></div>
+            <div className="h-3 px-1 flex flex-col justify-center"><div className="h-0.5 w-full rounded" style={{ background: text, opacity: 0.3 }} /><div className="mt-0.5 h-0.5 w-2/3 rounded" style={{ background: accent }} /></div>
+          </div>
+        ))}
+      </div>
       <div className="h-2.5 mx-1.5 mb-1.5 rounded-full" style={{ background: accent }} />
     </div>
   )
 }
+
+
+/* -------------------- EXTRA ICONS -------------------- */
+const IconX = ({ c = '' }) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+const IconCopy = ({ c = '' }) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="12" height="12" rx="2.5" /><path d="M5 15V6a2 2 0 0 1 2-2h9" /></svg>
+
+/* -------------------- DESIGN TOKENS -------------------- */
+const UI = {
+  card: 'bg-white border border-zinc-200/80 rounded-2xl p-5 md:p-6',
+  input: 'w-full h-11 px-3.5 rounded-xl border border-zinc-200/80 bg-white text-[13.5px] text-zinc-900 placeholder:text-zinc-400 outline-none transition-[border-color,box-shadow] focus:border-zinc-900 focus:ring-4 focus:ring-[#E8FF86]/70',
+  chipMono: 'font-mono text-[11px] px-1.5 py-0.5 rounded-md bg-zinc-100 border border-zinc-200/80 text-zinc-700',
+  focus: 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAFAF9]',
+}
+const BTN = 'relative overflow-hidden inline-flex items-center justify-center gap-2 shrink-0 rounded-full font-semibold tracking-[-0.01em] whitespace-nowrap cursor-pointer select-none transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAFAF9]'
+const BTN_DARK = `${BTN} dw-shine bg-[#0A0A0A] text-white hover:bg-zinc-800`
+const BTN_LIGHT = `${BTN} bg-white text-zinc-900 border border-zinc-200/80 hover:bg-zinc-50 hover:border-zinc-300`
+const BTN_LIME = `${BTN} dw-shine bg-[#E8FF86] text-black hover:brightness-95`
+
+/* -------------------- SMALL PRIMITIVES -------------------- */
+/* -------------------- SCALED PREVIEW (fixes cropped / mis-proportioned previews) -------------------- */
+/* MiniStorefront is drawn with fixed px sizes for a ~240px-wide canvas. We lay it out at that
+   design width and scale the whole thing to whatever box it lives in, so it never crops or stretches. */
+function ScaledPreview({ theme, baseW = 240 }: { theme: any; baseW?: number }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [box, setBox] = useState({ w: 0, h: 0 })
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const measure = () => setBox({ w: el.clientWidth, h: el.clientHeight })
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+  const s = box.w ? box.w / baseW : 0
+  const baseH = s ? box.h / s : 0
+  return (
+    <div ref={ref} className="absolute inset-0 overflow-hidden">
+      {s > 0 && (
+        <div style={{ width: baseW, height: baseH, transform: `scale(${s})`, transformOrigin: 'top left' }}>
+          <MiniStorefront theme={theme} />
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* -------------------- MOTION HELPERS -------------------- */
+function CountUp({ value, duration = 800 }: { value: number; duration?: number }) {
+  const [n, setN] = useState(0)
+  const from = useRef(0)
+  useEffect(() => {
+    const reduce = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reduce) { setN(value); from.current = value; return }
+    const a = from.current
+    const start = performance.now()
+    let raf = 0
+    const tick = (t: number) => {
+      const p = Math.min(1, (t - start) / duration)
+      const e = 1 - Math.pow(1 - p, 4)
+      setN(Math.round(a + (value - a) * e))
+      if (p < 1) raf = requestAnimationFrame(tick)
+      else from.current = value
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [value, duration])
+  return <>{n}</>
+}
+
+function Confetti() {
+  const bits = Array.from({ length: 18 }, (_, i) => i)
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-0 flex items-center justify-center">
+      {bits.map(i => (
+        <span
+          key={i}
+          className="dw-confetti"
+          style={{ ['--a' as any]: `${(i / bits.length) * 360 + (i % 2 ? 11 : 0)}deg`, ['--d' as any]: `${78 + (i % 3) * 30}px`, animationDelay: `${180 + (i % 4) * 45}ms`, background: i % 3 === 0 ? '#ffffff' : '#E8FF86' }}
+        />
+      ))}
+    </div>
+  )
+}
+
+function PageHeader({ title, subtitle, actions }: { title: string; subtitle?: string; actions?: React.ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4 mb-6 md:mb-8">
+      <div className="min-w-0">
+        <h1 className="text-[30px] md:text-[40px] font-extrabold tracking-[-0.03em] leading-[1.02]">{title}</h1>
+        {subtitle && <p className="text-[13px] md:text-[14px] text-zinc-500 mt-2 max-w-xl leading-relaxed">{subtitle}</p>}
+      </div>
+      {actions && <div className="flex items-center gap-2 flex-wrap">{actions}</div>}
+    </div>
+  )
+}
+
+function SectionHead({ title, meta, action }: { title: string; meta?: React.ReactNode; action?: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-3 mb-4 md:mb-5">
+      <div className="flex items-baseline gap-2.5 min-w-0 flex-wrap">
+        <h3 className="text-[15px] font-semibold tracking-[-0.02em]">{title}</h3>
+        {meta && <span className="font-mono text-[11.5px] text-zinc-500">{meta}</span>}
+      </div>
+      {action}
+    </div>
+  )
+}
+
+function Field({ label, hint, className = '', children }: { label: string; hint?: string; className?: string; children: React.ReactNode }) {
+  return (
+    <label className={`block ${className}`}>
+      <span className="block text-[12px] font-medium text-zinc-600 mb-1.5">{label}</span>
+      {children}
+      {hint && <span className="block text-[11.5px] text-zinc-400 mt-1.5">{hint}</span>}
+    </label>
+  )
+}
+
+function BrowserFrame({ url, tone = 'light', theme, tall = false }: { url: string; tone?: 'light' | 'dark'; theme: any; tall?: boolean }) {
+  const dark = tone === 'dark'
+  return (
+    <div className={`rounded-xl overflow-hidden border ${dark ? 'border-white/10 bg-[#18181B] shadow-[0_28px_60px_-24px_rgba(0,0,0,0.9)]' : 'border-zinc-200/80 bg-white'}`}>
+      <div className={`flex items-center gap-2 h-8 px-3 border-b ${dark ? 'border-white/10' : 'border-zinc-200/80 bg-zinc-50'}`}>
+        <div className="flex gap-1">
+          {[0, 1, 2].map(i => <span key={i} className={`w-1.5 h-1.5 rounded-full ${dark ? 'bg-white/20' : 'bg-zinc-300'}`} />)}
+        </div>
+        <div className={`flex-1 min-w-0 truncate font-mono text-[10px] text-center ${dark ? 'text-white/45' : 'text-zinc-400'}`}>{url}</div>
+        <div className="w-[22px]" />
+      </div>
+      <div className={`relative overflow-hidden ${tall ? 'aspect-[8/9]' : 'aspect-[4/3]'}`}><ScaledPreview theme={theme} baseW={tall ? 240 : 300} /></div>
+    </div>
+  )
+}
+
+function ThemeTile({ t, active, locked, label, lockPrice, onSelect }: { t: any; active: boolean; locked: boolean; label: string; lockPrice?: string; onSelect: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-pressed={active}
+      onMouseMove={(e) => {
+        const el = e.currentTarget
+        const r = el.getBoundingClientRect()
+        const x = (e.clientX - r.left) / r.width
+        const y = (e.clientY - r.top) / r.height
+        el.style.setProperty('--ry', `${((x - 0.5) * 9).toFixed(2)}deg`)
+        el.style.setProperty('--rx', `${((0.5 - y) * 9).toFixed(2)}deg`)
+        el.style.setProperty('--gx', `${(x * 100).toFixed(1)}%`)
+        el.style.setProperty('--gy', `${(y * 100).toFixed(1)}%`)
+      }}
+      onMouseLeave={(e) => { e.currentTarget.style.setProperty('--rx', '0deg'); e.currentTarget.style.setProperty('--ry', '0deg') }}
+      className={`dw-tilt group relative text-left w-full bg-white rounded-2xl overflow-hidden border cursor-pointer ${UI.focus} ${active ? 'border-zinc-900 shadow-[0_0_0_1px_#0A0A0A,0_0_0_5px_#E8FF86]' : 'border-zinc-200/80 hover:border-zinc-400 hover:shadow-[0_22px_40px_-22px_rgba(10,10,10,0.35)]'}`}
+    >
+      <div className="aspect-[4/3] relative overflow-hidden border-b border-zinc-200/80">
+        <ScaledPreview theme={t} />
+        {locked && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 backdrop-blur-md bg-white/70">
+            <div className="dw-lock w-9 h-9 rounded-xl bg-[#0A0A0A] flex items-center justify-center"><IconLock c="w-4 h-4 text-[#E8FF86]" /></div>
+            <div className="text-[11.5px] font-semibold tracking-[-0.01em] text-zinc-900">Locked</div>
+            {lockPrice && <div className="font-mono text-[10px] text-zinc-500">{lockPrice}</div>}
+          </div>
+        )}
+      </div>
+      <div className="p-3.5 flex items-center justify-between gap-2">
+        <div className="min-w-0">
+          <div className="font-semibold text-[13px] tracking-[-0.015em] truncate">{t.name}</div>
+          <div className="text-[11.5px] text-zinc-400 mt-0.5 capitalize">{label}</div>
+        </div>
+        {active && !locked && (
+          <span className="shrink-0 inline-flex items-center gap-1.5 h-5 px-2 rounded-full bg-[#E8FF86] text-black text-[10.5px] font-bold">
+            <span className="w-1 h-1 rounded-full bg-black" />Active
+          </span>
+        )}
+      </div>
+    </button>
+  )
+}
+
+const paymentStatusUI = (s: string) =>
+  s === 'pending'
+    ? { chip: 'bg-amber-50 text-amber-800 border-amber-200', dot: 'bg-amber-500 animate-pulse', label: 'Pending', right: 'Verifying', rightCls: 'text-zinc-500' }
+    : s === 'approved'
+      ? { chip: 'bg-[#0A0A0A] text-white border-[#0A0A0A]', dot: 'bg-[#E8FF86]', label: 'Approved', right: 'Active', rightCls: 'text-emerald-600' }
+      : { chip: 'bg-red-50 text-red-700 border-red-200', dot: 'bg-red-500', label: 'Rejected', right: 'Rejected', rightCls: 'text-red-600' }
 
 /* -------------------- PRODUCT CARD -------------------- */
 function PremiumProductCard({ p, onEdit, onDelete, imageLimit }: { p: any; onEdit: (p: any) => void; onDelete: (id: string) => void; imageLimit: number }) {
@@ -144,64 +390,55 @@ function PremiumProductCard({ p, onEdit, onDelete, imageLimit }: { p: any; onEdi
 
   useEffect(() => {
     if (!hovering || images.length <= 1) return
-    const interval = setInterval(() => setIdx(prev => (prev + 1) % images.length), 1800)
+    const interval = setInterval(() => setIdx(prev => (prev + 1) % images.length), 2000)
     return () => clearInterval(interval)
   }, [hovering, images.length])
 
   return (
     <div
-      className="group relative bg-white border border-[#E8E8E5] rounded-[14px] overflow-hidden transition-all duration-200 hover:border-[#0A0A0A]/25 hover:shadow-[0_10px_28px_-12px_rgba(0,0,0,0.14)]"
+      className="group bg-white border border-zinc-200/80 rounded-2xl overflow-hidden transition-all duration-200 hover:border-zinc-400 hover:shadow-[0_20px_40px_-22px_rgba(10,10,10,0.35)]"
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
     >
-      <div className="relative aspect-[4/3] bg-[#F7F7F5] overflow-hidden">
-        {images.length > 0 ? <img src={images[idx]} alt={p.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" /> : <div className="w-full h-full flex items-center justify-center text-zinc-300 text-[10px]">No image</div>}
+      <div className="relative aspect-square bg-[#F4F4F2] overflow-hidden">
+        {images.length > 1 && <img src={images[(idx - 1 + images.length) % images.length]} className="absolute inset-0 w-full h-full object-cover opacity-0" alt="" />}
+        {images.length > 0 ? (
+          <img src={images[idx]} alt={p.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-zinc-400 text-[11px]">No image</div>
+        )}
         {images.length > 1 && (
           <>
-            <div className="absolute top-2.5 left-2.5 bg-black/70 backdrop-blur text-white text-[9.5px] font-mono font-medium pl-2 pr-2.5 py-1 rounded-md flex items-center gap-1.5"><span className="w-1 h-1 rounded-full bg-[#D9FF4B]" />{idx + 1}/{images.length}</div>
-            <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex gap-1 p-[3px] rounded-full bg-black/35 backdrop-blur-md">{images.map((_: any, i: number) => (<div key={i} className={`h-1 rounded-full transition-all duration-300 ${i === idx ? 'w-3.5 bg-white' : 'w-1 bg-white/40'}`} />))}</div>
+            <div className="absolute top-2.5 left-2.5 bg-black/55 backdrop-blur-md text-white font-mono text-[10px] px-2 h-6 rounded-full inline-flex items-center">
+              {idx + 1}/{images.length}{hovering ? ' · auto' : ''}
+            </div>
+            <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex gap-1">
+              {images.map((_: any, i: number) => (
+                <div key={i} className={`h-1 rounded-full transition-all ${i === idx ? 'w-5 bg-white' : 'w-1.5 bg-white/50'}`} />
+              ))}
+            </div>
           </>
         )}
-        {imageLimit !== 999999 && images.length >= imageLimit && <div className="absolute top-2.5 right-2.5 bg-[#E8FF86] text-black text-[8.5px] px-2 h-[18px] rounded-md font-bold tracking-[0.08em] flex items-center">MAX</div>}
+        {imageLimit !== 999999 && images.length >= imageLimit && (
+          <div className="absolute top-2.5 right-2.5 bg-amber-100 border border-amber-200 text-amber-800 text-[10px] px-2 h-6 inline-flex items-center rounded-full font-semibold">Max {imageLimit}</div>
+        )}
       </div>
-      <div className="p-3.5">
-        <div className="flex items-start justify-between gap-2.5">
-          <div className="font-medium text-[13px] tracking-[-0.01em] leading-snug line-clamp-1">{p.name}</div>
-          <div className="text-[9.5px] font-mono text-zinc-400 border border-[#ECECEA] bg-[#FAFAF9] px-1.5 py-[2px] rounded-md shrink-0">{images.length} IMG</div>
+      <div className="p-4">
+        <div className="font-semibold text-[13.5px] tracking-[-0.015em] truncate">{p.name}</div>
+        <div className="flex items-center justify-between mt-1.5">
+          <span className="font-extrabold text-[15px] tracking-[-0.03em] tabular-nums">Rs. {Number(p.price).toLocaleString()}</span>
+          <span className="font-mono text-[10.5px] text-zinc-400">{images.length} img</span>
         </div>
-        <div className="flex items-baseline justify-between mt-1.5">
-          <span className="font-semibold text-[13.5px] tracking-[-0.01em]">Rs. {Number(p.price).toLocaleString()}</span>
-          <span className="text-[11px] text-zinc-400 truncate">{p.category || 'General'}</span>
-        </div>
-        <div className="mt-3 flex gap-1.5">
-          <button onClick={() => onEdit(p)} className="flex-1 h-[34px] border border-[#E4E4E1] bg-white text-[12px] font-medium rounded-[9px] hover:border-[#0A0A0A] hover:text-[#0A0A0A] transition-colors">Edit</button>
-          <button onClick={() => onDelete(p.id)} aria-label="Delete product" className="w-[34px] h-[34px] rounded-[9px] border border-[#ECECEA] bg-white text-zinc-400 hover:border-red-200 hover:text-red-600 hover:bg-red-50 transition-colors flex items-center justify-center"><IconTrash c="w-[15px] h-[15px]" /></button>
+        <div className="mt-3.5 flex gap-1.5">
+          <button type="button" onClick={() => onEdit(p)} className={`${BTN_DARK} flex-1 h-9 text-[12px]`}>Edit</button>
+          <button type="button" aria-label="Delete product" onClick={() => onDelete(p.id)} className={`${BTN_LIGHT} w-9 h-9 !p-0 text-zinc-500 hover:!border-red-300 hover:!text-red-600 hover:!bg-red-50`}>
+            <IconX c="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
     </div>
   )
 }
-
-/* -------------------- PAGE HEADER -------------------- */
-function PageHeader({ eyebrow, title, subtitle, actions }: { eyebrow?: string; title: string; subtitle?: string; actions?: React.ReactNode }) {
-  return (
-    <div className="flex flex-wrap items-end justify-between gap-x-5 gap-y-4 mb-7">
-      <div className="min-w-0">
-        {eyebrow && <div className="font-mono text-[10.5px] font-medium tracking-[0.14em] uppercase text-zinc-400 mb-2">{eyebrow}</div>}
-        <h1 className="text-[22px] md:text-[26px] font-semibold tracking-[-0.02em] leading-[1.1] text-[#0A0A0A]">{title}</h1>
-        {subtitle && <p className="text-[13px] text-zinc-500 mt-1.5 leading-[1.55] max-w-xl">{subtitle}</p>}
-      </div>
-      {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
-    </div>
-  )
-}
-
-/* -------------------- SHARED PRIMITIVES -------------------- */
-const btnPrimary = "h-9 px-4 bg-[#0A0A0A] text-white text-[12.5px] font-medium rounded-[10px] hover:bg-black transition-colors disabled:opacity-40 inline-flex items-center justify-center gap-2"
-const btnSecondary = "h-9 px-4 border border-[#E4E4E1] bg-white text-[12.5px] font-medium text-zinc-700 rounded-[10px] hover:border-[#0A0A0A]/30 hover:text-[#0A0A0A] transition-colors inline-flex items-center justify-center gap-2"
-const inputBase = "w-full h-[40px] px-3.5 border border-[#E4E4E1] rounded-[10px] text-[13.5px] bg-white focus:outline-none focus:border-[#0A0A0A] focus:ring-[3px] focus:ring-zinc-900/[0.06] transition-all placeholder:text-zinc-400"
-const labelBase = "block text-[12px] font-medium text-zinc-500 mb-1.5"
-const cardBase = "bg-white border border-[#E8E8E5] rounded-[14px] shadow-[0_1px_2px_rgba(0,0,0,0.04)]"
 
 /* -------------------- MAIN DASHBOARD -------------------- */
 export default function Dashboard() {
@@ -238,10 +475,6 @@ export default function Dashboard() {
   const [myPayments, setMyPayments] = useState<any[]>([])
   const [showStatusModal, setShowStatusModal] = useState<null | { type: 'approved' | 'rejected', payment: any }>(null)
   const [justSubmitted, setJustSubmitted] = useState<any>(null)
-  /* UX-only state: replaces native alert()/confirm() with styled in-app dialogs.
-     No business logic is changed — same messages, same follow-up actions. */
-  const [lockedTheme, setLockedTheme] = useState<null | { title: string; body: string }>(null)
-  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
   const plans: PlanDef[] = [
     { id: 'basic', name: 'Basic', monthly: 0, yearlyMonthly: 0, yearlyTotal: 0, products: 5, imagesPerProduct: 1, advancedAllowed: 3, premiumAllowed: 0, stores: 1, features: ['5 Products', '1 Image / product', '3 Advanced Themes', '0 Premium (Glass)', 'COD Only', 'Watermark'] },
@@ -256,14 +489,19 @@ export default function Dashboard() {
   const productLimit = currentPlanDef.products
   const imageLimit = currentPlanDef.imagesPerProduct
 
+  /* theme buckets — mirrors original logic exactly */
   const PREMIUM_NEW_IDS = ['spike-premium', 'shoe-app-premium', 'trenzo-luxury']
   const advancedGlassRaw = getAdvancedThemes()
   const premiumNewRaw = getPremiumThemes()
   const premiumThemes = [...advancedGlassRaw, ...premiumNewRaw]
   const premiumIds = premiumThemes.map(t => t.id)
   const allAdvancedRaw = STORE_THEMES.filter(t => (t.category as string) === 'advanced' && !advancedGlassRaw.map(x => x.id).includes(t.id))
-  const advancedThemesList = allAdvancedRaw.length >= 5 ? allAdvancedRaw.slice(0, 8) : [...allAdvancedRaw, ...STORE_THEMES.filter(t => (t.category as string) === 'clothing' || (t.category as string) === 'tech').slice(0, 8 - allAdvancedRaw.length)]
-  const finalAdvancedList = advancedThemesList.length ? advancedThemesList.slice(0, 8) : STORE_THEMES.filter(t => !premiumIds.includes(t.id)).slice(0, 8)
+  const advancedThemesList = allAdvancedRaw.length >= 5
+    ? allAdvancedRaw.slice(0, 8)
+    : [...allAdvancedRaw, ...STORE_THEMES.filter(t => (t.category as string) === 'clothing' || (t.category as string) === 'tech').slice(0, 8 - allAdvancedRaw.length)]
+  const finalAdvancedList = advancedThemesList.length
+    ? advancedThemesList.slice(0, 8)
+    : STORE_THEMES.filter(t => !premiumIds.includes(t.id)).slice(0, 8)
   const basicAllowedAdvancedIds = finalAdvancedList.slice(0, 3).map(t => t.id)
 
   const isPremiumTheme = (t: any) => premiumIds.includes(t.id) || PREMIUM_NEW_IDS.includes(t.id) || (t.category as string) === 'premium' || (t as any).tier === 'premium'
@@ -271,12 +509,16 @@ export default function Dashboard() {
   const isThemeLocked = (t: any) => {
     if (isPremium) return false
     if (isPremiumTheme(t)) return true
-    if (isAdvancedTheme(t)) { if (isAdvanced) return false; return !basicAllowedAdvancedIds.includes(t.id) }
+    if (isAdvancedTheme(t)) {
+      if (isAdvanced) return false
+      return !basicAllowedAdvancedIds.includes(t.id)
+    }
     return false
   }
 
   const GLASS_TILTS = [-10, 8, -8, 9, -7, 10, -12, 11]
 
+  /* ---------------- INIT ---------------- */
   useEffect(() => {
     const init = async () => {
       try {
@@ -293,13 +535,33 @@ export default function Dashboard() {
           prof = created || newProfile as any
         }
         if (prof) {
-          setProfile(prof); setBusinessName(prof.business_name || ''); setWhatsapp(prof.whatsapp_number || ''); setSlug(prof.store_slug || ''); setTheme(prof.store_theme || 'clothing-noor'); setPremiumCustom((prof as any).premium_custom || {})
-          const { data: prods } = await supabase.from('products').select('*').eq('user_id', user.id).order('created_at', { ascending: false }); if (prods) setProducts(prods)
+          setProfile(prof)
+          setBusinessName(prof.business_name || '')
+          setWhatsapp(prof.whatsapp_number || '')
+          setSlug(prof.store_slug || '')
+          setTheme(prof.store_theme || 'clothing-noor')
+          setPremiumCustom((prof as any).premium_custom || {})
+          const { data: prods } = await supabase.from('products').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
+          if (prods) setProducts(prods)
           const { data: pays } = await supabase.from('plan_payments').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
           if (pays) {
-            setMyPayments(pays); const lastSeenId = localStorage.getItem('dw_last_seen_payment'); const latest = pays[0]
-            if (latest && latest.id !== lastSeenId) { if (latest.status === 'approved' || latest.status === 'rejected') { setShowStatusModal({ type: latest.status, payment: latest }); localStorage.setItem('dw_last_seen_payment', latest.id) } else if (latest.status === 'pending') { localStorage.setItem('dw_last_seen_payment_pending', latest.id) } }
-            else if (latest && latest.status !== 'pending') { const lastStatus = localStorage.getItem('dw_last_seen_status_' + latest.id); if (lastStatus !== latest.status && (latest.status === 'approved' || latest.status === 'rejected')) { setShowStatusModal({ type: latest.status, payment: latest }); localStorage.setItem('dw_last_seen_status_' + latest.id, latest.status) } }
+            setMyPayments(pays)
+            const lastSeenId = localStorage.getItem('dw_last_seen_payment')
+            const latest = pays[0]
+            if (latest && latest.id !== lastSeenId) {
+              if (latest.status === 'approved' || latest.status === 'rejected') {
+                setShowStatusModal({ type: latest.status, payment: latest })
+                localStorage.setItem('dw_last_seen_payment', latest.id)
+              } else if (latest.status === 'pending') {
+                localStorage.setItem('dw_last_seen_payment_pending', latest.id)
+              }
+            } else if (latest && latest.status !== 'pending') {
+              const lastStatus = localStorage.getItem('dw_last_seen_status_' + latest.id)
+              if (lastStatus !== latest.status && (latest.status === 'approved' || latest.status === 'rejected')) {
+                setShowStatusModal({ type: latest.status, payment: latest })
+                localStorage.setItem('dw_last_seen_status_' + latest.id, latest.status)
+              }
+            }
             if (latest) localStorage.setItem('dw_last_seen_status_' + latest.id, latest.status)
           }
         }
@@ -309,381 +571,618 @@ export default function Dashboard() {
     init()
   }, [])
 
-  const handleThemeClick = async (t: any) => {
+  /* ---------------- HANDLERS ---------------- */
+    const handleThemeClick = async (t: any) => {
     if (isThemeLocked(t)) {
       if (isPremiumTheme(t)) {
-        setLockedTheme({
-          title: 'Premium theme locked',
-          body: `Basic: 0/3 Premium · Advanced: 0/3 Premium. This glass animation theme is Premium only — Rs. 2999/mo via Till ${TILL_ID}.`,
-        })
-        return
+        alert(`🔒 Premium Glass Locked
+Basic: 0/3 Premium
+Advanced: 0/3 Premium
+Need Premium — Till ${TILL_ID} Rs. 2999/mo
+
+This glass animation theme is Premium only.`)
+        setActiveTab('payments'); return
       }
-      setLockedTheme({
-        title: 'Advanced theme locked',
-        body: `Basic allows 3 of 8 Advanced themes. This theme needs Advanced — Rs. 899/mo via Till ${TILL_ID}. Upgrade to unlock all 8.`,
-      })
-      return
+      alert(`🔒 Advanced Theme Locked
+Basic allows 3/8 Advanced
+This theme needs Advanced — Till ${TILL_ID} Rs. 899/mo
+
+Upgrade to unlock all 8 Advanced themes.`)
+      setActiveTab('payments'); return
     }
+    // THEME-SPECIFIC EDITOR AUTO-SWITCH - FIXED BY AAKIF PATCH
     setTheme(t.id)
     setProfile((prev: any) => prev ? ({ ...prev, store_theme: t.id }) : prev)
-    try { const { data: { user } } = await supabase.auth.getUser(); if (user && profile) { await supabase.from('profiles').update({ store_theme: t.id }).eq('id', user.id) } } catch {}
-    if (['spike-premium','shoe-app-premium','trenzo-luxury','sleek-beige','sleek-dark','sleek-editorial'].includes(t.id)) { setTimeout(()=> { document.getElementById('premium-editor-anchor')?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }, 150) }
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user && profile) {
+        await supabase.from('profiles').update({ store_theme: t.id }).eq('id', user.id)
+      }
+    } catch {}
+    if (['spike-premium','shoe-app-premium','trenzo-luxury','sleek-beige','sleek-dark','sleek-editorial'].includes(t.id)) {
+      setTimeout(()=> {
+        document.getElementById('premium-editor-anchor')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 150)
+    }
   }
 
   const saveStore = async () => {
-    if (!profile) return; setSaving(true)
-    try { const { error } = await supabase.from('profiles').update({ business_name: businessName.trim(), whatsapp_number: whatsapp.trim(), store_slug: slug.trim(), store_theme: theme, premium_custom: premiumCustom, }).eq('id', profile.id); if (error) throw error; setSaved(true); setTimeout(() => setSaved(false), 2500) } catch (e: any) { setErrorMsg(e.message) }
+    if (!profile) return
+    setSaving(true)
+    try {
+      const { error } = await supabase.from('profiles').update({
+        business_name: businessName.trim(),
+        whatsapp_number: whatsapp.trim(),
+        store_slug: slug.trim(),
+        store_theme: theme,
+        premium_custom: premiumCustom,
+      }).eq('id', profile.id)
+      if (error) throw error
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2500)
+    } catch (e: any) { setErrorMsg(e.message) }
     setSaving(false)
   }
   const copyLink = async () => { const url = `${window.location.origin}/s/${slug}`; await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 2000) }
   const copyTill = async () => { await navigator.clipboard.writeText(TILL_ID); setCopiedTill(true); setTimeout(() => setCopiedTill(false), 2000) }
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = Array.from(e.target.files || []); if (!selected.length) return
+    const selected = Array.from(e.target.files || [])
+    if (!selected.length) return
     const totalFiles = editingId ? selected.length : selected.length
-    if (totalFiles > imageLimit && imageLimit !== 999999) { setErrorMsg(`${currentPlanId.toUpperCase()} allows ${imageLimit} images per product. You selected ${totalFiles}. Upgrade: Till ${TILL_ID}`); setTimeout(() => setErrorMsg(null), 4000); return }
-    const newFiles = editingId ? [...files, ...selected].slice(0, imageLimit === 999999 ? 20 : imageLimit) : selected; setFiles(newFiles)
-    const pr: string[] = []; const existingPreviews = editingId ? previews : []
-    newFiles.forEach(file => { const r = new FileReader(); r.onload = ev => { pr.push(ev.target?.result as string); if (pr.length === newFiles.length) { setPreviews(editingId ? [...existingPreviews, ...pr].slice(0, newFiles.length) : pr) } }; r.readAsDataURL(file) })
+    if (totalFiles > imageLimit && imageLimit !== 999999) {
+      setErrorMsg(`❌ ${currentPlanId.toUpperCase()} allows ${imageLimit} images per product. You selected ${totalFiles}. Upgrade: Till ${TILL_ID}`)
+      setTimeout(() => setErrorMsg(null), 4000)
+      return
+    }
+    const newFiles = editingId ? [...files, ...selected].slice(0, imageLimit === 999999 ? 20 : imageLimit) : selected
+    setFiles(newFiles)
+    const pr: string[] = []
+    const existingPreviews = editingId ? previews : []
+    newFiles.forEach(file => {
+      const r = new FileReader()
+      r.onload = ev => {
+        pr.push(ev.target?.result as string)
+        if (pr.length === newFiles.length) {
+          setPreviews(editingId ? [...existingPreviews, ...pr].slice(0, newFiles.length) : pr)
+        }
+      }
+      r.readAsDataURL(file)
+    })
     if (newFiles.length === 0) setPreviews([])
   }
-  const removeFileAt = (idx: number) => { const nf = files.filter((_, i) => i !== idx); const np = previews.filter((_, i) => i !== idx); setFiles(nf); setPreviews(np) }
-  const uploadOne = async (file: File, userId: string) => { const ext = file.name.split('.').pop(); const fileName = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`; const { error } = await supabase.storage.from('product-images').upload(fileName, file); if (error) throw error; const { data } = supabase.storage.from('product-images').getPublicUrl(fileName); return data.publicUrl }
-  const startEdit = (p: any) => { setEditingId(p.id); setProdName(p.name); setProdPrice(String(p.price)); setProdDesc(p.description || ''); setProdCategory(p.category || 'General'); setProdStock(String(p.stock || 100)); setProdSizes(Array.isArray(p.sizes) ? p.sizes.join(', ') : p.sizes || ''); setProdColors(Array.isArray(p.colors) ? p.colors.join(', ') : p.colors || ''); setProdOrigPrice(p.original_price ? String(p.original_price) : ''); setPreviews(p.image_urls && p.image_urls.length ? p.image_urls : [p.image_url]); setFiles([]); setActiveTab('products'); window.scrollTo({ top: 0, behavior: 'smooth' }) }
-  const cancelEdit = () => { setEditingId(null); setProdName(''); setProdPrice(''); setProdDesc(''); setProdCategory('General'); setProdStock('100'); setProdSizes(''); setProdColors(''); setProdOrigPrice(''); setFiles([]); setPreviews([]) }
+
+  const removeFileAt = (idx: number) => {
+    const nf = files.filter((_, i) => i !== idx)
+    const np = previews.filter((_, i) => i !== idx)
+    setFiles(nf); setPreviews(np)
+  }
+
+  const uploadOne = async (file: File, userId: string) => {
+    const ext = file.name.split('.').pop()
+    const fileName = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+    const { error } = await supabase.storage.from('product-images').upload(fileName, file)
+    if (error) throw error
+    const { data } = supabase.storage.from('product-images').getPublicUrl(fileName)
+    return data.publicUrl
+  }
+
+  const startEdit = (p: any) => {
+    setEditingId(p.id)
+    setProdName(p.name)
+    setProdPrice(String(p.price))
+    setProdDesc(p.description || '')
+    setProdCategory(p.category || 'General')
+    setProdStock(String(p.stock || 100))
+    setProdSizes(Array.isArray(p.sizes) ? p.sizes.join(', ') : p.sizes || '')
+    setProdColors(Array.isArray(p.colors) ? p.colors.join(', ') : p.colors || '')
+    setProdOrigPrice(p.original_price ? String(p.original_price) : '')
+    setPreviews(p.image_urls && p.image_urls.length ? p.image_urls : [p.image_url])
+    setFiles([])
+    setActiveTab('products')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const cancelEdit = () => {
+    setEditingId(null)
+    setProdName(''); setProdPrice(''); setProdDesc(''); setProdCategory('General')
+    setProdStock('100'); setProdSizes(''); setProdColors(''); setProdOrigPrice('')
+    setFiles([]); setPreviews([])
+  }
+
   const addProduct = async () => {
-    if (editingId === null && products.length >= productLimit) { setErrorMsg(`${currentPlanId.toUpperCase()} allows ${productLimit === 999999 ? 'Unlimited' : productLimit} products. Upgrade via PRO → Till ${TILL_ID}`); setTimeout(() => setErrorMsg(null), 4000); setActiveTab('payments'); return }
+    if (editingId === null && products.length >= productLimit) {
+      setErrorMsg(`🔒 ${currentPlanId.toUpperCase()} allows ${productLimit === 999999 ? 'Unlimited' : productLimit} products. Upgrade via PRO → Till ${TILL_ID}`)
+      setTimeout(() => setErrorMsg(null), 4000)
+      setActiveTab('payments'); return
+    }
     if (!prodName.trim() || !prodPrice) { setErrorMsg('Name and price required'); setTimeout(() => setErrorMsg(null), 3000); return }
     if (files.length === 0 && !editingId) { setErrorMsg('Photo required - select at least 1 image'); setTimeout(() => setErrorMsg(null), 3000); return }
-    if (files.length > imageLimit && imageLimit !== 999999) { setErrorMsg(`${currentPlanId.toUpperCase()} allows ${imageLimit} images. You selected ${files.length}`); setTimeout(() => setErrorMsg(null), 4000); return }
+    if (files.length > imageLimit && imageLimit !== 999999) { setErrorMsg(`❌ ${currentPlanId.toUpperCase()} allows ${imageLimit} images. You selected ${files.length}`); setTimeout(() => setErrorMsg(null), 4000); return }
     setUploading(true)
     try {
-      const { data: { user } } = await supabase.auth.getUser(); if (!user) throw new Error('Not logged in')
-      let urls: string[] = []; for (const f of files) { const url = await uploadOne(f, user.id); urls.push(url) }
-      if (editingId && urls.length === 0) { const existing = products.find(p => p.id === editingId); if (existing) { urls = existing.image_urls && existing.image_urls.length ? existing.image_urls : [existing.image_url].filter(Boolean) as string[] } }
-      if (urls.length === 0) throw new Error('No images to save')
-      if (editingId) {
-        const sizesArr = prodSizes.split(',').map(s => s.trim()).filter(Boolean); const colorsArr = prodColors.split(',').map(s => s.trim()).filter(Boolean)
-        const payload: any = { name: prodName.trim(), price: Number(prodPrice), image_url: urls[0], image_urls: urls, description: prodDesc.trim(), category: prodCategory, stock: Number(prodStock) || 100, sizes: sizesArr, colors: colorsArr, original_price: prodOrigPrice ? Number(prodOrigPrice) : 0, }
-        const { data, error } = await supabase.from('products').update(payload).eq('id', editingId).select().single(); if (error) throw error; if (data) setProducts(products.map(pr => pr.id === editingId ? data : pr)); setEditingId(null)
-      } else {
-        const sizesArr = prodSizes.split(',').map(s => s.trim()).filter(Boolean); const colorsArr = prodColors.split(',').map(s => s.trim()).filter(Boolean)
-        const { data, error } = await supabase.from('products').insert({ user_id: user.id, name: prodName.trim(), price: Number(prodPrice), image_url: urls[0], image_urls: urls, description: prodDesc.trim(), category: prodCategory, stock: Number(prodStock) || 100, sizes: sizesArr, colors: colorsArr, original_price: prodOrigPrice ? Number(prodOrigPrice) : 0, }).select().single(); if (error) throw error; if (data) setProducts([data, ...products])
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Not logged in')
+      let urls: string[] = []
+      for (const f of files) {
+        const url = await uploadOne(f, user.id)
+        urls.push(url)
       }
-      setProdName(''); setProdPrice(''); setProdDesc(''); setProdCategory('General'); setProdStock('100'); setProdSizes(''); setProdColors(''); setProdOrigPrice(''); setFiles([]); setPreviews([])
+      if (editingId && urls.length === 0) {
+        const existing = products.find(p => p.id === editingId)
+        if (existing) {
+          urls = existing.image_urls && existing.image_urls.length ? existing.image_urls : [existing.image_url].filter(Boolean) as string[]
+        }
+      }
+      if (urls.length === 0) throw new Error('No images to save')
+
+      if (editingId) {
+        const sizesArr = prodSizes.split(',').map(s => s.trim()).filter(Boolean)
+        const colorsArr = prodColors.split(',').map(s => s.trim()).filter(Boolean)
+        const payload: any = {
+          name: prodName.trim(), price: Number(prodPrice), image_url: urls[0], image_urls: urls,
+          description: prodDesc.trim(), category: prodCategory, stock: Number(prodStock) || 100,
+          sizes: sizesArr, colors: colorsArr, original_price: prodOrigPrice ? Number(prodOrigPrice) : 0,
+        }
+        const { data, error } = await supabase.from('products').update(payload).eq('id', editingId).select().single()
+        if (error) throw error
+        if (data) setProducts(products.map(pr => pr.id === editingId ? data : pr))
+        setEditingId(null)
+      } else {
+        const sizesArr = prodSizes.split(',').map(s => s.trim()).filter(Boolean)
+        const colorsArr = prodColors.split(',').map(s => s.trim()).filter(Boolean)
+        const { data, error } = await supabase.from('products').insert({
+          user_id: user.id, name: prodName.trim(), price: Number(prodPrice),
+          image_url: urls[0], image_urls: urls, description: prodDesc.trim(), category: prodCategory,
+          stock: Number(prodStock) || 100, sizes: sizesArr, colors: colorsArr,
+          original_price: prodOrigPrice ? Number(prodOrigPrice) : 0,
+        }).select().single()
+        if (error) throw error
+        if (data) setProducts([data, ...products])
+      }
+      setProdName(''); setProdPrice(''); setProdDesc(''); setProdCategory('General')
+      setProdStock('100'); setProdSizes(''); setProdColors(''); setProdOrigPrice('')
+      setFiles([]); setPreviews([])
     } catch (e: any) { setErrorMsg(e.message); setTimeout(() => setErrorMsg(null), 5000) }
     setUploading(false)
   }
-  const confirmDeleteProduct = async () => { const id = deleteTarget; setDeleteTarget(null); if (!id) return; await supabase.from('products').delete().eq('id', id); setProducts(products.filter(p => p.id !== id)) }
+
+  const deleteProduct = async (id: string) => {
+    if (!confirm('Delete?')) return
+    await supabase.from('products').delete().eq('id', id)
+    setProducts(products.filter(p => p.id !== id))
+  }
+
   const handleBuyPlan = async () => {
-    if (!selectedPlan) return; if (selectedPlan.monthly === 0) { setSelectedPlan(null); return }
+    if (!selectedPlan) return
+    if (selectedPlan.monthly === 0) { setSelectedPlan(null); return }
     if (!txnId.trim()) { setErrorMsg('Enter Transaction ID'); setTimeout(() => setErrorMsg(null), 3000); return }
-    setPurchasing(true); const amount = billing === 'monthly' ? selectedPlan.monthly : selectedPlan.yearlyTotal
-    try { const { data: { user } } = await supabase.auth.getUser(); if (!user) throw new Error('Not logged in'); const { error } = await supabase.from('plan_payments').insert({ user_id: user.id, plan_id: selectedPlan.id, amount, till_id: TILL_ID, txn_id: txnId.trim(), status: 'pending', }); if (error) throw error; const { data: pays } = await supabase.from('plan_payments').select('*').eq('user_id', user.id).order('created_at', { ascending: false }); if (pays) { setMyPayments(pays); if (pays[0]) setJustSubmitted(pays[0]) }; setSelectedPlan(null); setTxnId('') } catch (e: any) { setErrorMsg(e.message); setTimeout(() => setErrorMsg(null), 4000) }
+    setPurchasing(true)
+    const amount = billing === 'monthly' ? selectedPlan.monthly : selectedPlan.yearlyTotal
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Not logged in')
+      const { error } = await supabase.from('plan_payments').insert({
+        user_id: user.id, plan_id: selectedPlan.id, amount, till_id: TILL_ID, txn_id: txnId.trim(), status: 'pending',
+      })
+      if (error) throw error
+      const { data: pays } = await supabase.from('plan_payments').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
+      if (pays) { setMyPayments(pays); if (pays[0]) setJustSubmitted(pays[0]) }
+      setSelectedPlan(null); setTxnId('')
+    } catch (e: any) { setErrorMsg(e.message); setTimeout(() => setErrorMsg(null), 4000) }
     setPurchasing(false)
   }
+
   const getDisplayPrice = (p: PlanDef) => billing === 'monthly' ? p.monthly : p.yearlyMonthly
+
   if (loading) return <DukaanWhatsLoader message="Loading your store..." />
 
+  /* ---------------- DERIVED THEME VIEWS ---------------- */
   const standardThemes = STORE_THEMES.filter(t => !premiumIds.includes(t.id) && !finalAdvancedList.some(a => a.id === t.id))
-  const currentTheme: any = [...finalAdvancedList, ...standardThemes, ...premiumThemes].find(t => t.id === theme) || finalAdvancedList[0] || standardThemes[0] || { name: 'Theme', colors: { bg: '#F8F7F5', accent: '#000' } }
-  const currentTier = finalAdvancedList.some(t => t.id === theme) ? 'Advanced' : standardThemes.some(t => t.id === theme) ? 'Standard' : 'Premium'
+  const currentTheme: any =
+    [...finalAdvancedList, ...standardThemes, ...premiumThemes].find(t => t.id === theme) ||
+    finalAdvancedList[0] ||
+    standardThemes[0] ||
+    { name: 'Theme', colors: { bg: '#F8F7F5', accent: '#000' } }
+  const currentTier = finalAdvancedList.some(t => t.id === theme) ? 'Advanced'
+    : standardThemes.some(t => t.id === theme) ? 'Standard' : 'Premium'
 
-  const sidebarNav: { id: string; label: string; Icon: any; badge?: string; pro?: boolean }[] = [
+
+  const sidebarNav = [
     { id: 'themes', label: 'Themes', Icon: IconThemes },
     { id: 'products', label: 'Products', Icon: IconProducts, badge: `${products.length}/${productLimit === 999999 ? '∞' : productLimit}` },
     { id: 'store', label: 'Store', Icon: IconStore },
     { id: 'analytics', label: 'Analytics', Icon: IconAnalytics, pro: !isPremium },
     { id: 'payments', label: 'Plans & Billing', Icon: IconBilling },
-  ]
+  ] as const
 
-  const statusMeta: any = {
-    pending: { dot: '#d97706', bg: '#FFFBEB', border: '#FDE9C8', fg: '#92400E', label: 'PENDING' },
-    approved: { dot: '#16a34a', bg: '#F0FDF4', border: '#CBEBD5', fg: '#166534', label: 'APPROVED' },
-    rejected: { dot: '#dc2626', bg: '#FEF2F2', border: '#FBD5D5', fg: '#991B1B', label: 'REJECTED' },
-  }
+  /* ---------------- SHARED VIEW HELPERS ---------------- */
+  const tabLabel: Record<string, string> = { themes: 'Themes', products: 'Products', store: 'Store', analytics: 'Analytics', payments: 'Plans & billing' }
+  const mobileLabel: Record<string, string> = { themes: 'Themes', products: 'Products', store: 'Store', analytics: 'Analytics', payments: 'Plans' }
+  const maxLabel = (n: number) => (n === 999999 ? '∞' : String(n))
+  const productPct = productLimit === 999999 ? 3 : Math.min(100, (products.length / productLimit) * 100)
+  const limitReached = products.length >= productLimit
+  const activeIdx = Math.max(0, sidebarNav.findIndex(n => n.id === activeTab))
 
-  /* ---------------- THEMES PAGE -------------------- */
+  const CurrentPlanButton = () => (
+    <button
+      type="button"
+      onClick={() => setActiveTab('payments')}
+      className={`flex items-center gap-2 h-9 pl-3 pr-3.5 rounded-full border border-zinc-200/80 bg-white cursor-pointer transition-colors hover:border-zinc-300 ${UI.focus}`}
+    >
+      <span className={`w-1.5 h-1.5 rounded-full ${isPremium ? 'bg-[#E8FF86] shadow-[0_0_0_3px_rgba(232,255,134,0.35),0_0_0_1px_#0A0A0A]' : isAdvanced ? 'bg-black' : 'bg-zinc-400'}`} />
+      <span className="text-[12.5px] font-semibold tracking-[-0.01em]">{currentPlanDef.name}</span>
+      <span className="text-[11px] text-zinc-400 font-mono hidden lg:inline">{maxLabel(productLimit)} products, {maxLabel(imageLimit)} img</span>
+      {isPremium && <span className="bg-[#0A0A0A] text-[#E8FF86] text-[10px] px-2 h-[18px] rounded-full font-bold hidden md:inline-flex items-center">Live</span>}
+    </button>
+  )
+
+  /* ---------------- THEMES PAGE ---------------- */
   const themesPage = (
-    <div className="animate-[fadeIn_0.3s_ease]">
-      <style>{`
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-        .glass-container { position: relative; display: flex; justify-content: flex-start; align-items: center; min-height: 420px; padding: 44px 24px 44px 40px; gap: 0; overflow-x: auto; overflow-y: visible; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
-        .glass-container::-webkit-scrollbar { height: 4px; }
-        .glass-container::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.10); border-radius: 999px; }
-        .glass-container .glass { position: relative; width: 268px; height: 356px; flex-shrink: 0; background: #fff; border: 1px solid rgba(0,0,0,0.07); box-shadow: 0 16px 44px rgba(0,0,0,0.07); display: flex; justify-content: flex-start; align-items: center; flex-direction: column; transition: all 0.55s cubic-bezier(0.23,1,0.32,1); border-radius: 18px; margin: 0 -30px; transform: rotate(calc(var(--r) * 1deg)) translateY(0); cursor: pointer; overflow: hidden; }
-        .glass-container .glass:hover { transform: rotate(0deg) translateY(-12px) scale(1.03); margin: 0 18px; box-shadow: 0 28px 64px rgba(0,0,0,0.14); z-index: 10; }
-        .glass-container .glass::before { content: attr(data-text); position: absolute; bottom: 0; width: 100%; height: 44px; background: #fff; border-top: 1px solid rgba(0,0,0,0.06); display: flex; justify-content: center; align-items: center; color: #0A0A0A; font-size: 12px; font-weight: 600; letter-spacing: -0.01em; }
-        .glass-container .glass.selected { background: #0A0A0A; border: 1.5px solid #0A0A0A; transform: rotate(0deg) translateY(-14px) scale(1.05); margin: 0 24px; z-index: 20; box-shadow: 0 28px 64px rgba(0,0,0,0.26), 0 0 0 3px #E8FF86; }
-        .glass-container .glass.selected::before { background: #0A0A0A; color: #fff; border-top: 1px solid rgba(255,255,255,0.08); }
-        .glass-lock-overlay { position: absolute; inset: 0; background: rgba(255,255,255,0.88); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; z-index: 10; border-radius: 18px; }
-        @media (max-width: 768px) { .glass-container .glass { width: 200px; height: 280px; margin: 0 -20px; } .glass-container { min-height: 330px; padding: 24px 0 32px; } }
-      `}</style>
-
+    <div className="dw-page dw-stagger">
       <PageHeader
-        eyebrow="Theme Studio"
-        title="Craft your storefront"
-        subtitle={currentPlanId === 'basic' ? '3 of 8 Advanced themes unlocked · Premium locked' : currentPlanId === 'advanced' ? 'All 8 Advanced themes unlocked · Premium locked' : 'All 11 themes unlocked — you’re limitless'}
-        actions={<>
-          <div className="hidden md:flex items-center gap-2 h-9 px-3 rounded-[10px] bg-white border border-[#E4E4E1] text-[11.5px] font-mono text-zinc-500"><LiveDot /> <span>/s/{slug || 'your-slug'}</span></div>
-          <button onClick={saveStore} disabled={saving} className={btnPrimary}>{saving ? 'Saving…' : saved ? <><IconCheck c="w-3.5 h-3.5 text-[#D9FF4B]" /> Published</> : 'Save & Publish'}</button>
-        </>}
+        title="Themes"
+        subtitle={currentPlanId === 'basic' ? '3 of 8 Advanced themes unlocked. Premium is locked.'
+          : currentPlanId === 'advanced' ? 'All 8 Advanced themes unlocked. Premium is locked.'
+            : 'All themes unlocked.'}
+        actions={
+          <>
+            {saved && (
+              <span className="dw-pop h-10 px-3.5 inline-flex items-center gap-1.5 text-[12.5px] text-emerald-700 font-medium bg-emerald-50 rounded-full border border-emerald-200">
+                <IconCheck c="w-3.5 h-3.5" /> Saved — {getTheme(theme).name}
+              </span>
+            )}
+            <button type="button" onClick={saveStore} disabled={saving} className={`${BTN_DARK} h-10 px-5 text-[13px]`}>
+              {saving ? 'Saving...' : 'Save & publish'}
+            </button>
+          </>
+        }
       />
 
-      {/* Active theme hero */}
-      <div className="relative rounded-[16px] overflow-hidden mb-5 bg-[#0B0B0C]">
-        <div className="absolute top-0 right-0 w-[380px] h-[380px] bg-[#E8FF86]/[0.07] rounded-full blur-[90px] -mr-32 -mt-32" />
-        <div className="relative p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-7">
-          <div className="flex-1 min-w-0">
-            <div className="inline-flex items-center gap-2 text-[10px] font-semibold tracking-[0.14em] uppercase text-[#D9FF4B]"><span className="w-1.5 h-1.5 rounded-full bg-[#D9FF4B] animate-pulse" /> Currently live</div>
-            <h2 className="text-white text-[22px] md:text-[26px] font-semibold tracking-[-0.02em] mt-3 leading-tight">{currentTheme.name}</h2>
-            <div className="flex items-center gap-2 mt-2.5">
-              <span className="text-[10.5px] font-mono bg-white/[0.08] border border-white/10 text-white/70 px-2.5 h-[22px] rounded-md flex items-center uppercase tracking-wide">{currentTier}</span>
-              <span className="text-[11px] text-white/35 font-mono">/s/{slug || 'your-slug'}</span>
+      {/* Active theme — the one bold moment on this screen */}
+      <section
+        onMouseMove={(e) => {
+          const r = e.currentTarget.getBoundingClientRect()
+          e.currentTarget.style.setProperty('--mx', `${e.clientX - r.left}px`)
+          e.currentTarget.style.setProperty('--my', `${e.clientY - r.top}px`)
+        }}
+        className="dw-hero relative rounded-[28px] overflow-hidden mb-6 md:mb-8 bg-[#0A0A0A] text-white border border-zinc-900"
+      >
+        <div className="absolute inset-0 opacity-[0.07] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, #fff 1px, transparent 0)', backgroundSize: '20px 20px' }} />
+        <div aria-hidden className="dw-aurora a" />
+        <div aria-hidden className="dw-aurora b" />
+        <div aria-hidden className="dw-spot" />
+        <div className="relative grid md:grid-cols-[1fr_340px] gap-8 md:gap-10 p-6 md:p-10 items-center">
+          <div className="min-w-0">
+            <div className="inline-flex items-center gap-2 h-7 px-3 rounded-full bg-white/[0.06] border border-white/10 backdrop-blur-md text-[12px] font-medium text-white/80">
+              <LiveDot /> Active theme
             </div>
-            <div className="flex gap-2 mt-5 flex-wrap">
-              <Link href={slug ? `/s/${slug}` : '#'} target="_blank" className="h-9 px-4 bg-white text-black rounded-[10px] text-[12.5px] font-medium no-underline inline-flex items-center gap-1.5 hover:bg-zinc-200 transition-colors">View live <IconExternal c="w-3.5 h-3.5" /></Link>
-              <button onClick={saveStore} disabled={saving} className="h-9 px-4 bg-white/[0.08] text-white border border-white/15 rounded-[10px] text-[12.5px] font-medium hover:bg-white/[0.14] transition-colors disabled:opacity-50">Republish</button>
+            <h2 key={currentTheme.id} aria-label={currentTheme.name} className="mt-5 text-[40px] md:text-[60px] font-extrabold tracking-[-0.045em] leading-[0.95] [perspective:600px]">
+              {String(currentTheme.name).split(' ').map((w: string, wi: number, arr: string[]) => (
+                <span key={wi} aria-hidden className="inline-block whitespace-nowrap">
+                  {Array.from(w).map((ch, i) => (
+                    <span key={i} className="dw-char" style={{ animationDelay: `${(wi * 5 + i) * 28}ms` }}>{ch}</span>
+                  ))}
+                  {wi < arr.length - 1 ? '\u00A0' : ''}
+                </span>
+              ))}
+            </h2>
+            <div className="mt-4 flex items-center gap-2.5 flex-wrap">
+              <span className="text-[12.5px] font-medium text-white/60">{currentTier} tier</span>
+              <span className="font-mono text-[12px] text-[#E8FF86] bg-white/[0.06] border border-white/10 rounded-md px-2 py-0.5">/s/{slug || 'your-slug'}</span>
+            </div>
+            <div className="flex gap-2 mt-7 flex-wrap">
+              <Link href={slug ? `/s/${slug}` : '#'} target="_blank" className={`${BTN} dw-shine h-10 px-5 bg-[#E8FF86] text-black text-[13px] no-underline hover:brightness-95`}>
+                View live <IconExternal c="w-3.5 h-3.5" />
+              </Link>
+              <button type="button" onClick={saveStore} disabled={saving} className={`${BTN} h-10 px-5 bg-white/10 text-white border border-white/15 text-[13px] hover:bg-white/15 backdrop-blur-md`}>
+                {saving ? 'Publishing...' : 'Republish'}
+              </button>
             </div>
           </div>
-          <div className="w-full md:w-[240px] h-[170px] rounded-[14px] overflow-hidden shrink-0 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.45)] bg-white"><MiniStorefront theme={currentTheme} /></div>
+          <div key={`frame-${currentTheme.id}`} className="dw-swap">
+            <div className="dw-spin">
+              <BrowserFrame tone="dark" url={`dukaanwhats.pk/s/${slug || 'your-slug'}`} theme={currentTheme} tall={premiumThemes.some(p => p.id === currentTheme.id)} />
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
 
       {/* Advanced */}
-      <div className={`${cardBase} p-5 md:p-6 mb-5`}>
-        <div className="flex items-center justify-between flex-wrap gap-3 mb-5">
-          <div className="flex items-center gap-2.5">
-            <span className="font-mono text-[10px] font-semibold tracking-[0.14em] bg-[#0B0B0C] text-white px-2.5 h-[22px] rounded-md flex items-center">ADVANCED</span>
-            <span className="text-[12.5px] text-zinc-500">{currentPlanId === 'basic' ? `${basicAllowedAdvancedIds.length}/8 unlocked` : '8/8 unlocked'}</span>
-          </div>
-          {currentPlanId === 'basic' && <button onClick={() => setActiveTab('payments')} className="text-[12px] font-medium text-zinc-700 hover:text-black bg-white border border-[#E4E4E1] h-8 px-3 rounded-[9px] inline-flex items-center gap-1.5 transition-colors">Unlock all <IconArrowRight c="w-3 h-3" /></button>}
+      <section className={`${UI.card} mb-4`}>
+        <SectionHead
+          title="Advanced"
+          meta={currentPlanId === 'basic' ? `${basicAllowedAdvancedIds.length}/8 unlocked` : '8/8 unlocked'}
+          action={currentPlanId === 'basic' ? (
+            <button type="button" onClick={() => setActiveTab('payments')} className={`${BTN_LIGHT} h-8 px-3.5 text-[12px]`}>Unlock all</button>
+          ) : undefined}
+        />
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 p-1">
+          {finalAdvancedList.map(t => (
+            <ThemeTile
+              key={t.id}
+              t={t}
+              active={theme === t.id}
+              locked={isThemeLocked(t)}
+              label="Advanced"
+              lockPrice="Rs. 899/mo"
+              onSelect={() => handleThemeClick(t)}
+            />
+          ))}
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-3.5">
-          {finalAdvancedList.map(t => {
-            const isActive = theme === t.id; const locked = isThemeLocked(t)
-            return (
-              <button key={t.id} onClick={() => handleThemeClick(t)} className={`group relative bg-white border rounded-[14px] overflow-hidden text-left w-full cursor-pointer transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/30 ${isActive ? 'border-[#0A0A0A] shadow-[0_8px_20px_-8px_rgba(0,0,0,0.18)]' : 'border-[#E8E8E5] hover:border-[#0A0A0A]/25 hover:shadow-[0_8px_20px_-10px_rgba(0,0,0,0.10)]'}`}>
-                <div className="aspect-[4/3] relative overflow-hidden bg-[#F7F7F5]">
-                  <MiniStorefront theme={t} />
-                  {isActive && <div className="absolute top-2 right-2 w-[22px] h-[22px] rounded-full bg-[#0A0A0A] text-white flex items-center justify-center shadow-md"><IconCheck c="w-3 h-3" /></div>}
-                  {locked && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-white/85 backdrop-blur-md">
-                      <div className="w-9 h-9 rounded-[10px] bg-[#0B0B0C] flex items-center justify-center"><IconLock c="w-4 h-4 text-[#D9FF4B]" /></div>
-                      <div className="text-[9.5px] font-semibold tracking-[0.14em] text-zinc-800">LOCKED</div>
-                      <div className="text-[10px] text-zinc-500 font-mono">Rs. 899/mo</div>
-                    </div>
-                  )}
-                </div>
-                <div className="p-3 flex items-center justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="font-medium text-[12.5px] tracking-[-0.01em] truncate">{t.name}</div>
-                    <div className="font-mono text-[8.5px] text-zinc-400 uppercase tracking-[0.14em] mt-0.5">Advanced</div>
-                  </div>
-                  {isActive && !locked && <span className="shrink-0 text-[8.5px] font-semibold tracking-[0.1em] px-2 h-[18px] rounded-md bg-[#E8FF86] text-black flex items-center">ACTIVE</span>}
-                </div>
-              </button>
-            )
-          })}
-        </div>
-      </div>
+      </section>
 
+      {/* Standard */}
       {standardThemes.length > 0 && (
-        <div className="bg-[#F7F7F5] border border-[#E8E8E5] rounded-[14px] p-5 md:p-6 mb-5">
-          <div className="flex items-center gap-2.5 mb-5">
-            <span className="font-mono text-[10px] font-semibold tracking-[0.14em] bg-white border border-[#E4E4E1] px-2.5 h-[22px] rounded-md flex items-center text-zinc-600">STANDARD</span>
-            <span className="text-[12.5px] text-zinc-500">Included with every plan</span>
+        <section className={`${UI.card} mb-4`}>
+          <SectionHead title="Standard" meta="included with every plan" />
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 p-1">
+            {standardThemes.slice(0, 6).map(t => (
+              <ThemeTile
+                key={t.id}
+                t={t}
+                active={theme === t.id}
+                locked={false}
+                label={String(t.category)}
+                onSelect={() => handleThemeClick(t)}
+              />
+            ))}
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
-            {standardThemes.slice(0, 6).map(t => {
-              const isActive = theme === t.id
-              return (
-                <button key={t.id} onClick={() => handleThemeClick(t)} className={`group relative bg-white border rounded-[12px] overflow-hidden text-left w-full cursor-pointer transition-all hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/30 ${isActive ? 'border-[#0A0A0A]' : 'border-[#E8E8E5] hover:border-[#0A0A0A]/25'}`}>
-                  <div className="aspect-[4/3] relative overflow-hidden"><MiniStorefront theme={t} />{isActive && <div className="absolute top-2 right-2 w-[20px] h-[20px] rounded-full bg-[#0A0A0A] text-white flex items-center justify-center"><IconCheck c="w-3 h-3" /></div>}</div>
-                  <div className="p-2.5"><div className="font-medium text-[11.5px] tracking-[-0.01em] truncate">{t.name}</div><div className="font-mono text-[8px] text-zinc-400 uppercase tracking-[0.14em] mt-0.5">{t.category}</div></div>
-                </button>
-              )
-            })}
-          </div>
-        </div>
+        </section>
       )}
 
-      <div className="rounded-[14px] border border-[#0B0B0C] overflow-hidden bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-        <div className="px-5 md:px-6 py-4 bg-[#0B0B0C] text-white flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <span className="text-black text-[10px] font-semibold px-2.5 h-[22px] rounded-md tracking-[0.14em] flex items-center bg-[#E8FF86]">PREMIUM</span>
-            <span className="font-semibold text-[13.5px] tracking-[-0.01em]">Glass Collection</span>
-            <span className="text-[10.5px] text-white/40 hidden md:inline font-mono">animated showcase</span>
+      {/* Premium glass */}
+      <section className="rounded-2xl border border-zinc-900 overflow-hidden bg-white">
+        <div className="px-5 md:px-6 py-4 md:py-5 bg-[#0A0A0A] text-white flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="text-black text-[11px] font-bold px-2.5 h-6 rounded-full flex items-center bg-[#E8FF86]">Premium</span>
+            <span className="font-semibold text-[15px] tracking-[-0.02em]">Glass collection</span>
+            <span className="text-[12px] text-white/40 hidden md:inline">Animated showcase themes</span>
           </div>
-          <span className="text-white/70 text-[11px] px-3 h-7 rounded-full font-medium flex items-center border border-white/10 bg-white/[0.06]">{isPremium ? <span className="inline-flex items-center gap-1.5"><IconCheck c="w-3 h-3 text-[#D9FF4B]" /> All unlocked</span> : `Locked · Rs. 2999/mo — Till ${TILL_ID}`}</span>
+          <span className="bg-white/10 border border-white/15 backdrop-blur-md text-white text-[12px] px-3 h-7 rounded-full font-medium inline-flex items-center gap-1.5">
+            {isPremium ? <><IconCheck c="w-3 h-3 text-[#E8FF86]" /> All unlocked</> : <>Locked <span className="font-mono text-white/50">Rs. 2999/mo</span></>}
+          </span>
         </div>
-        <div className="bg-[#F7F7F5] relative">
-          <div className="absolute top-4 right-6 hidden md:flex items-center gap-2 text-[10px] font-mono text-zinc-400 z-10 border border-[#E4E4E1] bg-white px-2.5 h-6 rounded-full">← drag to explore →</div>
+        <div className="bg-[#FAFAF9] relative">
           <div className="glass-container">
             {premiumThemes.map((t, i) => {
-              const isActive = theme === t.id; const locked = isThemeLocked(t); const r = isActive ? 0 : GLASS_TILTS[i % GLASS_TILTS.length]; const styleObj: any = { '--r': r, scrollSnapAlign: 'start' }
+              const isActive = theme === t.id
+              const locked = isThemeLocked(t)
+              const r = isActive ? 0 : GLASS_TILTS[i % GLASS_TILTS.length]
+              const styleObj: any = { '--r': r, '--i': i, scrollSnapAlign: 'start' }
               return (
-                <div key={t.id} className={`glass ${isActive ? 'selected' : ''}`} data-text={t.name} style={styleObj} onClick={() => handleThemeClick(t)}>
-                  <div className="w-[88%] h-[238px] rounded-[14px] overflow-hidden border border-black/[0.06] mt-4 shadow-[0_8px_20px_rgba(0,0,0,0.06)]"><MiniStorefront theme={t} /></div>
-                  {isActive && <div className="absolute top-3 right-3 w-6 h-6 bg-[#0A0A0A] text-white rounded-full flex items-center justify-center shadow-md"><IconCheck c="w-3 h-3" /></div>}
+                <div
+                  key={t.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={isActive}
+                  aria-label={t.name}
+                  className={`glass ${isActive ? 'selected' : ''}`}
+                  data-text={t.name}
+                  style={styleObj}
+                  onClick={() => handleThemeClick(t)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleThemeClick(t) } }}
+                >
+                  <div className="relative w-[88%] h-[256px] rounded-2xl overflow-hidden border border-black/[0.06] mt-4">
+                    <ScaledPreview theme={t} />
+                  </div>
+                  {isActive && <div className="absolute top-3 right-3 w-7 h-7 bg-[#E8FF86] text-black rounded-full flex items-center justify-center shadow-lg"><IconCheck c="w-3.5 h-3.5" /></div>}
                   {locked && (
                     <div className="glass-lock-overlay">
-                      <div className="w-11 h-11 rounded-[12px] bg-[#0B0B0C] flex items-center justify-center shadow-lg"><IconLock c="w-5 h-5 text-[#D9FF4B]" /></div>
-                      <div className="text-[10.5px] font-semibold tracking-[0.12em] text-zinc-800 mt-1">PREMIUM GLASS</div>
-                      <div className="text-[9.5px] text-zinc-500 font-mono">Rs. 2999/mo · Till {TILL_ID}</div>
+                      <div className="dw-lock w-12 h-12 rounded-2xl bg-[#0A0A0A] flex items-center justify-center shadow-xl"><IconLock c="w-6 h-6 text-[#E8FF86]" /></div>
+                      <div className="text-[12px] font-semibold text-zinc-900 mt-1">Premium</div>
+                      <div className="font-mono text-[10px] text-zinc-500 text-center leading-tight">Rs. 2999/mo</div>
                     </div>
                   )}
                 </div>
               )
             })}
           </div>
+          <div className="hidden md:flex absolute bottom-3 inset-x-0 justify-center pointer-events-none text-[10.5px] font-mono text-black/35">← scroll →</div>
         </div>
-      </div>
+      </section>
 
-      <div id="premium-editor-anchor" className="scroll-mt-6" />
-      {profile && (<div className="mt-7"><PremiumThemeEditor profile={{ ...profile, premium_custom: premiumCustom }} onSave={(d: any) => { setPremiumCustom(d); setProfile({ ...profile, premium_custom: d } as any) }} /></div>)}
+      {/* Premium theme editor — THEME-SPECIFIC REAL PREVIEW — AUTO-SWITCH */}
+      <div id="premium-editor-anchor" />
+      {profile && (
+        <div className="mt-6">
+          <PremiumThemeEditor
+            profile={{ ...profile, premium_custom: premiumCustom }}
+            onSave={(d: any) => { setPremiumCustom(d); setProfile({ ...profile, premium_custom: d } as any) }}
+          />
+        </div>
+      )}
     </div>
   )
 
   /* ---------------- PRODUCTS PAGE ---------------- */
   const productsPage = (
-    <div className="animate-[fadeIn_0.3s_ease]">
+    <div className="dw-page dw-stagger">
       <PageHeader
-        eyebrow="Catalog"
         title="Products"
-        subtitle={`${products.length} of ${productLimit === 999999 ? 'unlimited' : productLimit} used · ${imageLimit === 999999 ? 'unlimited' : imageLimit} image${imageLimit !== 1 ? 's' : ''} per product`}
-        actions={<span className={`font-mono text-[10px] tracking-[0.08em] px-2.5 h-7 rounded-md flex items-center border ${products.length >= productLimit ? 'bg-red-50 border-red-200 text-red-700' : 'bg-white border-[#E4E4E1] text-zinc-600'}`}>{products.length >= productLimit ? 'LIMIT REACHED' : `${productLimit === 999999 ? '∞' : (productLimit - products.length)} LEFT`}</span>}
+        subtitle={`${products.length} of ${productLimit === 999999 ? '∞' : productLimit} used, ${imageLimit === 999999 ? 'unlimited' : imageLimit} image${imageLimit !== 1 ? 's' : ''} per product`}
       />
 
-      <div className={`${cardBase} p-5 md:p-6 mb-6`}>
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="text-[14px] font-semibold tracking-[-0.01em] flex items-center gap-2.5">
-            <span className="w-6 h-6 rounded-[8px] bg-[#0B0B0C] text-white flex items-center justify-center"><IconPlus c="w-3 h-3" /></span>
-            {editingId ? 'Editing product' : 'Add new product'}
-          </h3>
-          {editingId && <button onClick={cancelEdit} className="text-[12px] font-medium text-zinc-500 hover:text-black bg-white border border-[#E4E4E1] h-8 px-3 rounded-[9px] inline-flex items-center gap-1.5 transition-colors"><IconX c="w-3 h-3" /> Cancel edit</button>}
-        </div>
-
-        <label className="group block border border-dashed border-[#D8D8D4] rounded-[14px] p-6 md:p-8 text-center cursor-pointer hover:border-[#0A0A0A]/40 hover:bg-[#FAFAF8] transition-all">
-          <input type="file" accept="image/*" multiple onChange={handleFile} className="hidden" />
-          {previews.length ? (
-            <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
-              {previews.map((src, i) => (
-                <div key={i} className="relative group/img">
-                  <img src={src} alt="" className="w-full aspect-square object-cover rounded-[12px] border border-[#E8E8E5]" />
-                  <button type="button" onClick={(e) => { e.preventDefault(); removeFileAt(i) }} aria-label="Remove image" className="absolute -top-1.5 -right-1.5 w-[22px] h-[22px] bg-[#0B0B0C] text-white text-[10px] rounded-full shadow-md opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">✕</button>
-                  <span className="absolute bottom-1.5 left-1.5 bg-black/60 text-white text-[9px] font-mono px-1.5 h-[16px] rounded-md flex items-center">{i+1}</span>
-                </div>
-              ))}
-              <div className="aspect-square rounded-[12px] border border-dashed border-[#D8D8D4] bg-white flex flex-col items-center justify-center hover:border-[#0A0A0A]/40 transition-colors"><IconPlus c="w-4 h-4 text-zinc-400" /><span className="font-mono text-[9px] mt-1 tracking-[0.12em] text-zinc-500">ADD</span></div>
-            </div>
-          ) : (
-            <>
-              <div className="w-11 h-11 rounded-[12px] bg-[#F0F0EE] mx-auto flex items-center justify-center mb-3 group-hover:bg-[#E8E8E5] transition-colors"><IconUpload c="w-5 h-5 text-zinc-600" /></div>
-              <div className="font-medium text-[13.5px] tracking-[-0.01em]">Drop images or click to upload</div>
-              <div className="text-[12px] text-zinc-500 mt-1">PNG, JPG, WEBP · up to 5MB each · {imageLimit === 999999 ? 'Unlimited' : `${imageLimit} max`} per product</div>
-              <div className="flex items-center justify-center gap-1.5 mt-4 flex-wrap">
-                <span className="font-mono text-[9.5px] px-2 h-[22px] rounded-md bg-white border border-[#E4E4E1] text-zinc-500 flex items-center">Basic · 1</span>
-                <span className="font-mono text-[9.5px] px-2 h-[22px] rounded-md bg-[#0B0B0C] text-white flex items-center">Advanced · 5</span>
-                <span className="font-mono text-[9.5px] px-2 h-[22px] rounded-md text-black bg-[#E8FF86] flex items-center">Premium · ∞</span>
-              </div>
-            </>
-          )}
-        </label>
-
-        <div className="grid md:grid-cols-2 gap-x-4 gap-y-4 mt-5">
-          <div><label className={labelBase}>Name <span className="text-red-500">*</span></label><input placeholder="Cashmere Scarf — Premium" value={prodName} onChange={e => setProdName(e.target.value)} className={inputBase} /></div>
-          <div><label className={labelBase}>Price (Rs.) <span className="text-red-500">*</span></label><input placeholder="3500" type="number" value={prodPrice} onChange={e => setProdPrice(e.target.value)} className={inputBase} /></div>
-          <div><label className={labelBase}>Compare at</label><input placeholder="4500 (optional)" type="number" value={prodOrigPrice} onChange={e => setProdOrigPrice(e.target.value)} className={inputBase} /></div>
-          <div>
-            <label className={labelBase}>Category</label>
-            <select value={prodCategory} onChange={e => setProdCategory(e.target.value)} className={`${inputBase} appearance-none pr-8 bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2371717a%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m6%209%206%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[right_12px_center]`}>
-              <option>General</option><option>Clothing</option><option>Shoes</option><option>Bags</option><option>Beauty</option><option>Electronics</option><option>Food</option><option>Other</option>
-            </select>
+      {/* Usage strip */}
+      <div className="grid grid-cols-3 divide-x divide-zinc-200/80 bg-white border border-zinc-200/80 rounded-2xl mb-5">
+        <div className="p-4 md:p-5">
+          <div className="text-[12px] text-zinc-500 font-medium">Products</div>
+          <div className="mt-1 text-[22px] md:text-[28px] font-extrabold tracking-[-0.035em] tabular-nums leading-none">
+            <CountUp value={products.length} /><span className="text-zinc-300 font-semibold">/{maxLabel(productLimit)}</span>
           </div>
-          <div><label className={labelBase}>Stock</label><input placeholder="100" type="number" value={prodStock} onChange={e => setProdStock(e.target.value)} className={inputBase} /></div>
-          <div><label className={labelBase}>Sizes</label><input placeholder="S, M, L, XL" value={prodSizes} onChange={e => setProdSizes(e.target.value)} className={inputBase} /></div>
-          <div className="md:col-span-2"><label className={labelBase}>Colors</label><input placeholder="Black, White, Sand — comma separated" value={prodColors} onChange={e => setProdColors(e.target.value)} className={inputBase} /></div>
-          <div className="md:col-span-2"><label className={labelBase}>Description</label><textarea placeholder="Materials, craftsmanship, care instructions..." value={prodDesc} onChange={e => setProdDesc(e.target.value)} className="w-full min-h-[88px] p-3.5 border border-[#E4E4E1] rounded-[12px] text-[13.5px] bg-white focus:outline-none focus:border-[#0A0A0A] focus:ring-[3px] focus:ring-zinc-900/[0.06] transition-all resize-none placeholder:text-zinc-400" /></div>
+          <div className="mt-3 h-1 rounded-full bg-zinc-100 overflow-hidden">
+            <div className={`dw-grow h-full rounded-full transition-all duration-500 ${limitReached ? 'bg-red-500' : 'bg-[#0A0A0A]'}`} style={{ width: `${productPct}%` }} />
+          </div>
+        </div>
+        <div className="p-4 md:p-5">
+          <div className="text-[12px] text-zinc-500 font-medium">Images each</div>
+          <div className="mt-1 text-[22px] md:text-[28px] font-extrabold tracking-[-0.035em] tabular-nums leading-none">{imageLimit === 999999 ? '∞' : <CountUp value={imageLimit} />}</div>
+          <div className="mt-3 text-[11.5px] text-zinc-400">{currentPlanDef.name} plan</div>
+        </div>
+        <div className="p-4 md:p-5">
+          <div className="text-[12px] text-zinc-500 font-medium">Remaining</div>
+          {limitReached ? (
+            <span className="mt-1.5 inline-flex items-center h-7 px-2.5 rounded-full bg-red-500 text-white text-[11px] font-bold">Limit reached</span>
+          ) : (
+            <div className="mt-1 text-[22px] md:text-[28px] font-extrabold tracking-[-0.035em] tabular-nums leading-none">
+              {productLimit === 999999 ? '∞' : <CountUp value={productLimit - products.length} />}
+              <span className="text-zinc-300 font-semibold text-[14px] md:text-[16px] ml-1">left</span>
+            </div>
+          )}
+          <div className="mt-3 text-[11.5px] text-zinc-400">{limitReached ? 'Upgrade to add more' : 'before upgrade'}</div>
+        </div>
+      </div>
+
+      {/* Editor */}
+      <div className={`${UI.card} mb-6`}>
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-[15px] font-semibold tracking-[-0.02em]">{editingId ? 'Edit product' : 'New product'}</h3>
+          {editingId && <button type="button" onClick={cancelEdit} className="text-[12px] font-semibold text-zinc-500 hover:text-black bg-transparent border-none cursor-pointer">Cancel edit</button>}
         </div>
 
-        <div className="flex justify-end gap-2 mt-6 pt-5 border-t border-[#F0F0EE]">
-          {editingId && <button onClick={cancelEdit} className={`${btnSecondary} h-10`}>Cancel</button>}
-          <button onClick={addProduct} disabled={uploading || (!editingId && products.length >= productLimit)} className={`${btnPrimary} h-10 px-5`}>
-            {uploading ? 'Uploading…' : !editingId && products.length >= productLimit ? `Limit ${productLimit === 999999 ? '∞' : productLimit} — Upgrade to add` : `${editingId ? 'Update' : 'Add'} product`}
-            {!uploading && <IconArrowRight c="w-3.5 h-3.5 opacity-70" />}
+        <div className="grid lg:grid-cols-[300px_1fr] gap-6">
+          <label className="group/drop block self-start rounded-2xl border border-dashed border-zinc-300 bg-[#FAFAF9] p-4 cursor-pointer hover:border-zinc-900 hover:bg-white transition-colors focus-within:ring-2 focus-within:ring-black focus-within:ring-offset-2">
+            <input type="file" accept="image/*" multiple onChange={handleFile} className="sr-only" />
+            {previews.length ? (
+              <div className="grid grid-cols-3 gap-2">
+                {previews.map((src, i) => (
+                  <div key={i} className="relative group/img">
+                    <img src={src} alt="" className="w-full aspect-square object-cover rounded-xl border border-zinc-200/80" />
+                    <button type="button" aria-label="Remove image" onClick={(e) => { e.preventDefault(); removeFileAt(i) }} className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-[#0A0A0A] text-white rounded-full opacity-100 md:opacity-0 md:group-hover/img:opacity-100 transition-opacity border-none cursor-pointer flex items-center justify-center">
+                      <IconX c="w-2.5 h-2.5" />
+                    </button>
+                  </div>
+                ))}
+                <div className="aspect-square rounded-xl border border-dashed border-zinc-300 bg-white flex flex-col items-center justify-center group-hover/drop:border-zinc-900 transition-colors">
+                  <IconPlus c="w-4 h-4 text-zinc-400" />
+                  <span className="text-[10.5px] font-medium mt-1 text-zinc-400">Add</span>
+                </div>
+              </div>
+            ) : (
+              <div className="py-4 text-center">
+                <div className="w-12 h-12 rounded-2xl bg-[#0A0A0A] mx-auto flex items-center justify-center mb-3.5"><IconUpload c="w-5 h-5 text-[#E8FF86]" /></div>
+                <div className="font-semibold text-[13.5px] tracking-[-0.015em]">Drop images or click to upload</div>
+                <div className="text-[11.5px] text-zinc-500 mt-1">PNG, JPG, WEBP, up to 5MB each</div>
+                <div className="flex items-center justify-center gap-1.5 mt-4 flex-wrap">
+                  {[['basic', 'Basic', '1'], ['advanced', 'Advanced', '5'], ['premium', 'Premium', '∞']].map(([id, n, v]) => (
+                    <span key={id} className={`font-mono text-[10.5px] px-2 h-6 rounded-full inline-flex items-center border ${currentPlanId === id ? 'bg-[#E8FF86] border-[#E8FF86] text-black font-semibold' : 'bg-white border-zinc-200/80 text-zinc-500'}`}>{n} {v}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </label>
+
+          <div className="grid md:grid-cols-2 gap-x-3.5 gap-y-4 content-start">
+            <Field label="Product name *" className="md:col-span-2">
+              <input placeholder="Linen kurta" value={prodName} onChange={e => setProdName(e.target.value)} className={UI.input} />
+            </Field>
+            <Field label="Price *">
+              <div className="relative">
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-[12px] text-zinc-400 pointer-events-none">Rs.</span>
+                <input placeholder="3500" type="number" value={prodPrice} onChange={e => setProdPrice(e.target.value)} className={`${UI.input} !pl-11 tabular-nums`} />
+              </div>
+            </Field>
+            <Field label="Compare price (optional)">
+              <div className="relative">
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-[12px] text-zinc-400 pointer-events-none">Rs.</span>
+                <input placeholder="4500" type="number" value={prodOrigPrice} onChange={e => setProdOrigPrice(e.target.value)} className={`${UI.input} !pl-11 tabular-nums`} />
+              </div>
+            </Field>
+            <Field label="Category">
+              <select value={prodCategory} onChange={e => setProdCategory(e.target.value)} className={UI.input}>
+                <option>General</option><option>Clothing</option><option>Shoes</option><option>Bags</option><option>Beauty</option><option>Electronics</option><option>Food</option><option>Other</option>
+              </select>
+            </Field>
+            <Field label="Stock quantity">
+              <input placeholder="100" type="number" value={prodStock} onChange={e => setProdStock(e.target.value)} className={`${UI.input} tabular-nums`} />
+            </Field>
+            <Field label="Sizes" hint="Comma separated">
+              <input placeholder="S, M, L, XL" value={prodSizes} onChange={e => setProdSizes(e.target.value)} className={UI.input} />
+            </Field>
+            <Field label="Colors" hint="Comma separated">
+              <input placeholder="Black, White, Red" value={prodColors} onChange={e => setProdColors(e.target.value)} className={UI.input} />
+            </Field>
+            <Field label="Description" className="md:col-span-2">
+              <textarea placeholder="Materials, fit, care instructions..." value={prodDesc} onChange={e => setProdDesc(e.target.value)} className={`${UI.input} !h-auto min-h-[96px] py-3 resize-none`} />
+            </Field>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-2 mt-6 pt-5 border-t border-zinc-200/80">
+          {editingId && <button type="button" onClick={cancelEdit} className={`${BTN_LIGHT} h-10 px-5 text-[13px]`}>Cancel</button>}
+          <button
+            type="button"
+            onClick={addProduct}
+            disabled={uploading || (!editingId && products.length >= productLimit)}
+            className={`${BTN_DARK} h-10 px-6 text-[13px]`}
+          >
+            {uploading ? 'Uploading...' : !editingId && products.length >= productLimit ? `Limit ${productLimit === 999999 ? '∞' : productLimit} — Upgrade` : `${editingId ? 'Update' : 'Add'} product`}
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-3.5">
+      <div className="dw-sg grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
         {products.length === 0 ? (
-          <div className="col-span-2 md:col-span-4 bg-white border border-dashed border-[#E0E0DC] rounded-[14px] p-14 flex flex-col items-center justify-center text-center">
-            <div className="w-11 h-11 rounded-[12px] bg-[#F0F0EE] flex items-center justify-center mb-3"><IconUpload c="w-5 h-5 text-zinc-500" /></div>
-            <div className="font-medium text-[14px] tracking-[-0.01em]">No products yet</div>
-            <div className="text-[12.5px] text-zinc-500 mt-1 max-w-[300px] leading-relaxed">Add your first product — {productLimit === 999999 ? 'Unlimited' : productLimit} allowed on {currentPlanDef.name}. Images: {imageLimit === 999999 ? 'Unlimited' : imageLimit} per product.</div>
+          <div className="col-span-2 md:col-span-3 lg:col-span-4 bg-white border border-dashed border-zinc-300 rounded-2xl p-12 flex flex-col items-center justify-center text-center">
+            <div className="w-12 h-12 rounded-2xl bg-[#0A0A0A] flex items-center justify-center mb-3.5"><IconProducts c="w-5 h-5 text-[#E8FF86]" /></div>
+            <div className="font-semibold text-[15px] tracking-[-0.02em]">No products yet</div>
+            <div className="text-[12.5px] text-zinc-500 mt-1">Add your first product above. {productLimit === 999999 ? 'Unlimited' : productLimit} allowed on {currentPlanDef.name}.</div>
           </div>
-        ) : products.map(p => (<PremiumProductCard key={p.id} p={p} imageLimit={imageLimit} onEdit={startEdit} onDelete={(id: string) => setDeleteTarget(id)} />))}
+        ) : products.map(p => (
+          <PremiumProductCard key={p.id} p={p} imageLimit={imageLimit} onEdit={startEdit} onDelete={deleteProduct} />
+        ))}
       </div>
     </div>
   )
 
   /* ---------------- STORE PAGE ---------------- */
   const storePage = (
-    <div className="animate-[fadeIn_0.3s_ease]">
-      <PageHeader eyebrow="Settings" title="Store identity" subtitle="How customers see and reach your business" actions={<button onClick={saveStore} disabled={saving} className={btnPrimary}>{saving ? 'Saving…' : saved ? <><IconCheck c="w-3.5 h-3.5 text-[#D9FF4B]" /> Saved</> : 'Save changes'}</button>} />
-      <div className="grid lg:grid-cols-[1fr_320px] gap-5">
-        <div className={`${cardBase} p-6 md:p-7 space-y-5`}>
-          <div>
-            <label className={labelBase}>Business name</label>
-            <input value={businessName} onChange={e => setBusinessName(e.target.value)} className={`${inputBase} h-[42px] font-medium`} />
-          </div>
-          <div>
-            <label className={labelBase}>WhatsApp number</label>
-            <input value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="923001234567" className={`${inputBase} h-[42px] font-mono`} />
-            <div className="text-[11.5px] text-zinc-400 mt-1.5">Include country code, no spaces (e.g. 923001234567)</div>
-          </div>
-          <div>
-            <label className={labelBase}>Store URL</label>
-            <div className="flex items-center border border-[#E4E4E1] rounded-[10px] overflow-hidden bg-white focus-within:border-[#0A0A0A] focus-within:ring-[3px] focus-within:ring-zinc-900/[0.06] transition-all">
-              <span className="pl-3.5 pr-1 text-[12.5px] text-zinc-400 font-mono shrink-0">dukaanwhats.pk/s/</span>
-              <input value={slug} onChange={e => setSlug(e.target.value)} className="flex-1 h-[42px] pr-3.5 bg-transparent text-[13px] font-mono focus:outline-none" />
+    <div className="dw-page dw-stagger">
+      <PageHeader
+        title="Store"
+        subtitle="How customers see and reach your business."
+        actions={<button type="button" onClick={saveStore} disabled={saving} className={`${BTN_DARK} h-10 px-5 text-[13px]`}>{saving ? 'Saving...' : saved ? 'Saved' : 'Save changes'}</button>}
+      />
+
+      <div className="grid lg:grid-cols-[1fr_340px] gap-4">
+        <div className={`${UI.card} space-y-5`}>
+          <Field label="Business name">
+            <input value={businessName} onChange={e => setBusinessName(e.target.value)} className={UI.input} />
+          </Field>
+          <Field label="WhatsApp number" hint="Include country code, no spaces (e.g. 923001234567)">
+            <input value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="923001234567" className={`${UI.input} font-mono`} />
+          </Field>
+          <Field label="Store URL">
+            <div className="flex items-center rounded-xl border border-zinc-200/80 overflow-hidden bg-white transition-[border-color,box-shadow] focus-within:border-zinc-900 focus-within:ring-4 focus-within:ring-[#E8FF86]/70">
+              <span className="pl-3.5 pr-3 mr-2.5 self-stretch flex items-center text-[12.5px] text-zinc-400 font-mono shrink-0 bg-zinc-50 border-r border-zinc-200/80">dukaanwhats.pk/s/</span>
+              <input value={slug} onChange={e => setSlug(e.target.value)} className="flex-1 min-w-0 h-11 pr-3.5 bg-transparent text-[13.5px] font-mono outline-none border-none" />
             </div>
-          </div>
+          </Field>
           <div className="flex gap-2 pt-1 flex-wrap">
-            <button onClick={copyLink} className={`${btnSecondary} h-10`}><IconCopy c="w-3.5 h-3.5" /> {copied ? 'Copied' : 'Copy link'}</button>
-            <Link href={slug ? `/s/${slug}` : '#'} target="_blank" className={`${btnPrimary} h-10 no-underline`}>Preview <IconExternal c="w-3.5 h-3.5 opacity-70" /></Link>
+            <button type="button" onClick={copyLink} className={`${BTN_LIGHT} h-10 px-5 text-[13px]`}>
+              {copied ? <><IconCheck c="w-3.5 h-3.5" /> Copied</> : <><IconCopy c="w-3.5 h-3.5" /> Copy link</>}
+            </button>
+            <Link href={slug ? `/s/${slug}` : '#'} target="_blank" className={`${BTN_LIGHT} h-10 px-5 text-[13px] no-underline`}>Preview <IconExternal c="w-3 h-3" /></Link>
           </div>
         </div>
+
         <div className="space-y-4">
-          <div className="bg-[#0B0B0C] rounded-[14px] p-5 text-white relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-28 h-28 bg-[#E8FF86]/10 rounded-full blur-[28px] -mr-10 -mt-10" />
-            <div className="relative">
-              <div className="flex items-center justify-between">
-                <div className="font-mono text-[9.5px] font-medium tracking-[0.14em] uppercase text-white/40">Current plan</div>
-                <div className="flex items-center gap-1.5"><LiveDot /><span className="font-mono text-[9.5px] text-[#D9FF4B]">LIVE</span></div>
-              </div>
-              <div className="flex items-baseline gap-2 mt-2">
-                <span className="text-[20px] font-semibold tracking-[-0.02em]">{currentPlanDef.name}</span>
-                {currentPlanId === 'advanced' && <span className="text-[8.5px] font-semibold tracking-[0.1em] px-1.5 h-[18px] rounded-md text-black bg-[#E8FF86] flex items-center">POPULAR</span>}
-              </div>
-              <div className="text-[11.5px] text-white/50 mt-1.5 leading-relaxed">{currentPlanDef.features.slice(0, 3).join(' · ')}</div>
-              <div className="mt-4 h-1 w-full bg-white/10 rounded-full overflow-hidden"><div className="h-full bg-[#E8FF86] rounded-full transition-all" style={{ width: `${Math.min(100, (products.length / (productLimit === 999999 ? 100 : productLimit)) * 100)}%` }} /></div>
-              <div className="font-mono text-[10px] text-white/40 mt-1.5">{products.length} / {productLimit === 999999 ? '∞' : productLimit} products used</div>
-              {!isPremium && <button onClick={() => setActiveTab('payments')} className="mt-4 w-full h-9 bg-white text-black text-[12.5px] font-medium rounded-[10px] hover:bg-zinc-200 transition-colors inline-flex items-center justify-center gap-1.5">Upgrade plan <IconArrowRight c="w-3 h-3" /></button>}
-              {isPremium && <div className="mt-4 w-full h-9 rounded-[10px] text-[10.5px] font-semibold tracking-[0.1em] text-black flex items-center justify-center bg-[#E8FF86]">PREMIUM <IconCheck c="w-3 h-3 ml-1" /></div>}
+          <div className={UI.card}>
+            <div className="text-[12px] font-medium text-zinc-500">Current plan</div>
+            <div className="flex items-center gap-2 mt-1.5">
+              <span className="text-[26px] font-extrabold tracking-[-0.035em] leading-none">{currentPlanDef.name}</span>
+              {currentPlanId === 'advanced' && <span className="text-[10.5px] font-bold px-2 h-5 inline-flex items-center rounded-full text-black bg-[#E8FF86]">Popular</span>}
             </div>
+            <ul className="mt-4 space-y-2">
+              {currentPlanDef.features.slice(0, 3).map(f => (
+                <li key={f} className="flex items-center gap-2 text-[12.5px] text-zinc-600"><IconCheck c="w-3 h-3 text-zinc-900 shrink-0" />{f}</li>
+              ))}
+            </ul>
+            {!isPremium && <button type="button" onClick={() => setActiveTab('payments')} className={`${BTN_DARK} mt-5 w-full h-10 text-[13px]`}>Upgrade plan</button>}
           </div>
-          <div className={`${cardBase} p-4`}>
-            <div className="flex items-center justify-between mb-3">
-              <div className="font-mono text-[9.5px] font-medium tracking-[0.14em] uppercase text-zinc-400">Live preview</div>
-              <div className="flex items-center gap-1.5 font-mono text-[9.5px] text-zinc-400"><LiveDot /> LIVE</div>
-            </div>
-            <div className="aspect-[4/3] rounded-[12px] overflow-hidden border border-[#E8E8E5] bg-[#F7F7F5]"><MiniStorefront theme={currentTheme} /></div>
-            <div className="mt-3 flex items-center justify-between">
-              <div className="font-mono text-[10.5px] text-zinc-500 truncate">/s/{slug || 'your-slug'}</div>
-              <span className="text-[9px] font-mono text-black bg-[#E8FF86] px-1.5 h-[18px] rounded-md flex items-center">LIVE</span>
-            </div>
+          <div className={UI.card}>
+            <div className="text-[12px] font-medium text-zinc-500 mb-3">Store preview</div>
+            <BrowserFrame url={`dukaanwhats.pk/s/${slug || 'your-slug'}`} theme={currentTheme} tall={premiumThemes.some(p => p.id === currentTheme.id)} />
           </div>
         </div>
       </div>
@@ -692,15 +1191,43 @@ export default function Dashboard() {
 
   /* ---------------- ANALYTICS PAGE ---------------- */
   const analyticsPage = (
-    <div className="animate-[fadeIn_0.3s_ease]">
-      <PageHeader eyebrow="Insights" title="Analytics" subtitle="Real-time store performance · Premium only" />
-      {!profile ? (<div className="p-10 text-center text-zinc-500 text-[13px] font-mono">Loading analytics...</div>) : currentPlanId === 'premium' ? (<RealAnalytics userId={profile.id} currentPlanId={currentPlanId} />) : (
-        <div className={`${cardBase} p-8 md:p-14 text-center`}>
-          <div className="w-12 h-12 rounded-[12px] bg-[#0B0B0C] flex items-center justify-center mx-auto"><IconAnalytics c="w-5 h-5 text-[#D9FF4B]" /></div>
-          <h3 className="font-semibold text-[19px] tracking-[-0.02em] mt-5">Analytics is a Premium feature</h3>
-          <p className="text-[13px] text-zinc-500 mt-2 max-w-[400px] mx-auto leading-relaxed">You’re on <b className="text-zinc-900 font-medium">{currentPlanDef.name}</b>. Upgrade to Premium to unlock real-time visitors, orders, conversion rate and revenue insights.</p>
-          <div className="flex flex-wrap gap-1.5 justify-center mt-5">{['Live Visitors', 'Conversion Rate', 'Revenue', 'Orders', 'Traffic Sources', 'Retention'].map(f => (<span key={f} className="text-[11px] text-zinc-600 bg-[#F7F7F5] border border-[#ECECEA] px-2.5 h-6 rounded-md flex items-center">{f}</span>))}</div>
-          <button onClick={() => setActiveTab('payments')} className={`${btnPrimary} h-10 px-5 mt-7`}>Upgrade to Premium <IconArrowRight c="w-3.5 h-3.5 text-[#D9FF4B]" /></button>
+    <div className="dw-page dw-stagger">
+      <PageHeader title="Analytics" subtitle="Real-time store performance." />
+      {!profile ? (
+        <div className="p-8 text-center text-zinc-500 text-[13px]">Loading analytics...</div>
+      ) : currentPlanId === 'premium' ? (
+        <RealAnalytics userId={profile.id} currentPlanId={currentPlanId} />
+      ) : (
+        <div className={`${UI.card} relative overflow-hidden min-h-[440px]`}>
+          <div aria-hidden className="grid grid-cols-2 md:grid-cols-4 gap-3 blur-[3px] opacity-60 select-none pointer-events-none">
+            {[0, 1, 2, 3].map(i => (
+              <div key={i} className="rounded-xl border border-zinc-200/80 p-4">
+                <div className="h-2 w-14 rounded bg-zinc-200" />
+                <div className="h-6 w-20 rounded bg-zinc-900/80 mt-3" />
+                <div className="h-9 mt-4 rounded bg-zinc-100" />
+              </div>
+            ))}
+            <div className="col-span-2 md:col-span-4 h-32 rounded-xl border border-zinc-200/80 bg-zinc-50" />
+          </div>
+          <div className="absolute inset-0 flex items-center justify-center p-5">
+            <div className="w-full max-w-[420px] rounded-2xl border border-zinc-200/80 bg-white/85 backdrop-blur-md p-6 md:p-7 text-center shadow-[0_24px_60px_-28px_rgba(10,10,10,0.4)]">
+              <div className="w-12 h-12 rounded-2xl bg-[#0A0A0A] flex items-center justify-center mx-auto">
+                <IconAnalytics c="w-6 h-6 text-[#E8FF86]" />
+              </div>
+              <h3 className="font-extrabold text-[22px] tracking-[-0.03em] mt-4">Analytics is Premium</h3>
+              <p className="text-[13px] text-zinc-500 mt-2 leading-relaxed">
+                You&apos;re on <b className="text-black font-semibold">{currentPlanDef.name}</b>. Upgrade to Premium to unlock real-time visitors, orders, conversion rate and revenue insights.
+              </p>
+              <div className="flex flex-wrap gap-1.5 justify-center mt-4">
+                {['Live Visitors', 'Conversion Rate', 'Revenue', 'Orders', 'Traffic Sources', 'Retention'].map(f => (
+                  <span key={f} className="text-[11px] font-medium bg-zinc-100 border border-zinc-200/80 px-2.5 h-6 rounded-full flex items-center text-zinc-600">{f}</span>
+                ))}
+              </div>
+              <button type="button" onClick={() => setActiveTab('payments')} className={`${BTN_DARK} mt-6 h-11 px-7 text-[13px]`}>
+                Upgrade to Premium
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -708,104 +1235,133 @@ export default function Dashboard() {
 
   /* ---------------- PAYMENTS PAGE ---------------- */
   const paymentsPage = (
-    <div className="animate-[fadeIn_0.3s_ease]">
-      <PageHeader eyebrow="Subscription" title="Plans & Billing" subtitle={`You are on ${currentPlanDef.name} · Till ${TILL_ID}`} />
+    <div className="dw-page dw-stagger">
+      <PageHeader title="Plans & billing" subtitle={`You are on ${currentPlanDef.name}.`} />
 
       {myPayments.length > 0 && (
-        <div className={`${cardBase} p-5 md:p-6 mb-6`}>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-[13.5px] font-semibold tracking-[-0.01em] flex items-center gap-2">
-              <span className="w-6 h-6 rounded-[8px] bg-[#0B0B0C] text-white flex items-center justify-center font-mono text-[10px]">Rs</span>
-              Payment history
-            </h3>
-            {myPayments.filter((p: any) => p.status === 'pending').length > 0 && (
-              <span className="text-[10.5px] font-medium bg-amber-50 border border-amber-200 text-amber-800 px-2.5 h-7 rounded-md flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />{myPayments.filter((p: any) => p.status === 'pending').length} pending
+        <div className={`${UI.card} mb-4`}>
+          <SectionHead
+            title="Payment history"
+            action={myPayments.filter((p: any) => p.status === 'pending').length > 0 ? (
+              <span className="text-[11.5px] font-medium bg-amber-50 border border-amber-200 text-amber-800 px-2.5 h-6 rounded-full flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />
+                {myPayments.filter((p: any) => p.status === 'pending').length} pending
               </span>
-            )}
-          </div>
-          <div className="space-y-2">
+            ) : undefined}
+          />
+          <div className="divide-y divide-zinc-200/80 border border-zinc-200/80 rounded-xl overflow-hidden">
             {myPayments.slice(0, 5).map((p: any) => {
-              const st = statusMeta[p.status] || statusMeta.pending
+              const s = paymentStatusUI(p.status)
               return (
-                <div key={p.id} className="flex items-center justify-between gap-3 bg-[#FAFAF8] border border-[#F0F0EE] rounded-[12px] p-3.5">
+                <div key={p.id} className="flex items-center justify-between gap-3 bg-[#FAFAF9] p-3.5">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <span className="shrink-0 h-6 px-2 rounded-md text-[9px] font-semibold tracking-[0.08em] flex items-center gap-1.5 border" style={{ background: st.bg, color: st.fg, borderColor: st.border }}>
-                      <span className="w-1.5 h-1.5 rounded-full" style={{ background: st.dot }} />{st.label}
+                    <span className={`shrink-0 h-6 px-2.5 rounded-full text-[11px] font-semibold flex items-center gap-1.5 border ${s.chip}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+                      {s.label}
                     </span>
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2"><span className="text-[12.5px] font-semibold tracking-tight capitalize">{p.plan_id}</span><span className="text-[12px] text-zinc-600">Rs. {p.amount}</span></div>
-                      <div className="flex items-center gap-2 mt-1"><span className="font-mono text-[10px] bg-white border border-[#E8E8E5] px-2 py-[1px] rounded-md text-zinc-500">{p.txn_id}</span><span className="text-[10px] text-zinc-400 hidden md:inline font-mono">{new Date(p.created_at).toLocaleDateString()} · Till {p.till_id}</span></div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[13px] font-bold tracking-[-0.01em]">{p.plan_id.toUpperCase()}</span>
+                        <span className="text-[12.5px] font-medium text-zinc-600 tabular-nums">Rs. {p.amount}</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        <span className={UI.chipMono}>{p.txn_id}</span>
+                        <span className="font-mono text-[10.5px] text-zinc-400 hidden md:inline">{new Date(p.created_at).toLocaleDateString()} · Till {p.till_id}</span>
+                      </div>
                     </div>
                   </div>
-                  <div className="text-[10.5px] font-medium shrink-0 text-right" style={{ color: st.fg }}>{p.status === 'pending' ? 'Verifying' : p.status === 'approved' ? 'Active' : 'Rejected'}</div>
+                  <div className={`text-[12px] font-semibold shrink-0 text-right ${s.rightCls}`}>{s.right}</div>
                 </div>
               )
             })}
           </div>
           {justSubmitted && justSubmitted.status === 'pending' && (
-            <div className="mt-4 bg-amber-50 border border-amber-200 rounded-[12px] p-4 flex items-start gap-3">
-              <span className="w-7 h-7 bg-amber-100 border border-amber-200 rounded-full flex items-center justify-center shrink-0"><IconClock c="w-3.5 h-3.5 text-amber-700" /></span>
+            <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3.5 flex items-start gap-3">
+              <span className="w-2 h-2 mt-1.5 bg-amber-500 rounded-full animate-pulse shrink-0" />
               <div>
-                <div className="text-[12.5px] font-semibold text-amber-900">Payment submitted — pending verification</div>
-                <div className="text-[11.5px] text-amber-700/80 mt-0.5 leading-relaxed">Verifying Txn ID <span className="font-mono bg-white px-1.5 py-[1px] rounded-md border border-amber-200 text-[10.5px]">{justSubmitted.txn_id}</span>. WhatsApp notification within 1 hour.</div>
+                <div className="text-[13px] font-semibold text-amber-900">Payment submitted — pending verification</div>
+                <div className="text-[12px] text-amber-800/80 mt-0.5 leading-[1.55]">
+                  Verifying Txn ID <span className="font-mono bg-white px-1.5 py-0.5 rounded-md border border-amber-200">{justSubmitted.txn_id}</span>. WhatsApp notification within 1 hour.
+                </div>
               </div>
             </div>
           )}
         </div>
       )}
 
-      <div className={`${cardBase} p-5 md:p-7`}>
-        <div className="flex flex-wrap items-start justify-between gap-5 mb-6">
+      <div className={UI.card}>
+        <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
           <div>
-            <h3 className="text-[15px] font-semibold tracking-[-0.01em] flex items-center gap-2 flex-wrap">Pay to JazzCash Till <span className="font-mono text-[11.5px] font-medium bg-[#F7F7F5] border border-[#E4E4E1] px-2 h-6 rounded-md flex items-center tracking-wider">{TILL_ID}</span></h3>
-            <p className="text-[12.5px] text-zinc-500 mt-1.5">Send payment, then submit the Transaction ID below</p>
+            <h3 className="text-[17px] font-extrabold tracking-[-0.025em]">Pay to JazzCash Till <span className="font-mono font-medium text-zinc-400">{TILL_ID}</span></h3>
+            <p className="text-[12.5px] text-zinc-500 mt-1">Send payment, then submit the Transaction ID.</p>
           </div>
-          <div className="flex bg-[#F0F0EE] rounded-[10px] p-[3px] gap-[2px]">
-            <button onClick={() => setBilling('monthly')} className={`h-7 px-3.5 rounded-[8px] text-[12px] font-medium transition-all ${billing === 'monthly' ? 'bg-white text-[#0A0A0A] shadow-sm' : 'text-zinc-500 hover:text-zinc-800'}`}>Monthly</button>
-            <button onClick={() => setBilling('yearly')} className={`h-7 px-3.5 rounded-[8px] text-[12px] font-medium transition-all flex items-center gap-1.5 ${billing === 'yearly' ? 'bg-white text-[#0A0A0A] shadow-sm' : 'text-zinc-500 hover:text-zinc-800'}`}>Yearly <span className="text-[8.5px] px-1 py-[1px] rounded-[5px] text-black font-semibold bg-[#E8FF86]">-22%</span></button>
+          <div role="group" aria-label="Billing period" className="flex bg-zinc-100 border border-zinc-200/80 rounded-full p-1 gap-1">
+            <button type="button" aria-pressed={billing === 'monthly'} onClick={() => setBilling('monthly')} className={`h-8 px-4 rounded-full text-[12.5px] font-semibold border-none cursor-pointer transition-all ${billing === 'monthly' ? 'bg-[#0A0A0A] text-white' : 'bg-transparent text-zinc-500 hover:text-zinc-900'}`}>Monthly</button>
+            <button type="button" aria-pressed={billing === 'yearly'} onClick={() => setBilling('yearly')} className={`h-8 px-4 rounded-full text-[12.5px] font-semibold border-none cursor-pointer transition-all flex items-center gap-1.5 ${billing === 'yearly' ? 'bg-[#0A0A0A] text-white' : 'bg-transparent text-zinc-500 hover:text-zinc-900'}`}>
+              Yearly <span className="text-[10px] px-1.5 py-0.5 rounded-full text-black font-bold bg-[#E8FF86]">-22%</span>
+            </button>
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-[300px_1fr] gap-5">
-          <div className="bg-[#0B0B0C] rounded-[14px] p-5 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-44 h-44 bg-[#E8FF86]/[0.06] rounded-full blur-[40px] -mr-14 -mt-14" />
+        <div className="grid lg:grid-cols-[320px_1fr] gap-5">
+          <div className="bg-[#0A0A0A] text-white rounded-2xl p-5 relative overflow-hidden self-start">
+            <div className="absolute inset-0 opacity-[0.07] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, #fff 1px, transparent 0)', backgroundSize: '18px 18px' }} />
             <div className="relative">
-              <div className="flex justify-between items-center mb-4">
-                <div className="font-mono text-[9.5px] tracking-[0.16em] uppercase text-white/40 font-medium">JazzCash Till</div>
-                <button onClick={copyTill} className="h-7 px-2.5 bg-white/[0.08] border border-white/10 rounded-[8px] text-[11px] font-medium text-white hover:bg-white/[0.14] transition-colors inline-flex items-center gap-1.5"><IconCopy c="w-3 h-3" />{copiedTill ? 'Copied' : 'Copy ID'}</button>
+              <div className="flex justify-between items-center mb-3">
+                <div className="text-[12px] font-medium text-white/55">JazzCash till</div>
+                <button type="button" onClick={copyTill} className="h-7 px-3 bg-white/10 border border-white/10 backdrop-blur-md rounded-full text-[11.5px] font-semibold text-white hover:bg-white/20 transition-colors cursor-pointer inline-flex items-center gap-1.5">
+                  {copiedTill ? <><IconCheck c="w-3 h-3 text-[#E8FF86]" /> Copied</> : <><IconCopy c="w-3 h-3" /> Copy</>}
+                </button>
               </div>
-              <div className="bg-white/[0.05] border border-white/[0.08] rounded-[12px] p-4">
-                <div className="font-mono text-[9px] uppercase text-white/40 tracking-[0.14em]">Till ID</div>
-                <div className="text-[24px] font-semibold font-mono tracking-[0.06em] text-white mt-1">{TILL_ID}</div>
+              <div className="bg-white/[0.06] border border-white/[0.08] rounded-xl p-4">
+                <div className="text-[11px] text-white/40">Till ID</div>
+                <div className="text-[28px] font-semibold font-mono tracking-[0.04em] text-[#E8FF86] mt-0.5">{TILL_ID}</div>
               </div>
-              <div className="mt-3 bg-white rounded-[12px] p-3">
+              <div className="mt-3 bg-white rounded-xl p-3">
                 <img src={`https://barcodeapi.org/api/code128/${TILL_ID}`} alt="Barcode" className="w-full h-[40px] object-contain" />
-                <div className="text-center text-[10.5px] font-mono text-zinc-900 font-semibold tracking-[0.28em] mt-1.5">{TILL_ID}</div>
+                <div className="text-center text-[10.5px] font-mono text-black font-semibold tracking-[0.3em] mt-1">{TILL_ID}</div>
               </div>
-              <div className="mt-3 bg-white rounded-[12px] p-3 flex justify-center"><img src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=JAZZCASH_TILL_${TILL_ID}`} alt="QR code" className="w-[104px] h-[104px] rounded-[8px]" /></div>
-              <div className="mt-4 text-[10.5px] text-white/40 leading-relaxed">Manual verification via JazzCash merchant app. Submit Txn ID after payment.</div>
+              <div className="mt-3 bg-white rounded-xl p-2.5 flex justify-center">
+                <img src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=JAZZCASH_TILL_${TILL_ID}`} alt="QR" className="w-[100px] h-[100px]" />
+              </div>
             </div>
           </div>
 
-          <div className="space-y-2.5">
+          <div role="radiogroup" aria-label="Choose a plan" className="space-y-3">
             {plans.map(p => {
-              const displayPrice = getDisplayPrice(p); const isCurrent = currentPlanId === p.id; const isSelected = selectedPlan?.id === p.id
+              const displayPrice = getDisplayPrice(p)
+              const isCurrent = currentPlanId === p.id
+              const isSelected = selectedPlan?.id === p.id
               return (
-                <button key={p.id} onClick={() => setSelectedPlan(p)} className={`w-full text-left rounded-[12px] border p-4 transition-all cursor-pointer bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/30 ${isSelected ? 'border-[#0A0A0A] shadow-[0_6px_18px_-10px_rgba(0,0,0,0.14)] ring-[3px] ring-zinc-900/[0.05]' : isCurrent ? 'border-zinc-900/25 bg-[#FAFAF8]' : 'border-[#E8E8E5] hover:border-[#0A0A0A]/25 hover:shadow-[0_4px_14px_-8px_rgba(0,0,0,0.08)]'}`}>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={isSelected}
+                  key={p.id}
+                  onClick={() => setSelectedPlan(p)}
+                  className={`w-full text-left rounded-2xl border p-4 md:p-5 transition-all cursor-pointer bg-white ${UI.focus} ${isSelected ? 'border-zinc-900 shadow-[0_0_0_1px_#0A0A0A,0_0_0_5px_#E8FF86]' : isCurrent ? 'border-zinc-400 bg-[#FAFAF9]' : 'border-zinc-200/80 hover:border-zinc-400'}`}
+                >
                   <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold text-[13.5px] tracking-[-0.01em]">{p.name}</span>
-                        {isCurrent && <span className="bg-[#0B0B0C] text-white text-[8.5px] px-2 h-[18px] rounded-md font-semibold flex items-center tracking-[0.1em]">CURRENT</span>}
-                        {p.id === 'advanced' && <span className="text-black text-[8.5px] px-2 h-[18px] rounded-md font-semibold flex items-center tracking-[0.1em] bg-[#E8FF86]">POPULAR</span>}
-                        {isSelected && <span className="w-[18px] h-[18px] bg-[#0B0B0C] text-white rounded-full flex items-center justify-center"><IconCheck c="w-2.5 h-2.5" /></span>}
+                    <div className="flex items-start gap-3 min-w-0 flex-1">
+                      <span className={`mt-1 w-4 h-4 rounded-full border grid place-items-center shrink-0 transition-colors ${isSelected ? 'border-zinc-900 bg-[#0A0A0A]' : 'border-zinc-300 bg-white'}`}>
+                        {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-[#E8FF86]" />}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-extrabold text-[16px] tracking-[-0.025em]">{p.name}</span>
+                          {isCurrent && <span className="bg-[#0A0A0A] text-white text-[10px] px-2 h-[18px] rounded-full font-semibold flex items-center">Current</span>}
+                          {p.id === 'advanced' && <span className="text-black text-[10px] px-2 h-[18px] rounded-full font-bold flex items-center bg-[#E8FF86]">Popular</span>}
+                        </div>
+                        <ul className="mt-3 grid sm:grid-cols-2 gap-x-4 gap-y-1.5">
+                          {p.features.map(f => (
+                            <li key={f} className="flex items-center gap-2 text-[12px] text-zinc-600"><IconCheck c="w-3 h-3 text-zinc-900 shrink-0" />{f}</li>
+                          ))}
+                        </ul>
                       </div>
-                      <div className="text-[11.5px] mt-2 text-zinc-600 leading-relaxed flex flex-wrap gap-1.5">{p.features.map(feat => (<span key={feat} className="bg-[#F7F7F5] border border-[#F0F0EE] px-2 h-[22px] rounded-md text-[10.5px] flex items-center text-zinc-600">{feat}</span>))}</div>
                     </div>
                     <div className="text-right shrink-0">
-                      <div className="font-semibold text-[17px] tracking-[-0.02em]">Rs. {displayPrice}</div>
-                      <div className="text-[10.5px] text-zinc-400 font-mono">{billing === 'yearly' && p.yearlyTotal > 0 ? `Rs. ${p.yearlyTotal.toLocaleString()}/yr` : '/month'}</div>
+                      <div className="font-extrabold text-[18px] tracking-[-0.035em] tabular-nums">Rs. {displayPrice}</div>
+                      <div className="text-[11px] text-zinc-400 font-mono mt-0.5">{billing === 'yearly' && p.yearlyTotal > 0 ? `Rs. ${p.yearlyTotal.toLocaleString()}/yr` : '/month'}</div>
                     </div>
                   </div>
                 </button>
@@ -815,106 +1371,239 @@ export default function Dashboard() {
         </div>
 
         {selectedPlan && selectedPlan.monthly > 0 && (
-          <div className="mt-5 rounded-[14px] border border-[#0A0A0A] bg-[#FDFDF3] p-5 shadow-[0_6px_18px_-12px_rgba(0,0,0,0.1)]">
+          <div className="mt-5 rounded-2xl border border-zinc-900 bg-white p-5 md:p-6 shadow-[0_0_0_5px_rgba(232,255,134,0.55)]">
             <div className="flex items-center gap-3 flex-wrap">
-              <div className="w-7 h-7 rounded-full bg-[#0B0B0C] text-white flex items-center justify-center font-mono text-[10px]">Rs</div>
-              <div className="text-[13.5px] font-semibold tracking-[-0.01em]">Pay Rs. {(billing === 'monthly' ? selectedPlan.monthly : selectedPlan.yearlyTotal).toLocaleString()} → Till {TILL_ID}</div>
-              <span className="ml-auto font-mono text-[9px] font-medium tracking-[0.1em] bg-[#0B0B0C] text-white px-2 h-[20px] rounded-md flex items-center">{billing.toUpperCase()}</span>
+              <div className="w-8 h-8 rounded-full bg-[#0A0A0A] text-[#E8FF86] flex items-center justify-center text-[12px] font-bold">₨</div>
+              <div className="text-[14px] font-semibold tracking-[-0.015em]">Pay Rs. {(billing === 'monthly' ? selectedPlan.monthly : selectedPlan.yearlyTotal).toLocaleString()} to Till <span className="font-mono">{TILL_ID}</span></div>
+              <span className="ml-auto text-[11px] font-semibold bg-zinc-100 border border-zinc-200/80 text-zinc-700 px-2.5 h-6 rounded-full flex items-center capitalize">{billing}</span>
             </div>
-            <input value={txnId} onChange={e => setTxnId(e.target.value)} placeholder="Enter Transaction ID from JazzCash SMS" className="mt-4 w-full h-[42px] px-3.5 rounded-[10px] border border-[#E4E4E1] bg-white text-[13px] font-mono focus:outline-none focus:border-[#0A0A0A] focus:ring-[3px] focus:ring-zinc-900/[0.06] transition-all placeholder:text-zinc-400" />
-            <button onClick={handleBuyPlan} disabled={purchasing} className={`${btnPrimary} mt-3.5 w-full h-[42px] text-[13px]`}>
-              {purchasing ? 'Submitting…' : `I paid — Activate ${selectedPlan.name}`} <IconArrowRight c="w-3.5 h-3.5 text-[#D9FF4B]" />
+            <div className="mt-4">
+              <Field label="Transaction ID" hint="Find it in the JazzCash confirmation SMS.">
+                <input
+                  value={txnId}
+                  onChange={e => setTxnId(e.target.value)}
+                  placeholder="Enter Transaction ID from JazzCash SMS"
+                  className={`${UI.input} font-mono !text-[13px]`}
+                />
+              </Field>
+            </div>
+            <button
+              type="button"
+              onClick={handleBuyPlan}
+              disabled={purchasing}
+              className={`${BTN_DARK} mt-4 w-full h-11 text-[13px]`}
+            >
+              {purchasing ? 'Submitting...' : `I Paid — Activate ${selectedPlan.name}`}
             </button>
-            <div className="text-[11px] text-zinc-500 mt-3 text-center">Verification via merchant Till {TILL_ID} · WhatsApp update within 1 hour</div>
           </div>
         )}
       </div>
     </div>
   )
 
+  /* ---------------- LAYOUT ---------------- */
   return (
-    <div className="min-h-screen bg-[#FAFAF8] text-[#0A0A0A] antialiased selection:bg-[#E8FF86] selection:text-black">
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap'); *{font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;} .font-mono{font-family: 'JetBrains Mono', monospace !important;} .no-scrollbar::-webkit-scrollbar{display:none} .no-scrollbar{-ms-overflow-style:none; scrollbar-width:none} button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{outline:2px solid rgba(10,10,10,0.5); outline-offset:2px; border-radius:8px;}`}</style>
+    <div className="dw-root min-h-screen bg-[#FAFAF9] text-zinc-900">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap');
+        .dw-root { font-family: 'Inter Tight', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+        .dw-root input, .dw-root select, .dw-root textarea, .dw-root button { font-family: inherit; }
+        .dw-root .font-mono { font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
+        .dw-root .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+        .dw-root .no-scrollbar::-webkit-scrollbar { display: none; }
+        /* ---------- motion system ---------- */
+        @keyframes dwRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+        .dw-stagger > * { animation: dwRise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+        .dw-stagger > *:nth-child(2) { animation-delay: 0.07s; }
+        .dw-stagger > *:nth-child(3) { animation-delay: 0.14s; }
+        .dw-stagger > *:nth-child(4) { animation-delay: 0.21s; }
+        .dw-stagger > *:nth-child(n+5) { animation-delay: 0.28s; }
+        @supports (animation-timeline: view()) {
+          .dw-stagger > *:nth-child(n+4) { animation: dwRise linear both; animation-timeline: view(); animation-range: entry 0% entry 38%; }
+        }
+        ${Array.from({ length: 12 }, (_, i) => `.dw-sg > *:nth-child(${i + 1}) { animation: dwRise 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) ${0.12 + i * 0.05}s both; }`).join('\n        ')}
 
-      {/* DESKTOP SIDEBAR */}
-      <aside className="hidden md:flex fixed left-0 top-0 h-screen w-[264px] bg-[#0B0B0C] text-white flex-col z-40">
-        <div className="px-5 pt-6 pb-5">
-          <Link href="/" className="flex items-center gap-2.5 no-underline">
-            <div className="w-8 h-8 rounded-[9px] flex items-center justify-center font-bold text-[14px] text-black bg-[#E8FF86]">D</div>
+        @keyframes dwChar { from { opacity: 0; transform: translateY(0.55em) rotateX(-55deg); filter: blur(8px); } to { opacity: 1; transform: none; filter: none; } }
+        .dw-char { display: inline-block; animation: dwChar 0.75s cubic-bezier(0.2, 0.9, 0.2, 1) both; transform-origin: 50% 100%; }
+        @keyframes dwSwap { from { opacity: 0; transform: translateY(10px) scale(0.95); filter: blur(10px); } to { opacity: 1; transform: none; filter: none; } }
+        .dw-swap { animation: dwSwap 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s both; }
+
+        @keyframes dwSpin { to { transform: rotate(1turn); } }
+        .dw-spin { position: relative; padding: 1px; border-radius: 13px; overflow: hidden; background: rgba(255,255,255,0.08); }
+        .dw-spin::before { content: ''; position: absolute; inset: -100%; background: conic-gradient(from 0deg, transparent 0 70%, rgba(232,255,134,0.95) 86%, transparent 100%); animation: dwSpin 6s linear infinite; }
+        .dw-spin > * { position: relative; }
+
+        @keyframes dwDrift { to { transform: translate3d(-70px, 46px, 0) scale(1.18); } }
+        .dw-aurora { position: absolute; border-radius: 9999px; filter: blur(80px); pointer-events: none; }
+        .dw-aurora.a { width: 340px; height: 340px; background: #E8FF86; opacity: 0.16; top: -130px; right: -50px; animation: dwDrift 16s ease-in-out infinite alternate; }
+        .dw-aurora.b { width: 300px; height: 300px; background: #ffffff; opacity: 0.07; bottom: -160px; left: 18%; animation: dwDrift 22s ease-in-out infinite alternate-reverse; }
+        .dw-spot { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.4s; background: radial-gradient(460px circle at var(--mx, 70%) var(--my, 30%), rgba(232,255,134,0.13), transparent 60%); }
+        .dw-hero:hover .dw-spot { opacity: 1; }
+
+        .dw-root .dw-tilt { transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(var(--ty, 0px)); transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s, border-color 0.2s; will-change: transform; }
+        .dw-root .dw-tilt:hover { --ty: -5px; }
+        .dw-tilt::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity 0.3s; background: radial-gradient(260px circle at var(--gx, 50%) var(--gy, 50%), rgba(232,255,134,0.32), transparent 62%); }
+        .dw-tilt:hover::after { opacity: 1; }
+
+        .dw-shine::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.32) 50%, transparent 70%); transform: translateX(-120%); transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .dw-shine:hover::after { transform: translateX(120%); }
+
+        @keyframes dwGrow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+        .dw-grow { transform-origin: left; animation: dwGrow 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) 0.25s both; }
+        @keyframes dwWiggle { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-12deg) scale(1.06); } 60% { transform: rotate(9deg) scale(1.06); } }
+        .group:hover .dw-lock { animation: dwWiggle 0.55s ease; }
+
+        @keyframes dwToast { from { opacity: 0; transform: translateY(18px) scale(0.96); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
+        .dw-toast { animation: dwToast 0.42s cubic-bezier(0.2, 0.9, 0.25, 1.1) both; }
+        @keyframes dwFade { from { opacity: 0; } to { opacity: 1; } }
+        .dw-fade { animation: dwFade 0.25s ease both; }
+        @keyframes dwPop { from { opacity: 0; transform: translateY(26px) scale(0.93); } to { opacity: 1; transform: none; } }
+        .dw-pop { animation: dwPop 0.5s cubic-bezier(0.2, 0.9, 0.25, 1.1) both; }
+        @keyframes dwDraw { to { stroke-dashoffset: 0; } }
+        .dw-draw polyline { stroke-dasharray: 30; stroke-dashoffset: 30; animation: dwDraw 0.5s ease-out 0.35s forwards; }
+        @keyframes dwRing { from { opacity: 0.7; transform: scale(0.9); } to { opacity: 0; transform: scale(2.1); } }
+        .dw-ring { animation: dwRing 1.3s ease-out 0.25s 2 both; }
+        @keyframes dwBurst { 0% { opacity: 1; transform: rotate(var(--a)) translateX(0) scale(1); } 100% { opacity: 0; transform: rotate(var(--a)) translateX(var(--d)) scale(0.35); } }
+        .dw-confetti { position: absolute; width: 6px; height: 6px; border-radius: 2px; opacity: 0; animation: dwBurst 0.95s cubic-bezier(0.15, 0.8, 0.3, 1) both; }
+
+        .glass-container { position: relative; display: flex; justify-content: flex-start; align-items: center; min-height: 480px; padding: 76px 56px 84px 96px; gap: 0; overflow-x: auto; overflow-y: visible; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
+        .glass-container::-webkit-scrollbar { height: 5px; }
+        .glass-container::-webkit-scrollbar-thumb { background: rgba(10,10,10,0.12); border-radius: 999px; }
+        .glass-container .glass { position: relative; width: 260px; height: 340px; flex-shrink: 0; background: rgba(255,255,255,0.9); border: 1px solid rgba(10,10,10,0.08); box-shadow: 0 20px 50px rgba(10,10,10,0.08), 0 1px 0 rgba(255,255,255,1) inset; display: flex; justify-content: flex-start; align-items: center; flex-direction: column; transition: all 0.55s cubic-bezier(0.23,1,0.32,1); border-radius: 20px; margin: 0 -36px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); transform: rotate(calc(var(--r) * 1deg)) translateY(0); cursor: pointer; overflow: hidden; outline: none; animation: dwDrop 0.85s cubic-bezier(0.2, 0.9, 0.2, 1) calc(var(--i, 0) * 75ms) backwards; }
+        @keyframes dwDrop { from { opacity: 0; transform: translateY(54px) rotate(calc(var(--r) * 1deg)) scale(0.9); } }
+        @keyframes dwHalo { 0%, 100% { box-shadow: 0 32px 80px rgba(10,10,10,0.25), 0 0 0 5px #E8FF86; } 50% { box-shadow: 0 32px 80px rgba(10,10,10,0.25), 0 0 0 10px rgba(232,255,134,0.4); } }
+        .glass-container .glass::after { content: ''; position: absolute; inset: 0; z-index: 5; pointer-events: none; background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.55) 50%, transparent 65%); transform: translateX(-130%); transition: transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .glass-container .glass:hover::after { transform: translateX(130%); }
+        .glass-container .glass:hover, .glass-container .glass:focus-visible { transform: rotate(0deg) translateY(-12px) scale(1.05); margin: 0 20px; box-shadow: 0 32px 80px rgba(10,10,10,0.16), 0 0 0 1px rgba(10,10,10,0.06); z-index: 10; background: #fff; }
+        .glass-container .glass:focus-visible { box-shadow: 0 0 0 2px #0A0A0A, 0 0 0 5px #E8FF86; }
+        .glass-container .glass::before { content: attr(data-text); position: absolute; bottom: 0; width: 100%; height: 46px; background: #fff; border-top: 1px solid rgba(10,10,10,0.06); display: flex; justify-content: center; align-items: center; color: #0A0A0A; font-size: 13px; font-weight: 600; letter-spacing: -0.015em; }
+        .glass-container .glass.selected { background: #0A0A0A; border: 1px solid #0A0A0A; transform: rotate(0deg) translateY(-16px) scale(1.07); margin: 0 24px; z-index: 20; box-shadow: 0 32px 80px rgba(10,10,10,0.25), 0 0 0 5px #E8FF86; animation: dwDrop 0.85s cubic-bezier(0.2, 0.9, 0.2, 1) calc(var(--i, 0) * 75ms) backwards, dwHalo 2.8s ease-in-out 1.3s infinite; }
+        .glass-container .glass.selected::before { background: #0A0A0A; color: #fff; border-top: 1px solid rgba(255,255,255,0.1); }
+        .glass-lock-overlay { position: absolute; inset: 0; background: rgba(255,255,255,0.8); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; z-index: 10; border-radius: 20px; }
+        @media (max-width: 768px) {
+          .glass-container .glass { width: 190px; height: 260px; margin: 0 -22px; }
+          .glass-container { min-height: 400px; padding: 56px 48px 64px 56px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .dw-root *, .dw-root *::before, .dw-root *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
+        }
+      `}</style>
+
+      {/* Desktop sidebar */}
+      <aside className="hidden md:flex flex-col w-64 bg-[#0A0A0A] text-white fixed inset-y-0 left-0 z-40 border-r border-white/[0.06]">
+        <div className="px-5 pt-6 pb-5 border-b border-white/[0.06]">
+          <Link href="/" className="flex items-center gap-3 no-underline text-inherit">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center font-extrabold text-[15px] text-black bg-[#E8FF86]">D</div>
             <div>
-              <div className="font-semibold text-[14px] tracking-[-0.01em] leading-none">DukaanWhats</div>
-              <div className="font-mono text-[9px] text-white/35 tracking-[0.14em] mt-1">SAAS · PK</div>
+              <div className="font-bold text-[15px] tracking-[-0.025em] leading-none">DukaanWhats</div>
+              <div className="text-[11.5px] text-white/40 mt-1">Dashboard</div>
             </div>
           </Link>
         </div>
 
-        <div className="flex-1 px-3 overflow-y-auto">
-          <div className="px-2 pt-1 pb-2 font-mono text-[9.5px] font-medium tracking-[0.16em] uppercase text-white/30">Workspace</div>
-          <div className="space-y-[2px]">
-            {sidebarNav.map(item => {
-              const isActive = activeTab === item.id; const Icon = item.Icon
-              return (
-                <button key={item.id} onClick={() => setActiveTab(item.id as any)} aria-current={isActive ? 'page' : undefined} className={`w-full flex items-center gap-2.5 px-3 h-9 rounded-[10px] text-[13px] font-medium tracking-[-0.01em] transition-colors ${isActive ? 'bg-white text-[#0A0A0A]' : 'text-white/55 hover:text-white hover:bg-white/[0.06]'}`}>
-                  <Icon c={`w-[16px] h-[16px] ${isActive ? 'text-[#0A0A0A]' : 'text-white/35'}`} />
-                  <span className="flex-1 text-left">{item.label}</span>
-                  {(item as any).badge && <span className={`font-mono text-[9.5px] px-1.5 h-[18px] rounded-md flex items-center ${isActive ? 'bg-[#0A0A0A] text-white' : 'bg-white/[0.07] text-white/50 border border-white/[0.08]'}`}>{(item as any).badge}</span>}
-                  {(item as any).pro && <span className="text-[7.5px] font-semibold tracking-[0.1em] px-1.5 h-[16px] rounded-md bg-[#E8FF86] text-black flex items-center">PRO</span>}
-                </button>
-              )
-            })}
-          </div>
+        <nav aria-label="Dashboard" className="relative flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+          <span aria-hidden className="absolute left-3 right-3 top-4 h-10 rounded-xl bg-white/[0.07] transition-transform duration-500 ease-[cubic-bezier(.2,.9,.25,1.05)]" style={{ transform: `translateY(${activeIdx * 42}px)` }}>
+            <span className="absolute -left-3 top-2.5 bottom-2.5 w-[3px] rounded-full bg-[#E8FF86] shadow-[0_0_14px_2px_rgba(232,255,134,0.55)]" />
+          </span>
+          {sidebarNav.map(item => {
+            const active = activeTab === item.id
+            return (
+              <button
+                type="button"
+                key={item.id}
+                onClick={() => setActiveTab(item.id as any)}
+                aria-current={active ? 'page' : undefined}
+                className={`relative z-10 w-full flex items-center gap-3 px-3 h-10 rounded-xl text-[13.5px] font-medium tracking-[-0.01em] transition-colors border-none cursor-pointer bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8FF86]/70 ${active ? 'text-white' : 'text-white/55 hover:text-white hover:bg-white/[0.04]'}`}
+              >
+                <item.Icon c={`w-[17px] h-[17px] transition-colors duration-300 ${active ? 'text-[#E8FF86]' : ''}`} />
+                <span className="flex-1 text-left">{item.label}</span>
+                {'badge' in item && item.badge && <span className="text-[11px] font-mono text-white/40">{item.badge}</span>}
+                {'pro' in item && item.pro && <span className="text-[10px] font-bold text-black px-1.5 h-4 inline-flex items-center rounded-full bg-[#E8FF86]">Pro</span>}
+              </button>
+            )
+          })}
+        </nav>
 
-          <div className="mt-7 mx-1 rounded-[14px] bg-white/[0.04] border border-white/[0.08] p-4">
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-[9.5px] font-medium tracking-[0.14em] uppercase text-white/40">Plan</span>
-              <div className="flex items-center gap-1.5"><LiveDot /><span className="font-mono text-[9px] text-[#D9FF4B]">LIVE</span></div>
+        <div className="p-3 border-t border-white/[0.06]">
+          <div className="bg-[#18181B] border border-white/[0.07] rounded-2xl p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                {isPremium ? <LiveDot /> : <span className="w-2 h-2 rounded-full bg-white/30" />}
+                <span className="text-[12.5px] font-semibold tracking-[-0.01em]">{currentPlanDef.name} plan</span>
+              </div>
+              <span className="font-mono text-[11px] text-white/40"><CountUp value={products.length} />/{maxLabel(productLimit)}</span>
             </div>
-            <div className="mt-2.5 flex items-baseline gap-2">
-              <span className="text-[17px] font-semibold tracking-[-0.01em]">{currentPlanDef.name}</span>
-              <span className="font-mono text-[9.5px] text-white/35">{productLimit === 999999 ? '∞' : productLimit}p · {imageLimit === 999999 ? '∞' : imageLimit}i</span>
+            <div className="h-1 rounded-full bg-white/10 overflow-hidden">
+              <div className="dw-grow h-full rounded-full bg-[#E8FF86] transition-all duration-500 shadow-[0_0_10px_rgba(232,255,134,0.6)]" style={{ width: `${productPct}%` }} />
             </div>
-            <div className="mt-3 h-1 w-full bg-white/10 rounded-full overflow-hidden"><div className="h-full bg-[#E8FF86] rounded-full transition-all" style={{ width: `${Math.min(100, (products.length / (productLimit === 999999 ? 100 : productLimit)) * 100)}%` }} /></div>
-            <div className="font-mono text-[9.5px] text-white/35 mt-1.5">{products.length} / {productLimit === 999999 ? '∞' : productLimit} products used</div>
-            {!isPremium
-              ? <button onClick={() => setActiveTab('payments')} className="mt-4 w-full h-[34px] rounded-[9px] text-[12px] font-medium text-black bg-[#E8FF86] hover:bg-[#DEF56E] transition-colors inline-flex items-center justify-center gap-1.5">Upgrade plan <IconArrowRight c="w-3 h-3" /></button>
-              : <div className="mt-4 w-full h-[34px] rounded-[9px] text-[10px] font-semibold tracking-[0.1em] text-black flex items-center justify-center gap-1.5 bg-[#E8FF86]">PREMIUM <IconCheck c="w-3 h-3" /></div>}
+            <div className="text-[11.5px] text-white/40 leading-snug mt-2.5 mb-3.5">
+              {maxLabel(productLimit)} products, {maxLabel(imageLimit)} img each
+            </div>
+            {!isPremium ? (
+              <button type="button" onClick={() => setActiveTab('payments')} className={`${BTN_LIME} w-full h-9 text-[12.5px] !rounded-xl focus-visible:!ring-offset-[#18181B] focus-visible:!ring-[#E8FF86]`}>
+                Upgrade plan
+              </button>
+            ) : (
+              <div className="w-full h-9 rounded-xl text-[12.5px] font-semibold text-[#E8FF86] border border-[#E8FF86]/30 bg-[#E8FF86]/10 flex items-center justify-center gap-1.5">
+                <IconCheck c="w-3.5 h-3.5" /> Premium active
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="p-3 border-t border-white/[0.07]">
-          <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-[10px] hover:bg-white/[0.05] transition-colors cursor-default">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center font-semibold text-[12px] text-black shrink-0 bg-[#E8FF86]">{(businessName || 'S')[0].toUpperCase()}</div>
+        <div className="px-3 pb-3 pt-0">
+          <div className="flex items-center gap-2.5 px-2 py-2">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center font-extrabold text-[12.5px] text-black shrink-0 bg-[#E8FF86]">{(businessName || 'S')[0].toUpperCase()}</div>
             <div className="min-w-0 flex-1">
-              <div className="text-[12.5px] font-medium truncate tracking-[-0.01em]">{businessName || 'Your Store'}</div>
-              <div className="font-mono text-[9.5px] text-white/35 truncate">/s/{slug || 'your-slug'}</div>
+              <div className="text-[13px] font-semibold truncate tracking-[-0.01em]">{businessName || 'Your Store'}</div>
+              <div className="text-[11px] text-white/40 font-mono truncate">/s/{slug || 'your-slug'}</div>
             </div>
-            <div className="w-1.5 h-1.5 rounded-full bg-[#D9FF4B] shrink-0" />
           </div>
         </div>
       </aside>
 
-      {/* MOBILE HEADER */}
-      <header className="md:hidden sticky top-0 z-30 bg-[#FAFAF8]/90 backdrop-blur-xl border-b border-[#E8E8E5]">
-        <div className="flex items-center justify-between px-4 h-[54px]">
-          <Link href="/" className="flex items-center gap-2 no-underline text-inherit">
-            <div className="w-7 h-7 rounded-[8px] flex items-center justify-center font-bold text-[12px] text-black bg-[#E8FF86]">D</div>
-            <span className="font-semibold text-[14px] tracking-[-0.01em]">DukaanWhats</span>
+      {/* Mobile top bar */}
+      <header className="md:hidden sticky top-0 z-30 bg-[#FAFAF9]/80 backdrop-blur-md border-b border-zinc-200/80 pt-[env(safe-area-inset-top)]">
+        <div className="flex items-center justify-between px-4 h-14">
+          <Link href="/" className="flex items-center gap-2.5 no-underline text-inherit">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center font-extrabold text-[13px] text-black bg-[#E8FF86]">D</div>
+            <span className="font-bold text-[15px] tracking-[-0.025em]">DukaanWhats</span>
           </Link>
-          <div className="flex items-center gap-2">
-            <div className="h-7 px-2.5 rounded-[8px] bg-white border border-[#E4E4E1] flex items-center gap-1.5 text-[10.5px] font-mono text-zinc-600"><LiveDot />{currentPlanDef.name}</div>
-            <button onClick={() => setActiveTab('payments')} className="h-7 px-3 rounded-[8px] text-[10.5px] font-semibold tracking-[0.08em] bg-[#0B0B0C] text-white">{isPremium ? 'PLANS' : 'PRO'}</button>
+          <div className="flex items-center gap-1.5">
+            <button type="button" onClick={() => setActiveTab('payments')} className={`${BTN} h-8 px-3 text-[11.5px] bg-[#0A0A0A] text-white`}>
+              {currentPlanDef.name}
+            </button>
+            {!isPremium && (
+              <button type="button" onClick={() => setActiveTab('payments')} className={`${BTN_LIME} h-8 px-3 text-[11.5px]`}>Upgrade</button>
+            )}
           </div>
-        </div>
-        <div className="flex gap-1.5 px-3 pb-3 overflow-x-auto no-scrollbar">
-          {[{ id: 'themes', label: 'Themes' }, { id: 'products', label: 'Products' }, { id: 'store', label: 'Store' }, { id: 'analytics', label: 'Analytics' }].map(t => (
-            <button key={t.id} onClick={() => setActiveTab(t.id as any)} className={`h-8 px-3.5 rounded-[9px] text-[12.5px] font-medium whitespace-nowrap transition-colors ${activeTab === t.id ? 'bg-[#0B0B0C] text-white' : 'bg-white text-zinc-600 border border-[#E4E4E1]'}`}>{t.label}</button>
-          ))}
-          <button onClick={() => setActiveTab('payments')} className={`h-8 px-3.5 rounded-[9px] text-[12.5px] font-semibold whitespace-nowrap ${activeTab === 'payments' ? 'bg-[#0B0B0C] text-white' : 'bg-[#E8FF86] text-black'}`}>{isPremium ? 'Plans' : 'Upgrade'}</button>
         </div>
       </header>
 
-      <div className="md:ml-[264px]">
-        <main className="max-w-[1120px] mx-auto px-4 md:px-8 py-6 md:py-9 pb-[92px] md:pb-10">
+      <div className="md:pl-64">
+        {/* Desktop top bar */}
+        <div className="hidden md:flex sticky top-0 z-30 h-14 items-center justify-between px-8 bg-[#FAFAF9]/80 backdrop-blur-md border-b border-zinc-200/80">
+          <div className="flex items-center gap-2 text-[13px]">
+            <span className="text-zinc-400">Dashboard</span>
+            <span className="text-zinc-300">/</span>
+            <span className="font-semibold tracking-[-0.01em]">{tabLabel[activeTab]}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <CurrentPlanButton />
+            <button
+              type="button"
+              onClick={copyLink}
+              title="Copy store link"
+              className={`flex items-center gap-2 h-9 pl-3 pr-3 rounded-full border border-zinc-200/80 bg-white cursor-pointer transition-colors hover:border-zinc-300 ${UI.focus}`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-[#E8FF86] shadow-[0_0_0_1px_#0A0A0A]" />
+              <span className="font-mono text-[11.5px] text-zinc-600 max-w-[160px] truncate">/s/{slug || 'your-slug'}</span>
+              {copied ? <IconCheck c="w-3.5 h-3.5 text-emerald-600" /> : <IconCopy c="w-3.5 h-3.5 text-zinc-400" />}
+            </button>
+          </div>
+        </div>
+
+        <main className="max-w-6xl mx-auto px-4 md:px-8 py-6 md:py-10 pb-28 md:pb-14">
           {activeTab === 'themes' && themesPage}
           {activeTab === 'products' && productsPage}
           {activeTab === 'store' && storePage}
@@ -923,93 +1612,72 @@ export default function Dashboard() {
         </main>
       </div>
 
-      {/* MOBILE BOTTOM NAV */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-xl border-t border-[#E8E8E5] px-2 pt-1.5 pb-[max(8px,env(safe-area-inset-bottom))]">
-        <div className="flex justify-around">
+      {/* Mobile bottom navigation */}
+      <nav aria-label="Primary" className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/80 backdrop-blur-md border-t border-zinc-200/80 pb-[env(safe-area-inset-bottom)]">
+        <div className="relative grid grid-cols-5 px-1.5 pt-2 pb-2">
+          <span aria-hidden className="absolute top-[10px] h-7 w-12 rounded-full bg-[#E8FF86] transition-[left] duration-500 ease-[cubic-bezier(.2,.9,.25,1.05)]" style={{ left: `calc(6px + (100% - 12px) * ${(activeIdx + 0.5) / 5} - 24px)` }} />
           {sidebarNav.map(item => {
-            const isActive = activeTab === item.id; const Icon = item.Icon
+            const active = activeTab === item.id
             return (
-              <button key={item.id} onClick={() => setActiveTab(item.id as any)} aria-current={isActive ? 'page' : undefined} className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-[10px] transition-colors ${isActive ? 'text-[#0A0A0A]' : 'text-zinc-400'}`}>
-                <Icon c="w-[18px] h-[18px]" />
-                <span className="text-[9.5px] font-medium tracking-[-0.01em]">{item.label.split(' ')[0]}</span>
+              <button
+                type="button"
+                key={item.id}
+                onClick={() => setActiveTab(item.id as any)}
+                aria-current={active ? 'page' : undefined}
+                className="flex flex-col items-center gap-1 py-0.5 bg-transparent border-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black rounded-xl"
+              >
+                <span className={`relative z-10 h-7 w-12 rounded-full grid place-items-center transition-colors duration-300 ${active ? 'text-black' : 'text-zinc-500'}`}>
+                  <item.Icon c="w-[19px] h-[19px]" />
+                  {'pro' in item && item.pro && !active && <span className="absolute top-0.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#0A0A0A]" />}
+                </span>
+                <span className={`text-[10.5px] tracking-[-0.01em] ${active ? 'font-semibold text-zinc-900' : 'font-medium text-zinc-500'}`}>{mobileLabel[item.id]}</span>
               </button>
             )
           })}
         </div>
       </nav>
 
-      {/* Toast */}
+      {/* Toast for errorMsg */}
       {errorMsg && (
-        <div className="fixed bottom-[92px] md:bottom-6 right-4 md:right-6 z-[100] bg-[#0B0B0C] text-white pl-3.5 pr-4 py-2.5 rounded-[12px] text-[12.5px] font-medium shadow-[0_12px_32px_rgba(0,0,0,0.22)] border border-white/10 flex items-center gap-2.5 animate-[fadeIn_0.25s_ease] max-w-[calc(100vw-32px)]">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#D9FF4B] animate-pulse shrink-0" /><span className="truncate">{errorMsg}</span>
+        <div role="status" className="dw-toast fixed bottom-24 md:bottom-6 left-4 right-4 md:left-auto md:right-6 z-[100] bg-[#0A0A0A] text-white pl-4 pr-5 py-3 rounded-2xl text-[13px] font-medium shadow-[0_16px_40px_rgba(0,0,0,0.3)] border border-white/10 flex items-center gap-2.5 md:max-w-sm">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#E8FF86] shrink-0" />
+          {errorMsg}
         </div>
       )}
 
-      {/* Locked-theme dialog (replaces native alert — same message, same destination) */}
-      {lockedTheme && (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4" role="dialog" aria-modal="true">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]" onClick={() => setLockedTheme(null)} />
-          <div className="relative bg-white rounded-[16px] w-full max-w-[380px] p-6 shadow-[0_24px_64px_rgba(0,0,0,0.25)] border border-[#E8E8E5] animate-[fadeIn_0.25s_ease]">
-            <div className="w-10 h-10 rounded-[10px] bg-[#0B0B0C] flex items-center justify-center"><IconLock c="w-[18px] h-[18px] text-[#D9FF4B]" /></div>
-            <h3 className="mt-4 text-[16px] font-semibold tracking-[-0.01em]">{lockedTheme.title}</h3>
-            <p className="mt-2 text-[12.5px] text-zinc-500 leading-relaxed">{lockedTheme.body}</p>
-            <div className="mt-5 flex gap-2">
-              <button onClick={() => setLockedTheme(null)} className={`${btnSecondary} flex-1`}>Not now</button>
-              <button onClick={() => { setLockedTheme(null); setActiveTab('payments') }} className={`${btnPrimary} flex-1`}>View plans</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete confirmation (replaces native confirm()) */}
-      {deleteTarget && (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4" role="dialog" aria-modal="true">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]" onClick={() => setDeleteTarget(null)} />
-          <div className="relative bg-white rounded-[16px] w-full max-w-[380px] p-6 shadow-[0_24px_64px_rgba(0,0,0,0.25)] border border-[#E8E8E5] animate-[fadeIn_0.25s_ease]">
-            <h3 className="text-[16px] font-semibold tracking-[-0.01em]">Delete product?</h3>
-            <p className="mt-2 text-[12.5px] text-zinc-500 leading-relaxed">
-              <span className="text-zinc-900 font-medium">{products.find(p => p.id === deleteTarget)?.name || 'This product'}</span> will be permanently removed from your store. This can’t be undone.
-            </p>
-            <div className="mt-5 flex gap-2">
-              <button onClick={() => setDeleteTarget(null)} className={`${btnSecondary} flex-1`}>Cancel</button>
-              <button onClick={confirmDeleteProduct} className="flex-1 h-9 px-4 bg-red-600 text-white text-[12.5px] font-medium rounded-[10px] hover:bg-red-700 transition-colors inline-flex items-center justify-center gap-2"><IconTrash c="w-3.5 h-3.5" /> Delete</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Payment status modal */}
+      {/* Status modal */}
       {showStatusModal && (
-        <div className="fixed inset-0 z-[90] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true">
-          <div className="bg-white rounded-[16px] w-full max-w-[400px] overflow-hidden shadow-[0_24px_64px_rgba(0,0,0,0.3)] border border-[#E8E8E5] animate-[fadeIn_0.25s_ease]">
+        <div role="dialog" aria-modal="true" className="dw-fade fixed inset-0 z-[9999] bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="dw-pop bg-white rounded-3xl w-full max-w-[400px] overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,0.4)]">
             {showStatusModal.type === 'approved' ? (
               <div>
-                <div className="bg-[#0B0B0C] text-white p-8 text-center relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-36 h-36 bg-[#E8FF86]/10 rounded-full blur-[32px] -mr-10 -mt-10" />
-                  <div className="relative">
-                    <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto bg-[#E8FF86]"><IconCheck c="w-6 h-6 text-black" /></div>
-                    <h2 className="font-semibold text-[20px] tracking-[-0.02em] mt-4">Payment approved</h2>
-                    <p className="text-[12.5px] text-white/60 mt-1.5">Your store is now {showStatusModal.payment.plan_id} · Till {TILL_ID}</p>
+                <div className="relative overflow-hidden bg-[#0A0A0A] text-white p-8 text-center">
+                  <Confetti />
+                  <div className="relative w-16 h-16 mx-auto">
+                    <span aria-hidden className="dw-ring absolute inset-0 rounded-full border-2 border-[#E8FF86]" />
+                    <div className="relative w-16 h-16 rounded-full flex items-center justify-center bg-[#E8FF86] text-black shadow-[0_0_0_8px_rgba(232,255,134,0.15)]"><IconCheck c="w-7 h-7 dw-draw" /></div>
                   </div>
+                  <h2 className="font-extrabold text-[24px] tracking-[-0.035em] mt-5">Payment approved</h2>
+                  <p className="text-[13px] text-white/60 mt-1.5">Your store is now {showStatusModal.payment.plan_id.toUpperCase()}</p>
                 </div>
-                <div className="p-5">
-                  <div className="bg-[#FAFAF8] border border-[#F0F0EE] rounded-[12px] p-4 space-y-3">
-                    <div className="flex justify-between items-center"><span className="font-mono text-[9.5px] text-zinc-400 uppercase tracking-[0.14em]">Plan</span><span className="text-[12.5px] font-semibold capitalize">{showStatusModal.payment.plan_id} · Rs. {showStatusModal.payment.amount}</span></div>
-                    <div className="flex justify-between items-center"><span className="font-mono text-[9.5px] text-zinc-400 uppercase tracking-[0.14em]">Txn ID</span><span className="font-mono text-[11px] bg-white border border-[#E4E4E1] px-2 py-[2px] rounded-md">{showStatusModal.payment.txn_id}</span></div>
+                <div className="p-6">
+                  <div className="bg-[#FAFAF9] border border-zinc-200/80 rounded-xl divide-y divide-zinc-200/80">
+                    <div className="flex justify-between items-center px-4 py-3"><span className="text-[12px] text-zinc-500">Plan</span><span className="text-[13px] font-bold tracking-[-0.01em]">{showStatusModal.payment.plan_id.toUpperCase()} · Rs. {showStatusModal.payment.amount}</span></div>
+                    <div className="flex justify-between items-center px-4 py-3"><span className="text-[12px] text-zinc-500">Txn ID</span><span className={UI.chipMono}>{showStatusModal.payment.txn_id}</span></div>
                   </div>
-                  <button onClick={() => setShowStatusModal(null)} className={`${btnPrimary} mt-5 w-full h-10`}>Continue <IconArrowRight c="w-3.5 h-3.5 text-[#D9FF4B]" /></button>
+                  <button type="button" onClick={() => setShowStatusModal(null)} className={`${BTN_DARK} mt-5 w-full h-11 text-[13px]`}>Continue</button>
                 </div>
               </div>
             ) : (
               <div>
-                <div className="bg-[#FEF2F2] p-8 text-center border-b border-red-100">
-                  <div className="w-14 h-14 bg-white border border-red-200 rounded-full flex items-center justify-center mx-auto"><IconX c="w-5 h-5 text-red-600" /></div>
-                  <h2 className="font-semibold text-[19px] tracking-[-0.02em] mt-4 text-red-900">Payment rejected</h2>
-                  <p className="text-[12px] text-red-700/70 mt-1.5">Check Txn ID and try again · Till {TILL_ID}</p>
+                <div className="bg-[#FAFAF9] p-8 text-center border-b border-zinc-200/80">
+                  <div className="w-16 h-16 bg-red-50 border border-red-200 text-red-600 rounded-full flex items-center justify-center mx-auto"><IconX c="w-6 h-6" /></div>
+                  <h2 className="font-extrabold text-[22px] tracking-[-0.035em] mt-5">Payment rejected</h2>
+                  <p className="text-[13px] text-zinc-500 mt-1.5">Check the Txn ID and try again</p>
                 </div>
-                <div className="p-5">
-                  <p className="text-[12.5px] text-zinc-600 leading-relaxed">Txn ID could not be verified in Till {TILL_ID}. Please ensure the correct amount and ID were entered.</p>
-                  <button onClick={() => setShowStatusModal(null)} className={`${btnPrimary} mt-5 w-full h-10`}>Try again <IconArrowRight c="w-3.5 h-3.5 text-[#D9FF4B]" /></button>
+                <div className="p-6">
+                  <p className="text-[13px] text-zinc-600 leading-relaxed">Txn ID could not be verified in Till <span className="font-mono">{TILL_ID}</span>. Please ensure correct amount and ID.</p>
+                  <button type="button" onClick={() => setShowStatusModal(null)} className={`${BTN_DARK} mt-5 w-full h-11 text-[13px]`}>Try again</button>
                 </div>
               </div>
             )}
