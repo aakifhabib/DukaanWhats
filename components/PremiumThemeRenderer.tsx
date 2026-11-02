@@ -1,11 +1,5 @@
 'use client'
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { SpikePremiumTheme } from './SpikePremiumTheme'
-import { ShoeAppPremiumTheme } from './ShoeAppPremiumTheme'
-import { TrenzoLuxuryTheme } from './TrenzoLuxuryTheme'
-import { SleekBeigePremiumTheme } from './SleekBeigePremiumTheme'
-import { SleekDarkPremiumTheme } from './SleekDarkPremiumTheme'
-import { SleekEditorialPremiumTheme } from './SleekEditorialPremiumTheme'
 
 /* =====================================================================
    PremiumThemeRenderer
@@ -14,7 +8,7 @@ import { SleekEditorialPremiumTheme } from './SleekEditorialPremiumTheme'
    This file also holds the shared pieces every premium theme builds on:
      1. CONFIG   product helpers, default copy per theme, the editor's field schema
      2. ENGINE   useStore (catalog, cart, wishlist), the full product page, the cart drawer, icons, base CSS
-   Each theme file is just a view that receives the prepared store context as `S`.
+   The six theme views (section 3) are plain components that receive the prepared store context as `S`.
    ===================================================================== */
 
 /* ============================== 1. CONFIG ============================== */
@@ -310,9 +304,12 @@ type Skin = {
 }
 
 /* -------------------------------- icons -------------------------------- */
-const sv = (d: React.ReactNode, w = 1.8) => ({ c = 'w-4 h-4', fill = false }: { c?: string; fill?: boolean }) => (
-  <svg className={c} viewBox="0 0 24 24" fill={fill ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={w} strokeLinecap="round" strokeLinejoin="round" aria-hidden>{d}</svg>
-)
+function sv(d: React.ReactNode, w = 1.8) {
+  function Icon({ c = 'w-4 h-4', fill = false }: { c?: string; fill?: boolean }) {
+    return <svg className={c} viewBox="0 0 24 24" fill={fill ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={w} strokeLinecap="round" strokeLinejoin="round" aria-hidden>{d}</svg>
+  }
+  return Icon
+}
 const Ic = {
   cart: sv(<><path d="M6 7h13l-1.3 8.2a2 2 0 0 1-2 1.8H9a2 2 0 0 1-2-1.6L5.5 4H3" /><circle cx="9.5" cy="20" r="1" /><circle cx="17" cy="20" r="1" /></>),
   bag: sv(<><path d="M5 8h14l-1 12H6L5 8Z" /><path d="M9 8V6a3 3 0 0 1 6 0v2" /></>),
@@ -481,7 +478,6 @@ function useStore(props: any, themeId: string) {
     wish, toggleWish, isWished: (id: string) => wish.includes(id),
     cart, cartCount, cartTotal, lines, cartOpen, openCart, closeCart, changeQty, canRemove: !!onRemove,
     sel, openProduct, closeProduct, addToCart, quickAdd, track, toast, flash, onAdd,
-    ui: UI,
     isHot: (p: any) => products.indexOf(p) < 2 && stockState(p) !== 'out',
     m, digits, storeUrl, scrollTo, heroImg, heroImg2, initial, rootRef, lines2: lines,
     cssVars: { ['--pm-accent' as any]: c.accent || '#E8FF86' } as React.CSSProperties,
@@ -911,10 +907,1042 @@ const PM_BASE_CSS = `
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
 `
 
-/* Everything a theme view needs, handed over via the store context (S.ui) so theme files stay self-contained. */
-const UI = { Ic, Img, PriceLine, SearchBox, SortSelect, Overlays, PM_BASE_CSS, splitLines, discountPct, stockState }
 
-/* ============================== 3. RENDERER ============================== */
+/* ============================== 3. THEME VIEWS ============================== */
+/* ---------- SpikePremiumTheme ---------- */
+/* SPIKE — streetwear / neo-brutalist. Heavy type, hard shadows, lime stickers, endless ticker. */
+const SPIKE_SKIN = {
+  root: 'bg-[#F2F1EC] text-[#0A0A0A]',
+  panel: 'bg-[#FBFAF6] text-[#0A0A0A] border-2 border-black rounded-[22px] shadow-[10px_10px_0_#0A0A0A]',
+  drawer: 'bg-[#FBFAF6] text-[#0A0A0A] border-l-2 border-black',
+  scrim: 'bg-black/55 backdrop-blur-[2px]',
+  muted: 'text-black/60', line: 'border-black/15', soft: 'bg-black/[0.05]',
+  chip: 'border-black/25 hover:border-black bg-white', chipOn: 'bg-black text-white border-black', chipR: 'rounded-xl',
+  btn: 'bg-[var(--pm-accent)] text-black border-2 border-black rounded-xl shadow-[4px_4px_0_#0A0A0A] hover:shadow-[2px_2px_0_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px]',
+  btnAlt: 'bg-black text-white border-2 border-black rounded-xl',
+  input: 'bg-white border-2 border-black/15 focus:border-black rounded-xl',
+  title: 'font-[800] tracking-[-0.04em] [font-family:var(--pm-display)]',
+  dock: 'bg-[#FBFAF6]/95 backdrop-blur border-black/15',
+}
+
+const SPIKE_CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@500;700&display=swap');
+.pm-spike{font-family:'Bricolage Grotesque',system-ui,sans-serif;--pm-display:'Bricolage Grotesque',system-ui,sans-serif}
+.pm-spike .mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+@keyframes pmTick{to{transform:translateX(-50%)}}
+`
+
+function Card({ p, i, S }: any) {
+  const pct = discountPct(p)
+  const st = stockState(p)
+  return (
+    <article className="pm-reveal group relative bg-white border-2 border-black rounded-[20px] p-2.5 transition-all duration-300 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[7px_7px_0_#0A0A0A]">
+      <div className="relative overflow-hidden rounded-[14px] aspect-square bg-[#EDECE6]">
+        <button type="button" onClick={() => S.openProduct(p)} aria-label={`View ${p.name}`} className="absolute inset-0 w-full h-full">
+          <Img src={p.images[0]} alt={p.name} className="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-105" />
+          {p.images[1] && <Img src={p.images[1]} className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500" />}
+        </button>
+        <div className="absolute top-2 left-2 flex flex-col gap-1 pointer-events-none">
+          {i < 2 && st !== 'out' && <span className="h-5 px-2 inline-flex items-center text-[9px] font-black mono bg-[var(--pm-accent)] border border-black rounded-full">{S.c.hotBadge}</span>}
+          {pct > 0 && <span className="h-5 px-2 inline-flex items-center text-[9px] font-black mono bg-black text-white rounded-full">−{pct}%</span>}
+        </div>
+        <button type="button" onClick={() => S.toggleWish(p.id)} aria-label="Save" aria-pressed={S.isWished(p.id)} className={`absolute top-2 right-2 w-8 h-8 grid place-items-center rounded-full border-2 border-black transition ${S.isWished(p.id) ? 'bg-black text-[var(--pm-accent)]' : 'bg-white hover:bg-[var(--pm-accent)]'}`}><Ic.heart c="w-3.5 h-3.5" fill={S.isWished(p.id)} /></button>
+        {st === 'out'
+          ? <div className="absolute inset-0 bg-white/70 grid place-items-center pointer-events-none"><span className="mono text-[11px] font-bold bg-black text-white px-3 h-7 inline-flex items-center rounded-full">SOLD OUT</span></div>
+          : <button type="button" onClick={() => S.quickAdd(p)} aria-label={`Quick add ${p.name}`} className="absolute bottom-2 right-2 w-10 h-10 grid place-items-center rounded-full border-2 border-black bg-[var(--pm-accent)] md:translate-y-14 md:group-hover:translate-y-0 transition-transform duration-300 hover:rotate-90"><Ic.plus c="w-4 h-4" /></button>}
+      </div>
+      <button type="button" onClick={() => S.openProduct(p)} className="block w-full text-left mt-3 px-0.5">
+        <div className="text-[13px] font-bold truncate">{p.name}</div>
+        <div className="mt-0.5"><PriceLine p={p} S={S} big="text-[15px]" strike="text-[11px] opacity-45" /></div>
+        <div className={`mono mt-1.5 text-[9.5px] tracking-wide ${st === 'low' ? 'text-red-600 font-bold' : 'text-black/45'}`}>{st === 'low' ? `ONLY ${p.stock} LEFT` : p.sizes.length ? `SIZES ${p.sizes.slice(0, 4).join(' / ')}${p.sizes.length > 4 ? '…' : ''}` : `${S.c.freeShippingBadge || 'FREE DELIVERY'} • COD`}</div>
+      </button>
+    </article>
+  )
+}
+
+function SpikePremiumTheme({ S }: { S: any }) {
+  const { c, filtered } = S
+  const lines = splitLines(c.heroTitle)
+  const ticker = c.tickerText || S.chips.filter((x: string) => x.toLowerCase() !== 'all').join('  ✦  ') || 'FRESH DROPS'
+  const first = S.products[0]
+
+  return (
+    <div ref={S.rootRef} style={S.cssVars} className={`pm-spike relative min-h-screen antialiased overflow-x-clip ${SPIKE_SKIN.root}`}>
+      <style>{PM_BASE_CSS + SPIKE_CSS}</style>
+
+      {c.showAnnouncement && c.announcement && (
+        <div className="bg-black text-white h-9 flex items-center overflow-hidden mono text-[10.5px] tracking-[0.14em]">
+          <div className="pm-marquee flex whitespace-nowrap gap-10 pr-10">{[0, 1, 2, 3].map(k => <span key={k} className="flex gap-10">{[c.announcement, '✦'].map((t: string, j: number) => <span key={j} className={j ? 'text-[var(--pm-accent)]' : ''}>{t}</span>)}</span>)}</div>
+        </div>
+      )}
+
+      <header className="sticky top-0 z-30 bg-[#F2F1EC]/85 backdrop-blur-md border-b-2 border-black">
+        <div className="max-w-[1320px] mx-auto px-4 md:px-6 h-16 flex items-center justify-between gap-3">
+          <a href="#" onClick={e => e.preventDefault()} className="flex items-center gap-2.5 min-w-0">
+            {c.logoImage ? <img src={c.logoImage} alt={c.headerLabel} className="h-9 max-w-[160px] object-contain" /> : <>
+              <span className="w-9 h-9 shrink-0 grid place-items-center bg-[var(--pm-accent)] border-2 border-black rounded-[10px] font-[800] text-[16px] -rotate-6">{S.initial}</span>
+              <span className="font-[800] text-[18px] md:text-[20px] tracking-[-0.04em] uppercase truncate">{c.headerLabel}</span>
+            </>}
+          </a>
+          <div className="flex items-center gap-2">
+            <span className="hidden md:inline-flex mono items-center gap-2 h-8 px-3 rounded-full border-2 border-black bg-white text-[10px] font-bold"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />LIVE • {S.products.length} ITEMS</span>
+            <button type="button" onClick={e => { S.setSavedOnly(!S.savedOnly); S.scrollTo(e, 'pm-collection') }} aria-label="Saved items" className={`relative w-10 h-10 grid place-items-center rounded-full border-2 border-black transition ${S.savedOnly ? 'bg-black text-[var(--pm-accent)]' : 'bg-white hover:bg-[var(--pm-accent)]'}`}>
+              <Ic.heart c="w-4 h-4" fill={S.savedOnly} />{S.wish.length > 0 && <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 grid place-items-center rounded-full bg-black text-white text-[10px] font-bold">{S.wish.length}</span>}
+            </button>
+            <button type="button" onClick={S.openCart} className="h-10 pl-4 pr-1.5 inline-flex items-center gap-2.5 rounded-full bg-black text-white text-[13px] font-bold hover:-translate-y-0.5 transition">
+              <span className="hidden sm:inline">Cart</span><Ic.bag c="w-4 h-4 sm:hidden" />
+              <span className="min-w-[28px] h-7 px-2 grid place-items-center rounded-full bg-[var(--pm-accent)] text-black text-[12px] font-extrabold tabular-nums">{S.cartCount}</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* HERO */}
+      <section className="max-w-[1320px] mx-auto px-4 md:px-6 pt-8 md:pt-14 pb-10 grid lg:grid-cols-[1.18fr_0.82fr] gap-10 lg:gap-12 items-center">
+        <div>
+          <span className="pm-rise mono inline-flex items-center gap-2 h-8 px-3.5 rounded-full border-2 border-black bg-white text-[10.5px] font-bold tracking-widest uppercase"><span className="w-2 h-2 rounded-full bg-[var(--pm-accent)] border border-black animate-pulse" />{c.heroBadge}</span>
+          <h1 className="mt-5 text-[clamp(36px,5.6vw,84px)] leading-[0.88] uppercase font-[800] tracking-[-0.055em]">
+            {lines.map((l: string, i: number) => (
+              <span key={i} className="pm-rise block" style={{ animationDelay: `${120 + i * 110}ms` }}>
+                {i === lines.length - 1 && lines.length > 1 ? <span className="inline bg-[var(--pm-accent)] px-2 -mx-2 [box-decoration-break:clone]">{l}</span> : l}
+              </span>
+            ))}
+          </h1>
+          <p className="pm-rise mt-6 max-w-[460px] text-[15px] md:text-[16px] leading-[1.5] text-black/65" style={{ animationDelay: '480ms' }}>{c.heroSubtitle}</p>
+          <div className="pm-rise mt-7 flex flex-wrap gap-3" style={{ animationDelay: '600ms' }}>
+            <button type="button" onClick={e => S.scrollTo(e, 'pm-collection')} className={`h-[52px] px-7 text-[14px] font-bold inline-flex items-center gap-2.5 transition ${SPIKE_SKIN.btn}`}>{c.ctaText}<Ic.arrow c="w-4 h-4" /></button>
+            {c.secondaryCta && <button type="button" onClick={S.openCart} className="h-[52px] px-7 text-[14px] font-bold rounded-xl border-2 border-black bg-white hover:bg-black hover:text-white transition">{c.secondaryCta} ({S.cartCount})</button>}
+          </div>
+          {c.showStats && (
+            <div className="pm-rise mt-9 grid grid-cols-3 gap-2.5 max-w-[520px]" style={{ animationDelay: '720ms' }}>
+              {(c.stats || []).slice(0, 3).map((s: any, i: number) => (
+                <div key={i} className="group bg-white border-2 border-black rounded-2xl p-3.5 hover:bg-[var(--pm-accent)] transition-colors"><div className="text-[22px] md:text-[26px] font-[800] tracking-[-0.04em] leading-none">{s.value}</div><div className="mono mt-1.5 text-[10px] uppercase text-black/50 group-hover:text-black/70">{s.label}</div></div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="relative pm-rise" style={{ animationDelay: '300ms' }}>
+          <div className="relative bg-white border-2 border-black rounded-[30px] p-3 md:p-4 rotate-[-2deg] shadow-[12px_12px_0_#0A0A0A] hover:rotate-0 transition-transform duration-500">
+            <button type="button" onClick={() => first && S.openProduct(first)} aria-label="Open featured product" className="block w-full">
+              <Img src={S.heroImg} alt="" className="pm-float w-full aspect-[4/5] object-cover rounded-[22px]" />
+            </button>
+            {c.freeShippingBadge && <span className="mono absolute top-7 left-7 h-6 px-2.5 inline-flex items-center rounded-full bg-white border-2 border-black text-[10px] font-bold">{c.freeShippingBadge}</span>}
+            <div className="absolute left-6 right-6 bottom-6 bg-black text-white rounded-2xl p-3.5 flex items-center justify-between">
+              <div className="min-w-0"><div className="text-[12.5px] font-bold truncate">{c.trendingLabel || c.featuredLabel}</div><div className="mono text-[10px] text-white/55 truncate">{first ? first.name : `${S.products.length} curated drops`}</div></div>
+              <span className="w-9 h-9 shrink-0 grid place-items-center rounded-full bg-[var(--pm-accent)] text-black"><Ic.arrow c="w-4 h-4" /></span>
+            </div>
+          </div>
+          <div className="absolute -top-5 -right-2 md:-right-6 rotate-12" aria-hidden>
+            <div className="pm-float w-[104px] h-[104px] rounded-full bg-[var(--pm-accent)] border-2 border-black grid place-items-center text-center">
+              <span className="text-[15px] leading-[0.95] font-[800] uppercase tracking-[-0.03em] whitespace-pre-line">{splitLines(c.stickerText).join('\n')}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* TICKER BAND */}
+      <div className="my-6 -rotate-1 bg-[var(--pm-accent)] border-y-2 border-black overflow-hidden" aria-hidden>
+        <div className="flex whitespace-nowrap py-3 pm-marquee">{[0, 1].map(k => <span key={k} className="flex shrink-0 text-[22px] md:text-[28px] font-[800] uppercase tracking-[-0.03em] pr-10">{Array.from({ length: 6 }).map((_, j) => <span key={j} className="pr-10">{ticker} ✦</span>)}</span>)}</div>
+      </div>
+
+      {/* COLLECTION */}
+      <section id="pm-collection" className="max-w-[1320px] mx-auto px-4 md:px-6 pt-10 pb-6">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div><h2 className="text-[34px] md:text-[56px] leading-[0.9] font-[800] tracking-[-0.05em] uppercase">{c.collectionTitle}<span className="text-[var(--pm-accent)] [-webkit-text-stroke:2px_#0A0A0A]"> • {filtered.length}</span></h2>{c.collectionSubtitle && <p className="mono mt-2 text-[11px] uppercase tracking-widest text-black/45">{c.collectionSubtitle}</p>}</div>
+          <div className="flex flex-wrap gap-2 items-center">
+            {c.showSearch && <SearchBox S={S} className="w-[210px]" inputClass="h-11 rounded-full border-2 border-black bg-white text-[13px]" />}
+            {c.showSort && <SortSelect S={S} className="h-11 px-4 rounded-full border-2 border-black bg-white text-[13px] font-semibold" />}
+          </div>
+        </div>
+        <div className="mt-5 flex gap-2 overflow-x-auto pm-sb pb-1">
+          {S.chips.map((b: string) => <button type="button" key={b} onClick={() => S.setActive(b)} aria-pressed={S.active === b} className={`h-10 shrink-0 px-5 rounded-full border-2 border-black text-[13px] font-bold transition ${S.active === b ? 'bg-black text-white' : 'bg-white hover:bg-[var(--pm-accent)]'}`}>{b}</button>)}
+          {S.savedOnly && <button type="button" onClick={() => S.setSavedOnly(false)} className="h-10 shrink-0 px-4 rounded-full border-2 border-black bg-[var(--pm-accent)] text-[13px] font-bold inline-flex items-center gap-2">Saved only <Ic.x c="w-3.5 h-3.5" /></button>}
+        </div>
+        <div className="mt-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
+          {filtered.map((p: any, i: number) => <Card key={p.id} p={p} i={i} S={S} />)}
+        </div>
+        {filtered.length === 0 && (
+          <div className="mt-6 border-2 border-dashed border-black rounded-3xl py-16 text-center bg-white">
+            <div className="text-[22px] font-[800] tracking-[-0.03em]">Nothing matches that.</div>
+            <button type="button" onClick={() => { S.setQuery(''); S.setActive('All'); S.setSavedOnly(false) }} className={`mt-4 h-11 px-6 text-[13px] font-bold ${SPIKE_SKIN.btn}`}>Clear filters</button>
+          </div>
+        )}
+      </section>
+
+      {/* BENEFITS */}
+      {(c.trustBadges || []).length > 0 && (
+        <section className="max-w-[1320px] mx-auto px-4 md:px-6 py-12">
+          <h3 className="text-[28px] md:text-[40px] leading-[0.95] font-[800] tracking-[-0.05em] uppercase max-w-[560px]">{c.whyTitle}</h3>
+          <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {c.trustBadges.slice(0, 4).map((b: string, i: number) => (
+              <div key={i} className="pm-reveal bg-white border-2 border-black rounded-3xl p-5 hover:-translate-y-1 hover:shadow-[6px_6px_0_#0A0A0A] transition-all">
+                <div className="mono text-[11px] font-bold text-black/40">0{i + 1}</div>
+                <div className="mt-8 text-[20px] font-[800] tracking-[-0.03em] leading-[1.05]">{b}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* FOOTER */}
+      <footer className="mt-10 bg-black text-white overflow-hidden">
+        <div className="max-w-[1320px] mx-auto px-4 md:px-6 pt-14 pb-6">
+          <div className="grid md:grid-cols-[1.2fr_1fr] gap-8 items-start">
+            <p className="text-[15px] md:text-[17px] leading-[1.5] text-white/70 max-w-[520px]">{c.footerAbout}</p>
+            <div className="mono text-[12px] text-white/60 space-y-1.5 md:text-right">
+              {c.instagram && <div>IG — <span className="text-[var(--pm-accent)]">{c.instagram}</span></div>}
+              {c.address && <div>{c.address}</div>}
+              <div>WhatsApp — {S.profile?.whatsapp_number || ''}</div>
+            </div>
+          </div>
+          <div className="mt-10 text-[clamp(52px,17vw,240px)] leading-[0.8] font-[800] uppercase tracking-[-0.06em] text-transparent [-webkit-text-stroke:2px_var(--pm-accent)] select-none truncate">{c.headerLabel}</div>
+          <div className="mono mt-6 pt-5 border-t border-white/15 flex flex-wrap justify-between gap-2 text-[10.5px] text-white/40"><span>{c.footerNote || `© ${S.profile?.business_name || c.headerLabel}`}</span><span>COD • FREE SHIPPING OVER {S.m(Number(c.freeShippingOver) || 0)}</span></div>
+        </div>
+      </footer>
+
+      <Overlays S={S} skin={SPIKE_SKIN} layout="modal" />
+    </div>
+  )
+}
+
+/* ---------- ShoeAppPremiumTheme ---------- */
+/* SHOE APP — feels like a native shopping app: carousel, brand bubbles, rails, bottom tab bar. */
+const SHOE_SKIN = {
+  root: 'bg-[#F3F0FF] text-[#14112B]',
+  panel: 'bg-white text-[#14112B] rounded-t-[32px] md:rounded-[32px] shadow-[0_40px_100px_-30px_rgba(76,29,149,0.55)]',
+  drawer: 'bg-white text-[#14112B]',
+  scrim: 'bg-[#14112B]/50 backdrop-blur-sm',
+  muted: 'text-[#14112B]/55', line: 'border-[#14112B]/10', soft: 'bg-[#F3F0FF]',
+  chip: 'border-[#14112B]/15 bg-white hover:border-[var(--pm-accent)]', chipOn: 'bg-[var(--pm-accent)] text-white border-[var(--pm-accent)]', chipR: 'rounded-2xl',
+  btn: 'bg-[#14112B] text-white rounded-2xl', btnAlt: 'bg-[var(--pm-accent)] text-white rounded-2xl',
+  input: 'bg-[#F3F0FF] border border-transparent focus:border-[var(--pm-accent)] rounded-2xl',
+  title: 'font-[800] tracking-[-0.03em]',
+  dock: 'bg-white/95 backdrop-blur border-[#14112B]/10',
+}
+const SHOE_CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+.pm-shoe{font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+`
+
+function ShoeCard({ p, S, compact = false }: any) {
+  const pct = discountPct(p)
+  const st = stockState(p)
+  return (
+    <article className={`group relative ${compact ? 'w-[168px] md:w-[210px] shrink-0 snap-start' : ''}`}>
+      <div className="relative aspect-[4/5] overflow-hidden rounded-[26px] bg-gradient-to-b from-[#EAE4FF] to-[#F7F4FF]">
+        <button type="button" onClick={() => S.openProduct(p)} aria-label={`View ${p.name}`} className="absolute inset-0 w-full h-full">
+          <Img src={p.images[0]} alt={p.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.07]" />
+        </button>
+        <div className="absolute top-3 left-3 flex flex-col gap-1 pointer-events-none">{S.isHot(p) && <span className="h-6 px-2.5 inline-flex items-center rounded-full bg-[#14112B] text-[#E8FF86] text-[10px] font-bold">{S.c.hotBadge}</span>}{pct > 0 && <span className="h-6 px-2.5 inline-flex items-center rounded-full bg-[var(--pm-accent)] text-white text-[10px] font-bold">−{pct}%</span>}</div>
+        <button type="button" onClick={() => S.toggleWish(p.id)} aria-label="Save" aria-pressed={S.isWished(p.id)} className={`absolute top-3 right-3 w-9 h-9 grid place-items-center rounded-full backdrop-blur-md transition active:scale-90 ${S.isWished(p.id) ? 'bg-white text-red-500' : 'bg-white/70 text-[#14112B]'}`}><Ic.heart c="w-4 h-4" fill={S.isWished(p.id)} /></button>
+        {st === 'out'
+          ? <div className="absolute inset-x-3 bottom-3 h-9 grid place-items-center rounded-full bg-white/90 text-[11px] font-bold pointer-events-none">Sold out</div>
+          : <button type="button" onClick={() => S.quickAdd(p)} aria-label={`Quick add ${p.name}`} className="absolute bottom-3 right-3 w-11 h-11 grid place-items-center rounded-full bg-[#14112B] text-white shadow-lg active:scale-90 transition hover:bg-[var(--pm-accent)]"><Ic.plus c="w-5 h-5" /></button>}
+      </div>
+      <button type="button" onClick={() => S.openProduct(p)} className="block w-full text-left mt-3 px-1">
+        <div className="text-[13.5px] font-bold truncate">{p.name}</div>
+        <div className="mt-0.5 flex items-center justify-between gap-2"><PriceLine p={p} S={S} big="text-[14.5px]" strike="text-[11px] opacity-45" /></div>
+        {st === 'low' && <div className="mt-1 text-[10.5px] font-bold text-red-500">Only {p.stock} left</div>}
+        {st !== 'low' && p.sizes.length > 0 && <div className="mt-1 text-[10.5px] text-[#14112B]/45 font-medium truncate">Sizes {p.sizes.join(' · ')}</div>}
+      </button>
+    </article>
+  )
+}
+
+function ShoeAppPremiumTheme({ S }: { S: any }) {
+  const { c, filtered } = S
+  const [slide, setSlide] = useState(0)
+  const [paused, setPaused] = useState(false)
+  const touch = useRef<number | null>(null)
+  const slides = 3
+  useEffect(() => {
+    if (paused) return
+    const t = setInterval(() => setSlide(s => (s + 1) % slides), 5200)
+    return () => clearInterval(t)
+  }, [paused])
+
+  const brands = S.chips.filter((x: string) => x.toLowerCase() !== 'all')
+  const trending = S.products.slice(0, 6)
+  const focusSearch = (e: React.MouseEvent) => { const d = (e.currentTarget as HTMLElement).ownerDocument; (d.getElementById('pm-app-search') as HTMLInputElement | null)?.focus(); d.getElementById('pm-app-search')?.scrollIntoView({ behavior: 'smooth', block: 'center' }) }
+
+  return (
+    <div ref={S.rootRef} style={S.cssVars} className={`pm-shoe relative min-h-screen antialiased overflow-x-clip pb-28 md:pb-10 ${SHOE_SKIN.root}`}>
+      <style>{PM_BASE_CSS + SHOE_CSS}</style>
+
+      {c.showAnnouncement && c.announcement && (
+        <div className="bg-[#14112B] text-white h-8 flex items-center overflow-hidden text-[10.5px] font-semibold tracking-[0.12em]">
+          <div className="pm-marquee flex whitespace-nowrap gap-10 pr-10">{Array.from({ length: 8 }).map((_, k) => <span key={k} className="flex items-center gap-10">{c.announcement}<span className="text-[var(--pm-accent)]">●</span></span>)}</div>
+        </div>
+      )}
+
+      {/* App bar */}
+      <header className="sticky top-0 z-30 bg-[#F3F0FF]/80 backdrop-blur-xl">
+        <div className="max-w-[1180px] mx-auto px-4 md:px-6 h-[68px] flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            {c.logoImage ? <img src={c.logoImage} alt="" className="h-10 w-10 rounded-2xl object-cover" /> : <span className="w-11 h-11 shrink-0 grid place-items-center rounded-2xl bg-[var(--pm-accent)] text-white font-[800] text-[18px] shadow-[0_10px_24px_-8px_var(--pm-accent)]">{S.initial}</span>}
+            <div className="min-w-0"><div className="text-[11.5px] text-[#14112B]/55 font-medium truncate">{c.greeting}</div><div className="text-[16px] font-[800] tracking-[-0.02em] truncate">{c.headerLabel}</div></div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={() => S.setSavedOnly(!S.savedOnly)} aria-label="Saved items" aria-pressed={S.savedOnly} className={`relative w-11 h-11 grid place-items-center rounded-2xl transition active:scale-95 ${S.savedOnly ? 'bg-[var(--pm-accent)] text-white' : 'bg-white'}`}><Ic.heart c="w-[18px] h-[18px]" fill={S.savedOnly} />{S.wish.length > 0 && <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 grid place-items-center rounded-full bg-red-500 text-white text-[10px] font-bold">{S.wish.length}</span>}</button>
+            <button type="button" onClick={S.openCart} aria-label="Open cart" className="relative w-11 h-11 grid place-items-center rounded-2xl bg-[#14112B] text-white transition active:scale-95"><Ic.bag c="w-[18px] h-[18px]" />{S.cartCount > 0 && <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 grid place-items-center rounded-full bg-[var(--pm-accent)] text-white text-[10px] font-bold pm-pop">{S.cartCount}</span>}</button>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-[1180px] mx-auto px-4 md:px-6">
+        {c.showSearch && <SearchBox id="pm-app-search" S={S} className="mt-1" inputClass="h-[52px] rounded-2xl bg-white shadow-[0_10px_30px_-18px_rgba(76,29,149,0.5)] text-[14px] font-medium placeholder:text-[#14112B]/40" icon="w-[18px] h-[18px]" />}
+
+        {/* Hero carousel */}
+        <section className="mt-5 relative" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} aria-roledescription="carousel" aria-label="Highlights">
+          <div className="overflow-hidden rounded-[32px]" onTouchStart={e => { touch.current = e.touches[0].clientX }} onTouchEnd={e => { if (touch.current === null) return; const d = e.changedTouches[0].clientX - touch.current; if (Math.abs(d) > 40) setSlide(s => (s + (d < 0 ? 1 : slides - 1)) % slides); touch.current = null }}>
+            <div className="flex transition-transform duration-[700ms] ease-[cubic-bezier(.2,.8,.2,1)]" style={{ transform: `translateX(-${slide * 100}%)` }}>
+              {/* 1 hero */}
+              <div className="w-full shrink-0 relative min-h-[300px] md:min-h-[380px] p-6 md:p-10 grid md:grid-cols-2 items-center overflow-hidden text-white bg-[linear-gradient(135deg,var(--pm-accent),#2E1065_85%)]">
+                <div className="absolute -right-16 -top-16 w-72 h-72 rounded-full bg-white/10 blur-2xl" />
+                <div className="relative z-10">
+                  <span className="inline-flex h-7 px-3 items-center rounded-full bg-white/20 backdrop-blur text-[10.5px] font-bold tracking-widest">{c.heroBadge}</span>
+                  <h1 className="mt-3 text-[34px] md:text-[56px] leading-[0.98] font-[800] tracking-[-0.04em]">{splitLines(c.heroTitle).map((l: string, i: number) => <span key={i} className="block">{l}</span>)}</h1>
+                  <p className="mt-3 text-[13px] md:text-[14.5px] text-white/75 max-w-[360px] leading-[1.5]">{c.heroSubtitle}</p>
+                  <div className="mt-5 flex flex-wrap gap-2.5"><button type="button" onClick={e => S.scrollTo(e, 'pm-collection')} className="h-12 px-6 rounded-2xl bg-white text-[#14112B] text-[13.5px] font-bold inline-flex items-center gap-2 active:scale-95 transition hover:gap-3">{c.ctaText}<Ic.right c="w-4 h-4" /></button>{c.secondaryCta && <button type="button" onClick={S.openCart} className="h-12 px-5 rounded-2xl bg-white/15 backdrop-blur text-white text-[13.5px] font-bold active:scale-95 transition hover:bg-white/25">{c.secondaryCta}</button>}</div>
+                </div>
+                <div className="relative h-[190px] md:h-[300px] mt-4 md:mt-0">
+                  {c.featuredLabel && <span className="absolute right-0 top-0 z-10 h-7 px-3 inline-flex items-center rounded-full bg-[#E8FF86] text-[#14112B] text-[10.5px] font-extrabold tracking-wide shadow-lg">{c.featuredLabel}</span>}
+                  <div className="absolute right-0 md:right-4 top-1/2 -translate-y-1/2 h-full aspect-[4/5] rotate-[8deg]"><Img src={S.heroImg} alt="" className="pm-float w-full h-full object-cover rounded-[28px] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.6)]" /></div>
+                  <span className="absolute left-0 bottom-3 h-8 px-3 inline-flex items-center gap-1.5 rounded-full bg-white text-[#14112B] text-[11px] font-bold shadow-xl"><Ic.sparkle c="w-3.5 h-3.5 text-[var(--pm-accent)]" />{c.newDropLabel}</span>
+                </div>
+              </div>
+              {/* 2 promo */}
+              <div className="w-full shrink-0 relative min-h-[300px] md:min-h-[380px] p-6 md:p-10 flex items-center overflow-hidden text-white bg-[#111AFF]">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_15%,rgba(255,255,255,0.28),transparent_55%)]" />
+                <div className="relative z-10">
+                  <span className="inline-flex h-7 px-3 items-center rounded-full bg-white text-[#111AFF] text-[10.5px] font-extrabold tracking-widest">{c.promoBadge}</span>
+                  <div className="mt-3 text-[44px] md:text-[76px] leading-[0.92] font-[800] tracking-[-0.05em]">{splitLines(c.promoTitle).map((l: string, i: number) => <span key={i} className="block">{l}</span>)}</div>
+                  <button type="button" onClick={e => { S.setActive('Sale'); S.scrollTo(e, 'pm-collection') }} className="mt-5 h-12 px-6 rounded-2xl bg-[#E8FF86] text-black text-[13.5px] font-bold active:scale-95 transition">{c.promoCta}</button>
+                </div>
+                <Img src={S.products[1]?.images[0] || S.heroImg} alt="" className="hidden sm:block absolute right-6 md:right-12 bottom-[-18px] h-[88%] aspect-[4/5] object-cover rounded-[28px] -rotate-12 shadow-2xl" />
+              </div>
+              {/* 3 perks */}
+              <div className="w-full shrink-0 relative min-h-[300px] md:min-h-[380px] p-6 md:p-10 flex items-center overflow-hidden bg-[#E8FF86] text-[#14112B]">
+                <div className="relative z-10 max-w-[420px]">
+                  <span className="inline-flex h-7 px-3 items-center rounded-full bg-[#14112B] text-[#E8FF86] text-[10.5px] font-bold tracking-widest">MEMBERS</span>
+                  <div className="mt-3 text-[34px] md:text-[54px] leading-[0.98] font-[800] tracking-[-0.04em]">{splitLines(c.memberPerksTitle).map((l: string, i: number) => <span key={i} className="block">{l}</span>)}</div>
+                  <p className="mt-3 text-[13.5px] font-medium opacity-70">{c.memberPerksDesc}</p>
+                  <button type="button" onClick={S.openCart} className="mt-5 h-12 px-6 rounded-2xl bg-[#14112B] text-white text-[13.5px] font-bold active:scale-95 transition">{c.memberCta}</button>
+                </div>
+                <div className="hidden sm:grid absolute right-8 md:right-16 top-1/2 -translate-y-1/2 w-44 h-44 md:w-60 md:h-60 rounded-full border-[14px] border-[#14112B] place-items-center text-[#14112B]"><div className="text-center"><div className="text-[44px] md:text-[64px] font-[800] leading-none tracking-[-0.05em]">7</div><div className="text-[11px] md:text-[13px] font-bold uppercase tracking-widest">day returns</div></div></div>
+              </div>
+            </div>
+          </div>
+          <div className="absolute left-1/2 -translate-x-1/2 bottom-4 flex gap-1.5">{Array.from({ length: slides }).map((_, i) => <button key={i} type="button" onClick={() => setSlide(i)} aria-label={`Slide ${i + 1}`} aria-current={slide === i} className={`h-1.5 rounded-full transition-all duration-500 ${slide === i ? 'w-7 bg-white' : 'w-1.5 bg-white/50'}`} />)}</div>
+        </section>
+
+        {/* Brands */}
+        {brands.length > 0 && (
+          <section className="mt-7">
+            <div className="flex gap-4 overflow-x-auto pm-sb pb-1">
+              {S.chips.map((b: string) => {
+                const on = S.active === b
+                return (
+                  <button type="button" key={b} onClick={() => S.setActive(b)} aria-pressed={on} className="shrink-0 w-[68px] text-center group">
+                    <span className={`mx-auto w-[60px] h-[60px] grid place-items-center rounded-full text-[18px] font-[800] transition-all duration-300 ${on ? 'bg-[var(--pm-accent)] text-white scale-110 shadow-[0_14px_28px_-10px_var(--pm-accent)]' : 'bg-white text-[#14112B] group-hover:scale-105'}`}>{b.toLowerCase() === 'all' ? <Ic.grid c="w-5 h-5" /> : b.charAt(0).toUpperCase()}</span>
+                    <span className={`mt-2 block text-[11px] font-semibold truncate ${on ? 'text-[var(--pm-accent)]' : 'text-[#14112B]/55'}`}>{b}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* Trending rail */}
+        {trending.length > 1 && !S.query && S.active === 'All' && !S.savedOnly && (
+          <section className="mt-7 pm-reveal">
+            <div className="flex items-end justify-between"><h2 className="text-[20px] md:text-[24px] font-[800] tracking-[-0.03em]">Trending now</h2><button type="button" onClick={e => S.scrollTo(e, 'pm-collection')} className="text-[12.5px] font-bold text-[var(--pm-accent)]">See all</button></div>
+            <div className="mt-4 flex gap-3.5 overflow-x-auto pm-sb snap-x snap-mandatory pb-2 -mx-4 px-4 md:mx-0 md:px-0">{trending.map((p: any) => <ShoeCard key={p.id} p={p} S={S} compact />)}</div>
+          </section>
+        )}
+
+        {/* All shoes */}
+        <section id="pm-collection" className="mt-8">
+          <div className="flex items-end justify-between gap-3 flex-wrap">
+            <div><h2 className="text-[22px] md:text-[28px] font-[800] tracking-[-0.03em]">{c.collectionTitle} <span className="text-[#14112B]/35 font-semibold text-[16px]">{filtered.length}</span></h2>{c.collectionSubtitle && <p className="text-[12.5px] text-[#14112B]/55 mt-0.5">{c.collectionSubtitle}</p>}</div>
+            {c.showSort && <SortSelect S={S} className="h-10 px-4 rounded-full bg-white text-[12.5px] font-semibold border border-[#14112B]/10" />}
+          </div>
+          <div className="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3.5 gap-y-6 md:gap-x-5">
+            {filtered.map((p: any) => <div key={p.id} className="pm-reveal"><ShoeCard p={p} S={S} /></div>)}
+          </div>
+          {filtered.length === 0 && <div className="mt-6 rounded-[28px] bg-white py-14 text-center"><div className="text-[18px] font-[800]">No shoes found</div><button type="button" onClick={() => { S.setQuery(''); S.setActive('All'); S.setSavedOnly(false) }} className={`mt-4 h-11 px-6 text-[13px] font-bold ${SHOE_SKIN.btn}`}>Reset filters</button></div>}
+        </section>
+
+        {/* Stats + footer card */}
+        <footer className="mt-12 rounded-[32px] bg-[#14112B] text-white p-6 md:p-10">
+          {c.showStats && <div className="grid grid-cols-3 gap-3 pb-6 border-b border-white/10">{(c.stats || []).slice(0, 3).map((s: any, i: number) => <div key={i}><div className="text-[24px] md:text-[34px] font-[800] tracking-[-0.04em]">{s.value}</div><div className="text-[11.5px] text-white/50 font-medium">{s.label}</div></div>)}</div>}
+          <div className="pt-6 grid md:grid-cols-[1.4fr_1fr] gap-6 items-end">
+            <p className="text-[13.5px] md:text-[15px] text-white/65 leading-[1.6] max-w-[520px]">{c.footerAbout}</p>
+            <div className="text-[12.5px] text-white/55 space-y-1 md:text-right">{c.instagram && <div>Instagram <b className="text-[#E8FF86]">{c.instagram}</b></div>}{c.address && <div>{c.address}</div>}<div>{c.footerNote || `© ${S.profile?.business_name || c.headerLabel}`}</div></div>
+          </div>
+        </footer>
+      </main>
+
+      {/* Bottom tab bar (mobile) */}
+      <nav aria-label="Store" className="md:hidden fixed bottom-3 left-3 right-3 z-40 h-[66px] rounded-[26px] bg-[#14112B]/92 backdrop-blur-xl text-white grid grid-cols-4 shadow-[0_24px_50px_-14px_rgba(20,17,43,0.7)]">
+        {[
+          { k: 'home', l: 'Home', i: <Ic.home c="w-[21px] h-[21px]" />, f: (e: any) => { (e.currentTarget as HTMLElement).ownerDocument.defaultView?.scrollTo({ top: 0, behavior: 'smooth' }) }, on: false },
+          { k: 'search', l: 'Search', i: <Ic.search c="w-[21px] h-[21px]" />, f: focusSearch, on: !!S.query },
+          { k: 'saved', l: 'Saved', i: <Ic.heart c="w-[21px] h-[21px]" fill={S.savedOnly} />, f: () => S.setSavedOnly(!S.savedOnly), on: S.savedOnly },
+          { k: 'cart', l: 'Cart', i: <Ic.bag c="w-[21px] h-[21px]" />, f: S.openCart, on: false },
+        ].map(t => (
+          <button type="button" key={t.k} onClick={t.f} aria-label={t.l} className="relative flex flex-col items-center justify-center gap-0.5 active:scale-90 transition">
+            <span className={`h-8 w-12 grid place-items-center rounded-full transition-colors duration-300 ${t.on ? 'bg-[var(--pm-accent)]' : ''}`}>{t.i}</span>
+            <span className={`text-[10px] font-semibold ${t.on ? 'text-white' : 'text-white/55'}`}>{t.l}</span>
+            {t.k === 'cart' && S.cartCount > 0 && <span className="absolute top-1.5 right-[22%] min-w-[17px] h-[17px] px-1 grid place-items-center rounded-full bg-[#E8FF86] text-black text-[9.5px] font-extrabold">{S.cartCount}</span>}
+          </button>
+        ))}
+      </nav>
+
+      <Overlays S={S} skin={SHOE_SKIN} layout="sheet" />
+    </div>
+  )
+}
+
+/* ---------- TrenzoLuxuryTheme ---------- */
+/* TRENZO — quiet luxury. Near-black, champagne gold, serif display, arched imagery, hairlines. */
+const TRENZO_SKIN = {
+  root: 'bg-[#0B0B0C] text-[#F2EDE4]',
+  panel: 'bg-[#121213] text-[#F2EDE4] border border-white/10',
+  drawer: 'bg-[#101011] text-[#F2EDE4] border-l border-white/10',
+  scrim: 'bg-black/75 backdrop-blur-sm',
+  muted: 'text-[#F2EDE4]/55', line: 'border-white/12', soft: 'bg-white/[0.05]',
+  chip: 'border-white/20 hover:border-[var(--pm-accent)]', chipOn: 'border-[var(--pm-accent)] text-[var(--pm-accent)] bg-[var(--pm-accent)]/10', chipR: 'rounded-none',
+  btn: 'bg-[var(--pm-accent)] text-black uppercase tracking-[0.16em] text-[12px] rounded-none hover:brightness-110',
+  btnAlt: 'border border-[var(--pm-accent)] text-[var(--pm-accent)] rounded-none hover:bg-[var(--pm-accent)] hover:text-black',
+  input: 'bg-transparent border-0 border-b border-white/25 focus:border-[var(--pm-accent)] rounded-none',
+  title: '[font-family:var(--pm-display)] font-medium tracking-[-0.01em]',
+  dock: 'bg-[#0B0B0C]/95 backdrop-blur border-white/10',
+}
+const TRENZO_CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap');
+.pm-trenzo{font-family:'Jost',system-ui,sans-serif;--pm-display:'Cormorant Garamond',Georgia,serif}
+.pm-trenzo .serif{font-family:var(--pm-display)}
+@keyframes pmLine{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+`
+
+function Piece({ p, S }: any) {
+  const pct = discountPct(p)
+  const st = stockState(p)
+  return (
+    <article className="pm-reveal group">
+      <div className="relative aspect-[3/4] overflow-hidden bg-white/[0.04]">
+        <button type="button" onClick={() => S.openProduct(p)} aria-label={`View ${p.name}`} className="absolute inset-0 w-full h-full">
+          <Img src={p.images[0]} alt={p.name} className={`w-full h-full object-cover transition-transform duration-[1400ms] ease-[cubic-bezier(.2,.8,.2,1)] group-hover:scale-[1.06] ${st === 'out' ? 'opacity-40 grayscale' : ''}`} />
+          <span className="absolute inset-x-0 bottom-0 h-14 grid place-items-center bg-black/55 backdrop-blur-sm text-[11px] uppercase tracking-[0.28em] translate-y-full group-hover:translate-y-0 transition-transform duration-500">View piece</span>
+        </button>
+        <div className="absolute top-3 left-3 flex flex-col gap-1.5 pointer-events-none">
+          {S.isHot(p) && <span className="h-6 px-2.5 inline-flex items-center text-[9.5px] uppercase tracking-[0.2em] border border-[var(--pm-accent)] text-[var(--pm-accent)] bg-black/50 backdrop-blur">{S.c.hotBadge}</span>}
+          {st === 'out' && <span className="h-6 px-2.5 inline-flex items-center text-[9.5px] uppercase tracking-[0.2em] bg-white text-black">Sold out</span>}
+          {pct > 0 && <span className="h-6 px-2.5 inline-flex items-center text-[9.5px] uppercase tracking-[0.2em] bg-[var(--pm-accent)] text-black">−{pct}%</span>}
+        </div>
+        <button type="button" onClick={() => S.toggleWish(p.id)} aria-label="Save" aria-pressed={S.isWished(p.id)} className={`absolute top-3 right-3 w-9 h-9 grid place-items-center rounded-full border border-white/25 backdrop-blur-md transition ${S.isWished(p.id) ? 'text-[var(--pm-accent)] bg-black/60' : 'text-white bg-black/30 hover:bg-black/60'}`}><Ic.heart c="w-4 h-4" fill={S.isWished(p.id)} /></button>
+      </div>
+      <button type="button" onClick={() => S.openProduct(p)} className="block w-full text-left mt-4">
+        <div className="text-[10px] uppercase tracking-[0.28em] text-[#F2EDE4]/45">{p.category || 'Piece'}</div>
+        <div className="serif text-[22px] md:text-[24px] leading-[1.1] mt-1.5 group-hover:text-[var(--pm-accent)] transition-colors">{p.name}</div>
+        <div className="mt-2 flex items-baseline gap-2.5 text-[14px] tabular-nums"><span className="text-[var(--pm-accent)]">{S.m(p.price)}</span>{p.original_price > 0 && <span className="line-through text-white/30 text-[12px]">{S.m(p.original_price)}</span>}</div>
+      </button>
+    </article>
+  )
+}
+
+function TrenzoLuxuryTheme({ S }: { S: any }) {
+  const { c, filtered } = S
+  const [story, setStory] = useState(0)
+  const stories: any[] = Array.isArray(c.stories) && c.stories.length ? c.stories : []
+  const lines = splitLines(c.heroTitle)
+  const seal = `${c.eyebrow} • ${c.eyebrow} • `
+  const first = S.products[0]
+  const roman = ['I', 'II', 'III', 'IV']
+  const conciergeLink = () => window.open(`https://wa.me/${S.digits}?text=${encodeURIComponent(`Hello ${S.profile?.business_name || ''}, I would like some help with a private order.`)}`, '_blank')
+
+  return (
+    <div ref={S.rootRef} style={S.cssVars} className={`pm-trenzo relative min-h-screen antialiased overflow-x-clip ${TRENZO_SKIN.root}`}>
+      <style>{PM_BASE_CSS + TRENZO_CSS}</style>
+
+      {c.showAnnouncement && c.announcement && <div className="h-9 grid place-items-center text-[10px] uppercase tracking-[0.34em] text-[var(--pm-accent)] border-b border-white/10 px-4 truncate">✦&nbsp;&nbsp;{c.announcement}&nbsp;&nbsp;✦</div>}
+
+      <header className="sticky top-0 z-30 bg-[#0B0B0C]/80 backdrop-blur-xl border-b border-white/10">
+        <div className="max-w-[1360px] mx-auto px-5 md:px-8 h-[72px] grid grid-cols-[1fr_auto_1fr] items-center">
+          <nav className="hidden md:flex items-center gap-8 text-[11px] uppercase tracking-[0.26em]" aria-label="Sections">
+            <button type="button" onClick={e => S.scrollTo(e, 'pm-collection')} className="hover:text-[var(--pm-accent)] transition-colors">Collection</button>
+            {stories.length > 0 && <button type="button" onClick={e => S.scrollTo(e, 'pm-maison')} className="hover:text-[var(--pm-accent)] transition-colors">Maison</button>}
+            <button type="button" onClick={e => S.scrollTo(e, 'pm-concierge')} className="hover:text-[var(--pm-accent)] transition-colors">Concierge</button>
+          </nav>
+          <div className="md:hidden" />
+          <a href="#" onClick={e => e.preventDefault()} className="justify-self-center serif text-[22px] md:text-[28px] tracking-[0.34em] uppercase font-medium whitespace-nowrap">{c.logoImage ? <img src={c.logoImage} alt={c.headerLabel} className="h-9 max-w-[200px] object-contain" /> : <>✦ {c.headerLabel}</>}</a>
+          <div className="flex items-center justify-end gap-1.5">
+            <button type="button" onClick={() => S.setSavedOnly(!S.savedOnly)} aria-label="Saved pieces" aria-pressed={S.savedOnly} className={`relative w-10 h-10 grid place-items-center transition ${S.savedOnly ? 'text-[var(--pm-accent)]' : 'hover:text-[var(--pm-accent)]'}`}><Ic.heart c="w-[19px] h-[19px]" fill={S.savedOnly} />{S.wish.length > 0 && <span className="absolute top-1 right-0 min-w-[16px] h-4 px-1 grid place-items-center rounded-full bg-[var(--pm-accent)] text-black text-[9px] font-bold">{S.wish.length}</span>}</button>
+            <button type="button" onClick={S.openCart} aria-label="Open cart" className="relative h-10 pl-2 pr-1 inline-flex items-center gap-2 hover:text-[var(--pm-accent)] transition-colors"><Ic.bag c="w-[19px] h-[19px]" /><span className="text-[11px] uppercase tracking-[0.22em] hidden sm:inline">Bag</span><span className="min-w-[22px] h-[22px] px-1 grid place-items-center rounded-full border border-[var(--pm-accent)] text-[var(--pm-accent)] text-[11px] tabular-nums">{S.cartCount}</span></button>
+          </div>
+        </div>
+      </header>
+
+      {/* HERO */}
+      <section className="relative max-w-[1360px] mx-auto px-5 md:px-8 pt-12 md:pt-20 pb-20 grid lg:grid-cols-[1.1fr_0.9fr] gap-14 lg:gap-8 items-center min-h-[calc(100vh-110px)]">
+        <div>
+          <div className="pm-rise flex items-center gap-4 text-[10.5px] uppercase tracking-[0.34em] text-[var(--pm-accent)]"><span className="w-12 h-px bg-[var(--pm-accent)]" />{c.eyebrow}</div>
+          <h1 className="serif mt-7 text-[clamp(46px,7.4vw,112px)] leading-[0.93] font-light tracking-[-0.025em]">
+            {lines.map((l: string, i: number) => <span key={i} className={`pm-rise block ${i === 1 ? 'italic text-[var(--pm-accent)] pl-[0.6em]' : ''}`} style={{ animationDelay: `${160 + i * 140}ms` }}>{l}</span>)}
+          </h1>
+          <p className="pm-rise mt-8 max-w-[440px] text-[15px] leading-[1.75] text-[#F2EDE4]/60" style={{ animationDelay: '620ms' }}>{c.heroSubtitle}</p>
+          <div className="pm-rise mt-10 flex flex-wrap gap-4" style={{ animationDelay: '760ms' }}>
+            <button type="button" onClick={e => S.scrollTo(e, 'pm-collection')} className={`h-[54px] px-9 inline-flex items-center gap-3 font-medium transition ${TRENZO_SKIN.btn}`}>{c.ctaText}<Ic.right c="w-4 h-4" /></button>
+            {c.secondaryCta && <button type="button" onClick={conciergeLink} className={`h-[54px] px-9 text-[12px] uppercase tracking-[0.16em] transition ${TRENZO_SKIN.btnAlt}`}>{c.secondaryCta}</button>}
+          </div>
+          <div className="mt-14 hidden md:flex items-center gap-3 text-[10px] uppercase tracking-[0.34em] text-white/40"><span className="relative w-px h-12 bg-white/15 overflow-hidden"><span className="absolute inset-0 bg-[var(--pm-accent)]" style={{ animation: 'pmLine 2.4s ease-in-out infinite' }} /></span>Scroll</div>
+        </div>
+
+        <div className="relative mx-auto w-[min(82vw,430px)] pm-rise" style={{ animationDelay: '300ms' }}>
+          <div className="absolute -inset-4 rounded-t-[999px] border border-[var(--pm-accent)]/40" aria-hidden />
+          <button type="button" onClick={() => first && S.openProduct(first)} aria-label="Open featured piece" className="relative block w-full aspect-[3/4] rounded-t-[999px] overflow-hidden bg-white/5">
+            <Img src={S.heroImg} alt="" className="pm-ken w-full h-full object-cover" />
+            <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+            {c.heroBadge && <span className="absolute top-7 left-1/2 -translate-x-1/2 text-[10px] uppercase tracking-[0.34em] text-white/85 whitespace-nowrap">{c.heroBadge}</span>}
+            <span className="absolute left-0 right-0 bottom-6 px-6 text-left"><span className="block text-[10px] uppercase tracking-[0.3em] text-[var(--pm-accent)]">{c.featuredLabel}</span><span className="serif block text-[24px] leading-tight mt-1">{first?.name || ''}</span></span>
+          </button>
+          <svg viewBox="0 0 120 120" className="pm-spin absolute -left-8 md:-left-14 top-24 w-[104px] h-[104px] md:w-[124px] md:h-[124px] text-[var(--pm-accent)]" aria-hidden>
+            <defs><path id="pmSeal" d="M60,60 m-44,0 a44,44 0 1,1 88,0 a44,44 0 1,1 -88,0" /></defs>
+            <circle cx="60" cy="60" r="58" fill="#0B0B0C" stroke="currentColor" strokeOpacity=".5" />
+            <text fontSize="8.5" letterSpacing="2.6" fill="currentColor"><textPath href="#pmSeal">{seal.toUpperCase()}</textPath></text>
+            <text x="60" y="68" textAnchor="middle" fontSize="26" fill="currentColor">✦</text>
+          </svg>
+        </div>
+      </section>
+
+      {c.showStats && (
+        <div className="border-y border-white/10"><div className="max-w-[1360px] mx-auto px-5 md:px-8 grid grid-cols-3 divide-x divide-white/10">{(c.stats || []).slice(0, 3).map((s: any, i: number) => <div key={i} className="py-7 md:py-9 text-center"><div className="serif text-[34px] md:text-[52px] leading-none text-[var(--pm-accent)]">{s.value}</div><div className="mt-2 text-[10px] uppercase tracking-[0.3em] text-white/45">{s.label}</div></div>)}</div></div>
+      )}
+
+      {/* MAISON */}
+      {stories.length > 0 && (
+        <section id="pm-maison" className="max-w-[1360px] mx-auto px-5 md:px-8 py-24 md:py-32 grid lg:grid-cols-[0.8fr_1.2fr] gap-12 lg:gap-20 items-center">
+          <div className="pm-reveal relative aspect-[4/5] max-w-[460px] w-full overflow-hidden"><Img src={S.heroImg2} alt="" className="pm-ken w-full h-full object-cover" /><div className="absolute inset-4 border border-white/25 pointer-events-none" /></div>
+          <div className="pm-reveal">
+            <div className="text-[10.5px] uppercase tracking-[0.34em] text-[var(--pm-accent)]">{c.storiesTitle}</div>
+            <div className="mt-8 flex gap-2 flex-wrap" role="tablist">{stories.map((s: any, i: number) => <button type="button" role="tab" aria-selected={story === i} key={i} onClick={() => setStory(i)} className={`serif h-11 px-5 text-[17px] border transition ${story === i ? 'border-[var(--pm-accent)] text-[var(--pm-accent)] bg-[var(--pm-accent)]/10' : 'border-white/15 text-white/55 hover:border-white/40'}`}>{roman[i] || i + 1}. {s.title}</button>)}</div>
+            <div key={story} className="pm-fade mt-10"><div className="serif text-[clamp(34px,4.6vw,64px)] leading-[1] font-light">{stories[story]?.title}</div><p className="mt-5 text-[16px] md:text-[17px] leading-[1.8] text-[#F2EDE4]/60 max-w-[520px]">{stories[story]?.desc}</p></div>
+          </div>
+        </section>
+      )}
+
+      {/* COLLECTION */}
+      <section id="pm-collection" className="max-w-[1360px] mx-auto px-5 md:px-8 pb-24 pt-6">
+        <div className="text-center"><div className="text-[10.5px] uppercase tracking-[0.34em] text-[var(--pm-accent)]">{c.collectionSubtitle}</div><h2 className="serif mt-3 text-[clamp(40px,5.4vw,76px)] leading-none font-light">{c.collectionTitle}</h2></div>
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 border-y border-white/10 py-4">
+          {S.chips.map((b: string) => <button type="button" key={b} onClick={() => S.setActive(b)} aria-pressed={S.active === b} className={`relative text-[11px] uppercase tracking-[0.26em] py-1.5 transition-colors ${S.active === b ? 'text-[var(--pm-accent)]' : 'text-white/50 hover:text-white'}`}>{b}<span className={`absolute left-0 right-0 -bottom-0.5 h-px bg-[var(--pm-accent)] transition-transform duration-500 origin-left ${S.active === b ? 'scale-x-100' : 'scale-x-0'}`} /></button>)}
+        </div>
+        <div className="mt-6 flex flex-wrap gap-6 items-end justify-between">
+          {c.showSearch ? <SearchBox S={S} className="w-full sm:w-[300px]" inputClass={`h-11 text-[13px] ${TRENZO_SKIN.input}`} /> : <span />}
+          <div className="flex items-center gap-5 text-[11px] uppercase tracking-[0.22em] text-white/45"><span>{filtered.length} pieces</span>{c.showSort && <SortSelect S={S} className="h-10 bg-transparent border-b border-white/25 text-[11px] uppercase tracking-[0.18em] text-white" />}</div>
+        </div>
+        <div className="mt-12 grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 md:gap-x-8 gap-y-14">{filtered.map((p: any) => <Piece key={p.id} p={p} S={S} />)}</div>
+        {filtered.length === 0 && <div className="py-24 text-center"><div className="serif text-[32px]">Nothing found</div><button type="button" onClick={() => { S.setQuery(''); S.setActive('All'); S.setSavedOnly(false) }} className={`mt-6 h-12 px-8 ${TRENZO_SKIN.btnAlt} text-[12px] uppercase tracking-[0.18em]`}>Clear filters</button></div>}
+      </section>
+
+      {/* CONCIERGE */}
+      <section id="pm-concierge" className="border-y border-[var(--pm-accent)]/30 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.05),transparent_70%)]">
+        <div className="max-w-[900px] mx-auto px-5 py-24 md:py-32 text-center pm-reveal">
+          <div className="text-[var(--pm-accent)] text-[26px]">✦</div>
+          <h3 className="serif mt-4 text-[clamp(36px,5.4vw,72px)] leading-[1.02] font-light">{splitLines(c.conciergeTitle).map((l: string, i: number) => <span key={i} className={`block ${i === 1 ? 'italic text-[var(--pm-accent)]' : ''}`}>{l}</span>)}</h3>
+          <p className="mt-6 max-w-[520px] mx-auto text-[15px] leading-[1.8] text-white/55">{c.conciergeText}</p>
+          <button type="button" onClick={conciergeLink} className={`mt-10 h-[54px] px-10 inline-flex items-center gap-3 text-[12px] uppercase tracking-[0.2em] transition ${TRENZO_SKIN.btnAlt}`}><Ic.chat c="w-4 h-4" />{c.conciergeCta}</button>
+        </div>
+      </section>
+
+      <footer className="max-w-[1360px] mx-auto px-5 md:px-8 py-16 grid md:grid-cols-[1.4fr_1fr_1fr] gap-10 text-[13px] text-white/55">
+        <div><div className="serif text-[26px] tracking-[0.3em] uppercase text-[#F2EDE4]">✦ {c.headerLabel}</div><p className="mt-4 max-w-[360px] leading-[1.8]">{c.footerAbout}</p></div>
+        <div className="space-y-2"><div className="text-[10px] uppercase tracking-[0.3em] text-[var(--pm-accent)] mb-3">Contact</div>{c.instagram && <div>{c.instagram}</div>}{c.address && <div>{c.address}</div>}<div>{S.profile?.whatsapp_number}</div></div>
+        <div className="space-y-2"><div className="text-[10px] uppercase tracking-[0.3em] text-[var(--pm-accent)] mb-3">Service</div>{(c.trustBadges || []).map((b: string, i: number) => <div key={i}>{b}</div>)}</div>
+        <div className="md:col-span-3 pt-6 border-t border-white/10 text-[11px] tracking-[0.12em] text-white/35">{c.footerNote || `© ${S.profile?.business_name || c.headerLabel}`}</div>
+      </footer>
+
+      <Overlays S={S} skin={TRENZO_SKIN} layout="full" />
+    </div>
+  )
+}
+
+/* ---------- SleekBeigePremiumTheme ---------- */
+/* SLEEK BEIGE — warm boutique. Soft serif, terracotta, organic shapes, staggered grid. */
+const BEIGE_SKIN = {
+  root: 'bg-[#F3EEE6] text-[#2B2118]',
+  panel: 'bg-[#FBF8F3] text-[#2B2118] rounded-[34px] shadow-[0_40px_90px_-30px_rgba(60,40,20,0.5)]',
+  drawer: 'bg-[#FBF8F3] text-[#2B2118]',
+  scrim: 'bg-[#2B2118]/45 backdrop-blur-sm',
+  muted: 'text-[#2B2118]/60', line: 'border-[#2B2118]/12', soft: 'bg-[#EFE7DB]',
+  chip: 'border-[#2B2118]/18 bg-white/60 hover:border-[var(--pm-accent)]', chipOn: 'bg-[var(--pm-accent)] text-white border-[var(--pm-accent)]', chipR: 'rounded-full',
+  btn: 'bg-[#2B2118] text-[#FBF8F3] rounded-full hover:bg-[var(--pm-accent)]', btnAlt: 'bg-[var(--pm-accent)] text-white rounded-full hover:brightness-110',
+  input: 'bg-white/70 border border-[#2B2118]/12 focus:border-[var(--pm-accent)] rounded-2xl',
+  title: '[font-family:var(--pm-display)] font-medium tracking-[-0.02em]',
+  dock: 'bg-[#FBF8F3]/95 backdrop-blur border-[#2B2118]/10',
+}
+const BEIGE_CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400;1,9..144,500&family=DM+Sans:wght@400;500;600;700&display=swap');
+.pm-beige{font-family:'DM Sans',system-ui,sans-serif;--pm-display:'Fraunces',Georgia,serif}
+.pm-beige .serif{font-family:var(--pm-display)}
+`
+
+function Item({ p, S }: any) {
+  const pct = discountPct(p)
+  const st = stockState(p)
+  return (
+    <article className="pm-reveal group">
+      <div className="relative aspect-[4/5] overflow-hidden rounded-[30px] bg-[#E8DFD1] shadow-[0_20px_40px_-26px_rgba(60,40,20,0.55)]">
+        <button type="button" onClick={() => S.openProduct(p)} aria-label={`View ${p.name}`} className="absolute inset-0 w-full h-full">
+          <Img src={p.images[0]} alt={p.name} className={`w-full h-full object-cover transition-transform duration-[1100ms] group-hover:scale-[1.06] ${st === 'out' ? 'opacity-50' : ''}`} />
+        </button>
+        <div className="absolute top-3.5 left-3.5 flex gap-1.5 pointer-events-none">
+          {S.isHot(p) && <span className="h-7 px-3 inline-flex items-center rounded-full bg-[var(--pm-accent)] text-white text-[11px] font-bold">{S.c.hotBadge}</span>}
+          {pct > 0 && <span className="h-7 px-3 inline-flex items-center rounded-full bg-white/90 backdrop-blur text-[11px] font-bold text-[var(--pm-accent)]">−{pct}%</span>}
+          {st === 'out' && <span className="h-7 px-3 inline-flex items-center rounded-full bg-[#2B2118] text-white text-[11px] font-semibold">Sold out</span>}
+        </div>
+        <button type="button" onClick={() => S.toggleWish(p.id)} aria-label="Save" aria-pressed={S.isWished(p.id)} className={`absolute top-3.5 right-3.5 w-10 h-10 grid place-items-center rounded-full bg-white/80 backdrop-blur transition hover:scale-110 ${S.isWished(p.id) ? 'text-[var(--pm-accent)]' : 'text-[#2B2118]'}`}><Ic.heart c="w-[18px] h-[18px]" fill={S.isWished(p.id)} /></button>
+        {st !== 'out' && <button type="button" onClick={() => S.quickAdd(p)} className="absolute left-3.5 right-3.5 bottom-3.5 h-11 rounded-full bg-white/90 backdrop-blur text-[13px] font-semibold inline-flex items-center justify-center gap-2 md:translate-y-[140%] md:group-hover:translate-y-0 transition-transform duration-500 hover:bg-[#2B2118] hover:text-white"><Ic.plus c="w-4 h-4" />{p.sizes.length || p.colors.length ? 'Choose options' : 'Add to bag'}</button>}
+      </div>
+      <button type="button" onClick={() => S.openProduct(p)} className="block w-full text-left mt-4 px-1.5">
+        <div className="flex items-start justify-between gap-3"><div className="serif text-[19px] md:text-[21px] leading-[1.15] font-medium">{p.name}</div></div>
+        <div className="mt-1.5 flex items-center justify-between gap-2"><PriceLine p={p} S={S} big="text-[15px] text-[var(--pm-accent)]" strike="text-[12px] opacity-45" />{st === 'low' && <span className="text-[11px] font-semibold text-[var(--pm-accent)]">Only {p.stock} left</span>}</div>
+        {(p.colors.length > 0) && <div className="mt-2 text-[12px] text-[#2B2118]/50 truncate">{p.colors.join(' · ')}</div>}
+      </button>
+    </article>
+  )
+}
+
+function SleekBeigePremiumTheme({ S }: { S: any }) {
+  const { c, filtered } = S
+  const lines = splitLines(c.heroTitle)
+  const reviews: any[] = Array.isArray(c.testimonials) ? c.testimonials : []
+  const lookImg = c.lookbookImage || S.products[2]?.images[0] || S.heroImg2
+  const avatars = S.products.slice(0, 4).map((p: any) => p.images[0])
+
+  return (
+    <div ref={S.rootRef} style={S.cssVars} className={`pm-beige relative min-h-screen antialiased overflow-x-clip ${BEIGE_SKIN.root}`}>
+      <style>{PM_BASE_CSS + BEIGE_CSS}</style>
+
+      {c.showAnnouncement && c.announcement && <div className="h-9 grid place-items-center bg-[var(--pm-accent)] text-white text-[11px] font-medium tracking-[0.14em] px-4 truncate">{c.announcement}</div>}
+
+      <header className="sticky top-3 z-30 px-3 mt-3">
+        <div className="max-w-[1120px] mx-auto h-[62px] pl-5 pr-2.5 rounded-full bg-white/75 backdrop-blur-xl border border-white shadow-[0_14px_40px_-22px_rgba(60,40,20,0.6)] flex items-center justify-between gap-3">
+          <a href="#" onClick={e => e.preventDefault()} className="serif text-[21px] md:text-[24px] font-medium tracking-[-0.02em] truncate">{c.logoImage ? <img src={c.logoImage} alt={c.headerLabel} className="h-8 max-w-[150px] object-contain" /> : c.headerLabel}</a>
+          <nav className="hidden md:flex items-center gap-1 text-[13.5px] font-medium" aria-label="Sections">
+            {[['Shop', 'pm-collection'], ...(reviews.length ? [['Lookbook', 'pm-lookbook'], ['Reviews', 'pm-reviews']] : [['Lookbook', 'pm-lookbook']])].map(([l, id]) => <button type="button" key={id} onClick={e => S.scrollTo(e, id)} className="h-10 px-4 rounded-full hover:bg-[#2B2118]/[0.06] transition">{l}</button>)}
+          </nav>
+          <div className="flex items-center gap-1.5">
+            <button type="button" onClick={() => S.setSavedOnly(!S.savedOnly)} aria-label="Saved" aria-pressed={S.savedOnly} className={`relative w-11 h-11 grid place-items-center rounded-full transition ${S.savedOnly ? 'bg-[var(--pm-accent)] text-white' : 'hover:bg-[#2B2118]/[0.06]'}`}><Ic.heart c="w-[19px] h-[19px]" fill={S.savedOnly} />{S.wish.length > 0 && <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 grid place-items-center rounded-full bg-[#2B2118] text-white text-[9px] font-bold">{S.wish.length}</span>}</button>
+            <button type="button" onClick={S.openCart} className="h-11 pl-4 pr-2 rounded-full bg-[#2B2118] text-[#FBF8F3] inline-flex items-center gap-2.5 text-[13px] font-semibold hover:bg-[var(--pm-accent)] transition"><Ic.bag c="w-[17px] h-[17px]" /><span className="hidden sm:inline">Bag</span><span className="min-w-[26px] h-[26px] px-1.5 grid place-items-center rounded-full bg-white/20 text-[12px] tabular-nums">{S.cartCount}</span></button>
+          </div>
+        </div>
+      </header>
+
+      {/* HERO collage */}
+      <section className="max-w-[1180px] mx-auto px-5 md:px-8 pt-12 md:pt-20 pb-14 grid lg:grid-cols-[1fr_0.95fr] gap-14 items-center">
+        <div>
+          <span className="pm-rise inline-flex items-center gap-2 h-9 px-4 rounded-full bg-white/70 border border-white text-[12.5px] font-medium"><span className="w-2 h-2 rounded-full bg-[var(--pm-accent)]" />{c.heroBadge}</span>
+          <h1 className="serif mt-6 text-[clamp(42px,6.2vw,92px)] leading-[0.98] font-medium tracking-[-0.035em]">{lines.map((l: string, i: number) => <span key={i} className={`pm-rise block ${i === 1 ? 'italic font-normal text-[var(--pm-accent)]' : ''}`} style={{ animationDelay: `${120 + i * 120}ms` }}>{l}</span>)}</h1>
+          <p className="pm-rise mt-6 max-w-[440px] text-[16px] leading-[1.7] text-[#2B2118]/65" style={{ animationDelay: '520ms' }}>{c.heroSubtitle}</p>
+          <div className="pm-rise mt-8 flex flex-wrap gap-3" style={{ animationDelay: '640ms' }}>
+            <button type="button" onClick={e => S.scrollTo(e, 'pm-collection')} className={`h-[54px] px-8 text-[14px] font-semibold inline-flex items-center gap-2.5 transition ${BEIGE_SKIN.btn}`}>{c.ctaText}<Ic.right c="w-4 h-4" /></button>
+            {c.secondaryCta && <button type="button" onClick={S.openCart} className="h-[54px] px-8 text-[14px] font-semibold rounded-full border border-[#2B2118]/25 hover:bg-white/70 transition">{c.secondaryCta}</button>}
+          </div>
+          {c.showStats && <div className="pm-rise mt-10 flex items-center gap-4" style={{ animationDelay: '760ms' }}>
+            <div className="flex -space-x-3">{avatars.map((u: string, i: number) => <Img key={i} src={u} className="w-11 h-11 rounded-full object-cover border-[3px] border-[#F3EEE6]" />)}</div>
+            <div><div className="flex items-center gap-1 text-[var(--pm-accent)]">{[0, 1, 2, 3, 4].map(i => <Ic.star key={i} c="w-3.5 h-3.5" fill />)}<span className="ml-1.5 text-[13px] font-bold text-[#2B2118]">{c.stats?.[1]?.value}</span></div><div className="text-[12.5px] text-[#2B2118]/55 mt-0.5">{c.stats?.[0]?.value} {String(c.stats?.[0]?.label || '').toLowerCase()} • {c.stats?.[2]?.value} {String(c.stats?.[2]?.label || '').toLowerCase()}</div></div>
+          </div>}
+        </div>
+
+        <div className="relative mx-auto w-full max-w-[520px] pm-rise" style={{ animationDelay: '280ms' }}>
+          <div className="absolute -z-0 -top-8 -right-8 w-[78%] aspect-square rounded-full bg-[var(--pm-accent)]/25 blur-3xl" aria-hidden />
+          <div className="relative aspect-[4/5] rounded-[44px] rounded-bl-[170px] overflow-hidden shadow-[0_40px_80px_-30px_rgba(60,40,20,0.6)]"><Img src={S.heroImg} alt="" className="pm-ken w-full h-full object-cover" /></div>
+          <div className="absolute -bottom-8 -left-6 md:-left-12 w-[42%] aspect-square rounded-full overflow-hidden border-[8px] border-[#F3EEE6] shadow-xl"><Img src={S.heroImg2} alt="" className="w-full h-full object-cover" /></div>
+          <div className="absolute top-8 -right-3 md:-right-8 rounded-3xl bg-white/80 backdrop-blur-xl border border-white p-3.5 pr-5 shadow-xl pm-float"><div className="text-[10px] uppercase tracking-[0.18em] text-[var(--pm-accent)] font-bold">{c.featuredLabel}</div><div className="serif text-[17px] leading-tight mt-0.5 max-w-[150px] truncate">{S.products[0]?.name}</div><div className="text-[12.5px] font-bold mt-0.5">{S.products[0] ? S.m(S.products[0].price) : ''}</div></div>
+        </div>
+      </section>
+
+      {(c.trustBadges || []).length > 0 && (
+        <div className="max-w-[1180px] mx-auto px-5 md:px-8"><div className="rounded-full bg-white/60 border border-white py-4 px-6 flex flex-wrap items-center justify-center gap-x-9 gap-y-3 text-[13px] font-medium">{c.trustBadges.map((b: string, i: number) => <span key={i} className="inline-flex items-center gap-2.5"><span className="w-7 h-7 grid place-items-center rounded-full bg-[var(--pm-accent)]/12 text-[var(--pm-accent)]">{i === 0 ? <Ic.truck c="w-3.5 h-3.5" /> : i === 1 ? <Ic.undo c="w-3.5 h-3.5" /> : <Ic.check c="w-3.5 h-3.5" />}</span>{b}</span>)}</div></div>
+      )}
+
+      {/* COLLECTION — staggered columns */}
+      <section id="pm-collection" className="max-w-[1180px] mx-auto px-5 md:px-8 pt-24 pb-10">
+        <div className="text-center"><div className="text-[12.5px] font-semibold text-[var(--pm-accent)]">{c.collectionSubtitle}</div><h2 className="serif mt-2 text-[clamp(36px,4.8vw,64px)] leading-[1] font-medium tracking-[-0.03em]">{c.collectionTitle}</h2></div>
+        <div className="mt-8 flex flex-wrap justify-center gap-2">{S.chips.map((b: string) => <button type="button" key={b} onClick={() => S.setActive(b)} aria-pressed={S.active === b} className={`h-11 px-6 text-[13.5px] font-semibold border transition-all ${S.active === b ? BEIGE_SKIN.chipOn : BEIGE_SKIN.chip} rounded-full`}>{b}</button>)}</div>
+        <div className="mt-5 flex flex-wrap justify-center gap-3">{c.showSearch && <SearchBox S={S} className="w-full sm:w-[280px]" inputClass={`h-11 text-[13.5px] ${BEIGE_SKIN.input}`} />}{c.showSort && <SortSelect S={S} className="h-11 px-4 rounded-2xl bg-white/70 border border-[#2B2118]/12 text-[13px] font-medium" />}</div>
+        <div className="mt-12 grid grid-cols-2 lg:grid-cols-4 gap-x-4 md:gap-x-6 gap-y-10 lg:[&>*:nth-child(4n+2)]:mt-14 lg:[&>*:nth-child(4n+4)]:mt-14">{filtered.map((p: any) => <Item key={p.id} p={p} S={S} />)}</div>
+        {filtered.length === 0 && <div className="py-20 text-center rounded-[34px] bg-white/60 mt-8"><div className="serif text-[28px]">Nothing here yet</div><button type="button" onClick={() => { S.setQuery(''); S.setActive('All'); S.setSavedOnly(false) }} className={`mt-5 h-12 px-7 text-[13.5px] font-semibold ${BEIGE_SKIN.btn}`}>Clear filters</button></div>}
+      </section>
+
+      {/* LOOKBOOK */}
+      <section id="pm-lookbook" className="max-w-[1180px] mx-auto px-5 md:px-8 py-16 pm-reveal">
+        <div className="relative rounded-[44px] overflow-hidden min-h-[420px] md:min-h-[520px] flex items-end">
+          <Img src={lookImg} alt="" className="absolute inset-0 w-full h-full object-cover pm-ken" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#2B2118]/85 via-[#2B2118]/25 to-transparent" />
+          <div className="relative p-8 md:p-14 max-w-[620px] text-[#FBF8F3]"><div className="text-[12px] uppercase tracking-[0.22em] opacity-80">Lookbook</div><h3 className="serif mt-3 text-[clamp(34px,4.6vw,62px)] leading-[1.02] font-medium tracking-[-0.03em]">{c.lookbookTitle}</h3><p className="mt-4 text-[15px] leading-[1.7] opacity-80">{c.lookbookText}</p><button type="button" onClick={e => S.scrollTo(e, 'pm-collection')} className="mt-7 h-12 px-7 rounded-full bg-[#FBF8F3] text-[#2B2118] text-[13.5px] font-semibold inline-flex items-center gap-2 hover:gap-3.5 transition-all">Shop the look<Ic.right c="w-4 h-4" /></button></div>
+        </div>
+      </section>
+
+      {/* REVIEWS */}
+      {reviews.length > 0 && (
+        <section id="pm-reviews" className="max-w-[1180px] mx-auto px-5 md:px-8 pb-20">
+          <h3 className="serif text-center text-[clamp(30px,3.8vw,48px)] font-medium tracking-[-0.03em]">Kind words</h3>
+          <div className="mt-10 grid md:grid-cols-3 gap-5">{reviews.slice(0, 4).map((r: any, i: number) => (
+            <figure key={i} className="pm-reveal relative bg-white/75 border border-white rounded-[30px] p-7 shadow-[0_24px_50px_-34px_rgba(60,40,20,0.6)] hover:-translate-y-1.5 transition-transform duration-500">
+              <div className="serif text-[64px] leading-none text-[var(--pm-accent)]/35 absolute top-4 right-6" aria-hidden>”</div>
+              <div className="flex gap-0.5 text-[var(--pm-accent)]">{[0, 1, 2, 3, 4].map(k => <Ic.star key={k} c="w-4 h-4" fill />)}</div>
+              <blockquote className="mt-4 text-[15px] leading-[1.7] text-[#2B2118]/80">{r.text}</blockquote>
+              <figcaption className="mt-5 flex items-center gap-3 text-[13px] font-semibold"><span className="w-9 h-9 rounded-full bg-[var(--pm-accent)] text-white grid place-items-center">{String(r.name || '?').charAt(0)}</span>{r.name}</figcaption>
+            </figure>))}</div>
+        </section>
+      )}
+
+      <footer className="bg-[#2B2118] text-[#F3EEE6] rounded-t-[48px]">
+        <div className="max-w-[1180px] mx-auto px-5 md:px-8 py-14 grid md:grid-cols-[1.4fr_1fr] gap-8 items-end">
+          <div><div className="serif text-[34px] font-medium tracking-[-0.03em]">{c.headerLabel}</div><p className="mt-3 max-w-[420px] text-[14.5px] leading-[1.7] text-[#F3EEE6]/65">{c.footerAbout}</p></div>
+          <div className="text-[13px] text-[#F3EEE6]/60 space-y-1.5 md:text-right">{c.instagram && <div className="text-[var(--pm-accent)] font-semibold">{c.instagram}</div>}{c.address && <div>{c.address}</div>}<div>{S.profile?.whatsapp_number}</div><div className="pt-3 text-[11.5px] text-[#F3EEE6]/40">{c.footerNote || `© ${S.profile?.business_name || c.headerLabel}`}</div></div>
+        </div>
+      </footer>
+
+      <Overlays S={S} skin={BEIGE_SKIN} layout="modal" />
+    </div>
+  )
+}
+
+/* ---------- SleekDarkPremiumTheme ---------- */
+/* SLEEK DARK — tech noir. Grid-lines, neon accent, HUD frames, live stock, spotlight cards. */
+const DARK_SKIN = {
+  root: 'bg-[#06070A] text-[#E9ECEF]',
+  panel: 'bg-[#0D1014] text-[#E9ECEF] border border-white/10 rounded-2xl shadow-[0_40px_100px_-30px_#000]',
+  drawer: 'bg-[#0B0D11] text-[#E9ECEF] border-l border-white/10',
+  scrim: 'bg-black/75 backdrop-blur-md',
+  muted: 'text-[#E9ECEF]/55', line: 'border-white/10', soft: 'bg-white/[0.05]',
+  chip: 'border-white/15 hover:border-[var(--pm-accent)] bg-white/[0.03]', chipOn: 'border-[var(--pm-accent)] bg-[var(--pm-accent)] text-black', chipR: 'rounded-lg',
+  btn: 'bg-[var(--pm-accent)] text-black rounded-lg uppercase tracking-[0.08em] text-[12.5px] hover:brightness-110 shadow-[0_0_30px_-8px_var(--pm-accent)]',
+  btnAlt: 'border border-white/20 rounded-lg hover:border-[var(--pm-accent)] hover:text-[var(--pm-accent)]',
+  input: 'bg-white/[0.05] border border-white/12 focus:border-[var(--pm-accent)] rounded-lg',
+  title: '[font-family:var(--pm-display)] font-bold tracking-[-0.03em]',
+  dock: 'bg-[#0D1014]/95 backdrop-blur border-white/10',
+}
+const DARK_CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+.pm-dark{font-family:'Space Grotesk',system-ui,sans-serif;--pm-display:'Space Grotesk',system-ui,sans-serif}
+.pm-dark .mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+.pm-dark .gridbg{background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:56px 56px;-webkit-mask-image:radial-gradient(ellipse at 50% 30%,#000 25%,transparent 75%);mask-image:radial-gradient(ellipse at 50% 30%,#000 25%,transparent 75%)}
+.pm-dark .spot{position:relative}
+.pm-dark .spot::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .35s;background:radial-gradient(260px circle at var(--x,50%) var(--y,50%),color-mix(in srgb,var(--pm-accent) 22%,transparent),transparent 70%)}
+.pm-dark .spot:hover::before{opacity:1}
+@keyframes pmScan{0%{transform:translateY(-10%)}100%{transform:translateY(110%)}}
+@keyframes pmBlink{50%{opacity:0}}
+`
+
+const trackPointer = (e: React.MouseEvent<HTMLElement>) => { const r = e.currentTarget.getBoundingClientRect(); e.currentTarget.style.setProperty('--x', `${e.clientX - r.left}px`); e.currentTarget.style.setProperty('--y', `${e.clientY - r.top}px`) }
+
+function Counter({ value }: { value: string }) {
+  const m = String(value).match(/^(\D*)(\d[\d,.]*)(.*)$/)
+  const target = m ? parseFloat(m[2].replace(/,/g, '')) : NaN
+  const [n, setN] = useState(0)
+  useEffect(() => {
+    if (isNaN(target)) return
+    let raf = 0; const t0 = performance.now()
+    const tick = (t: number) => { const p = Math.min(1, (t - t0) / 1400); setN(target * (1 - Math.pow(1 - p, 4))); if (p < 1) raf = requestAnimationFrame(tick) }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [target])
+  if (!m || isNaN(target)) return <>{value}</>
+  const dec = m[2].includes('.') ? (m[2].split('.')[1] || '').length : 0
+  return <>{m[1]}{n.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec })}{m[3]}</>
+}
+
+function StockBar({ p }: { p: any }) {
+  if (p.stock === undefined) return null
+  const pct = Math.max(4, Math.min(100, (p.stock / 40) * 100))
+  const low = p.stock <= 5
+  return <div className="flex items-center gap-2.5 mono text-[10px]"><span className="h-1 flex-1 rounded-full bg-white/10 overflow-hidden"><span className={`block h-full rounded-full ${low ? 'bg-red-500' : 'bg-[var(--pm-accent)]'}`} style={{ width: `${pct}%` }} /></span><span className={low ? 'text-red-400' : 'text-white/45'}>{p.stock <= 0 ? 'OUT' : `${p.stock} LEFT`}</span></div>
+}
+
+function SleekDarkPremiumTheme({ S }: { S: any }) {
+  const { c, filtered } = S
+  const [view, setView] = useState<'grid' | 'list'>('grid')
+  const lines = splitLines(c.heroTitle)
+  const features: any[] = Array.isArray(c.features) ? c.features : []
+  const first = S.products[0]
+
+  return (
+    <div ref={S.rootRef} style={S.cssVars} className={`pm-dark relative min-h-screen antialiased overflow-x-clip ${DARK_SKIN.root}`}>
+      <style>{PM_BASE_CSS + DARK_CSS}</style>
+
+      <div className="mono h-9 border-b border-white/10 px-4 md:px-6 flex items-center justify-between text-[10.5px] text-white/50 tracking-wider">
+        <span className="inline-flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[var(--pm-accent)] animate-pulse shadow-[0_0_10px_var(--pm-accent)]" />{c.statusLine}</span>
+        {c.showAnnouncement && c.announcement && <span className="hidden md:block truncate max-w-[60%] text-[var(--pm-accent)]/80">{c.announcement}</span>}
+        <span>{S.products.length} UNITS</span>
+      </div>
+
+      <header className="sticky top-0 z-30 bg-[#06070A]/75 backdrop-blur-xl border-b border-white/10">
+        <div className="max-w-[1320px] mx-auto px-4 md:px-6 h-16 flex items-center justify-between gap-3">
+          <a href="#" onClick={e => e.preventDefault()} className="flex items-center gap-3 min-w-0">{c.logoImage ? <img src={c.logoImage} alt={c.headerLabel} className="h-8 max-w-[160px] object-contain" /> : <><span className="w-8 h-8 grid place-items-center rounded-lg bg-[var(--pm-accent)] text-black font-bold text-[15px]">{S.initial}</span><span className="mono text-[13px] font-semibold tracking-[0.12em] uppercase truncate">[ {c.headerLabel} ]</span></>}</a>
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={() => S.setSavedOnly(!S.savedOnly)} aria-label="Saved" aria-pressed={S.savedOnly} className={`relative w-10 h-10 grid place-items-center rounded-lg border transition ${S.savedOnly ? 'border-[var(--pm-accent)] text-[var(--pm-accent)] bg-[var(--pm-accent)]/10' : 'border-white/12 hover:border-white/30'}`}><Ic.heart c="w-4 h-4" fill={S.savedOnly} />{S.wish.length > 0 && <span className="absolute -top-1.5 -right-1.5 min-w-[17px] h-[17px] px-1 grid place-items-center rounded-full bg-[var(--pm-accent)] text-black text-[9.5px] font-bold">{S.wish.length}</span>}</button>
+            <button type="button" onClick={S.openCart} className="mono h-10 px-4 rounded-lg border border-[var(--pm-accent)]/60 text-[var(--pm-accent)] text-[12px] font-semibold tracking-wider inline-flex items-center gap-2 hover:bg-[var(--pm-accent)] hover:text-black transition"><Ic.bag c="w-4 h-4" />CART[{S.cartCount}]</button>
+          </div>
+        </div>
+      </header>
+
+      {/* HERO */}
+      <section className="relative overflow-hidden" onMouseMove={e => { const r = e.currentTarget.getBoundingClientRect(); e.currentTarget.style.setProperty('--mx', `${e.clientX - r.left}px`); e.currentTarget.style.setProperty('--my', `${e.clientY - r.top}px`) }}>
+        <div className="gridbg absolute inset-0 pointer-events-none" aria-hidden />
+        <div className="absolute inset-0 pointer-events-none opacity-70" style={{ background: 'radial-gradient(520px circle at var(--mx,70%) var(--my,20%), color-mix(in srgb, var(--pm-accent) 14%, transparent), transparent 65%)' }} aria-hidden />
+        <div className="relative max-w-[1320px] mx-auto px-4 md:px-6 pt-14 md:pt-24 pb-16 md:pb-24 grid lg:grid-cols-[1.1fr_0.9fr] gap-14 items-center">
+          <div>
+            <span className="pm-rise mono inline-flex items-center gap-2 h-8 px-3.5 rounded-lg border border-[var(--pm-accent)]/40 bg-[var(--pm-accent)]/[0.07] text-[var(--pm-accent)] text-[11px] tracking-[0.14em] uppercase">▌{c.heroBadge}</span>
+            <h1 className="mt-6 text-[clamp(42px,7vw,104px)] leading-[0.92] font-bold tracking-[-0.045em]">
+              {lines.map((l: string, i: number) => <span key={i} className={`pm-rise block pb-[0.1em] -mb-[0.06em] ${i === lines.length - 1 && lines.length > 1 ? 'text-[var(--pm-accent)] [text-shadow:0_0_42px_var(--pm-accent)]' : 'bg-gradient-to-b from-white to-white/45 bg-clip-text text-transparent'}`} style={{ animationDelay: `${140 + i * 120}ms` }}>{l}</span>)}
+            </h1>
+            <p className="pm-rise mt-7 max-w-[460px] text-[16px] leading-[1.65] text-white/55" style={{ animationDelay: '560ms' }}>{c.heroSubtitle}<span className="mono text-[var(--pm-accent)]" style={{ animation: 'pmBlink 1s steps(1) infinite' }}>▍</span></p>
+            <div className="pm-rise mt-9 flex flex-wrap gap-3" style={{ animationDelay: '680ms' }}>
+              <button type="button" onClick={e => S.scrollTo(e, 'pm-collection')} className={`h-[52px] px-8 font-bold inline-flex items-center gap-2.5 transition active:scale-[0.98] ${DARK_SKIN.btn}`}>{c.ctaText}<Ic.arrow c="w-4 h-4" /></button>
+              {c.secondaryCta && <button type="button" onClick={S.openCart} className={`h-[52px] px-8 text-[13px] font-semibold transition ${DARK_SKIN.btnAlt}`}>{c.secondaryCta}</button>}
+            </div>
+            {c.showStats && <div className="pm-rise mt-12 grid grid-cols-3 max-w-[520px] border-t border-white/10" style={{ animationDelay: '800ms' }}>{(c.stats || []).slice(0, 3).map((s: any, i: number) => <div key={i} className="pt-5 pr-3"><div className="mono text-[26px] md:text-[32px] font-semibold text-white tabular-nums"><Counter value={s.value} /></div><div className="mono mt-1 text-[10.5px] tracking-widest uppercase text-white/40">{s.label}</div></div>)}</div>}
+          </div>
+
+          <div className="relative pm-rise" style={{ animationDelay: '300ms' }}>
+            <button type="button" onClick={() => first && S.openProduct(first)} aria-label="Open featured unit" className="relative block w-full max-w-[460px] mx-auto aspect-[4/5] p-3 group">
+              <span className="absolute inset-0 rounded-2xl border border-white/10 bg-white/[0.02]" />
+              {['top-0 left-0 border-t-2 border-l-2 rounded-tl-xl', 'top-0 right-0 border-t-2 border-r-2 rounded-tr-xl', 'bottom-0 left-0 border-b-2 border-l-2 rounded-bl-xl', 'bottom-0 right-0 border-b-2 border-r-2 rounded-br-xl'].map(k => <span key={k} className={`absolute w-8 h-8 border-[var(--pm-accent)] ${k}`} />)}
+              <span className="relative block w-full h-full rounded-xl overflow-hidden">
+                <Img src={S.heroImg} alt="" className="w-full h-full object-cover pm-ken" />
+                <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
+                <span className="absolute inset-x-0 h-24 bg-gradient-to-b from-transparent via-[var(--pm-accent)]/15 to-transparent" style={{ animation: 'pmScan 4.2s linear infinite' }} />
+                <span className="mono absolute top-3 left-3 text-[10px] tracking-wider bg-black/60 backdrop-blur px-2 h-6 inline-flex items-center rounded">{c.featuredLabel}</span>
+                <span className="mono absolute bottom-3 left-3 right-3 flex items-end justify-between text-[10.5px]"><span><span className="block text-white/50">UNIT / 001</span><span className="block text-[13px] text-white font-medium truncate max-w-[200px]">{first?.name}</span></span>{first && <span className="text-[var(--pm-accent)] text-[15px] font-semibold">{S.m(first.price)}</span>}</span>
+              </span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {features.length > 0 && (
+        <section className="max-w-[1320px] mx-auto px-4 md:px-6 pb-20 grid md:grid-cols-3 gap-4">
+          {features.slice(0, 4).map((f: any, i: number) => (
+            <div key={i} onMouseMove={trackPointer} className="spot pm-reveal rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition hover:border-[var(--pm-accent)]/40">
+              <div className="mono text-[11px] text-[var(--pm-accent)]">0{i + 1} /</div>
+              <div className="mt-10 text-[20px] font-semibold tracking-[-0.02em]">{f.title}</div>
+              <p className="mt-2 text-[14px] leading-[1.6] text-white/50">{f.desc}</p>
+            </div>
+          ))}
+        </section>
+      )}
+
+      {/* INVENTORY */}
+      <section id="pm-collection" className="max-w-[1320px] mx-auto px-4 md:px-6 pb-20">
+        <div className="flex flex-wrap items-end justify-between gap-5 border-b border-white/10 pb-6">
+          <div><div className="mono text-[11px] tracking-[0.2em] text-[var(--pm-accent)]">{'//'} {c.hudLabel}</div><h2 className="mt-2 text-[clamp(30px,4.2vw,56px)] leading-none font-bold tracking-[-0.04em]">{c.collectionTitle} <span className="mono text-[0.4em] align-top text-white/35 font-medium">[{filtered.length}]</span></h2>{c.collectionSubtitle && <p className="mono mt-2 text-[11.5px] text-white/40">{c.collectionSubtitle}</p>}</div>
+          <div className="flex flex-wrap gap-2.5 items-center">
+            {c.showSearch && <SearchBox S={S} className="w-[210px]" inputClass={`h-10 text-[13px] ${DARK_SKIN.input}`} />}
+            {c.showSort && <SortSelect S={S} className="mono h-10 px-3 rounded-lg bg-white/[0.05] border border-white/12 text-[12px]" />}
+            <div className="inline-flex rounded-lg border border-white/12 overflow-hidden" role="group" aria-label="View">{(['grid', 'list'] as const).map(v => <button key={v} type="button" onClick={() => setView(v)} aria-pressed={view === v} aria-label={`${v} view`} className={`w-10 h-10 grid place-items-center transition ${view === v ? 'bg-[var(--pm-accent)] text-black' : 'hover:bg-white/10'}`}>{v === 'grid' ? <Ic.grid c="w-4 h-4" /> : <Ic.list c="w-4 h-4" />}</button>)}</div>
+          </div>
+        </div>
+        <div className="mt-5 flex gap-2 overflow-x-auto pm-sb pb-1">{S.chips.map((b: string) => <button type="button" key={b} onClick={() => S.setActive(b)} aria-pressed={S.active === b} className={`mono h-9 shrink-0 px-4 text-[12px] border transition ${S.active === b ? DARK_SKIN.chipOn : DARK_SKIN.chip} rounded-lg`}>{b}</button>)}</div>
+
+        {view === 'grid' ? (
+          <div className="mt-7 grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            {filtered.map((p: any, i: number) => {
+              const pct = discountPct(p); const st = stockState(p)
+              return (
+                <article key={p.id} onMouseMove={trackPointer} className="spot pm-reveal group rounded-2xl border border-white/10 bg-[#0B0D11] p-2.5 transition hover:border-[var(--pm-accent)]/45 hover:-translate-y-1 hover:shadow-[0_24px_50px_-24px_var(--pm-accent)]">
+                  <div className="relative aspect-square rounded-xl overflow-hidden bg-white/5">
+                    <button type="button" onClick={() => S.openProduct(p)} aria-label={`View ${p.name}`} className="absolute inset-0 w-full h-full"><Img src={p.images[0]} alt={p.name} className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.07] ${st === 'out' ? 'opacity-35 grayscale' : ''}`} /></button>
+                    <span className="mono absolute top-2 left-2 text-[9.5px] tracking-wider bg-black/65 backdrop-blur px-1.5 h-5 inline-flex items-center rounded">#{String(i + 1).padStart(3, '0')}</span>
+                    {S.isHot(p) && <span className="mono absolute bottom-2 right-2 text-[10px] font-bold bg-white text-black px-1.5 h-5 inline-flex items-center rounded">{S.c.hotBadge}</span>}
+                    {pct > 0 && <span className="mono absolute bottom-2 left-2 text-[10px] font-bold bg-[var(--pm-accent)] text-black px-1.5 h-5 inline-flex items-center rounded">−{pct}%</span>}
+                    <button type="button" onClick={() => S.toggleWish(p.id)} aria-label="Save" aria-pressed={S.isWished(p.id)} className={`absolute top-2 right-2 w-8 h-8 grid place-items-center rounded-lg bg-black/60 backdrop-blur transition ${S.isWished(p.id) ? 'text-[var(--pm-accent)]' : 'text-white hover:text-[var(--pm-accent)]'}`}><Ic.heart c="w-3.5 h-3.5" fill={S.isWished(p.id)} /></button>
+                  </div>
+                  <div className="pt-3 px-1 pb-1">
+                    <button type="button" onClick={() => S.openProduct(p)} className="block w-full text-left"><div className="text-[13.5px] font-semibold truncate">{p.name}</div><div className="mono mt-1 text-[10.5px] text-white/40 truncate">{p.category || 'UNIT'}{p.sizes.length ? ` · ${p.sizes.length} sizes` : ''}</div></button>
+                    <div className="mt-2.5"><StockBar p={p} /></div>
+                    <div className="mt-3 flex items-center justify-between"><div className="mono"><span className="text-[15px] font-semibold text-[var(--pm-accent)]">{S.m(p.price)}</span>{p.original_price > 0 && <span className="ml-2 text-[10.5px] line-through text-white/30">{S.m(p.original_price)}</span>}</div>
+                      <button type="button" disabled={st === 'out'} onClick={() => S.quickAdd(p)} aria-label={`Add ${p.name}`} className="w-9 h-9 grid place-items-center rounded-lg border border-white/15 hover:bg-[var(--pm-accent)] hover:text-black hover:border-[var(--pm-accent)] disabled:opacity-30 disabled:pointer-events-none transition"><Ic.plus c="w-4 h-4" /></button></div>
+                  </div>
+                </article>
+              )
+            })}
+          </div>
+        ) : (
+          <div className="mt-7 divide-y divide-white/10 border-y border-white/10">
+            {filtered.map((p: any, i: number) => {
+              const st = stockState(p)
+              return (
+                <div key={p.id} onMouseMove={trackPointer} className="spot pm-reveal group grid grid-cols-[64px_1fr_auto] md:grid-cols-[72px_1.4fr_1fr_140px_120px_48px] items-center gap-4 py-3.5 px-2 hover:bg-white/[0.03] transition">
+                  <button type="button" onClick={() => S.openProduct(p)} className="w-16 h-16 md:w-[72px] md:h-[72px] rounded-lg overflow-hidden bg-white/5"><Img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" /></button>
+                  <button type="button" onClick={() => S.openProduct(p)} className="text-left min-w-0"><div className="text-[14.5px] font-semibold truncate">{p.name}</div><div className="mono text-[10.5px] text-white/40 mt-0.5">#{String(i + 1).padStart(3, '0')} · {p.category || 'UNIT'}</div></button>
+                  <div className="hidden md:block"><StockBar p={p} /></div>
+                  <div className="hidden md:block mono text-[11px] text-white/40 truncate">{p.sizes.length ? p.sizes.join(' / ') : '—'}</div>
+                  <div className="mono text-right md:text-left"><div className="text-[15px] font-semibold text-[var(--pm-accent)]">{S.m(p.price)}</div>{p.original_price > 0 && <div className="text-[10.5px] line-through text-white/30">{S.m(p.original_price)}</div>}</div>
+                  <button type="button" disabled={st === 'out'} onClick={() => S.quickAdd(p)} aria-label={`Add ${p.name}`} className="hidden md:grid w-10 h-10 place-items-center rounded-lg border border-white/15 hover:bg-[var(--pm-accent)] hover:text-black disabled:opacity-30 transition"><Ic.plus c="w-4 h-4" /></button>
+                </div>
+              )
+            })}
+          </div>
+        )}
+        {filtered.length === 0 && <div className="mono mt-8 rounded-2xl border border-dashed border-white/20 py-16 text-center text-white/50">&gt; NO UNITS MATCH QUERY<br /><button type="button" onClick={() => { S.setQuery(''); S.setActive('All'); S.setSavedOnly(false) }} className={`mt-5 h-11 px-6 font-bold ${DARK_SKIN.btn}`}>RESET</button></div>}
+      </section>
+
+      <footer className="border-t border-white/10 mono text-[12px] text-white/50">
+        <div className="max-w-[1320px] mx-auto px-4 md:px-6 py-12 grid md:grid-cols-[1.4fr_1fr] gap-8">
+          <div><div className="text-[var(--pm-accent)]">&gt; about --{String(c.headerLabel).toLowerCase().replace(/\s+/g, '-')}</div><p className="mt-3 max-w-[460px] leading-[1.8] text-white/55">{c.footerAbout}</p></div>
+          <div className="space-y-1.5 md:text-right">{c.instagram && <div>ig: <span className="text-[var(--pm-accent)]">{c.instagram}</span></div>}{c.address && <div>loc: {c.address}</div>}<div>wa: {S.profile?.whatsapp_number}</div><div className="pt-3 text-white/30">{c.footerNote || `© ${S.profile?.business_name || c.headerLabel}`}</div></div>
+        </div>
+      </footer>
+
+      <Overlays S={S} skin={DARK_SKIN} layout="modal" />
+    </div>
+  )
+}
+
+/* ---------- SleekEditorialPremiumTheme ---------- */
+/* SLEEK EDITORIAL — a print magazine. Masthead, rules, numbered index, cursor-following image preview. */
+const EDITORIAL_SKIN = {
+  root: 'bg-[#FBFAF7] text-[#111111]',
+  panel: 'bg-[#FBFAF7] text-[#111111]',
+  drawer: 'bg-[#FBFAF7] text-[#111111] border-l border-black',
+  scrim: 'bg-black/45',
+  muted: 'text-black/55', line: 'border-black/15', soft: 'bg-black/[0.045]',
+  chip: 'border-black/25 hover:bg-black hover:text-white', chipOn: 'bg-black text-white border-black', chipR: 'rounded-none',
+  btn: 'bg-black text-white uppercase tracking-[0.16em] text-[12px] rounded-none hover:bg-[var(--pm-accent)]',
+  btnAlt: 'border border-black rounded-none uppercase tracking-[0.14em] text-[12px] hover:bg-black hover:text-white',
+  input: 'bg-transparent border-0 border-b border-black rounded-none focus:border-[var(--pm-accent)]',
+  title: '[font-family:var(--pm-display)] font-normal tracking-[-0.025em]',
+  dock: 'bg-[#FBFAF7]/95 backdrop-blur border-black/15',
+}
+const EDITORIAL_CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600;700&display=swap');
+.pm-edit{font-family:'Inter Tight',system-ui,sans-serif;--pm-display:'Instrument Serif',Georgia,serif}
+.pm-edit .serif{font-family:var(--pm-display)}
+.pm-edit .dropcap::first-letter{font-family:var(--pm-display);float:left;font-size:4.6em;line-height:.82;padding:.06em .1em 0 0;color:var(--pm-accent)}
+.pm-edit .rule3{border-top:1px solid #111;border-bottom:3px double #111}
+`
+
+function SleekEditorialPremiumTheme({ S }: { S: any }) {
+  const { c, filtered } = S
+  const [peek, setPeek] = useState<{ p: any; x: number; y: number } | null>(null)
+  const lines = splitLines(c.heroTitle)
+  const first = S.products[0]
+  const issue = S.products.slice(0, 4)
+  const feature = filtered.slice(0, 3)
+  const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+  const paras = String(c.editorLetter || '').split(/\n\n|\\n\\n/).filter(Boolean)
+  const fine = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(hover:hover)').matches : true
+
+  return (
+    <div ref={S.rootRef} style={S.cssVars} className={`pm-edit relative min-h-screen antialiased overflow-x-clip ${EDITORIAL_SKIN.root}`}>
+      <style>{PM_BASE_CSS + EDITORIAL_CSS}</style>
+
+      {c.showAnnouncement && c.announcement && <div className="h-9 grid place-items-center border-b border-black/15 text-[10.5px] uppercase tracking-[0.3em] px-4 truncate">{c.announcement}</div>}
+
+      {/* MASTHEAD */}
+      <div className="max-w-[1320px] mx-auto px-4 md:px-8 pt-5">
+        <div className="flex items-center justify-between text-[10.5px] uppercase tracking-[0.22em] text-black/60"><span className="hidden sm:block" suppressHydrationWarning>{today}</span><span className="text-[var(--pm-accent)] font-semibold">{c.issueLabel}</span><button type="button" onClick={S.openCart} className="inline-flex items-center gap-2 hover:text-[var(--pm-accent)] transition"><Ic.bag c="w-4 h-4" />Bag ({S.cartCount})</button></div>
+        <div className="py-4 md:py-6 text-center">
+          <a href="#" onClick={e => e.preventDefault()}>{c.logoImage ? <img src={c.logoImage} alt={c.headerLabel} className="h-14 md:h-20 mx-auto object-contain" /> : <span className="serif block text-[clamp(48px,11vw,168px)] leading-[0.88] tracking-[-0.045em]">{c.headerLabel}</span>}</a>
+        </div>
+      </div>
+      <nav className="sticky top-0 z-30 bg-[#FBFAF7]/92 backdrop-blur-md" aria-label="Filters">
+        <div className="max-w-[1320px] mx-auto px-4 md:px-8"><div className="rule3 h-[46px] flex items-center justify-between gap-4">
+          <div className="flex gap-x-6 overflow-x-auto pm-sb text-[11px] uppercase tracking-[0.22em]">{S.chips.map((b: string) => <button type="button" key={b} onClick={e => { S.setActive(b); S.scrollTo(e, 'pm-collection') }} aria-pressed={S.active === b} className={`shrink-0 py-1 border-b transition ${S.active === b ? 'border-[var(--pm-accent)] text-[var(--pm-accent)]' : 'border-transparent hover:border-black'}`}>{b}</button>)}</div>
+          <button type="button" onClick={() => S.setSavedOnly(!S.savedOnly)} aria-pressed={S.savedOnly} className={`shrink-0 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] transition ${S.savedOnly ? 'text-[var(--pm-accent)]' : 'hover:text-[var(--pm-accent)]'}`}><Ic.heart c="w-4 h-4" fill={S.savedOnly} /><span className="hidden sm:inline">Saved</span> {S.wish.length > 0 && `(${S.wish.length})`}</button>
+        </div></div>
+      </nav>
+
+      {/* COVER STORY */}
+      <section className="max-w-[1320px] mx-auto px-4 md:px-8 pt-10 md:pt-14 grid lg:grid-cols-12 gap-8 lg:gap-10">
+        <div className="lg:col-span-7">
+          <div className="pm-rise text-[11px] uppercase tracking-[0.3em] text-[var(--pm-accent)] font-semibold flex items-center gap-3"><span className="w-10 h-px bg-[var(--pm-accent)]" />{c.heroBadge}</div>
+          <h1 className="serif mt-5 text-[clamp(60px,10.5vw,176px)] leading-[0.84] tracking-[-0.04em]">{lines.map((l: string, i: number) => <span key={i} className={`pm-rise block ${i === 1 ? 'italic text-[var(--pm-accent)]' : ''}`} style={{ animationDelay: `${120 + i * 140}ms` }}>{l}</span>)}</h1>
+          <div className="pm-rise mt-8 grid sm:grid-cols-[1fr_auto] gap-6 items-end" style={{ animationDelay: '520ms' }}>
+            <p className="serif text-[22px] md:text-[26px] leading-[1.25] max-w-[540px] text-black/75">{c.heroSubtitle}</p>
+            <div className="flex flex-col gap-2.5">
+              <button type="button" onClick={e => S.scrollTo(e, 'pm-collection')} className={`h-[52px] px-8 inline-flex items-center justify-center gap-3 transition ${EDITORIAL_SKIN.btn}`}>{c.ctaText}<Ic.right c="w-4 h-4" /></button>
+              {c.secondaryCta && <button type="button" onClick={S.openCart} className={`h-[52px] px-8 transition ${EDITORIAL_SKIN.btnAlt}`}>{c.secondaryCta}</button>}
+            </div>
+          </div>
+        </div>
+        <figure className="lg:col-span-5 pm-rise" style={{ animationDelay: '240ms' }}>
+          <button type="button" onClick={() => first && S.openProduct(first)} aria-label="Open pictured product" className="relative block w-full overflow-hidden group cursor-pointer"><Img src={S.heroImg} alt="" className="w-full aspect-[4/5] object-cover transition-transform duration-[1600ms] group-hover:scale-[1.04]" /></button>
+          <figcaption className="mt-3 flex items-baseline justify-between gap-4 text-[11px] uppercase tracking-[0.2em] border-t border-black pt-3"><span><span className="text-[var(--pm-accent)] font-semibold">{c.featuredLabel}</span> — {first?.name}</span>{first && <span className="tabular-nums">{S.m(first.price)}</span>}</figcaption>
+        </figure>
+      </section>
+
+      {c.showStats && (c.stats || []).length > 0 && <section className="max-w-[1320px] mx-auto px-4 md:px-8 mt-14"><div className="grid grid-cols-3 border-y border-black/15 divide-x divide-black/15">{(c.stats || []).slice(0, 3).map((s: any, i: number) => <div key={i} className="py-6 md:py-8 text-center"><div className="serif text-[40px] md:text-[72px] leading-none tracking-[-0.03em]">{s.value}</div><div className="mt-2 text-[10.5px] uppercase tracking-[0.3em] text-black/50">{s.label}</div></div>)}</div></section>}
+
+      {/* IN THIS ISSUE */}
+      {issue.length > 0 && <section className="max-w-[1320px] mx-auto px-4 md:px-8 mt-16"><div className="rule3 py-3 text-[11px] uppercase tracking-[0.3em] flex justify-between"><span className="font-semibold">In this issue</span><span className="text-black/45">{S.products.length} pieces</span></div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-black/15 border-b border-black/15">{issue.map((p: any, i: number) => <button type="button" key={p.id} onClick={() => S.openProduct(p)} className="group text-left p-4 md:p-6 hover:bg-black hover:text-white transition-colors duration-500"><div className="serif text-[44px] md:text-[64px] leading-none text-[var(--pm-accent)]">{String(i + 1).padStart(2, '0')}</div><div className="mt-6 text-[14px] md:text-[15px] font-semibold leading-snug line-clamp-2">{p.name}</div><div className="mt-1 text-[12px] tabular-nums opacity-60">{S.m(p.price)}</div></button>)}</div></section>}
+
+      {/* LETTER + PULL QUOTE */}
+      <section className="max-w-[1320px] mx-auto px-4 md:px-8 py-20 md:py-28 grid lg:grid-cols-12 gap-10 lg:gap-16 pm-reveal">
+        <blockquote className="lg:col-span-6"><span className="serif block text-[120px] leading-[0.5] text-[var(--pm-accent)]" aria-hidden>“</span><p className="serif text-[clamp(34px,4.8vw,70px)] leading-[1.02] tracking-[-0.025em]">{c.pullQuote}</p><footer className="mt-6 text-[11px] uppercase tracking-[0.3em] text-black/55">— {c.pullQuoteBy}</footer></blockquote>
+        <div className="lg:col-span-6 lg:pt-6"><div className="text-[11px] uppercase tracking-[0.3em] font-semibold border-b border-black pb-3">{c.editorLetterTitle}</div><div className="mt-5 text-[15px] leading-[1.8] text-black/75 md:columns-2 gap-9 [&>p]:mb-4">{paras.map((t: string, i: number) => <p key={i} className={i === 0 ? 'dropcap' : ''}>{t}</p>)}</div></div>
+      </section>
+
+      {/* THE INDEX */}
+      <section id="pm-collection" className="max-w-[1320px] mx-auto px-4 md:px-8">
+        <div className="rule3 py-3 flex flex-wrap items-center justify-between gap-4">
+          <div><span className="text-[11px] uppercase tracking-[0.3em] font-semibold">{c.collectionTitle}</span>{c.collectionSubtitle && <span className="ml-4 text-[11px] uppercase tracking-[0.2em] text-black/45 hidden sm:inline">{c.collectionSubtitle}</span>}</div>
+          <div className="flex items-center gap-5">{c.showSearch && <SearchBox S={S} className="w-[180px]" inputClass={`h-9 text-[13px] ${EDITORIAL_SKIN.input}`} />}{c.showSort && <SortSelect S={S} className="h-9 bg-transparent border-b border-black text-[11px] uppercase tracking-[0.16em]" />}</div>
+        </div>
+        <div onMouseLeave={() => setPeek(null)}>
+          {filtered.map((p: any, i: number) => {
+            const pct = discountPct(p); const st = stockState(p)
+            return (
+              <div key={p.id} onMouseMove={e => fine && setPeek({ p, x: e.clientX, y: e.clientY })} className="group grid grid-cols-[34px_56px_1fr_auto] md:grid-cols-[64px_1fr_190px_150px_44px] items-center gap-3 md:gap-6 py-4 md:py-6 border-b border-black/15 hover:bg-black/[0.035] transition-colors">
+                <span className="serif text-[22px] md:text-[34px] text-black/35 group-hover:text-[var(--pm-accent)] transition-colors tabular-nums">{String(i + 1).padStart(2, '0')}</span>
+                <button type="button" onClick={() => S.openProduct(p)} aria-label={`View ${p.name}`} className="md:hidden"><Img src={p.images[0]} alt="" className="w-14 h-[70px] object-cover" /></button>
+                <button type="button" onClick={() => S.openProduct(p)} className="text-left min-w-0 md:col-start-2"><span className="serif block text-[24px] md:text-[clamp(30px,3.6vw,52px)] leading-[1] tracking-[-0.02em] truncate group-hover:italic group-hover:translate-x-2 transition-all duration-500">{p.name}{S.isHot(p) && <sup className="ml-3 align-top text-[10px] not-italic font-sans font-semibold uppercase tracking-[0.2em] text-[var(--pm-accent)]">{S.c.hotBadge}</sup>}</span><span className="md:hidden block mt-1 text-[11px] uppercase tracking-[0.16em] text-black/50">{p.category}</span></button>
+                <span className="hidden md:block text-[11px] uppercase tracking-[0.2em] text-black/50">{p.category || '—'}{st === 'low' && <span className="block text-[var(--pm-accent)] font-semibold mt-1">Only {p.stock} left</span>}{st === 'out' && <span className="block text-black font-semibold mt-1">Sold out</span>}</span>
+                <span className="text-right md:text-left tabular-nums text-[14px] md:text-[16px]">{S.m(p.price)}{pct > 0 && <span className="block text-[11px] text-black/40 line-through">{S.m(p.original_price)}</span>}</span>
+                <button type="button" disabled={st === 'out'} onClick={() => S.quickAdd(p)} aria-label={`Add ${p.name}`} className="hidden md:grid w-11 h-11 place-items-center border border-black hover:bg-black hover:text-white disabled:opacity-30 transition"><Ic.plus c="w-4 h-4" /></button>
+              </div>
+            )
+          })}
+        </div>
+        {filtered.length === 0 && <div className="py-24 text-center"><div className="serif text-[40px]">Nothing in this issue matches.</div><button type="button" onClick={() => { S.setQuery(''); S.setActive('All'); S.setSavedOnly(false) }} className={`mt-6 h-12 px-8 ${EDITORIAL_SKIN.btn}`}>Clear filters</button></div>}
+      </section>
+
+      {/* FEATURE SPREADS */}
+      {feature.length > 0 && <section className="max-w-[1320px] mx-auto px-4 md:px-8 pt-24 space-y-20 md:space-y-28">{feature.map((p: any, i: number) => {
+        const st = stockState(p)
+        return (
+          <article key={p.id} className={`pm-reveal grid md:grid-cols-12 gap-8 md:gap-12 items-center`}>
+            <button type="button" onClick={() => S.openProduct(p)} aria-label={`View ${p.name}`} className={`md:col-span-6 block overflow-hidden group ${i % 2 ? 'md:order-2' : ''}`}><Img src={p.images[0]} alt={p.name} className="w-full aspect-[4/5] object-cover transition-transform duration-[1600ms] group-hover:scale-[1.05]" /></button>
+            <div className="md:col-span-5 md:col-start-8"><div className="text-[11px] uppercase tracking-[0.3em] text-[var(--pm-accent)] font-semibold">Spread {String(i + 1).padStart(2, '0')} — {p.category || 'Featured'}</div><h3 className="serif mt-4 text-[clamp(40px,5.2vw,78px)] leading-[0.95] tracking-[-0.03em]">{p.name}</h3><p className="mt-5 text-[15px] leading-[1.75] text-black/65 line-clamp-4">{p.description || c.heroSubtitle}</p><div className="mt-6 flex items-baseline gap-3 tabular-nums"><span className="text-[24px] font-semibold">{S.m(p.price)}</span>{p.original_price > 0 && <span className="line-through text-black/35">{S.m(p.original_price)}</span>}</div><div className="mt-7 flex gap-3"><button type="button" onClick={() => S.openProduct(p)} className={`h-12 px-7 ${EDITORIAL_SKIN.btn}`}>Read more</button><button type="button" disabled={st === 'out'} onClick={() => S.quickAdd(p)} className={`h-12 px-7 disabled:opacity-30 ${EDITORIAL_SKIN.btnAlt}`}>{st === 'out' ? 'Sold out' : 'Add to bag'}</button></div></div>
+          </article>)
+      })}</section>}
+
+      {/* COLOPHON */}
+      <footer className="mt-28 border-t-[3px] border-double border-black">
+        <div className="max-w-[1320px] mx-auto px-4 md:px-8 py-12 grid md:grid-cols-[1.4fr_1fr_1fr] gap-10 text-[13px] text-black/65">
+          <div><div className="serif text-[40px] leading-none text-black tracking-[-0.03em]">{c.headerLabel}</div><p className="mt-4 max-w-[380px] leading-[1.75]">{c.footerAbout}</p></div>
+          <div className="space-y-1.5"><div className="text-[10.5px] uppercase tracking-[0.3em] text-[var(--pm-accent)] font-semibold mb-3">Colophon</div>{c.instagram && <div>{c.instagram}</div>}{c.address && <div>{c.address}</div>}<div>{S.profile?.whatsapp_number}</div></div>
+          <div className="space-y-1.5"><div className="text-[10.5px] uppercase tracking-[0.3em] text-[var(--pm-accent)] font-semibold mb-3">Service</div>{(c.trustBadges || []).map((b: string, i: number) => <div key={i}>{b}</div>)}</div>
+        </div>
+        <div className="border-t border-black/15 py-4 text-center text-[10.5px] uppercase tracking-[0.26em] text-black/40">{c.footerNote || `© ${S.profile?.business_name || c.headerLabel}`}</div>
+      </footer>
+
+      {/* cursor-following image preview for the index */}
+      {peek && !S.sel && <div aria-hidden className="hidden md:block fixed z-40 pointer-events-none w-[230px] aspect-[4/5] overflow-hidden border border-black shadow-[0_30px_60px_-20px_rgba(0,0,0,0.45)] pm-fade" style={{ left: Math.min(peek.x + 28, (S.rootRef.current?.ownerDocument.defaultView?.innerWidth || 1200) - 260), top: Math.max(12, peek.y - 150) }}><Img src={peek.p.images[0]} alt="" className="w-full h-full object-cover" /></div>}
+
+      <Overlays S={S} skin={EDITORIAL_SKIN} layout="full" />
+    </div>
+  )
+}
+
+/* ============================== 4. RENDERER ============================== */
 const THEME_VIEWS: Record<string, (p: { S: any }) => any> = {
   'spike-premium': SpikePremiumTheme,
   'shoe-app-premium': ShoeAppPremiumTheme,
