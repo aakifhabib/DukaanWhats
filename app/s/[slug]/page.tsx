@@ -1,4 +1,3 @@
-
 'use client'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
@@ -6,7 +5,7 @@ import { PremiumThemeRenderer } from '@/components/PremiumThemeRenderer'
 import { STORE_THEMES, getTheme } from '@/lib/storeThemes'
 import Link from 'next/link'
 
-type Product = { id: string; name: string; price: number; image_url: string; image_urls?: string[]; description?: string; category?: string; user_id: string }
+type Product = { id: string; name: string; price: number; image_url: string; image_urls?: string[]; description?: string; category?: string; user_id: string; original_price?: number; stock?: number; sizes?: string[]; colors?: string[]; created_at?: string }
 
 // Basic theme fallback (for non-premium)
 function BasicTheme({ profile, products, cart, onAdd, onOpen }: any) {
@@ -71,6 +70,9 @@ export default function StorePage({ params }: { params: { slug: string } }) {
     track('product_view', p.id)
   }
 
+  // Lets customers remove an item from the cart drawer (index into the cart array)
+  const onRemove = (index: number) => setCart(prev => prev.filter((_, i) => i !== index))
+
   if(loading) return <div className="min-h-screen bg-[#F8F7F5] grid place-items-center"><div className="w-6 h-6 border-2 border-black border-t-transparent rounded-full animate-spin" /></div>
   if(!profile) return <div className="min-h-screen grid place-items-center bg-[#F8F7F5]"><div className="text-center"><div className="font-black text-[20px]">Store not found</div><div className="mt-2 text-[12px] opacity-60">Slug: {slug}</div><Link href="/" className="mt-4 inline-block h-9 px-4 bg-black text-white rounded-full grid place-items-center text-[12px] font-bold">Go Home</Link></div></div>
 
@@ -97,6 +99,7 @@ export default function StorePage({ params }: { params: { slug: string } }) {
     track,
     selectedProduct,
     setSelectedProduct,
+    onRemove,
   }
 
   if(isPremium) {
