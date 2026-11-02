@@ -1,179 +1,202 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
-type Product = { id: string; name: string; price: number; image_url: string; image_urls?: string[]; original_price?: number; description?: string }
+/* SHOE APP — feels like a native shopping app: carousel, brand bubbles, rails, bottom tab bar. */
+const SKIN = {
+  root: 'bg-[#F3F0FF] text-[#14112B]',
+  panel: 'bg-white text-[#14112B] rounded-t-[32px] md:rounded-[32px] shadow-[0_40px_100px_-30px_rgba(76,29,149,0.55)]',
+  drawer: 'bg-white text-[#14112B]',
+  scrim: 'bg-[#14112B]/50 backdrop-blur-sm',
+  muted: 'text-[#14112B]/55', line: 'border-[#14112B]/10', soft: 'bg-[#F3F0FF]',
+  chip: 'border-[#14112B]/15 bg-white hover:border-[var(--pm-accent)]', chipOn: 'bg-[var(--pm-accent)] text-white border-[var(--pm-accent)]', chipR: 'rounded-2xl',
+  btn: 'bg-[#14112B] text-white rounded-2xl', btnAlt: 'bg-[var(--pm-accent)] text-white rounded-2xl',
+  input: 'bg-[#F3F0FF] border border-transparent focus:border-[var(--pm-accent)] rounded-2xl',
+  title: 'font-[800] tracking-[-0.03em]',
+  dock: 'bg-white/95 backdrop-blur border-[#14112B]/10',
+}
+const CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+.pm-shoe{font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+`
 
-export function ShoeAppPremiumTheme({ profile, products, cart, setShowCart, onAdd, onOpen, track, selectedProduct, setSelectedProduct }: any) {
-  const [activeFilter, setActiveFilter] = useState('All')
-  const [activeSize, setActiveSize] = useState(31)
-  const [activeColor, setActiveColor] = useState(0)
-  const [customerName, setCustomerName] = useState('')
-  const [customerAddress, setCustomerAddress] = useState('')
-  const [localShowCart, setLocalShowCart] = useState(false)
-  const [qty, setQty] = useState(1)
-  const [liked, setLiked] = useState<string[]>([])
-  const [selectedShoe, setSelectedShoe] = useState<Product | null>(null)
-  const [showSizeGuide, setShowSizeGuide] = useState(false)
+function ShoeCard({ p, S, compact = false }: any) {
+  const { Ic, Img, PriceLine, discountPct, stockState } = S.ui
+  const pct = discountPct(p)
+  const st = stockState(p)
+  return (
+    <article className={`group relative ${compact ? 'w-[168px] md:w-[210px] shrink-0 snap-start' : ''}`}>
+      <div className="relative aspect-[4/5] overflow-hidden rounded-[26px] bg-gradient-to-b from-[#EAE4FF] to-[#F7F4FF]">
+        <button type="button" onClick={() => S.openProduct(p)} aria-label={`View ${p.name}`} className="absolute inset-0 w-full h-full">
+          <Img src={p.images[0]} alt={p.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.07]" />
+        </button>
+        <div className="absolute top-3 left-3 flex flex-col gap-1 pointer-events-none">{S.isHot(p) && <span className="h-6 px-2.5 inline-flex items-center rounded-full bg-[#14112B] text-[#E8FF86] text-[10px] font-bold">{S.c.hotBadge}</span>}{pct > 0 && <span className="h-6 px-2.5 inline-flex items-center rounded-full bg-[var(--pm-accent)] text-white text-[10px] font-bold">−{pct}%</span>}</div>
+        <button type="button" onClick={() => S.toggleWish(p.id)} aria-label="Save" aria-pressed={S.isWished(p.id)} className={`absolute top-3 right-3 w-9 h-9 grid place-items-center rounded-full backdrop-blur-md transition active:scale-90 ${S.isWished(p.id) ? 'bg-white text-red-500' : 'bg-white/70 text-[#14112B]'}`}><Ic.heart c="w-4 h-4" fill={S.isWished(p.id)} /></button>
+        {st === 'out'
+          ? <div className="absolute inset-x-3 bottom-3 h-9 grid place-items-center rounded-full bg-white/90 text-[11px] font-bold pointer-events-none">Sold out</div>
+          : <button type="button" onClick={() => S.quickAdd(p)} aria-label={`Quick add ${p.name}`} className="absolute bottom-3 right-3 w-11 h-11 grid place-items-center rounded-full bg-[#14112B] text-white shadow-lg active:scale-90 transition hover:bg-[var(--pm-accent)]"><Ic.plus c="w-5 h-5" /></button>}
+      </div>
+      <button type="button" onClick={() => S.openProduct(p)} className="block w-full text-left mt-3 px-1">
+        <div className="text-[13.5px] font-bold truncate">{p.name}</div>
+        <div className="mt-0.5 flex items-center justify-between gap-2"><PriceLine p={p} S={S} big="text-[14.5px]" strike="text-[11px] opacity-45" /></div>
+        {st === 'low' && <div className="mt-1 text-[10.5px] font-bold text-red-500">Only {p.stock} left</div>}
+        {st !== 'low' && p.sizes.length > 0 && <div className="mt-1 text-[10.5px] text-[#14112B]/45 font-medium truncate">Sizes {p.sizes.join(' · ')}</div>}
+      </button>
+    </article>
+  )
+}
 
-  const cartCount = cart?.length || 0
-  const cartTotal = cart?.reduce((s:any,p:any)=>s+p.price,0) || 0
-  const openCart = () => { setLocalShowCart(true); if(setShowCart) setShowCart(true) }
-  const closeCart = () => { setLocalShowCart(false); if(setShowCart) setShowCart(false) }
+export function ShoeAppPremiumTheme({ S }: { S: any }) {
+  const { Ic, Img, SearchBox, SortSelect, Overlays, PM_BASE_CSS, splitLines } = S.ui
+  const { c, filtered } = S
+  const [slide, setSlide] = useState(0)
+  const [paused, setPaused] = useState(false)
+  const touch = useRef<number | null>(null)
+  const slides = 3
+  useEffect(() => {
+    if (paused) return
+    const t = setInterval(() => setSlide(s => (s + 1) % slides), 5200)
+    return () => clearInterval(t)
+  }, [paused])
 
-  const colors = [
-    { name: 'Violet', bg: '#7C3AED' },
-    { name: 'Midnight', bg: '#0A0A0A' },
-    { name: 'Cloud', bg: '#E8E8F0' },
-    { name: 'Coral', bg: '#FF5A5A' },
-    { name: 'Lime', bg: '#E8FF86' },
-  ]
-  const sizes = [28,29,30,31,32,33,34]
-
-  useEffect(()=>{ if(products[0] && !selectedShoe) setSelectedShoe(products[0]) },[products])
-
-  const filtered = activeFilter==='All' ? products : products.filter((p:any)=> (p.name+p.category||'').toLowerCase().includes(activeFilter.toLowerCase()))
-  const toggleLike = (id:string)=> setLiked(prev=> prev.includes(id) ? prev.filter(x=>x!==id) : [...prev,id])
-  const orderWhatsApp = ()=>{
-    if(!profile || cart.length===0) return
-    if(!customerName.trim()){ alert('Please enter your name'); return }
-    if(!customerAddress.trim()){ alert('Please enter your address'); return }
-    cart.forEach((p:any)=>track?.('whatsapp_click',p.id))
-    const lines=cart.map((p:any)=>`• ${p.name} - Rs. ${p.price} (Sz ${activeSize}, ${colors[activeColor].name})`).join('%0A')
-    const msg=`Hi ${profile.business_name}!%0A%0A🟣 SHOE APP PREMIUM ORDER%0A${lines}%0ATotal: Rs. ${cartTotal.toLocaleString()}%0AName: ${customerName}%0AAddress: ${customerAddress}%0AStore: ${typeof window!=='undefined'? window.location.href:''}`
-    window.open(`https://wa.me/${profile.whatsapp_number}?text=${msg}`,'_blank')
-  }
-  const handleAddToCart = (p:Product)=>{ const prod={...p,selectedSize:activeSize,selectedColor:colors[activeColor].name,selectedColorBg:colors[activeColor].bg}; for(let i=0;i<qty;i++) onAdd(prod); setTimeout(()=>openCart(),250) }
+  const brands = S.chips.filter((x: string) => x.toLowerCase() !== 'all')
+  const trending = S.products.slice(0, 6)
+  const focusSearch = (e: React.MouseEvent) => { const d = (e.currentTarget as HTMLElement).ownerDocument; (d.getElementById('pm-app-search') as HTMLInputElement | null)?.focus(); d.getElementById('pm-app-search')?.scrollIntoView({ behavior: 'smooth', block: 'center' }) }
 
   return (
-    <div className="min-h-screen bg-[#F2F0FF] text-[#0A0A0A] antialiased">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700;800&display=swap');
-        *{font-family:'Geist',system-ui,sans-serif}
-        @keyframes floatShoe{0%,100%{transform:rotate(-12deg) translateY(0)}50%{transform:rotate(-12deg) translateY(-8px)}}
-        @keyframes shine{0%{transform:translateX(-100%)}100%{transform:translateX(200%)}}
-        .glass-card{backdrop-filter:blur(24px) saturate(1.2);-webkit-backdrop-filter:blur(24px) saturate(1.2)}
-        .no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{scrollbar-width:none}
-        .shoe-shadow{filter:drop-shadow(0 20px 24px rgba(124,58,237,0.22)) drop-shadow(0 6px 10px rgba(0,0,0,0.12))}
-      `}</style>
+    <div ref={S.rootRef} style={S.cssVars} className={`pm-shoe relative min-h-screen antialiased overflow-x-clip pb-28 md:pb-10 ${SKIN.root}`}>
+      <style>{PM_BASE_CSS + CSS}</style>
 
-      <div className="max-w-[1440px] mx-auto px-3 md:px-6 py-3 md:py-4">
-        <div className="h-[56px] md:h-[64px] bg-white/90 glass-card border border-black/[0.06] rounded-[16px] md:rounded-[20px] flex items-center justify-between px-4 md:px-5 shadow-[0_8px_24px_rgba(0,0,0,0.06)]">
-          <div className="flex items-center gap-3 md:gap-6">
-            <div className="w-8 h-8 md:w-9 md:h-9 rounded-[10px] md:rounded-[12px] bg-[#0A0A0A] text-white grid place-items-center font-black text-[12px] md:text-[13px]">S</div>
-            <div className="hidden md:flex items-center gap-1 bg-[#F2F0FF] rounded-full p-1 border">
-              {['All','Nike','Adidas','New','Sale'].map(f=><button key={f} onClick={()=>setActiveFilter(f)} className={`h-7 px-4 rounded-full text-[12px] font-bold ${activeFilter===f?'bg-black text-white shadow':'text-black/60 hover:text-black'}`}>{f}</button>)}
+      {c.showAnnouncement && c.announcement && (
+        <div className="bg-[#14112B] text-white h-8 flex items-center overflow-hidden text-[10.5px] font-semibold tracking-[0.12em]">
+          <div className="pm-marquee flex whitespace-nowrap gap-10 pr-10">{Array.from({ length: 8 }).map((_, k) => <span key={k} className="flex items-center gap-10">{c.announcement}<span className="text-[var(--pm-accent)]">●</span></span>)}</div>
+        </div>
+      )}
+
+      {/* App bar */}
+      <header className="sticky top-0 z-30 bg-[#F3F0FF]/80 backdrop-blur-xl">
+        <div className="max-w-[1180px] mx-auto px-4 md:px-6 h-[68px] flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            {c.logoImage ? <img src={c.logoImage} alt="" className="h-10 w-10 rounded-2xl object-cover" /> : <span className="w-11 h-11 shrink-0 grid place-items-center rounded-2xl bg-[var(--pm-accent)] text-white font-[800] text-[18px] shadow-[0_10px_24px_-8px_var(--pm-accent)]">{S.initial}</span>}
+            <div className="min-w-0"><div className="text-[11.5px] text-[#14112B]/55 font-medium truncate">{c.greeting}</div><div className="text-[16px] font-[800] tracking-[-0.02em] truncate">{c.headerLabel}</div></div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={() => S.setSavedOnly(!S.savedOnly)} aria-label="Saved items" aria-pressed={S.savedOnly} className={`relative w-11 h-11 grid place-items-center rounded-2xl transition active:scale-95 ${S.savedOnly ? 'bg-[var(--pm-accent)] text-white' : 'bg-white'}`}><Ic.heart c="w-[18px] h-[18px]" fill={S.savedOnly} />{S.wish.length > 0 && <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 grid place-items-center rounded-full bg-red-500 text-white text-[10px] font-bold">{S.wish.length}</span>}</button>
+            <button type="button" onClick={S.openCart} aria-label="Open cart" className="relative w-11 h-11 grid place-items-center rounded-2xl bg-[#14112B] text-white transition active:scale-95"><Ic.bag c="w-[18px] h-[18px]" />{S.cartCount > 0 && <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 grid place-items-center rounded-full bg-[var(--pm-accent)] text-white text-[10px] font-bold pm-pop">{S.cartCount}</span>}</button>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-[1180px] mx-auto px-4 md:px-6">
+        {c.showSearch && <SearchBox id="pm-app-search" S={S} className="mt-1" inputClass="h-[52px] rounded-2xl bg-white shadow-[0_10px_30px_-18px_rgba(76,29,149,0.5)] text-[14px] font-medium placeholder:text-[#14112B]/40" icon="w-[18px] h-[18px]" />}
+
+        {/* Hero carousel */}
+        <section className="mt-5 relative" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} aria-roledescription="carousel" aria-label="Highlights">
+          <div className="overflow-hidden rounded-[32px]" onTouchStart={e => { touch.current = e.touches[0].clientX }} onTouchEnd={e => { if (touch.current === null) return; const d = e.changedTouches[0].clientX - touch.current; if (Math.abs(d) > 40) setSlide(s => (s + (d < 0 ? 1 : slides - 1)) % slides); touch.current = null }}>
+            <div className="flex transition-transform duration-[700ms] ease-[cubic-bezier(.2,.8,.2,1)]" style={{ transform: `translateX(-${slide * 100}%)` }}>
+              {/* 1 hero */}
+              <div className="w-full shrink-0 relative min-h-[300px] md:min-h-[380px] p-6 md:p-10 grid md:grid-cols-2 items-center overflow-hidden text-white bg-[linear-gradient(135deg,var(--pm-accent),#2E1065_85%)]">
+                <div className="absolute -right-16 -top-16 w-72 h-72 rounded-full bg-white/10 blur-2xl" />
+                <div className="relative z-10">
+                  <span className="inline-flex h-7 px-3 items-center rounded-full bg-white/20 backdrop-blur text-[10.5px] font-bold tracking-widest">{c.heroBadge}</span>
+                  <h1 className="mt-3 text-[34px] md:text-[56px] leading-[0.98] font-[800] tracking-[-0.04em]">{splitLines(c.heroTitle).map((l: string, i: number) => <span key={i} className="block">{l}</span>)}</h1>
+                  <p className="mt-3 text-[13px] md:text-[14.5px] text-white/75 max-w-[360px] leading-[1.5]">{c.heroSubtitle}</p>
+                  <div className="mt-5 flex flex-wrap gap-2.5"><button type="button" onClick={e => S.scrollTo(e, 'pm-collection')} className="h-12 px-6 rounded-2xl bg-white text-[#14112B] text-[13.5px] font-bold inline-flex items-center gap-2 active:scale-95 transition hover:gap-3">{c.ctaText}<Ic.right c="w-4 h-4" /></button>{c.secondaryCta && <button type="button" onClick={S.openCart} className="h-12 px-5 rounded-2xl bg-white/15 backdrop-blur text-white text-[13.5px] font-bold active:scale-95 transition hover:bg-white/25">{c.secondaryCta}</button>}</div>
+                </div>
+                <div className="relative h-[190px] md:h-[300px] mt-4 md:mt-0">
+                  {c.featuredLabel && <span className="absolute right-0 top-0 z-10 h-7 px-3 inline-flex items-center rounded-full bg-[#E8FF86] text-[#14112B] text-[10.5px] font-extrabold tracking-wide shadow-lg">{c.featuredLabel}</span>}
+                  <div className="absolute right-0 md:right-4 top-1/2 -translate-y-1/2 h-full aspect-[4/5] rotate-[8deg]"><Img src={S.heroImg} alt="" className="pm-float w-full h-full object-cover rounded-[28px] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.6)]" /></div>
+                  <span className="absolute left-0 bottom-3 h-8 px-3 inline-flex items-center gap-1.5 rounded-full bg-white text-[#14112B] text-[11px] font-bold shadow-xl"><Ic.sparkle c="w-3.5 h-3.5 text-[var(--pm-accent)]" />{c.newDropLabel}</span>
+                </div>
+              </div>
+              {/* 2 promo */}
+              <div className="w-full shrink-0 relative min-h-[300px] md:min-h-[380px] p-6 md:p-10 flex items-center overflow-hidden text-white bg-[#111AFF]">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_15%,rgba(255,255,255,0.28),transparent_55%)]" />
+                <div className="relative z-10">
+                  <span className="inline-flex h-7 px-3 items-center rounded-full bg-white text-[#111AFF] text-[10.5px] font-extrabold tracking-widest">{c.promoBadge}</span>
+                  <div className="mt-3 text-[44px] md:text-[76px] leading-[0.92] font-[800] tracking-[-0.05em]">{splitLines(c.promoTitle).map((l: string, i: number) => <span key={i} className="block">{l}</span>)}</div>
+                  <button type="button" onClick={e => { S.setActive('Sale'); S.scrollTo(e, 'pm-collection') }} className="mt-5 h-12 px-6 rounded-2xl bg-[#E8FF86] text-black text-[13.5px] font-bold active:scale-95 transition">{c.promoCta}</button>
+                </div>
+                <Img src={S.products[1]?.images[0] || S.heroImg} alt="" className="hidden sm:block absolute right-6 md:right-12 bottom-[-18px] h-[88%] aspect-[4/5] object-cover rounded-[28px] -rotate-12 shadow-2xl" />
+              </div>
+              {/* 3 perks */}
+              <div className="w-full shrink-0 relative min-h-[300px] md:min-h-[380px] p-6 md:p-10 flex items-center overflow-hidden bg-[#E8FF86] text-[#14112B]">
+                <div className="relative z-10 max-w-[420px]">
+                  <span className="inline-flex h-7 px-3 items-center rounded-full bg-[#14112B] text-[#E8FF86] text-[10.5px] font-bold tracking-widest">MEMBERS</span>
+                  <div className="mt-3 text-[34px] md:text-[54px] leading-[0.98] font-[800] tracking-[-0.04em]">{splitLines(c.memberPerksTitle).map((l: string, i: number) => <span key={i} className="block">{l}</span>)}</div>
+                  <p className="mt-3 text-[13.5px] font-medium opacity-70">{c.memberPerksDesc}</p>
+                  <button type="button" onClick={S.openCart} className="mt-5 h-12 px-6 rounded-2xl bg-[#14112B] text-white text-[13.5px] font-bold active:scale-95 transition">{c.memberCta}</button>
+                </div>
+                <div className="hidden sm:grid absolute right-8 md:right-16 top-1/2 -translate-y-1/2 w-44 h-44 md:w-60 md:h-60 rounded-full border-[14px] border-[#14112B] place-items-center text-[#14112B]"><div className="text-center"><div className="text-[44px] md:text-[64px] font-[800] leading-none tracking-[-0.05em]">7</div><div className="text-[11px] md:text-[13px] font-bold uppercase tracking-widest">day returns</div></div></div>
+              </div>
             </div>
-            <div className="hidden lg:flex items-center gap-2 text-[10px] mono font-bold tracking-widest text-black/40">{profile?.business_name?.toUpperCase()} • LIVE • COD</div>
           </div>
-          <div className="flex items-center gap-1.5 md:gap-2">
-            <button className="w-8 h-8 md:w-9 md:h-9 bg-white border rounded-full grid place-items-center text-[12px]">♡</button>
-            <button onClick={openCart} className="h-8 md:h-9 pl-2 pr-1 bg-black text-white rounded-full flex items-center gap-2 text-[11px] md:text-[12px] font-bold"><span className="px-2 hidden md:inline">Cart</span><span className="w-6 h-6 md:w-7 md:h-7 bg-white text-black rounded-full grid place-items-center text-[10px] md:text-[11px] font-black">{cartCount}</span></button>
-          </div>
-        </div>
-      </div>
+          <div className="absolute left-1/2 -translate-x-1/2 bottom-4 flex gap-1.5">{Array.from({ length: slides }).map((_, i) => <button key={i} type="button" onClick={() => setSlide(i)} aria-label={`Slide ${i + 1}`} aria-current={slide === i} className={`h-1.5 rounded-full transition-all duration-500 ${slide === i ? 'w-7 bg-white' : 'w-1.5 bg-white/50'}`} />)}</div>
+        </section>
 
-      <div className="max-w-[1440px] mx-auto px-3 md:px-6 pb-20 grid lg:grid-cols-[320px_1fr_340px] gap-3 md:gap-4">
-
-        {/* LEFT - SMALLER PREVIEW TO FIT SCREEN */}
-        <div className="bg-white border border-black/[0.06] rounded-[20px] md:rounded-[28px] shadow-[0_24px_48px_-12px_rgba(0,0,0,0.08)] overflow-hidden flex flex-col lg:sticky lg:top-[84px] lg:max-h-[calc(100vh-100px)] lg:overflow-auto no-scrollbar">
-          {selectedShoe ? (
-            <>
-              <div className="relative bg-[#F8F7FF] h-[220px] md:h-[260px] lg:h-[240px] p-4 md:p-5 flex items-center justify-center shrink-0">
-                <div className="absolute top-3 left-3 right-3 flex justify-between">
-                  <div className="h-6 px-2.5 bg-white border rounded-full text-[9px] font-black mono tracking-widest grid place-items-center">NEW DROP • {new Date().getFullYear()}</div>
-                  <button onClick={()=>toggleLike(selectedShoe.id)} className={`w-7 h-7 rounded-full border grid place-items-center text-[12px] ${liked.includes(selectedShoe.id)?'bg-black text-white':'bg-white'}`}>{liked.includes(selectedShoe.id)?'♥':'♡'}</button>
-                </div>
-                <img src={selectedShoe.image_url} alt="" className="w-[72%] md:w-[68%] max-h-[160px] md:max-h-[180px] object-contain shoe-shadow animate-[floatShoe_5s_ease-in-out_infinite]" />
-                <div className="absolute bottom-3 left-3 right-3 flex justify-between items-center">
-                  <div className="flex gap-1">{colors.map((c,i)=><button key={i} onClick={()=>setActiveColor(i)} className={`w-5 h-5 rounded-full border-2 ${activeColor===i?'border-black scale-110':'border-white'} shadow-sm`} style={{background:c.bg}} />)}</div>
-                  <div className="h-5 px-2 bg-black text-white rounded-full text-[9px] font-bold grid place-items-center">{colors[activeColor].name.toUpperCase()}</div>
-                </div>
-              </div>
-
-              <div className="p-4 flex flex-col flex-1">
-                <div className="flex items-start justify-between gap-2">
-                  <h2 className="text-[16px] md:text-[18px] font-[800] leading-[0.95] tracking-[-0.02em] line-clamp-2">{selectedShoe.name}</h2>
-                  <div className="text-right shrink-0"><div className="text-[16px] md:text-[18px] font-black">Rs. {selectedShoe.price.toLocaleString()}</div>{selectedShoe.original_price && <div className="text-[10px] line-through text-black/40">Rs. {selectedShoe.original_price}</div>}</div>
-                </div>
-                <p className="mt-2 text-[11px] leading-[1.4] text-black/50 line-clamp-2">{selectedShoe.description || 'Engineered mesh upper, responsive foam, ultra-light traction. Premium comfort meets street dominance.'}</p>
-
-                <div className="mt-3">
-                  <div className="flex justify-between items-center"><span className="mono text-[9px] font-black tracking-[0.14em]">SIZE • EU</span><button onClick={()=>setShowSizeGuide(true)} className="text-[10px] text-black/40 underline">Guide</button></div>
-                  <div className="mt-2 grid grid-cols-7 gap-[5px]">{sizes.map(s=><button key={s} onClick={()=>setActiveSize(s)} className={`h-[32px] rounded-[10px] border text-[11px] font-bold ${activeSize===s?'bg-black text-white border-black shadow':'bg-[#F2F0FF] border-transparent text-black/60 hover:border-black/20'}`}>{s}</button>)}</div>
-                </div>
-
-                <div className="mt-3 flex items-center justify-between">
-                  <div className="mono text-[9px] font-black tracking-[0.14em]">QTY</div>
-                  <div className="flex items-center gap-1.5 bg-[#F2F0FF] rounded-full p-1 border">
-                    <button onClick={()=>setQty(Math.max(1,qty-1))} className="w-6 h-6 bg-white border rounded-full grid place-items-center font-bold text-[12px]">−</button>
-                    <span className="w-6 text-center text-[12px] font-black">{qty}</span>
-                    <button onClick={()=>setQty(qty+1)} className="w-6 h-6 bg-white border rounded-full grid place-items-center font-bold text-[12px]">+</button>
-                  </div>
-                </div>
-
-                <div className="mt-3 space-y-2">
-                  <div className="grid grid-cols-2 gap-2 text-[9px] mono text-black/50"><span className="flex items-center gap-1"><span className="w-1.5 h-1.5 bg-[#22C55E] rounded-full"/>IN STOCK</span><span>⚡ Ships in 24h</span><span>↩ 7-Day Return</span><span>✓ COD Available</span></div>
-                  <div className="grid grid-cols-[1fr_48px] gap-2">
-                    <button onClick={()=>handleAddToCart(selectedShoe)} className="relative overflow-hidden h-[44px] bg-[#0A0A0A] text-white rounded-[12px] font-bold text-[12px] flex items-center justify-center gap-2 group"><span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-[900ms]"/><span>🛒 Add — Rs. {(selectedShoe.price*qty).toLocaleString()}</span></button>
-                    <button onClick={()=>handleAddToCart(selectedShoe)} className="h-[44px] w-[48px] bg-[#E8FF86] border border-black rounded-[12px] grid place-items-center font-black text-[16px]">↗</button>
-                  </div>
-                </div>
-              </div>
-            </>
-          ) : <div className="p-10 text-center text-[13px] text-black/30">Select a shoe</div>}
-        </div>
-
-        {/* CENTER */}
-        <div className="space-y-3">
-          <div className="relative h-[140px] md:h-[160px] rounded-[18px] md:rounded-[24px] overflow-hidden bg-[#111AFF] border">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.18),transparent_50%)]" />
-            <div className="absolute inset-0 p-4 md:p-5 flex">
-              <div className="flex-1"><div className="inline-flex h-5 px-2 bg-white text-[9px] font-black mono rounded-full items-center">LIMITED • BLACK FRIDAY</div><div className="mt-2 text-white font-[900] text-[20px] md:text-[24px] leading-[0.9]">GET UP TO<br/>50% OFF</div><button onClick={()=>setActiveFilter('Sale')} className="mt-2 h-7 px-3 bg-white text-black rounded-full text-[10px] font-bold">Shop Sale →</button></div>
-              <div className="w-[160px] hidden md:block relative"><img src={products[1]?.image_url || products[0]?.image_url} alt="" className="absolute -bottom-2 -right-4 w-[180px] object-contain -rotate-12 shoe-shadow" /></div>
+        {/* Brands */}
+        {brands.length > 0 && (
+          <section className="mt-7">
+            <div className="flex gap-4 overflow-x-auto pm-sb pb-1">
+              {S.chips.map((b: string) => {
+                const on = S.active === b
+                return (
+                  <button type="button" key={b} onClick={() => S.setActive(b)} aria-pressed={on} className="shrink-0 w-[68px] text-center group">
+                    <span className={`mx-auto w-[60px] h-[60px] grid place-items-center rounded-full text-[18px] font-[800] transition-all duration-300 ${on ? 'bg-[var(--pm-accent)] text-white scale-110 shadow-[0_14px_28px_-10px_var(--pm-accent)]' : 'bg-white text-[#14112B] group-hover:scale-105'}`}>{b.toLowerCase() === 'all' ? <Ic.grid c="w-5 h-5" /> : b.charAt(0).toUpperCase()}</span>
+                    <span className={`mt-2 block text-[11px] font-semibold truncate ${on ? 'text-[var(--pm-accent)]' : 'text-[#14112B]/55'}`}>{b}</span>
+                  </button>
+                )
+              })}
             </div>
-            <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#E8FF86] via-white to-[#7C3AED]"/>
+          </section>
+        )}
+
+        {/* Trending rail */}
+        {trending.length > 1 && !S.query && S.active === 'All' && !S.savedOnly && (
+          <section className="mt-7 pm-reveal">
+            <div className="flex items-end justify-between"><h2 className="text-[20px] md:text-[24px] font-[800] tracking-[-0.03em]">Trending now</h2><button type="button" onClick={e => S.scrollTo(e, 'pm-collection')} className="text-[12.5px] font-bold text-[var(--pm-accent)]">See all</button></div>
+            <div className="mt-4 flex gap-3.5 overflow-x-auto pm-sb snap-x snap-mandatory pb-2 -mx-4 px-4 md:mx-0 md:px-0">{trending.map((p: any) => <ShoeCard key={p.id} p={p} S={S} compact />)}</div>
+          </section>
+        )}
+
+        {/* All shoes */}
+        <section id="pm-collection" className="mt-8">
+          <div className="flex items-end justify-between gap-3 flex-wrap">
+            <div><h2 className="text-[22px] md:text-[28px] font-[800] tracking-[-0.03em]">{c.collectionTitle} <span className="text-[#14112B]/35 font-semibold text-[16px]">{filtered.length}</span></h2>{c.collectionSubtitle && <p className="text-[12.5px] text-[#14112B]/55 mt-0.5">{c.collectionSubtitle}</p>}</div>
+            {c.showSort && <SortSelect S={S} className="h-10 px-4 rounded-full bg-white text-[12.5px] font-semibold border border-[#14112B]/10" />}
           </div>
-
-          <div className="lg:hidden flex gap-2 overflow-x-auto no-scrollbar pb-1">{['All','Nike','Adidas','New','Sale'].map(f=><button key={f} onClick={()=>setActiveFilter(f)} className={`h-7 px-3 rounded-full text-[11px] font-bold whitespace-nowrap border ${activeFilter===f?'bg-black text-white':'bg-white'}`}>{f}</button>)}</div>
-
-          <div className="grid grid-cols-2 gap-2.5 md:gap-3">
-            {filtered.map((p:Product,i:number)=>(
-              <div key={p.id} onClick={()=>setSelectedShoe(p)} className={`group relative bg-white border rounded-[18px] md:rounded-[22px] p-2.5 md:p-3 cursor-pointer hover:border-black hover:shadow-[0_12px_24px_rgba(0,0,0,0.06)] ${selectedShoe?.id===p.id?'border-black ring-2 ring-black ring-offset-2 ring-offset-[#F2F0FF]': 'border-black/[0.06]'}`}>
-                <button onClick={(e)=>{e.stopPropagation(); toggleLike(p.id)}} className={`absolute top-2.5 right-2.5 w-6 h-6 rounded-full border grid place-items-center text-[10px] z-10 ${liked.includes(p.id)?'bg-black text-white':'bg-white/90 glass-card'}`}>{liked.includes(p.id)?'♥':'♡'}</button>
-                {i<2 && <div className="absolute top-2.5 left-2.5 h-5 px-1.5 bg-[#E8FF86] border border-black rounded-full text-[8px] font-black mono grid place-items-center">BEST</div>}
-                <div className="aspect-square bg-[#F8F7FF] rounded-[12px] md:rounded-[14px] p-3 grid place-items-center"><img src={p.image_url} alt="" className="w-full h-full object-contain group-hover:scale-[1.06] group-hover:-rotate-3 transition duration-500 shoe-shadow" /></div>
-                <div className="mt-2.5 px-0.5"><div className="flex justify-between gap-1"><div className="text-[11px] font-bold leading-[1.1] truncate">{p.name}</div><div className="text-[11px] font-black shrink-0">Rs. {p.price}</div></div><div className="mt-1.5 flex justify-between items-center"><div className="flex gap-1">{[0,1,2].map(d=><span key={d} className="w-1 h-1 rounded-full" style={{background:d===0?'#7C3AED':d===1?'#0A0A0A':'#E8E8F0'}}/>)}</div><div className="w-5 h-5 bg-black text-white rounded-full grid place-items-center text-[10px] group-hover:rotate-45 transition">↗</div></div></div>
-              </div>
-            ))}
+          <div className="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3.5 gap-y-6 md:gap-x-5">
+            {filtered.map((p: any) => <div key={p.id} className="pm-reveal"><ShoeCard p={p} S={S} /></div>)}
           </div>
-        </div>
+          {filtered.length === 0 && <div className="mt-6 rounded-[28px] bg-white py-14 text-center"><div className="text-[18px] font-[800]">No shoes found</div><button type="button" onClick={() => { S.setQuery(''); S.setActive('All'); S.setSavedOnly(false) }} className={`mt-4 h-11 px-6 text-[13px] font-bold ${SKIN.btn}`}>Reset filters</button></div>}
+        </section>
 
-        {/* RIGHT */}
-        <div className="hidden lg:block space-y-3">
-          <div className="bg-white border border-black/[0.06] rounded-[18px] p-3.5">
-            <div className="flex justify-between"><span className="font-bold text-[11px]">Recently Viewed</span><span className="text-[10px] text-black/40 underline">Clear</span></div>
-            <div className="mt-2.5 space-y-1.5">{products.slice(0,3).map((p:any)=><div key={p.id} onClick={()=>setSelectedShoe(p)} className="flex gap-2.5 p-2 rounded-[10px] hover:bg-[#F2F0FF] cursor-pointer"><div className="w-10 h-10 bg-[#F8F7FF] rounded-[8px] grid place-items-center"><img src={p.image_url} className="w-8 h-8 object-contain -rotate-12" alt=""/></div><div className="flex-1 min-w-0"><div className="text-[10px] font-bold truncate">{p.name}</div><div className="text-[9px] text-black/50">Rs. {p.price} • Sz {activeSize}</div></div><div className="w-4 h-4 bg-black text-white rounded-full grid place-items-center text-[8px]">↗</div></div>)}</div>
+        {/* Stats + footer card */}
+        <footer className="mt-12 rounded-[32px] bg-[#14112B] text-white p-6 md:p-10">
+          {c.showStats && <div className="grid grid-cols-3 gap-3 pb-6 border-b border-white/10">{(c.stats || []).slice(0, 3).map((s: any, i: number) => <div key={i}><div className="text-[24px] md:text-[34px] font-[800] tracking-[-0.04em]">{s.value}</div><div className="text-[11.5px] text-white/50 font-medium">{s.label}</div></div>)}</div>}
+          <div className="pt-6 grid md:grid-cols-[1.4fr_1fr] gap-6 items-end">
+            <p className="text-[13.5px] md:text-[15px] text-white/65 leading-[1.6] max-w-[520px]">{c.footerAbout}</p>
+            <div className="text-[12.5px] text-white/55 space-y-1 md:text-right">{c.instagram && <div>Instagram <b className="text-[#E8FF86]">{c.instagram}</b></div>}{c.address && <div>{c.address}</div>}<div>{c.footerNote || `© ${S.profile?.business_name || c.headerLabel}`}</div></div>
           </div>
-          <div className="bg-[#0A0A0A] text-white rounded-[18px] p-4 relative overflow-hidden">
-            <div className="absolute -right-10 -top-10 w-24 h-24 bg-[#7C3AED] rounded-full blur-[20px] opacity-60"/>
-            <div className="mono text-[9px] tracking-[0.2em] text-white/50">MEMBER PERKS</div>
-            <div className="mt-2 font-[800] text-[15px] leading-[1.05]">Free Shipping<br/>+ 7 Days Return</div>
-            <div className="mt-2 text-[10px] text-white/60">Early access to drops, COD & priority.</div>
-            <button className="mt-3 w-full h-8 bg-white text-black rounded-full text-[11px] font-bold">Join Premium — Free</button>
-          </div>
-        </div>
-      </div>
+        </footer>
+      </main>
 
-      {showSizeGuide && <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur grid place-items-center p-4"><div className="bg-white rounded-[20px] w-full max-w-[400px] p-5"><div className="flex justify-between"><h3 className="font-bold text-[14px]">Size Guide</h3><button onClick={()=>setShowSizeGuide(false)} className="w-7 h-7 border rounded-full grid place-items-center">✕</button></div><div className="mt-4 grid grid-cols-3 gap-2 text-[11px]"><div className="font-bold">EU</div><div className="font-bold">US</div><div className="font-bold">CM</div>{sizes.map(s=><>{s}<span>{(s-22)}</span><span>{(s*0.66).toFixed(1)}</span></>)}</div></div></div>}
+      {/* Bottom tab bar (mobile) */}
+      <nav aria-label="Store" className="md:hidden fixed bottom-3 left-3 right-3 z-40 h-[66px] rounded-[26px] bg-[#14112B]/92 backdrop-blur-xl text-white grid grid-cols-4 shadow-[0_24px_50px_-14px_rgba(20,17,43,0.7)]">
+        {[
+          { k: 'home', l: 'Home', i: <Ic.home c="w-[21px] h-[21px]" />, f: (e: any) => { (e.currentTarget as HTMLElement).ownerDocument.defaultView?.scrollTo({ top: 0, behavior: 'smooth' }) }, on: false },
+          { k: 'search', l: 'Search', i: <Ic.search c="w-[21px] h-[21px]" />, f: focusSearch, on: !!S.query },
+          { k: 'saved', l: 'Saved', i: <Ic.heart c="w-[21px] h-[21px]" fill={S.savedOnly} />, f: () => S.setSavedOnly(!S.savedOnly), on: S.savedOnly },
+          { k: 'cart', l: 'Cart', i: <Ic.bag c="w-[21px] h-[21px]" />, f: S.openCart, on: false },
+        ].map(t => (
+          <button type="button" key={t.k} onClick={t.f} aria-label={t.l} className="relative flex flex-col items-center justify-center gap-0.5 active:scale-90 transition">
+            <span className={`h-8 w-12 grid place-items-center rounded-full transition-colors duration-300 ${t.on ? 'bg-[var(--pm-accent)]' : ''}`}>{t.i}</span>
+            <span className={`text-[10px] font-semibold ${t.on ? 'text-white' : 'text-white/55'}`}>{t.l}</span>
+            {t.k === 'cart' && S.cartCount > 0 && <span className="absolute top-1.5 right-[22%] min-w-[17px] h-[17px] px-1 grid place-items-center rounded-full bg-[#E8FF86] text-black text-[9.5px] font-extrabold">{S.cartCount}</span>}
+          </button>
+        ))}
+      </nav>
 
-      <div className={`fixed inset-0 z-[120] ${localShowCart ? '' : 'pointer-events-none'}`}>
-        <div className={`absolute inset-0 bg-black/50 backdrop-blur-[2px] transition ${localShowCart ? 'opacity-100' : 'opacity-0'}`} onClick={closeCart}></div>
-        <div className={`absolute right-0 top-0 bottom-0 w-full max-w-[380px] md:max-w-[400px] bg-white border-l flex flex-col transition-transform duration-[400ms] ${localShowCart ? 'translate-x-0' : 'translate-x-full'}`}>
-          <div className="h-[64px] px-5 border-b flex items-center justify-between"><div className="flex items-center gap-2"><div className="w-7 h-7 rounded-full bg-black text-white grid place-items-center font-black text-[11px]">{cartCount}</div><h3 className="font-black text-[13px]">Your Bag</h3></div><button onClick={closeCart} className="w-8 h-8 border rounded-full grid place-items-center">✕</button></div>
-          <div className="flex-1 overflow-auto p-3 space-y-2.5">{cart.map((p:any,i:number)=><div key={i} className="flex gap-2.5 p-2.5 bg-[#F2F0FF] border rounded-[14px]"><div className="w-[60px] h-[60px] bg-white rounded-[10px] grid place-items-center"><img src={p.image_url} className="w-[48px] h-[48px] object-contain -rotate-12" alt=""/></div><div className="flex-1"><div className="text-[11px] font-bold leading-[1.1]">{p.name}</div><div className="mt-1 flex gap-1"><span className="h-4 px-1.5 bg-black text-white rounded-full text-[9px] grid place-items-center">Sz {p.selectedSize||activeSize}</span><span className="w-4 h-4 rounded-full border-2 border-white shadow" style={{background:p.selectedColorBg||'#7C3AED'}}/></div><div className="mt-1 font-black text-[11px]">Rs. {p.price.toLocaleString()}</div></div><button onClick={()=>{/* cart removal handled by parent - placeholder */ console.log('remove',i)}} className="w-6 h-6 bg-white border rounded-full grid place-items-center text-[10px]">✕</button></div>)}{cartCount===0 && <div className="py-16 text-center"><div className="w-14 h-14 mx-auto bg-[#F2F0FF] rounded-full grid place-items-center text-[20px]">🛍️</div><div className="mt-3 font-bold text-[12px]">Your bag is empty</div><div className="mt-1 text-[10px] text-black/40">Select sizes & colors</div><button onClick={closeCart} className="mt-3 h-8 px-4 bg-black text-white rounded-full text-[11px] font-bold">Continue</button></div>}</div>
-          {cartCount>0 && <div className="p-4 border-t bg-[#FCFCFF] space-y-2.5"><input value={customerName} onChange={e=>setCustomerName(e.target.value)} placeholder="Full name *" className="w-full h-10 px-3 bg-white border border-black/10 rounded-[10px] text-[12px] outline-none focus:border-black"/><input value={customerAddress} onChange={e=>setCustomerAddress(e.target.value)} placeholder="Complete address *" className="w-full h-10 px-3 bg-white border border-black/10 rounded-[10px] text-[12px] outline-none focus:border-black"/><div className="flex justify-between text-[12px]"><span className="text-black/60">Subtotal • {cartCount} items</span><span className="font-black">Rs. {cartTotal.toLocaleString()}</span></div><div className="grid grid-cols-2 gap-2"><button onClick={closeCart} className="h-10 bg-white border rounded-full text-[12px] font-bold">Keep Shopping</button><button onClick={orderWhatsApp} className="h-10 bg-[#25D366] text-white rounded-full text-[12px] font-bold">● WhatsApp Order</button></div><div className="text-[9px] mono text-center text-black/30">SECURE • COD • FREE SHIPPING OVER 5000</div></div>}
-        </div>
-      </div>
+      <Overlays S={S} skin={SKIN} layout="sheet" />
     </div>
   )
 }
