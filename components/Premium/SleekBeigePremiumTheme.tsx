@@ -1,235 +1,146 @@
 'use client'
-import { useState } from 'react'
 
-function SleekBase({ profile, products, cart, setShowCart, onAdd, onOpen, track, selectedProduct, setSelectedProduct, variant }: any) {
-  const [localShowCart, setLocalShowCart] = useState(false)
-  const [customerName, setCustomerName] = useState('')
-  const [customerAddress, setCustomerAddress] = useState('')
-  const [activeBrand, setActiveBrand] = useState('All')
-  const [liked, setLiked] = useState<string[]>([])
-  const [qty, setQty] = useState(1)
-  const custom = profile?.premium_custom || {}
-  const isBeige = variant==='beige'
-  const isDark = variant==='dark'
-  const isEditorial = variant==='editorial'
+/* SLEEK BEIGE — warm boutique. Soft serif, terracotta, organic shapes, staggered grid. */
+const SKIN = {
+  root: 'bg-[#F3EEE6] text-[#2B2118]',
+  panel: 'bg-[#FBF8F3] text-[#2B2118] rounded-[34px] shadow-[0_40px_90px_-30px_rgba(60,40,20,0.5)]',
+  drawer: 'bg-[#FBF8F3] text-[#2B2118]',
+  scrim: 'bg-[#2B2118]/45 backdrop-blur-sm',
+  muted: 'text-[#2B2118]/60', line: 'border-[#2B2118]/12', soft: 'bg-[#EFE7DB]',
+  chip: 'border-[#2B2118]/18 bg-white/60 hover:border-[var(--pm-accent)]', chipOn: 'bg-[var(--pm-accent)] text-white border-[var(--pm-accent)]', chipR: 'rounded-full',
+  btn: 'bg-[#2B2118] text-[#FBF8F3] rounded-full hover:bg-[var(--pm-accent)]', btnAlt: 'bg-[var(--pm-accent)] text-white rounded-full hover:brightness-110',
+  input: 'bg-white/70 border border-[#2B2118]/12 focus:border-[var(--pm-accent)] rounded-2xl',
+  title: '[font-family:var(--pm-display)] font-medium tracking-[-0.02em]',
+  dock: 'bg-[#FBF8F3]/95 backdrop-blur border-[#2B2118]/10',
+}
+const CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400;1,9..144,500&family=DM+Sans:wght@400;500;600;700&display=swap');
+.pm-beige{font-family:'DM Sans',system-ui,sans-serif;--pm-display:'Fraunces',Georgia,serif}
+.pm-beige .serif{font-family:var(--pm-display)}
+`
 
-  const announcement = custom.announcement || (isBeige ? 'FREE SHIPPING • NEW DROP • COD • PREMIUM BEIGE COLLECTION • CONCIERGE' : isDark ? 'DARK MODE • LUXURY • FREE SHIPPING • COD • 24H DISPATCH • PREMIUM' : 'EDITORIAL • MINIMAL • LUXURY • FREE SHIPPING • COD • LESS BUT BETTER')
-  const badge = custom.badge || custom.heroBadge || (isBeige ? 'EDITORIAL • BEIGE • 2024' : isDark ? 'NOIR • DARK • 2024' : 'EDITORIAL • MINIMAL • 2024')
-  const heroTitle = custom.heroTitle || (isBeige ? 'Warm minimal\nluxury, everyday\nicon.' : isDark ? 'Noir luxury,\nmidnight\nicon.' : 'Cool and Aakif\nstyle — editorial\nminimal.')
-  const heroSubtitle = custom.heroSubtitle || (isBeige ? 'Soft beige tones, natural texture, premium stitch. Curated for icons who value warmth and craft.' : isDark ? 'Deep black, subtle glow, premium finish. Designed for night, worn for power.' : 'Clean lines, intentional whitespace, premium finish. Less is luxury. Less but better.')
-  const heroImage = custom.heroImage || products[0]?.image_url
-  const ctaText = custom.ctaText || (isBeige ? 'Shop Beige →' : isDark ? 'Shop Dark →' : 'Shop Editorial →')
-  const brands = custom.brands || custom.filters || custom.spikeBrands || ['All','Nike','Adidas','Puma','New Balance','New','Sale']
-  const headerLabel = custom.headerLabel || (isBeige ? 'BEIGE • Studio' : isDark ? 'DARK • Studio' : 'EDITORIAL • Studio')
-  const headerTopLabel = custom.headerTopLabel || 'PREMIUM • EDITORIAL'
-  const featuredLabel = custom.featuredLabel || 'FEATURED • NEW'
-  const freeShippingBadge = custom.freeShippingBadge || 'FREE SHIPPING'
-  const hotBadge = custom.hotBadge || (isDark ? 'HOT' : 'NEW')
-  const statsOrders = custom.statsOrders || '500+'
-  const statsRating = custom.statsRating || '4.9★'
-  const statsCod = custom.statsCod || 'COD'
+function Item({ p, S }: any) {
+  const { Ic, Img, PriceLine, discountPct, stockState } = S.ui
+  const pct = discountPct(p)
+  const st = stockState(p)
+  return (
+    <article className="pm-reveal group">
+      <div className="relative aspect-[4/5] overflow-hidden rounded-[30px] bg-[#E8DFD1] shadow-[0_20px_40px_-26px_rgba(60,40,20,0.55)]">
+        <button type="button" onClick={() => S.openProduct(p)} aria-label={`View ${p.name}`} className="absolute inset-0 w-full h-full">
+          <Img src={p.images[0]} alt={p.name} className={`w-full h-full object-cover transition-transform duration-[1100ms] group-hover:scale-[1.06] ${st === 'out' ? 'opacity-50' : ''}`} />
+        </button>
+        <div className="absolute top-3.5 left-3.5 flex gap-1.5 pointer-events-none">
+          {S.isHot(p) && <span className="h-7 px-3 inline-flex items-center rounded-full bg-[var(--pm-accent)] text-white text-[11px] font-bold">{S.c.hotBadge}</span>}
+          {pct > 0 && <span className="h-7 px-3 inline-flex items-center rounded-full bg-white/90 backdrop-blur text-[11px] font-bold text-[var(--pm-accent)]">−{pct}%</span>}
+          {st === 'out' && <span className="h-7 px-3 inline-flex items-center rounded-full bg-[#2B2118] text-white text-[11px] font-semibold">Sold out</span>}
+        </div>
+        <button type="button" onClick={() => S.toggleWish(p.id)} aria-label="Save" aria-pressed={S.isWished(p.id)} className={`absolute top-3.5 right-3.5 w-10 h-10 grid place-items-center rounded-full bg-white/80 backdrop-blur transition hover:scale-110 ${S.isWished(p.id) ? 'text-[var(--pm-accent)]' : 'text-[#2B2118]'}`}><Ic.heart c="w-[18px] h-[18px]" fill={S.isWished(p.id)} /></button>
+        {st !== 'out' && <button type="button" onClick={() => S.quickAdd(p)} className="absolute left-3.5 right-3.5 bottom-3.5 h-11 rounded-full bg-white/90 backdrop-blur text-[13px] font-semibold inline-flex items-center justify-center gap-2 md:translate-y-[140%] md:group-hover:translate-y-0 transition-transform duration-500 hover:bg-[#2B2118] hover:text-white"><Ic.plus c="w-4 h-4" />{p.sizes.length || p.colors.length ? 'Choose options' : 'Add to bag'}</button>}
+      </div>
+      <button type="button" onClick={() => S.openProduct(p)} className="block w-full text-left mt-4 px-1.5">
+        <div className="flex items-start justify-between gap-3"><div className="serif text-[19px] md:text-[21px] leading-[1.15] font-medium">{p.name}</div></div>
+        <div className="mt-1.5 flex items-center justify-between gap-2"><PriceLine p={p} S={S} big="text-[15px] text-[var(--pm-accent)]" strike="text-[12px] opacity-45" />{st === 'low' && <span className="text-[11px] font-semibold text-[var(--pm-accent)]">Only {p.stock} left</span>}</div>
+        {(p.colors.length > 0) && <div className="mt-2 text-[12px] text-[#2B2118]/50 truncate">{p.colors.join(' · ')}</div>}
+      </button>
+    </article>
+  )
+}
 
-  const cartCount = cart?.length || 0
-  const cartTotal = cart?.reduce((s:any,p:any)=>s+p.price,0) || 0
-  const openCart = () => { setLocalShowCart(true); if(setShowCart) setShowCart(true) }
-  const closeCart = () => { setLocalShowCart(false); if(setShowCart) setShowCart(false) }
-  const toggleLike = (id:string)=> setLiked(prev=> prev.includes(id) ? prev.filter(x=>x!==id) : [...prev,id])
-  const filtered = activeBrand==='All' ? products : products.filter((p:any)=> (p.name+p.category||'').toLowerCase().includes(activeBrand.toLowerCase()))
-
-  const orderWhatsApp = () => {
-    if(!profile || cart.length===0) return
-    if(!customerName.trim()){ alert('Enter name'); return }
-    if(!customerAddress.trim()){ alert('Enter address'); return }
-    cart.forEach((p:any)=>track?.('whatsapp_click',p.id))
-    const lines = cart.map((p:any)=>`• ${p.name} - Rs. ${p.price}`).join('%0A')
-    const msg = `Hi ${profile.business_name}!%0AOrder ${variant.toUpperCase()} PREMIUM STORE%0A${lines}%0ATotal: Rs. ${cartTotal}%0AName: ${customerName}%0AAddress: ${customerAddress}%0AStore: ${typeof window!=='undefined'? window.location.href:''}`
-    window.open(`https://wa.me/${profile.whatsapp_number}?text=${msg}`,'_blank')
-  }
-
-  const bg = isDark ? 'bg-[#050505] text-white' : isBeige ? 'bg-[#F5F1EB] text-[#0A0A0A]' : 'bg-[#FCFBF9] text-[#0A0A0A]'
-  const cardBg = isDark ? 'bg-[#141414] border-white/10' : 'bg-white border-black/[0.06]'
-  const muted = isDark ? 'text-white/50' : 'text-black/50'
+export function SleekBeigePremiumTheme({ S }: { S: any }) {
+  const { Ic, Img, SearchBox, SortSelect, Overlays, PM_BASE_CSS, splitLines } = S.ui
+  const { c, filtered } = S
+  const lines = splitLines(c.heroTitle)
+  const reviews: any[] = Array.isArray(c.testimonials) ? c.testimonials : []
+  const lookImg = c.lookbookImage || S.products[2]?.images[0] || S.heroImg2
+  const avatars = S.products.slice(0, 4).map((p: any) => p.images[0])
 
   return (
-    <div className={`min-h-screen ${bg} antialiased selection:bg-black selection:text-white`}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fragment+Mono:ital@0;1&family=Instrument+Serif:ital@0;1&display=swap');
-        @keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-        .font-serif{font-family:'Instrument Serif', serif}
-        .font-mono{font-family:'Fragment Mono', monospace}
-        .glass{backdrop-filter:blur(24px) saturate(1.2)}
-      `}</style>
+    <div ref={S.rootRef} style={S.cssVars} className={`pm-beige relative min-h-screen antialiased overflow-x-clip ${SKIN.root}`}>
+      <style>{PM_BASE_CSS + CSS}</style>
 
-      <div className={`${isDark ? 'bg-[#E8FF86] text-black' : isBeige ? 'bg-black text-[#E8FF86]' : 'bg-[#0A0A0A] text-white'} h-7 md:h-8 flex items-center overflow-hidden border-b ${isDark ? 'border-black/10' : 'border-transparent'}`}>
-        <div className="flex animate-[marquee_24s_linear_infinite] whitespace-nowrap gap-10 text-[10px] font-black tracking-[0.18em]">
-          <span>{announcement}</span><span>{announcement}</span><span>{announcement}</span><span>{announcement}</span>
-        </div>
-      </div>
+      {c.showAnnouncement && c.announcement && <div className="h-9 grid place-items-center bg-[var(--pm-accent)] text-white text-[11px] font-medium tracking-[0.14em] px-4 truncate">{c.announcement}</div>}
 
-      <header className={`h-[56px] md:h-[64px] border-b sticky top-0 z-30 glass ${isDark ? 'bg-black/80 border-white/10' : isBeige ? 'bg-[#F5F1EB]/85 border-black/10' : 'bg-[#FCFBF9]/85 border-black/10'}`}>
-        <div className="max-w-[1320px] mx-auto h-full px-4 md:px-6 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="font-black text-[13px] md:text-[14px] tracking-[0.14em]">{custom.headerLabel || headerLabel}</div>
-            {isEditorial && <div className="hidden md:flex h-6 px-3 bg-black text-white rounded-full text-[9px] font-bold tracking-widest items-center">{custom.headerTopLabel || headerTopLabel}</div>}
-            <div className="hidden lg:flex items-center gap-2 ml-6">
-              {brands.slice(0,4).map((b:string)=><button key={b} onClick={()=>setActiveBrand(b)} className={`h-7 px-3.5 rounded-full text-[11px] font-bold border transition-all ${activeBrand===b ? 'bg-black text-white border-black' : isDark ? 'bg-white/10 border-white/10 text-white/60 hover:text-white' : 'bg-white border-black/10 hover:border-black/20'}`}>{b}</button>)}
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="hidden md:flex items-center gap-2 text-[10px] font-mono tracking-widest opacity-60"><span>✦</span><span>{products.length} PRODUCTS</span><span>•</span><span>COD</span></div>
-            <button onClick={openCart} className={`h-9 md:h-10 px-4 md:px-5 rounded-full text-[12px] font-black flex items-center gap-2 transition-transform hover:scale-[1.02] ${isDark ? 'bg-white text-black' : 'bg-black text-white'}`}>Cart <span className={`w-5 h-5 rounded-full grid place-items-center text-[10px] ${isDark ? 'bg-black text-white' : 'bg-white text-black'}`}>{cartCount}</span></button>
+      <header className="sticky top-3 z-30 px-3 mt-3">
+        <div className="max-w-[1120px] mx-auto h-[62px] pl-5 pr-2.5 rounded-full bg-white/75 backdrop-blur-xl border border-white shadow-[0_14px_40px_-22px_rgba(60,40,20,0.6)] flex items-center justify-between gap-3">
+          <a href="#" onClick={e => e.preventDefault()} className="serif text-[21px] md:text-[24px] font-medium tracking-[-0.02em] truncate">{c.logoImage ? <img src={c.logoImage} alt={c.headerLabel} className="h-8 max-w-[150px] object-contain" /> : c.headerLabel}</a>
+          <nav className="hidden md:flex items-center gap-1 text-[13.5px] font-medium" aria-label="Sections">
+            {[['Shop', 'pm-collection'], ...(reviews.length ? [['Lookbook', 'pm-lookbook'], ['Reviews', 'pm-reviews']] : [['Lookbook', 'pm-lookbook']])].map(([l, id]) => <button type="button" key={id} onClick={e => S.scrollTo(e, id)} className="h-10 px-4 rounded-full hover:bg-[#2B2118]/[0.06] transition">{l}</button>)}
+          </nav>
+          <div className="flex items-center gap-1.5">
+            <button type="button" onClick={() => S.setSavedOnly(!S.savedOnly)} aria-label="Saved" aria-pressed={S.savedOnly} className={`relative w-11 h-11 grid place-items-center rounded-full transition ${S.savedOnly ? 'bg-[var(--pm-accent)] text-white' : 'hover:bg-[#2B2118]/[0.06]'}`}><Ic.heart c="w-[19px] h-[19px]" fill={S.savedOnly} />{S.wish.length > 0 && <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 grid place-items-center rounded-full bg-[#2B2118] text-white text-[9px] font-bold">{S.wish.length}</span>}</button>
+            <button type="button" onClick={S.openCart} className="h-11 pl-4 pr-2 rounded-full bg-[#2B2118] text-[#FBF8F3] inline-flex items-center gap-2.5 text-[13px] font-semibold hover:bg-[var(--pm-accent)] transition"><Ic.bag c="w-[17px] h-[17px]" /><span className="hidden sm:inline">Bag</span><span className="min-w-[26px] h-[26px] px-1.5 grid place-items-center rounded-full bg-white/20 text-[12px] tabular-nums">{S.cartCount}</span></button>
           </div>
         </div>
       </header>
 
-      <section className="max-w-[1320px] mx-auto px-4 md:px-6 py-8 md:py-14 grid lg:grid-cols-[1.1fr_0.9fr] gap-8 md:gap-12 items-start">
-        <div className="lg:sticky lg:top-[104px]">
-          <div className={`inline-flex h-7 px-3.5 rounded-full text-[10px] font-black tracking-[0.16em] items-center border ${isDark ? 'bg-white/10 border-white/15 text-white' : 'bg-white border-black/10 shadow-sm'}`}>{badge}</div>
-          <h1 className="mt-5 md:mt-7 text-[38px] md:text-[68px] leading-[0.85] tracking-[-0.04em] font-[900] whitespace-pre-line font-serif">{heroTitle}</h1>
-          <p className={`mt-4 md:mt-6 text-[13px] md:text-[14px] leading-[1.5] max-w-[420px] ${muted}`}>{heroSubtitle}</p>
-
-          <div className="mt-7 flex flex-wrap gap-2.5">
-            <button onClick={()=>document.getElementById('collection')?.scrollIntoView({behavior:'smooth'})} className={`h-11 md:h-12 px-6 md:px-7 rounded-full text-[13px] font-black tracking-[-0.01em] transition-transform hover:scale-[1.02] ${isDark ? 'bg-white text-black' : 'bg-black text-white'}`}>{ctaText}</button>
-            <div className={`h-11 md:h-12 px-4 rounded-full border text-[11px] font-bold flex items-center gap-2 ${isDark ? 'border-white/15 bg-white/5' : 'border-black/10 bg-white'}`}>
-              <span className="w-2 h-2 bg-[#25D366] rounded-full animate-pulse" /> WhatsApp COD Available
-            </div>
+      {/* HERO collage */}
+      <section className="max-w-[1180px] mx-auto px-5 md:px-8 pt-12 md:pt-20 pb-14 grid lg:grid-cols-[1fr_0.95fr] gap-14 items-center">
+        <div>
+          <span className="pm-rise inline-flex items-center gap-2 h-9 px-4 rounded-full bg-white/70 border border-white text-[12.5px] font-medium"><span className="w-2 h-2 rounded-full bg-[var(--pm-accent)]" />{c.heroBadge}</span>
+          <h1 className="serif mt-6 text-[clamp(42px,6.2vw,92px)] leading-[0.98] font-medium tracking-[-0.035em]">{lines.map((l: string, i: number) => <span key={i} className={`pm-rise block ${i === 1 ? 'italic font-normal text-[var(--pm-accent)]' : ''}`} style={{ animationDelay: `${120 + i * 120}ms` }}>{l}</span>)}</h1>
+          <p className="pm-rise mt-6 max-w-[440px] text-[16px] leading-[1.7] text-[#2B2118]/65" style={{ animationDelay: '520ms' }}>{c.heroSubtitle}</p>
+          <div className="pm-rise mt-8 flex flex-wrap gap-3" style={{ animationDelay: '640ms' }}>
+            <button type="button" onClick={e => S.scrollTo(e, 'pm-collection')} className={`h-[54px] px-8 text-[14px] font-semibold inline-flex items-center gap-2.5 transition ${SKIN.btn}`}>{c.ctaText}<Ic.right c="w-4 h-4" /></button>
+            {c.secondaryCta && <button type="button" onClick={S.openCart} className="h-[54px] px-8 text-[14px] font-semibold rounded-full border border-[#2B2118]/25 hover:bg-white/70 transition">{c.secondaryCta}</button>}
           </div>
-
-          <div className="mt-8 flex flex-wrap gap-1.5">
-            {brands.map((b:string)=><button key={b} onClick={()=>setActiveBrand(b)} className={`h-8 px-4 rounded-full text-[12px] font-bold border transition-all ${activeBrand===b ? 'bg-black text-white border-black shadow-[0_4px_12px_rgba(0,0,0,0.15)]' : isDark ? 'bg-[#141414] border-white/10 text-white/60 hover:text-white hover:border-white/20' : 'bg-white border-black/10 hover:border-black/20'}`}>{b}</button>)}
-          </div>
-
-          <div className="mt-8 grid grid-cols-3 gap-2.5 max-w-[400px]">
-            <div className={`${cardBg} border rounded-[14px] p-3.5`}><div className="font-black text-[16px]">{statsOrders}</div><div className="text-[10px] tracking-widest font-bold opacity-60 mt-1">ORDERS</div></div>
-            <div className={`${cardBg} border rounded-[14px] p-3.5`}><div className="font-black text-[16px]">{statsRating}</div><div className="text-[10px] tracking-widest font-bold opacity-60 mt-1">RATING</div></div>
-            <div className={`${cardBg} border rounded-[14px] p-3.5`}><div className="font-black text-[16px]">{statsCod}</div><div className="text-[10px] tracking-widest font-bold opacity-60 mt-1">AVAILABLE</div></div>
-          </div>
-
-          <div className="mt-6 flex items-center gap-3 text-[11px]">
-            <div className="flex -space-x-1.5">{[0,1,2].map(i=><img key={i} src={products[i]?.image_url} className="w-7 h-7 rounded-full border-2 border-white object-cover" alt="" />)}</div>
-            <div className={`${muted} font-medium`}>Trusted by {statsOrders} customers • 7-day return • Free shipping over 5000</div>
-          </div>
+          {c.showStats && <div className="pm-rise mt-10 flex items-center gap-4" style={{ animationDelay: '760ms' }}>
+            <div className="flex -space-x-3">{avatars.map((u: string, i: number) => <Img key={i} src={u} className="w-11 h-11 rounded-full object-cover border-[3px] border-[#F3EEE6]" />)}</div>
+            <div><div className="flex items-center gap-1 text-[var(--pm-accent)]">{[0, 1, 2, 3, 4].map(i => <Ic.star key={i} c="w-3.5 h-3.5" fill />)}<span className="ml-1.5 text-[13px] font-bold text-[#2B2118]">{c.stats?.[1]?.value}</span></div><div className="text-[12.5px] text-[#2B2118]/55 mt-0.5">{c.stats?.[0]?.value} {String(c.stats?.[0]?.label || '').toLowerCase()} • {c.stats?.[2]?.value} {String(c.stats?.[2]?.label || '').toLowerCase()}</div></div>
+          </div>}
         </div>
 
-        <div className="relative">
-          <div className={`relative w-full max-w-[440px] mx-auto aspect-[4/5.2] rounded-[32px] md:rounded-[40px] overflow-hidden border shadow-[0_32px_80px_-16px_rgba(0,0,0,0.18)] ${isDark ? 'bg-[#141414] border-white/10' : 'bg-white border-black/5'}`}>
-            <img src={heroImage} className="w-full h-full object-cover" alt="" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
-            <div className="absolute top-4 left-4 flex gap-2">
-              <div className="h-7 px-3 bg-white text-black rounded-full text-[10px] font-black tracking-widest flex items-center shadow">{freeShippingBadge}</div>
-              <div className="h-7 px-3 bg-black text-white rounded-full text-[10px] font-black tracking-widest flex items-center">{hotBadge}</div>
-            </div>
-            <div className="absolute bottom-0 left-0 right-0 p-4 md:p-5 bg-gradient-to-t from-black/80 to-transparent">
-              <div className="flex justify-between items-end text-white">
-                <div><div className="text-[11px] font-bold tracking-widest opacity-80">{featuredLabel}</div><div className="mt-1 text-[14px] font-bold">{products[0]?.name}</div><div className="text-[12px] opacity-70">Rs. {products[0]?.price?.toLocaleString()}</div></div>
-                <button onClick={()=>{ onOpen(products[0]); }} className="h-9 w-9 bg-white text-black rounded-full grid place-items-center font-black">↗</button>
-              </div>
-            </div>
-            <div className="absolute -right-3 -top-3 w-20 h-20 rounded-full border grid place-items-center text-[10px] font-black tracking-widest backdrop-blur bg-white/90 text-black border-black/10 shadow-xl rotate-12">{isBeige ? 'BEIGE' : isDark ? 'NOIR' : 'EDIT'}</div>
-          </div>
-
-          <div className="mt-4 grid grid-cols-3 gap-2.5 max-w-[440px] mx-auto">
-            {products.slice(1,4).map((p:any)=><div key={p.id} onClick={()=>onOpen(p)} className={`${cardBg} border rounded-[16px] p-2 cursor-pointer hover:-translate-y-1 transition-transform`}><img src={p.image_url} className="w-full aspect-square object-cover rounded-[10px]" alt="" /><div className="mt-2 text-[11px] font-bold truncate">{p.name}</div><div className="text-[11px] font-black">Rs. {p.price}</div></div>)}
-          </div>
+        <div className="relative mx-auto w-full max-w-[520px] pm-rise" style={{ animationDelay: '280ms' }}>
+          <div className="absolute -z-0 -top-8 -right-8 w-[78%] aspect-square rounded-full bg-[var(--pm-accent)]/25 blur-3xl" aria-hidden />
+          <div className="relative aspect-[4/5] rounded-[44px] rounded-bl-[170px] overflow-hidden shadow-[0_40px_80px_-30px_rgba(60,40,20,0.6)]"><Img src={S.heroImg} alt="" className="pm-ken w-full h-full object-cover" /></div>
+          <div className="absolute -bottom-8 -left-6 md:-left-12 w-[42%] aspect-square rounded-full overflow-hidden border-[8px] border-[#F3EEE6] shadow-xl"><Img src={S.heroImg2} alt="" className="w-full h-full object-cover" /></div>
+          <div className="absolute top-8 -right-3 md:-right-8 rounded-3xl bg-white/80 backdrop-blur-xl border border-white p-3.5 pr-5 shadow-xl pm-float"><div className="text-[10px] uppercase tracking-[0.18em] text-[var(--pm-accent)] font-bold">{c.featuredLabel}</div><div className="serif text-[17px] leading-tight mt-0.5 max-w-[150px] truncate">{S.products[0]?.name}</div><div className="text-[12.5px] font-bold mt-0.5">{S.products[0] ? S.m(S.products[0].price) : ''}</div></div>
         </div>
       </section>
 
-      <main id="collection" className="max-w-[1320px] mx-auto px-4 md:px-6 py-10 md:py-14">
-        <div className="flex items-end justify-between gap-4 mb-6">
-          <div><div className="text-[10px] font-black tracking-[0.18em] opacity-60">COLLECTION / {filtered.length}</div><h2 className="mt-2 text-[24px] md:text-[32px] font-black tracking-[-0.02em] leading-[0.9]">{activeBrand==='All' ? 'All Products' : activeBrand} — {isBeige ? 'Beige Studio' : isDark ? 'Dark Studio' : 'Editorial Studio'}</h2></div>
-          <div className="hidden md:flex items-center gap-2 text-[11px] font-bold"><span className={muted}>Sort:</span><span className="h-8 px-4 bg-black text-white rounded-full grid place-items-center">Newest</span></div>
-        </div>
+      {(c.trustBadges || []).length > 0 && (
+        <div className="max-w-[1180px] mx-auto px-5 md:px-8"><div className="rounded-full bg-white/60 border border-white py-4 px-6 flex flex-wrap items-center justify-center gap-x-9 gap-y-3 text-[13px] font-medium">{c.trustBadges.map((b: string, i: number) => <span key={i} className="inline-flex items-center gap-2.5"><span className="w-7 h-7 grid place-items-center rounded-full bg-[var(--pm-accent)]/12 text-[var(--pm-accent)]">{i === 0 ? <Ic.truck c="w-3.5 h-3.5" /> : i === 1 ? <Ic.undo c="w-3.5 h-3.5" /> : <Ic.check c="w-3.5 h-3.5" />}</span>{b}</span>)}</div></div>
+      )}
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-          {filtered.map((p:any,i:number)=>(
-            <div key={p.id} className={`group ${cardBg} border rounded-[20px] p-2.5 md:p-3 cursor-pointer hover:shadow-[0_12px_32px_-8px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all`}>
-              <div className="relative aspect-square rounded-[14px] overflow-hidden bg-[#F5F4F1]">
-                <img src={p.image_url} className="w-full h-full object-cover group-hover:scale-[1.04] transition duration-700" alt="" />
-                <div className="absolute top-2 left-2 flex gap-1.5">
-                  {i<2 && <div className="h-6 px-2.5 bg-[#E8FF86] text-black border border-black rounded-full text-[9px] font-black grid place-items-center">{hotBadge}</div>}
-                  {i===1 && <div className="h-6 px-2.5 bg-white text-black border rounded-full text-[9px] font-black grid place-items-center">{freeShippingBadge}</div>}
-                </div>
-                <button onClick={(e)=>{ e.stopPropagation(); toggleLike(p.id) }} className={`absolute top-2 right-2 w-7 h-7 rounded-full border grid place-items-center text-[12px] backdrop-blur ${liked.includes(p.id) ? 'bg-black text-white border-black' : 'bg-white/80 border-black/10'}`}>{liked.includes(p.id)?'♥':'♡'}</button>
-                <div className="absolute bottom-2 left-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition">
-                  <button onClick={(e)=>{ e.stopPropagation(); setQty(1); onOpen(p) }} className="flex-1 h-8 bg-white text-black rounded-full text-[11px] font-bold shadow">Quick View</button>
-                  <button onClick={(e)=>{ e.stopPropagation(); onAdd(p); }} className="h-8 w-8 bg-black text-white rounded-full grid place-items-center font-bold">+</button>
-                </div>
-              </div>
-              <div className="mt-3 px-1">
-                <div className="flex justify-between gap-2"><div className="font-bold text-[12px] md:text-[13px] leading-[1.2] line-clamp-1">{p.name}</div><div className="font-black text-[12px] md:text-[13px] shrink-0">Rs. {p.price.toLocaleString()}</div></div>
-                <div className={`mt-1 text-[11px] ${muted} line-clamp-1`}>Premium • COD • Free Shipping</div>
-                <div className="mt-2.5 flex items-center gap-1.5">
-                  <div className="flex gap-1">{[0,1,2].map(k=><div key={k} className="w-3 h-3 rounded-full border border-black/10" style={{background: ['#0A0A0A','#E8E6E1','#7C3AED'][k]}} />)}</div>
-                  <div className="text-[10px] font-bold opacity-60">• EU 28-34 • 3 colors</div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+      {/* COLLECTION — staggered columns */}
+      <section id="pm-collection" className="max-w-[1180px] mx-auto px-5 md:px-8 pt-24 pb-10">
+        <div className="text-center"><div className="text-[12.5px] font-semibold text-[var(--pm-accent)]">{c.collectionSubtitle}</div><h2 className="serif mt-2 text-[clamp(36px,4.8vw,64px)] leading-[1] font-medium tracking-[-0.03em]">{c.collectionTitle}</h2></div>
+        <div className="mt-8 flex flex-wrap justify-center gap-2">{S.chips.map((b: string) => <button type="button" key={b} onClick={() => S.setActive(b)} aria-pressed={S.active === b} className={`h-11 px-6 text-[13.5px] font-semibold border transition-all ${S.active === b ? SKIN.chipOn : SKIN.chip} rounded-full`}>{b}</button>)}</div>
+        <div className="mt-5 flex flex-wrap justify-center gap-3">{c.showSearch && <SearchBox S={S} className="w-full sm:w-[280px]" inputClass={`h-11 text-[13.5px] ${SKIN.input}`} />}{c.showSort && <SortSelect S={S} className="h-11 px-4 rounded-2xl bg-white/70 border border-[#2B2118]/12 text-[13px] font-medium" />}</div>
+        <div className="mt-12 grid grid-cols-2 lg:grid-cols-4 gap-x-4 md:gap-x-6 gap-y-10 lg:[&>*:nth-child(4n+2)]:mt-14 lg:[&>*:nth-child(4n+4)]:mt-14">{filtered.map((p: any) => <Item key={p.id} p={p} S={S} />)}</div>
+        {filtered.length === 0 && <div className="py-20 text-center rounded-[34px] bg-white/60 mt-8"><div className="serif text-[28px]">Nothing here yet</div><button type="button" onClick={() => { S.setQuery(''); S.setActive('All'); S.setSavedOnly(false) }} className={`mt-5 h-12 px-7 text-[13.5px] font-semibold ${SKIN.btn}`}>Clear filters</button></div>}
+      </section>
 
-        <div className={`mt-12 md:mt-16 rounded-[24px] md:rounded-[32px] border p-6 md:p-10 grid md:grid-cols-2 gap-8 items-center ${isDark ? 'bg-[#0A0A0A] border-white/10' : isBeige ? 'bg-[#0A0A0A] text-[#F5F1EB] border-black' : 'bg-[#0A0A0A] text-white border-black'}`}>
-          <div>
-            <div className="text-[10px] font-black tracking-[0.2em] opacity-60">OUR STORY / {isBeige ? 'BEIGE' : isDark ? 'DARK' : 'EDITORIAL'}</div>
-            <h3 className="mt-3 text-[28px] md:text-[40px] font-black leading-[0.9] tracking-[-0.02em] whitespace-pre-line font-serif">{heroTitle}</h3>
-            <p className="mt-4 text-[13px] leading-[1.6] opacity-70 max-w-[420px]">{heroSubtitle} Curated for modern icons, built for everyday. Each piece tells a story of craftsmanship, minimalism, and intent.</p>
-            <div className="mt-6 flex flex-wrap gap-2">
-              {[
-                { k: 'Craft', v: 'Hand-finished, 48h process' },
-                { k: 'Return', v: '7 days, no questions' },
-                { k: 'Shipping', v: 'Free over Rs. 5000 + COD' },
-              ].map(s=><div key={s.k} className="h-10 px-4 rounded-full bg-white/10 border border-white/10 flex items-center gap-2 text-[11px]"><span className="font-black tracking-widest">{s.k.toUpperCase()}</span><span className="opacity-60">{s.v}</span></div>)}
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-3">
-              <div className="aspect-[4/5] rounded-[20px] overflow-hidden bg-white/5 border border-white/10"><img src={products[1]?.image_url} className="w-full h-full object-cover" alt="" /></div>
-              <div className="h-12 rounded-[14px] bg-[#E8FF86] text-black grid place-items-center font-black text-[11px] tracking-widest">{statsOrders} ORDERS • {statsRating} RATING</div>
-            </div>
-            <div className="space-y-3 pt-6">
-              <div className="aspect-[4/5] rounded-[20px] overflow-hidden bg-white/5 border border-white/10"><img src={products[2]?.image_url || heroImage} className="w-full h-full object-cover" alt="" /></div>
-              <div className="h-12 rounded-[14px] bg-white text-black grid place-items-center font-black text-[11px] tracking-widest">{freeShippingBadge} • {statsCod}</div>
-            </div>
-          </div>
+      {/* LOOKBOOK */}
+      <section id="pm-lookbook" className="max-w-[1180px] mx-auto px-5 md:px-8 py-16 pm-reveal">
+        <div className="relative rounded-[44px] overflow-hidden min-h-[420px] md:min-h-[520px] flex items-end">
+          <Img src={lookImg} alt="" className="absolute inset-0 w-full h-full object-cover pm-ken" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#2B2118]/85 via-[#2B2118]/25 to-transparent" />
+          <div className="relative p-8 md:p-14 max-w-[620px] text-[#FBF8F3]"><div className="text-[12px] uppercase tracking-[0.22em] opacity-80">Lookbook</div><h3 className="serif mt-3 text-[clamp(34px,4.6vw,62px)] leading-[1.02] font-medium tracking-[-0.03em]">{c.lookbookTitle}</h3><p className="mt-4 text-[15px] leading-[1.7] opacity-80">{c.lookbookText}</p><button type="button" onClick={e => S.scrollTo(e, 'pm-collection')} className="mt-7 h-12 px-7 rounded-full bg-[#FBF8F3] text-[#2B2118] text-[13.5px] font-semibold inline-flex items-center gap-2 hover:gap-3.5 transition-all">Shop the look<Ic.right c="w-4 h-4" /></button></div>
         </div>
-      </main>
+      </section>
 
-      <footer className={`border-t mt-8 ${isDark ? 'border-white/10 bg-black' : 'border-black/10 bg-white/50'}`}>
-        <div className="max-w-[1320px] mx-auto px-6 py-8 flex flex-wrap justify-between gap-4 text-[11px]">
-          <div className="font-black tracking-widest">{custom.headerLabel || headerLabel} • {profile?.business_name} • {new Date().getFullYear()}</div>
-          <div className="flex gap-4 opacity-60 font-medium"><span>Instagram</span><span>WhatsApp</span><span>Shipping</span><span>Returns</span></div>
+      {/* REVIEWS */}
+      {reviews.length > 0 && (
+        <section id="pm-reviews" className="max-w-[1180px] mx-auto px-5 md:px-8 pb-20">
+          <h3 className="serif text-center text-[clamp(30px,3.8vw,48px)] font-medium tracking-[-0.03em]">Kind words</h3>
+          <div className="mt-10 grid md:grid-cols-3 gap-5">{reviews.slice(0, 4).map((r: any, i: number) => (
+            <figure key={i} className="pm-reveal relative bg-white/75 border border-white rounded-[30px] p-7 shadow-[0_24px_50px_-34px_rgba(60,40,20,0.6)] hover:-translate-y-1.5 transition-transform duration-500">
+              <div className="serif text-[64px] leading-none text-[var(--pm-accent)]/35 absolute top-4 right-6" aria-hidden>”</div>
+              <div className="flex gap-0.5 text-[var(--pm-accent)]">{[0, 1, 2, 3, 4].map(k => <Ic.star key={k} c="w-4 h-4" fill />)}</div>
+              <blockquote className="mt-4 text-[15px] leading-[1.7] text-[#2B2118]/80">{r.text}</blockquote>
+              <figcaption className="mt-5 flex items-center gap-3 text-[13px] font-semibold"><span className="w-9 h-9 rounded-full bg-[var(--pm-accent)] text-white grid place-items-center">{String(r.name || '?').charAt(0)}</span>{r.name}</figcaption>
+            </figure>))}</div>
+        </section>
+      )}
+
+      <footer className="bg-[#2B2118] text-[#F3EEE6] rounded-t-[48px]">
+        <div className="max-w-[1180px] mx-auto px-5 md:px-8 py-14 grid md:grid-cols-[1.4fr_1fr] gap-8 items-end">
+          <div><div className="serif text-[34px] font-medium tracking-[-0.03em]">{c.headerLabel}</div><p className="mt-3 max-w-[420px] text-[14.5px] leading-[1.7] text-[#F3EEE6]/65">{c.footerAbout}</p></div>
+          <div className="text-[13px] text-[#F3EEE6]/60 space-y-1.5 md:text-right">{c.instagram && <div className="text-[var(--pm-accent)] font-semibold">{c.instagram}</div>}{c.address && <div>{c.address}</div>}<div>{S.profile?.whatsapp_number}</div><div className="pt-3 text-[11.5px] text-[#F3EEE6]/40">{c.footerNote || `© ${S.profile?.business_name || c.headerLabel}`}</div></div>
         </div>
       </footer>
 
-      {selectedProduct && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-[8px] z-50 grid place-items-center p-3 md:p-4">
-          <div className="bg-white text-black rounded-[24px] w-full max-w-[880px] grid md:grid-cols-[1.1fr_0.9fr] overflow-hidden max-h-[92vh] shadow-[0_32px_80px_rgba(0,0,0,0.4)]">
-            <div className="relative bg-[#F5F4F1] p-3 md:p-4"><img src={selectedProduct.image_url} className="w-full aspect-square object-cover rounded-[16px]" alt="" /><div className="absolute top-6 left-6 h-7 px-3 bg-white rounded-full text-[10px] font-black grid place-items-center border shadow">{freeShippingBadge}</div><button onClick={()=>setSelectedProduct(null)} className="absolute top-6 right-6 w-8 h-8 bg-black text-white rounded-full grid place-items-center">✕</button></div>
-            <div className="p-5 md:p-6 flex flex-col overflow-auto">
-              <div className="flex justify-between items-start gap-3"><h2 className="font-black text-[20px] leading-[1.1]">{selectedProduct.name}</h2><div className="font-black text-[18px]">Rs. {selectedProduct.price.toLocaleString()}</div></div>
-              <p className="mt-3 text-[12px] leading-[1.5] text-black/60">{selectedProduct.description || heroSubtitle}</p>
-              <div className="mt-4 flex items-center justify-between"><div className="text-[10px] font-black">QTY</div><div className="flex items-center gap-2 bg-[#F5F1EB] rounded-full p-1 border"><button onClick={()=>setQty(Math.max(1,qty-1))} className="w-7 h-7 bg-white border rounded-full grid place-items-center font-bold">−</button><span className="w-7 text-center font-black">{qty}</span><button onClick={()=>setQty(qty+1)} className="w-7 h-7 bg-white border rounded-full grid place-items-center font-bold">+</button></div></div>
-              <div className="mt-auto pt-6 grid grid-cols-[1fr_56px] gap-2"><button onClick={()=>{ for(let i=0;i<qty;i++) onAdd(selectedProduct); setSelectedProduct(null); setTimeout(()=>openCart(),300) }} className="h-12 bg-black text-white rounded-full font-black text-[13px]">Add to Cart — Rs. {(selectedProduct.price*qty).toLocaleString()}</button><button className="h-12 w-14 bg-[#E8FF86] text-black rounded-full grid place-items-center font-black text-[18px] border border-black">↗</button></div>
-              <div className="mt-3 text-[10px] text-black/50 text-center">COD • Free Shipping over 5000 • 7 Days Return • WhatsApp Support</div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className={`fixed inset-0 z-50 ${localShowCart ? '' : 'pointer-events-none'}`}>
-        <div className={`absolute inset-0 bg-black/50 backdrop-blur-sm transition ${localShowCart ? 'opacity-100' : 'opacity-0'}`} onClick={closeCart} />
-        <div className={`absolute right-0 top-0 bottom-0 w-full max-w-[400px] bg-white text-black flex flex-col shadow-[-16px_0_64px_rgba(0,0,0,0.2)] transition-transform ${localShowCart ? 'translate-x-0' : 'translate-x-full'}`}>
-          <div className="p-5 border-b flex justify-between items-center"><h3 className="font-black text-[14px] tracking-[-0.01em]">Cart ({cartCount}) — {custom.headerLabel || headerLabel}</h3><button onClick={closeCart} className="w-8 h-8 border rounded-full grid place-items-center">✕</button></div>
-          <div className="flex-1 overflow-auto p-3 space-y-2.5">
-            {cart.length===0 ? <div className="py-20 text-center"><div className="text-[14px] font-bold">Your cart is empty</div><div className="mt-2 text-[12px] text-black/50">Add some products from {custom.headerLabel || headerLabel}</div></div> : cart.map((p:any,i:number)=><div key={i} className="flex gap-3 p-3 bg-[#F5F1EB] rounded-[14px] border"><img src={p.image_url} className="w-14 h-14 rounded-[10px] object-cover" alt="" /><div className="flex-1"><div className="font-bold text-[12px]">{p.name}</div><div className="text-[11px] text-black/50">Rs. {p.price} • EU 31 • Black</div></div><div className="font-black text-[12px]">Rs. {p.price}</div></div>)}
-          </div>
-          {cartCount>0 && <div className="p-5 border-t space-y-3"><div className="flex justify-between font-black text-[13px]"><span>Total</span><span>Rs. {cartTotal.toLocaleString()}</span></div><input value={customerName} onChange={e=>setCustomerName(e.target.value)} placeholder="Full Name" className="w-full h-11 px-4 border rounded-[12px] text-[13px] outline-none focus:border-black" /><input value={customerAddress} onChange={e=>setCustomerAddress(e.target.value)} placeholder="Full Address + City" className="w-full h-11 px-4 border rounded-[12px] text-[13px] outline-none focus:border-black" /><button onClick={orderWhatsApp} className="w-full h-12 bg-[#25D366] text-white rounded-full font-black text-[13px] flex items-center justify-center gap-2">Order on WhatsApp →</button><div className="text-[10px] text-center text-black/50">COD • Free Shipping • 7 Days Return • Premium Packaging</div></div>}
-        </div>
-      </div>
+      <Overlays S={S} skin={SKIN} layout="modal" />
     </div>
   )
 }
-
-
-
-
-export function SleekBeigePremiumTheme(props:any){ return SleekBase({...props, variant:'beige'}) }
