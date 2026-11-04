@@ -185,7 +185,7 @@ export default function LandingPage() {
                   <span className="font-semibold tracking-[-0.02em] text-[15px]">DukaanWhats.pk</span>
                   <span className="hidden md:inline-flex h-5 items-center rounded-full bg-[#E8FF86] border border-black/10 px-2 text-[9px] font-black tracking-widest">BY M AAKIF</span>
                 </div>
-                <p className="mt-3 text-[13px] leading-[1.6] text-zinc-500">One-page WhatsApp store for Pakistani Instagram sellers. No commission. Built solo in Karachi.</p>
+                <p className="mt-3 text-[13px] leading-[1.6] text-zinc-500">One-page WhatsApp store for Pakistani Instagram sellers. No commission. Based in Islamabad.</p>
               </div>
 
               {/* Elegant pill menu */}
@@ -201,14 +201,14 @@ export default function LandingPage() {
                 </div>
                 <div className="flex items-center gap-2 text-[11px] text-zinc-400">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#25D366] animate-pulse" />
-                  <span>Built in Karachi for Pakistani sellers</span>
+                  <span>Based in Islamabad, built for Pakistani sellers</span>
                 </div>
               </div>
             </div>
 
             {/* Bottom */}
             <div className="mt-10 flex flex-col md:flex-row md:items-center md:justify-between gap-3 border-t border-black/[0.06] pt-6 text-[11px] text-zinc-500">
-              <span>© 2026 DukaanWhats.pk • Built solo by M Aakif • Karachi</span>
+              <span>© 2026 DukaanWhats.pk • Built solo by M Aakif • Islamabad</span>
               <span className="flex items-center gap-2">
                 <span className="hidden md:inline-flex h-5 items-center rounded-full bg-[#F8F7F5] border px-2.5 text-[10px] font-bold">MA</span>
                 <span>Made for Pakistan ♥</span>

@@ -45,7 +45,7 @@ export function SleekEditorialPremiumTheme({ S }: { S: any }) {
       <div className="max-w-[1320px] mx-auto px-4 md:px-8 pt-5">
         <div className="flex items-center justify-between text-[10.5px] uppercase tracking-[0.22em] text-black/60"><span className="hidden sm:block" suppressHydrationWarning>{today}</span><span className="text-[var(--pm-accent)] font-semibold">{c.issueLabel}</span><button type="button" onClick={S.openCart} className="inline-flex items-center gap-2 hover:text-[var(--pm-accent)] transition"><Ic.bag c="w-4 h-4" />Bag ({S.cartCount})</button></div>
         <div className="py-4 md:py-6 text-center">
-          <a href="#" onClick={e => e.preventDefault()}>{c.logoImage ? <img src={c.logoImage} alt={c.headerLabel} className="h-14 md:h-20 mx-auto object-contain" /> : <span className="serif block text-[clamp(48px,11vw,168px)] leading-[0.88] tracking-[-0.045em]">{c.headerLabel}</span>}</a>
+          <a href="#top">{c.logoImage ? <img src={c.logoImage} alt={c.headerLabel} className="h-14 md:h-20 mx-auto object-contain" /> : <span className="serif block text-[clamp(48px,11vw,168px)] leading-[0.88] tracking-[-0.045em]">{c.headerLabel}</span>}</a>
         </div>
       </div>
       <nav className="sticky top-0 z-30 bg-[#FBFAF7]/92 backdrop-blur-md" aria-label="Filters">

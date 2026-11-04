@@ -1,208 +1,213 @@
 'use client'
-import { useEffect, useState } from 'react'
+
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import type { Session } from '@supabase/supabase-js'
+import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 
-const TILL_ID = '984837533'
-const ADMIN_PASSWORD = 'Malik@235' // CHANGE THIS
-const ADMIN_EMAILS = ['nexusdeals235@gmail.com'] // Add your email
+type AdminView = 'payments' | 'users'
+type Profile = { id: string; business_name: string | null; whatsapp_number: string | null; store_slug: string | null; current_plan: string | null }
+type Payment = { id: string; user_id: string; plan_id: string; amount: number; till_id: string; txn_id: string; status: 'pending' | 'approved' | 'rejected'; billing_cycle: string; created_at: string; profiles: Profile | null }
+type AdminUser = { id: string; email: string; created_at: string; last_sign_in_at: string | null; email_confirmed_at: string | null; profile: Profile | null }
 
-type Payment = {
-  id: string
-  user_id: string
-  plan_id: 'basic'|'advanced'|'premium'
-  amount: number
-  till_id: string
-  txn_id: string
-  status: 'pending'|'approved'|'rejected'
-  billing_cycle: string
-  created_at: string
-  profiles?: any
+const date = (value?: string | null) => value ? new Date(value).toLocaleString('en-PK', { dateStyle: 'medium', timeStyle: 'short' }) : 'Never'
+const cleanPhone = (value?: string | null) => {
+  const digits = String(value || '').replace(/\D/g, '')
+  return digits.startsWith('0') ? `92${digits.slice(1)}` : digits
 }
 
 export default function AdminPayments() {
-  const [verified, setVerified] = useState(false)
-  const [pass, setPass] = useState('')
+  const [session, setSession] = useState<Session | null>(null)
+  const [checkingSession, setCheckingSession] = useState(true)
+  const [view, setView] = useState<AdminView>('payments')
   const [payments, setPayments] = useState<Payment[]>([])
-  const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<'pending'|'approved'|'rejected'|'all'>('pending')
+  const [users, setUsers] = useState<AdminUser[]>([])
+  const [usersPage, setUsersPage] = useState(1)
+  const [usersHasMore, setUsersHasMore] = useState(false)
+  const [filter, setFilter] = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending')
   const [search, setSearch] = useState('')
-  const [authCheck, setAuthCheck] = useState(true)
+  const [loading, setLoading] = useState(false)
+  const [workingId, setWorkingId] = useState('')
+  const [error, setError] = useState('')
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
-    const saved = localStorage.getItem('dw_admin_ok')
-    if (saved === ADMIN_PASSWORD) {
-      setVerified(true)
-      fetchPayments()
-    }
-    setAuthCheck(false)
+    let alive = true
+    supabase.auth.getSession().then(({ data, error: sessionError }) => {
+      if (!alive) return
+      if (sessionError) setError(sessionError.message)
+      setSession(data.session)
+      setCheckingSession(false)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession)
+      setCheckingSession(false)
+    })
+    return () => { alive = false; subscription.unsubscribe() }
   }, [])
 
-  const checkPass = () => {
-    if (pass === ADMIN_PASSWORD) {
-      localStorage.setItem('dw_admin_ok', pass)
-      setVerified(true)
-      fetchPayments()
-    } else alert('Wrong password')
-  }
-
-  const fetchPayments = async () => {
-    setLoading(true)
-    // Simple query first - always works
-    const { data, error } = await supabase.from('plan_payments').select('*').order('created_at', { ascending: false })
-    if (error) { alert(error.message); setLoading(false); return }
-    
-    // Enrich with profiles one by one (safe)
-    if (data) {
-      const enriched = await Promise.all(data.map(async (p: any) => {
-        const { data: prof } = await supabase.from('profiles').select('business_name, whatsapp_number, store_slug, current_plan').eq('id', p.user_id).maybeSingle()
-        return { ...p, profiles: prof }
-      }))
-      setPayments(enriched)
+  useEffect(() => {
+    let alive = true
+    const load = async () => {
+      if (!session) return
+      setLoading(true)
+      setError('')
+      try {
+        const response = await fetch(`/api/admin?view=${view}${view === 'users' ? `&page=${usersPage}` : ''}`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+          cache: 'no-store',
+        })
+        const result = await response.json()
+        if (!response.ok) throw new Error(result.error || 'Could not load admin data.')
+        if (!alive) return
+        if (view === 'payments') setPayments(result.payments || [])
+        else { setUsers(result.users || []); setUsersHasMore(Boolean(result.hasMore)) }
+      } catch (reason: any) {
+        if (alive) setError(reason?.message || 'Could not load admin data.')
+      } finally {
+        if (alive) setLoading(false)
+      }
     }
-    setLoading(false)
-  }
+    load()
+    return () => { alive = false }
+  }, [session, view, refreshKey, usersPage])
 
-  const sendWhatsApp = (p: Payment) => {
-    const wa = p.profiles?.whatsapp_number?.replace(/[^0-9]/g, '') || ''
-    if (!wa) { alert('No WhatsApp'); return }
-    const plan = p.plan_id.toUpperCase()
-    const name = p.profiles?.business_name || 'there'
-    const link = `https://dukaanwhats.pk/s/${p.profiles?.store_slug || ''}`
-    const msg = `🎉 *DukaanWhats.pk - Payment Approved!*\n\nHi ${name}!\n\n✅ Your payment of *Rs. ${p.amount}* (Txn: ${p.txn_id}) for *${plan}* plan approved!\n\n🚀 Your store is now ${plan}!\n\n🔗 ${link}\n📊 Dashboard: https://dukaanwhats.pk/dashboard\n\nThanks for choosing DukaanWhats!`
-    // Try Edge Function, fallback to wa.me
-    supabase.functions.invoke('send-whatsapp', { body: { to: wa, message: msg, user_id: p.user_id } }).catch(()=>{})
-    const waLink = `https://wa.me/${wa}?text=${encodeURIComponent(msg)}`
-    window.open(waLink, '_blank')
-  }
+  const filteredPayments = useMemo(() => payments.filter(payment => {
+    if (filter !== 'all' && payment.status !== filter) return false
+    const needle = search.trim().toLowerCase()
+    if (!needle) return true
+    return [payment.txn_id, payment.profiles?.business_name, payment.profiles?.whatsapp_number, payment.plan_id, payment.user_id]
+      .some(value => String(value || '').toLowerCase().includes(needle))
+  }), [payments, filter, search])
 
-  const approve = async (p: Payment) => {
-    if (!confirm(`Approve ${p.profiles?.business_name} - ${p.plan_id} Rs.${p.amount} Txn:${p.txn_id} ?`)) return
-    const { error: e1 } = await supabase.from('plan_payments').update({ status: 'approved' }).eq('id', p.id)
-    if (e1) { alert(e1.message); return }
-    const { error: e2 } = await supabase.from('profiles').update({ current_plan: p.plan_id }).eq('id', p.user_id)
-    if (e2) alert('Payment approved but plan update failed: ' + e2.message)
-    sendWhatsApp(p)
-    fetchPayments()
-  }
+  const filteredUsers = useMemo(() => {
+    const needle = search.trim().toLowerCase()
+    if (!needle) return users
+    return users.filter(user => [user.email, user.profile?.business_name, user.profile?.whatsapp_number, user.profile?.store_slug, user.id]
+      .some(value => String(value || '').toLowerCase().includes(needle)))
+  }, [users, search])
 
-  const reject = async (p: Payment) => {
-    const reason = prompt(`Reject ${p.profiles?.business_name}? Reason:`)
-    if (reason === null) return
-    await supabase.from('plan_payments').update({ status: 'rejected' }).eq('id', p.id)
-    fetchPayments()
-  }
-
-  const filtered = payments.filter(p => {
-    if (filter !== 'all' && p.status !== filter) return false
-    if (search) {
-      const s = search.toLowerCase()
-      return p.txn_id.toLowerCase().includes(s) || p.profiles?.business_name?.toLowerCase().includes(s) || p.profiles?.whatsapp_number?.includes(s)
+  const updatePayment = useCallback(async (payment: Payment, status: 'approved' | 'rejected') => {
+    if (!session) return
+    const business = payment.profiles?.business_name || 'this customer'
+    if (!window.confirm(`${status === 'approved' ? 'Approve' : 'Reject'} ${business}'s ${payment.plan_id} payment of Rs. ${payment.amount}?`)) return
+    setWorkingId(payment.id)
+    setError('')
+    try {
+      const response = await fetch('/api/admin', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ paymentId: payment.id, status }),
+      })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error || 'Could not update payment.')
+      setRefreshKey(key => key + 1)
+    } catch (reason: any) {
+      setError(reason?.message || 'Could not update payment.')
+    } finally {
+      setWorkingId('')
     }
-    return true
-  })
+  }, [session])
 
-  if (authCheck) return <div className="min-h-screen bg-[#F8F7F5] flex items-center justify-center"><div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin" /></div>
-
-  if (!verified) {
-    return (
-      <div className="min-h-screen bg-[#F8F7F5] flex items-center justify-center p-4">
-        <div className="bg-white border rounded-[28px] p-8 w-full max-w-[380px] shadow-sm">
-          <div className="w-12 h-12 bg-black text-white rounded-[14px] flex items-center justify-center mx-auto">🔒</div>
-          <h1 className="font-black text-[20px] text-center mt-4 tracking-tight">Hidden Admin</h1>
-          <p className="text-[11px] text-zinc-500 text-center mt-2 leading-[1.4]">This page is not linked anywhere.<br/>Only you know this URL. Enter password.</p>
-          <input type="password" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==='Enter' && checkPass()} placeholder="Admin password" className="mt-6 w-full h-12 px-4 border rounded-[14px] bg-[#F8F7F5] focus:bg-white focus:outline-none focus:border-black text-[13px]" />
-          <button onClick={checkPass} className="mt-3 w-full h-12 bg-black text-white rounded-full font-bold text-[13px]">Unlock →</button>
-          <p className="text-[10px] text-zinc-400 text-center mt-4">Default: <span className="font-mono bg-zinc-100 px-1.5 py-0.5 rounded">DukaanWhats@2024Admin</span></p>
-          <div className="mt-6 pt-4 border-t text-center"><a href="/dashboard" className="text-[11px] text-zinc-500">← Dashboard</a></div>
-        </div>
-      </div>
-    )
+  const sendWhatsApp = (payment: Payment) => {
+    const number = cleanPhone(payment.profiles?.whatsapp_number)
+    if (!number) {
+      setError('This user has not added a WhatsApp number to their store profile.')
+      return
+    }
+    const plan = payment.plan_id.toUpperCase()
+    const business = payment.profiles?.business_name || 'there'
+    const storeUrl = payment.profiles?.store_slug ? `${window.location.origin}/s/${payment.profiles.store_slug}` : ''
+    const message = `DukaanWhats payment update\n\nHi ${business}, your ${plan} plan payment of Rs. ${payment.amount} (transaction ${payment.txn_id}) has been approved.${storeUrl ? `\n\nYour store: ${storeUrl}` : ''}\n\nThank you for choosing DukaanWhats.`
+    window.open(`https://wa.me/${number}?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer')
   }
+
+  const signOut = async () => {
+    await supabase.auth.signOut()
+    setPayments([])
+    setUsers([])
+    setError('')
+  }
+
+  if (checkingSession) return <main className="grid min-h-screen place-items-center bg-[#F8F7F5] text-sm text-zinc-500">Checking your session…</main>
+
+  if (!session) return (
+    <main className="grid min-h-screen place-items-center bg-[#F8F7F5] p-5 text-zinc-900">
+      <section className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-8 text-center shadow-sm">
+        <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-black text-xl text-[#E8FF86]">D</div>
+        <h1 className="mt-5 text-2xl font-bold tracking-tight">Administrator sign in</h1>
+        <p className="mt-2 text-sm leading-6 text-zinc-500">Sign in with your approved DukaanWhats account to view payments and registered users.</p>
+        {error && <p role="alert" className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-left text-sm text-red-700">{error}</p>}
+        <Link href="/login?next=%2Fadmin%2Fpayments" className="mt-6 inline-flex h-11 w-full items-center justify-center rounded-full bg-black px-5 text-sm font-semibold text-white">Sign in securely</Link>
+        <Link href="/" className="mt-4 inline-block text-sm text-zinc-500 hover:text-black">Back to home</Link>
+      </section>
+    </main>
+  )
+
+  const pendingCount = payments.filter(payment => payment.status === 'pending').length
+  const activeUsers = users.filter(user => user.profile?.current_plan && user.profile.current_plan !== 'basic').length
 
   return (
-    <div className="min-h-screen bg-[#F8F7F5] text-zinc-900">
-      <div className="max-w-[1100px] mx-auto p-4 md:p-6">
-        {/* Header */}
-        <div className="bg-white border rounded-[22px] p-5 md:p-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-black text-white rounded-[12px] flex items-center justify-center font-black text-[14px]">DW</div>
-              <div>
-                <h1 className="font-black text-[18px] tracking-tight">Admin • Till {TILL_ID}</h1>
-                <p className="text-[11px] text-zinc-500">Hidden • Secure • {payments.length} payments • {payments.filter(p=>p.status==='pending').length} pending</p>
-              </div>
+    <main className="min-h-screen bg-[#F7F7F5] text-zinc-900">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <header className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-zinc-200 bg-white p-5 sm:p-6">
+          <div className="flex items-center gap-3">
+            <div className="grid h-11 w-11 place-items-center rounded-2xl bg-black font-bold text-[#E8FF86]">DW</div>
+            <div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-zinc-400">Secure administrator</p><h1 className="text-xl font-bold tracking-tight">DukaanWhats Admin</h1><p className="mt-0.5 text-xs text-zinc-500">Signed in as {session.user.email}</p></div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => setRefreshKey(key => key + 1)} disabled={loading} className="h-10 rounded-full border border-zinc-200 px-4 text-sm font-medium hover:bg-zinc-50 disabled:opacity-50">{loading ? 'Refreshing…' : 'Refresh'}</button>
+            <button type="button" onClick={signOut} className="h-10 rounded-full border border-zinc-200 px-4 text-sm font-medium hover:bg-zinc-50">Sign out</button>
+          </div>
+        </header>
+
+        <section className="mt-5 grid gap-3 sm:grid-cols-3">
+          <div className="rounded-2xl border border-zinc-200 bg-white p-4"><p className="text-xs text-zinc-500">Users on this page</p><p className="mt-1 text-2xl font-bold">{users.length || '—'}</p></div>
+          <div className="rounded-2xl border border-zinc-200 bg-white p-4"><p className="text-xs text-zinc-500">Paid plans in loaded users</p><p className="mt-1 text-2xl font-bold">{view === 'users' ? activeUsers : '—'}</p></div>
+          <div className="rounded-2xl border border-zinc-200 bg-white p-4"><p className="text-xs text-zinc-500">Pending payments</p><p className="mt-1 text-2xl font-bold">{view === 'payments' ? pendingCount : '—'}</p></div>
+        </section>
+
+        <section className="mt-5 overflow-hidden rounded-3xl border border-zinc-200 bg-white">
+          <div className="flex flex-wrap items-center gap-2 border-b border-zinc-200 p-4 sm:p-5">
+            <div className="flex rounded-full bg-zinc-100 p-1">
+              {(['payments', 'users'] as const).map(item => <button key={item} type="button" aria-pressed={view === item} onClick={() => { setView(item); setSearch(''); setError(''); if (item === 'users') setUsersPage(1) }} className={`rounded-full px-4 py-2 text-sm font-semibold capitalize ${view === item ? 'bg-black text-white' : 'text-zinc-600 hover:text-black'}`}>{item}</button>)}
             </div>
-            <div className="flex items-center gap-2">
-              <button onClick={fetchPayments} className="h-9 px-4 border rounded-full bg-white text-[12px] font-medium">Refresh ↻</button>
-              <button onClick={()=>{localStorage.removeItem('dw_admin_ok'); setVerified(false); setPass('')}} className="h-9 px-4 border rounded-full bg-white text-[12px]">🔒 Lock</button>
-            </div>
+            {view === 'payments' && <div className="flex flex-wrap gap-1">{(['pending', 'approved', 'rejected', 'all'] as const).map(item => <button key={item} type="button" aria-pressed={filter === item} onClick={() => setFilter(item)} className={`rounded-full px-3 py-2 text-xs font-semibold capitalize ${filter === item ? 'bg-[#E8FF86] text-black' : 'text-zinc-500 hover:bg-zinc-100'}`}>{item}{item === 'pending' ? ` · ${pendingCount}` : ''}</button>)}</div>}
+            <label className="ml-auto w-full sm:w-72"><span className="sr-only">Search {view}</span><input value={search} onChange={event => setSearch(event.target.value)} placeholder={view === 'users' ? 'Search email, store, phone…' : 'Search transaction, store…'} className="h-10 w-full rounded-full border border-zinc-200 bg-zinc-50 px-4 text-sm outline-none focus:border-zinc-500 focus:bg-white" /></label>
           </div>
 
-          {/* Filters */}
-          <div className="mt-5 flex flex-wrap items-center gap-2">
-            {(['pending','approved','rejected','all'] as const).map(f => (
-              <button key={f} onClick={()=>setFilter(f)} className={`h-8 px-4 rounded-full text-[12px] font-bold capitalize border ${filter===f ? 'bg-black text-white border-black' : 'bg-[#F8F7F5] text-zinc-600'}`}>
-                {f} {f==='pending' ? `(${payments.filter(p=>p.status==='pending').length})` : ''}
-              </button>
-            ))}
-            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search Txn, Business, WhatsApp" className="ml-auto w-full md:w-[300px] h-9 px-4 border rounded-full bg-[#F8F7F5] focus:bg-white focus:outline-none focus:border-black text-[12px]" />
-          </div>
-        </div>
-
-        {/* Info */}
-        <div className="mt-4 bg-black text-white rounded-[14px] px-4 py-3 text-[11px] flex items-center gap-2">
-          <span className="w-2 h-2 bg-[#E8FF86] rounded-full animate-pulse" /> Secure: Only you know this URL. Change password in code: <span className="font-mono bg-white/10 px-1.5 py-0.5 rounded">ADMIN_PASSWORD</span>
-        </div>
-
-        {/* List */}
-        {loading ? (
-          <div className="mt-6 flex justify-center"><div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin" /></div>
-        ) : (
-          <div className="mt-4 bg-white border rounded-[22px] overflow-hidden">
-            <div className="hidden md:grid grid-cols-12 bg-[#F8F7F5] border-b px-5 py-3 text-[10px] font-black tracking-widest uppercase text-zinc-500">
-              <div className="col-span-4">Store / User</div>
-              <div className="col-span-2">Plan</div>
-              <div className="col-span-3">Txn & Amount</div>
-              <div className="col-span-1">Status</div>
-              <div className="col-span-2">Actions</div>
+          {error && <div role="alert" className="m-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"><span>{error}</span><button type="button" onClick={() => setRefreshKey(key => key + 1)} className="font-semibold underline">Try again</button></div>}
+          {loading ? <div className="p-12 text-center text-sm text-zinc-500">Loading {view}…</div> : view === 'users' ? (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[920px] text-left text-sm">
+                <thead className="bg-zinc-50 text-[10px] uppercase tracking-wider text-zinc-500"><tr><th className="px-5 py-3 font-bold">User / store</th><th className="px-5 py-3 font-bold">Contact</th><th className="px-5 py-3 font-bold">Plan</th><th className="px-5 py-3 font-bold">Joined</th><th className="px-5 py-3 font-bold">Last sign-in</th></tr></thead>
+                <tbody className="divide-y divide-zinc-100">
+                  {filteredUsers.map(user => <tr key={user.id} className="align-top hover:bg-zinc-50/70">
+                    <td className="px-5 py-4"><p className="font-semibold">{user.profile?.business_name || 'Store not set up'}</p><p className="mt-1 text-xs text-zinc-500">{user.email || 'No email'} · {user.profile?.store_slug ? `/s/${user.profile.store_slug}` : 'No store link'}</p><p className="mt-1 font-mono text-[10px] text-zinc-400">{user.id}</p></td>
+                    <td className="px-5 py-4 text-xs text-zinc-600">{user.profile?.whatsapp_number || 'No WhatsApp number'}<p className="mt-1 text-zinc-400">{user.email_confirmed_at ? 'Email confirmed' : 'Email unconfirmed'}</p></td>
+                    <td className="px-5 py-4"><span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold capitalize">{user.profile?.current_plan || 'basic'}</span></td>
+                    <td className="px-5 py-4 text-xs text-zinc-600">{date(user.created_at)}</td><td className="px-5 py-4 text-xs text-zinc-600">{date(user.last_sign_in_at)}</td>
+                  </tr>)}
+                  {!filteredUsers.length && <tr><td colSpan={5} className="p-10 text-center text-sm text-zinc-500">{error ? 'User data could not be loaded.' : 'No matching users.'}</td></tr>}
+                </tbody>
+              </table>
+              <div className="flex items-center justify-between border-t border-zinc-100 px-5 py-3 text-xs text-zinc-500"><span>Page {usersPage} · {users.length} users</span><div className="flex gap-2"><button type="button" disabled={usersPage <= 1 || loading} onClick={() => setUsersPage(page => Math.max(1, page - 1))} className="rounded-full border border-zinc-200 px-3 py-1.5 disabled:opacity-40">Previous</button><button type="button" disabled={!usersHasMore || loading} onClick={() => setUsersPage(page => page + 1)} className="rounded-full border border-zinc-200 px-3 py-1.5 disabled:opacity-40">Next</button></div></div>
             </div>
-
-            {filtered.length === 0 && <div className="p-12 text-center text-[13px] text-zinc-500">No {filter} payments</div>}
-
-            {filtered.map(p => (
-              <div key={p.id} className="grid md:grid-cols-12 gap-3 px-5 py-4 border-b last:border-0 hover:bg-[#FFFEF5] items-center">
-                <div className="md:col-span-4">
-                  <div className="font-black text-[13px]">{p.profiles?.business_name || 'Unknown Business'}</div>
-                  <div className="text-[11px] text-zinc-500 mt-1">WA: {p.profiles?.whatsapp_number || '—'} • /s/{p.profiles?.store_slug || '—'}</div>
-                  <div className="text-[10px] text-zinc-400 mt-1 font-mono">{p.user_id.slice(0,12)}... • {new Date(p.created_at).toLocaleString()}</div>
+          ) : (
+            <div className="divide-y divide-zinc-100">
+              {filteredPayments.map(payment => <article key={payment.id} className="grid gap-4 px-5 py-5 md:grid-cols-[1.5fr_1fr_1fr_auto] md:items-center">
+                <div><p className="font-semibold">{payment.profiles?.business_name || 'Unknown store'}</p><p className="mt-1 text-xs text-zinc-500">{payment.profiles?.whatsapp_number || 'No WhatsApp'} · {payment.profiles?.store_slug ? `/s/${payment.profiles.store_slug}` : 'No store link'}</p><p className="mt-1 font-mono text-[10px] text-zinc-400">{payment.user_id} · {date(payment.created_at)}</p></div>
+                <div><span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold capitalize">{payment.plan_id}</span><p className="mt-2 text-xs text-zinc-500">{payment.billing_cycle} billing</p></div>
+                <div><p className="font-semibold">Rs. {Number(payment.amount || 0).toLocaleString('en-PK')}</p><p className="mt-1 break-all font-mono text-xs text-zinc-500">{payment.txn_id}</p><p className="mt-1 text-[10px] text-zinc-400">Till {payment.till_id}</p></div>
+                <div className="flex flex-wrap items-center gap-2 md:justify-end"><span className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${payment.status === 'approved' ? 'bg-emerald-50 text-emerald-700' : payment.status === 'rejected' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700'}`}>{payment.status}</span>
+                  {payment.status === 'pending' ? <><button type="button" disabled={workingId === payment.id} onClick={() => updatePayment(payment, 'approved')} className="h-9 rounded-full bg-black px-4 text-xs font-semibold text-white disabled:opacity-50">{workingId === payment.id ? 'Saving…' : 'Approve'}</button><button type="button" disabled={workingId === payment.id} onClick={() => updatePayment(payment, 'rejected')} className="h-9 rounded-full border border-zinc-200 px-4 text-xs font-semibold disabled:opacity-50">Reject</button></> : payment.status === 'approved' ? <button type="button" onClick={() => sendWhatsApp(payment)} className="h-9 rounded-full bg-[#E8FF86] px-4 text-xs font-semibold">Resend WhatsApp</button> : null}
                 </div>
-                <div className="md:col-span-2 flex items-center gap-2">
-                  <span className={`h-6 px-3 rounded-full text-[11px] font-black flex items-center ${p.plan_id==='premium'?'bg-[#E8FF86] text-black':p.plan_id==='advanced'?'bg-black text-white':'bg-zinc-100'}`}>{p.plan_id.toUpperCase()}</span>
-                  <span className="text-[11px] text-zinc-500">{p.billing_cycle}</span>
-                </div>
-                <div className="md:col-span-3">
-                  <div className="font-black text-[13px]">Rs. {p.amount}</div>
-                  <div className="mt-1 font-mono text-[11px] bg-[#F8F7F5] border px-2.5 py-1 rounded-[10px] w-fit">{p.txn_id}</div>
-                  <div className="text-[10px] text-zinc-400 mt-1">Till {p.till_id}</div>
-                </div>
-                <div className="md:col-span-1">
-                  <span className={`h-6 px-2.5 rounded-full text-[10px] font-bold border flex items-center w-fit ${p.status==='pending'?'bg-yellow-50 text-yellow-700 border-yellow-200':p.status==='approved'?'bg-green-50 text-green-700 border-green-200':'bg-red-50 text-red-700 border-red-200'}`}>{p.status.toUpperCase()}</span>
-                </div>
-                <div className="md:col-span-2 flex flex-col gap-1.5">
-                  {p.status==='pending' ? (
-                    <>
-                      <button onClick={()=>approve(p)} className="h-9 bg-black text-white rounded-full text-[11px] font-bold hover:bg-zinc-900">✓ Approve + WA</button>
-                      <button onClick={()=>reject(p)} className="h-8 border bg-white rounded-full text-[11px]">✕ Reject</button>
-                    </>
-                  ) : (
-                    <button onClick={()=>sendWhatsApp(p)} className="h-9 bg-[#E8FF86] text-black border rounded-full text-[11px] font-bold">↗ Resend WA</button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+              </article>)}
+              {!filteredPayments.length && <div className="p-10 text-center text-sm text-zinc-500">{error ? 'Payment data could not be loaded.' : `No ${filter === 'all' ? '' : filter + ' '}payments found.`}</div>}
+            </div>
+          )}
+        </section>
       </div>
-    </div>
+    </main>
   )
 }

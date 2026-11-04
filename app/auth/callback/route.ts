@@ -1,29 +1,16 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url)
-  const code = searchParams.get('code')
-  const type = searchParams.get('type')
-  const next = searchParams.get('next')
+  const source = new URL(request.url)
+  const code = source.searchParams.get('code')
+  if (!code) return NextResponse.redirect(new URL('/login?authError=missing_code', source.origin))
 
-  // Recovery / reset password should go to /reset-password
-  if (code) {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-    if (!error) {
-      // If it's a password recovery, go to reset-password
-      if (type === 'recovery' || next === 'recovery' || request.url.includes('recovery')) {
-        return NextResponse.redirect(new URL('/reset-password', request.url))
-      }
-      // For recovery from new flow, also check hash
-      return NextResponse.redirect(new URL('/reset-password', request.url))
-    }
+  // Exchange PKCE codes in the browser so Supabase can persist the session there.
+  const destination = new URL('/auth/complete', source.origin)
+  destination.searchParams.set('code', code)
+  for (const key of ['type', 'next']) {
+    const value = source.searchParams.get(key)
+    if (value) destination.searchParams.set(key, value)
   }
-
-  // Fallback: if no code or error, go to reset-password anyway to show error message
-  return NextResponse.redirect(new URL('/reset-password', request.url))
+  return NextResponse.redirect(destination)
 }

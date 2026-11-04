@@ -70,7 +70,7 @@ export function SpikePremiumTheme({ S }: { S: any }) {
 
       <header className="sticky top-0 z-30 bg-[#F2F1EC]/85 backdrop-blur-md border-b-2 border-black">
         <div className="max-w-[1320px] mx-auto px-4 md:px-6 h-16 flex items-center justify-between gap-3">
-          <a href="#" onClick={e => e.preventDefault()} className="flex items-center gap-2.5 min-w-0">
+          <a href="#top" className="flex items-center gap-2.5 min-w-0">
             {c.logoImage ? <img src={c.logoImage} alt={c.headerLabel} className="h-9 max-w-[160px] object-contain" /> : <>
               <span className="w-9 h-9 shrink-0 grid place-items-center bg-[var(--pm-accent)] border-2 border-black rounded-[10px] font-[800] text-[16px] -rotate-6">{S.initial}</span>
               <span className="font-[800] text-[18px] md:text-[20px] tracking-[-0.04em] uppercase truncate">{c.headerLabel}</span>

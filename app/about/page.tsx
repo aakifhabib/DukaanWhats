@@ -32,7 +32,7 @@ export default function AboutPage() {
           <div className="bg-black text-white rounded-[24px] p-6 md:p-7 relative overflow-hidden">
             <div className="absolute -top-20 -right-20 w-[200px] h-[200px] bg-[#E8FF86]/20 rounded-full blur-[40px]" />
             <div className="relative text-[11px] font-black tracking-widest opacity-50">STORY</div>
-            <p className="relative mt-3 text-[14px] leading-[1.5] text-white/80">Built in Karachi by M Aakif for the sellers he saw on his own feed.</p>
+            <p className="relative mt-3 text-[14px] leading-[1.5] text-white/80">Based in Islamabad, Pakistan, DukaanWhats is built by M Aakif for local sellers.</p>
             <div className="relative mt-6 flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-[#E8FF86] text-black grid place-items-center font-black text-[12px]">MA</div>
               <div><div className="text-[12px] font-bold">M Aakif</div><div className="text-[10px] opacity-60">Solo Founder</div></div>
@@ -55,7 +55,7 @@ export default function AboutPage() {
           <div className="flex flex-wrap justify-between gap-4">
             <div>
               <div className="flex items-center gap-2"><div className="w-6 h-6 rounded-[8px] bg-black text-[#E8FF86] grid place-items-center font-black text-[11px]">D</div><span className="font-bold text-[13px]">DukaanWhats.pk</span></div>
-              <div className="mt-2 text-[11px] text-zinc-500 max-w-[220px]">Built solo by M Aakif • For Pakistani sellers • Karachi</div>
+              <div className="mt-2 text-[11px] text-zinc-500 max-w-[220px]">Built solo by M Aakif • For Pakistani sellers • Islamabad</div>
             </div>
             <div className="grid grid-cols-2 gap-8">
               <div>
@@ -77,7 +77,7 @@ export default function AboutPage() {
               </div>
             </div>
           </div>
-          <div className="mt-8 flex justify-between text-[11px] text-zinc-400"><span>© 2026 M Aakif • DukaanWhats.pk • Built solo in Karachi</span><span className="hidden md:block">Made for Pakistan ♥</span></div>
+          <div className="mt-8 flex justify-between text-[11px] text-zinc-400"><span>© 2026 M Aakif • DukaanWhats.pk • Based in Islamabad</span><span className="hidden md:block">Made for Pakistan ♥</span></div>
         </div>
       </div>
     </div>
