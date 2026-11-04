@@ -26,7 +26,7 @@ export default function PricingPage() {
       yearlyMonthly: 0,
       yearlyTotal: 0,
       badge: 'FREE', 
-      features: ['5 Products only', '1 Image per product', 'Up to 3 Advanced Themes', 'No Premium Theme', 'WhatsApp orders'], 
+      features: ['5 Products only', '1 Image per product', 'All 3 Basic Themes', '3 of 8 Advanced Themes', 'No Premium Theme', 'WhatsApp orders'],
       cardClass: 'card-basic', 
       btn: 'Start Free →', 
       popular: false 
@@ -38,7 +38,7 @@ export default function PricingPage() {
       yearlyMonthly: 699,
       yearlyTotal: 8388,
       badge: 'MOST POPULAR', 
-      features: ['25 Products', '5 Images per product', 'All 8 Advanced Themes', 'All Standard Themes', 'Orders + Analytics'], 
+      features: ['25 Products', '5 Images per product', 'All 3 Basic Themes', 'All 8 Advanced Themes', 'Premium themes locked', 'Orders + Analytics'],
       cardClass: 'card-advanced', 
       btn: 'Go Advanced', 
       popular: true 
@@ -50,7 +50,7 @@ export default function PricingPage() {
       yearlyMonthly: 2499,
       yearlyTotal: 29988,
       badge: 'UNLIMITED', 
-      features: ['Unlimited Products', 'Unlimited Images', 'Every Theme Unlocked', 'No DukaanWhats Watermark', 'Live Analytics + Priority'], 
+      features: ['Unlimited Products', 'Unlimited Images', 'All 3 Basic + 8 Advanced + 10 Premium Themes', 'No DukaanWhats Watermark', 'Live Analytics + Priority'],
       cardClass: 'card-premium', 
       btn: 'Go Premium', 
       popular: false 

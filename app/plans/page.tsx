@@ -31,9 +31,9 @@ export default function PlansPage() {
           yearlyTotal: 0, 
           max_products: 5, 
           images: 1,
-          advancedThemes: '3 Advanced',
+          advancedThemes: '3 Basic + 3 Advanced',
           badge: 'FREE',
-          features: ['Up to 5 Products', '1 Image per product', 'Up to 3 Advanced Themes', 'No Premium Theme', 'COD Only'] 
+          features: ['Up to 5 Products', '1 Image per product', 'All 3 Basic Themes', '3 of 8 Advanced Themes', 'No Premium Theme', 'COD Only']
         },
         { 
           id: 'advanced', 
@@ -46,7 +46,7 @@ export default function PlansPage() {
           advancedThemes: 'All 8 Advanced',
           badge: 'MOST POPULAR',
           popular: true,
-          features: ['Up to 25 Products', '5 Images per product', 'All 8 Advanced Themes', 'All Standard Themes', 'Orders Dashboard + Analytics'] 
+          features: ['Up to 25 Products', '5 Images per product', 'All 3 Basic Themes', 'All 8 Advanced Themes', 'Premium themes locked', 'Orders Dashboard + Analytics']
         },
         { 
           id: 'premium', 
@@ -56,14 +56,20 @@ export default function PlansPage() {
           yearlyTotal: 29988, 
           max_products: 999999, 
           images: 'Unlimited',
-          advancedThemes: 'Every Theme',
+          advancedThemes: '3 Basic + 8 Advanced + 10 Premium',
           badge: 'UNLIMITED',
           features: ['Unlimited Products', 'Unlimited Image Uploads', 'Access to Every Theme', 'No DukaanWhats Watermark', 'Live Analytics + Dashboard', 'Priority Support'] 
         },
       ]
       const { data } = await supabase.from('plans').select('*').order('price')
-      if (data && data.length && data[0].price===899) setPlans(data as any)
-      else setPlans(newPlans)
+      if (data && data.length && data[0].price===899) {
+        setPlans(data.map((storedPlan: any) => {
+          const currentCopy = newPlans.find(plan => plan.id === storedPlan.id)
+          return currentCopy
+            ? { ...storedPlan, advancedThemes: currentCopy.advancedThemes, features: currentCopy.features }
+            : storedPlan
+        }) as any)
+      } else setPlans(newPlans)
       setLoading(false)
     }
     load()

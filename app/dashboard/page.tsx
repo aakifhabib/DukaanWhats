@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { RealAnalytics } from '@/components/RealAnalytics'
 import Link from 'next/link'
-import { STORE_THEMES, getTheme, getAdvancedThemes, getPremiumThemes } from '@/lib/storeThemes'
+import { getTheme, getBasicThemes, getAdvancedList, getAdvancedThemes, getPremiumThemes } from '@/lib/storeThemes'
 import { DukaanWhatsLoader } from '@/components/DukaanWhatsLoader'
 import { PremiumThemeEditor } from '@/components/PremiumThemeEditor'
 
@@ -528,9 +528,9 @@ export default function Dashboard() {
   const [justSubmitted, setJustSubmitted] = useState<any>(null)
 
   const plans: PlanDef[] = [
-    { id: 'basic', name: 'Basic', monthly: 0, yearlyMonthly: 0, yearlyTotal: 0, products: 5, imagesPerProduct: 1, advancedAllowed: 3, premiumAllowed: 0, stores: 1, features: ['5 Products', '1 Image / product', '3 Advanced Themes', '0 Premium (Glass)', 'COD Only', 'Watermark'] },
-    { id: 'advanced', name: 'Advanced', monthly: 899, yearlyMonthly: 699, yearlyTotal: 8388, products: 25, imagesPerProduct: 5, advancedAllowed: 8, premiumAllowed: 0, stores: 3, features: ['25 Products', '5 Images / product', 'All 8 Advanced Themes', '0 Premium Glass (locked)', 'Orders Dashboard'] },
-    { id: 'premium', name: 'Premium', monthly: 2999, yearlyMonthly: 2499, yearlyTotal: 29988, products: 999999, imagesPerProduct: 999999, advancedAllowed: 'all', premiumAllowed: 'all', stores: 999999, features: ['Unlimited Products', 'Unlimited Images', 'Every Theme (8 Advanced + 10 Premium)', 'No Watermark', 'Live Analytics'] },
+    { id: 'basic', name: 'Basic', monthly: 0, yearlyMonthly: 0, yearlyTotal: 0, products: 5, imagesPerProduct: 1, advancedAllowed: 3, premiumAllowed: 0, stores: 1, features: ['5 Products', '1 Image / product', 'All 3 Basic Themes', '3 of 8 Advanced Themes', 'COD Only', 'Watermark'] },
+    { id: 'advanced', name: 'Advanced', monthly: 899, yearlyMonthly: 699, yearlyTotal: 8388, products: 25, imagesPerProduct: 5, advancedAllowed: 8, premiumAllowed: 0, stores: 3, features: ['25 Products', '5 Images / product', 'All 3 Basic Themes', 'All 8 Advanced Themes', 'Premium themes locked', 'Orders Dashboard'] },
+    { id: 'premium', name: 'Premium', monthly: 2999, yearlyMonthly: 2499, yearlyTotal: 29988, products: 999999, imagesPerProduct: 999999, advancedAllowed: 'all', premiumAllowed: 'all', stores: 999999, features: ['Unlimited Products', 'Unlimited Images', 'Every Theme (3 Basic + 8 Advanced + 10 Premium)', 'No Watermark', 'Live Analytics'] },
   ]
 
   const currentPlanId = (profile?.current_plan || 'basic') as 'basic' | 'advanced' | 'premium'
@@ -546,13 +546,7 @@ export default function Dashboard() {
   const premiumNewRaw = getPremiumThemes()
   const premiumThemes = [...advancedGlassRaw, ...premiumNewRaw]
   const premiumIds = premiumThemes.map(t => t.id)
-  const allAdvancedRaw = STORE_THEMES.filter(t => (t.category as string) === 'advanced' && !advancedGlassRaw.map(x => x.id).includes(t.id))
-  const advancedThemesList = allAdvancedRaw.length >= 5
-    ? allAdvancedRaw.slice(0, 8)
-    : [...allAdvancedRaw, ...STORE_THEMES.filter(t => (t.category as string) === 'clothing' || (t.category as string) === 'tech').slice(0, 8 - allAdvancedRaw.length)]
-  const finalAdvancedList = advancedThemesList.length
-    ? advancedThemesList.slice(0, 8)
-    : STORE_THEMES.filter(t => !premiumIds.includes(t.id)).slice(0, 8)
+  const finalAdvancedList = getAdvancedList().slice(0, 8)
   const basicAllowedAdvancedIds = finalAdvancedList.slice(0, 3).map(t => t.id)
 
   const isPremiumTheme = (t: any) => premiumIds.includes(t.id) || PREMIUM_NEW_IDS.includes(t.id) || (t.category as string) === 'premium' || (t as any).tier === 'premium'
@@ -649,6 +643,7 @@ Upgrade to unlock all 8 Advanced themes.`)
       migratedCustom = { ...oldCustom, themes: { [profile?.store_theme || theme]: legacyEdits } }
     }
     setTheme(t.id)
+    if (migratedCustom !== oldCustom) setPremiumCustom(migratedCustom)
     setProfile((prev: any) => prev ? ({ ...prev, store_theme: t.id, premium_custom: migratedCustom }) : prev)
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -837,14 +832,13 @@ Upgrade to unlock all 8 Advanced themes.`)
   if (loading) return <DukaanWhatsLoader message="Loading your store..." />
 
   /* ---------------- DERIVED THEME VIEWS ---------------- */
-  const standardThemes = STORE_THEMES.filter(t => !premiumIds.includes(t.id) && !finalAdvancedList.some(a => a.id === t.id))
+  const basicThemes = getBasicThemes()
   const currentTheme: any =
-    [...finalAdvancedList, ...standardThemes, ...premiumThemes].find(t => t.id === theme) ||
-    finalAdvancedList[0] ||
-    standardThemes[0] ||
+    [...finalAdvancedList, ...basicThemes, ...premiumThemes].find(t => t.id === theme) ||
+    basicThemes[0] ||
     { name: 'Theme', colors: { bg: '#F8F7F5', accent: '#000' } }
   const currentTier = finalAdvancedList.some(t => t.id === theme) ? 'Advanced'
-    : standardThemes.some(t => t.id === theme) ? 'Standard' : 'Premium'
+    : basicThemes.some(t => t.id === theme) ? 'Basic' : 'Premium'
 
 
   const sidebarNav = [
@@ -881,8 +875,8 @@ Upgrade to unlock all 8 Advanced themes.`)
     <div className="dw-page dw-stagger">
       <PageHeader
         title="Themes"
-        subtitle={currentPlanId === 'basic' ? '3 of 8 Advanced themes unlocked. Premium is locked.'
-          : currentPlanId === 'advanced' ? 'All 8 Advanced themes unlocked. Premium is locked.'
+        subtitle={currentPlanId === 'basic' ? 'All 3 Basic themes + 3 of 8 Advanced. Premium is locked.'
+          : currentPlanId === 'advanced' ? 'All Basic and Advanced themes unlocked. Premium is locked.'
             : 'All themes unlocked.'}
         actions={
           <>
@@ -947,6 +941,23 @@ Upgrade to unlock all 8 Advanced themes.`)
         </div>
       </section>
 
+      {/* Basic themes */}
+      <section className={`${UI.card} mb-4`}>
+        <SectionHead title="Basic" meta="3 themes · included with every plan" />
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 p-1">
+          {basicThemes.map(t => (
+            <ThemeTile
+              key={t.id}
+              t={t}
+              active={theme === t.id}
+              locked={false}
+              label="Basic"
+              onSelect={() => handleThemeClick(t)}
+            />
+          ))}
+        </div>
+      </section>
+
       {/* Advanced */}
       <section className={`${UI.card} mb-4`}>
         <SectionHead
@@ -970,25 +981,6 @@ Upgrade to unlock all 8 Advanced themes.`)
           ))}
         </div>
       </section>
-
-      {/* Standard */}
-      {standardThemes.length > 0 && (
-        <section className={`${UI.card} mb-4`}>
-          <SectionHead title="Standard" meta="included with every plan" />
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 p-1">
-            {standardThemes.slice(0, 6).map(t => (
-              <ThemeTile
-                key={t.id}
-                t={t}
-                active={theme === t.id}
-                locked={false}
-                label={String(t.category)}
-                onSelect={() => handleThemeClick(t)}
-              />
-            ))}
-          </div>
-        </section>
-      )}
 
       {/* Premium glass */}
       <section className="rounded-2xl border border-zinc-900 overflow-hidden bg-white">
