@@ -10,9 +10,9 @@ export type ThemeDef = {
 
 export const STORE_THEMES: ThemeDef[] = [
   // BASIC - 3 themes included with every plan
-  { id: 'clothing-noor', name: 'Noor', category: 'clothing', colors: { bg: '#FFFBF5', text: '#0A0A0A', accent: '#E8FF86', card: '#FFFFFF', border: '#E8E6E1' }, tier: 'basic' },
-  { id: 'food-spice', name: 'Spice', category: 'food', colors: { bg: '#FFFBF5', text: '#0A0A0A', accent: '#FF6B35', card: '#FFFFFF', border: '#FFE4D6' }, tier: 'basic' },
-  { id: 'shoes-street', name: 'Street', category: 'shoes', colors: { bg: '#F5F5F5', text: '#0A0A0A', accent: '#FF3B30', card: '#FFFFFF', border: '#E5E5E5' }, tier: 'basic' },
+  { id: 'clothing-noor', name: 'Noor', category: 'clothing', colors: { bg: '#F7F5EF', text: '#24241F', accent: '#656B47', card: '#FCFBF8', border: '#E3E0D7' }, tier: 'basic' },
+  { id: 'food-spice', name: 'Spice', category: 'food', colors: { bg: '#F8F4EF', text: '#2B211C', accent: '#A65335', card: '#FCFAF7', border: '#E8DED5' }, tier: 'basic' },
+  { id: 'shoes-street', name: 'Street', category: 'shoes', colors: { bg: '#F2F2F0', text: '#242424', accent: '#565656', card: '#FAFAF9', border: '#DFDFDD' }, tier: 'basic' },
 
   // ADVANCED - 8 themes (Basic plan unlocks the first 3)
   { id: 'clothing-street', name: 'Streetwear', category: 'advanced', colors: { bg: '#F8F7F5', text: '#0A0A0A', accent: '#FF3B30', card: '#FFFFFF', border: '#E5E5E5' }, tier: 'advanced' },
