@@ -84,7 +84,7 @@ function cssColor(name: string): string | null {
 }
 
 /* ------------------------------ editor schema ------------------------------ */
-type FieldType = 'text' | 'textarea' | 'image' | 'chips' | 'list' | 'color' | 'toggle'
+type FieldType = 'text' | 'textarea' | 'image' | 'chips' | 'list' | 'color' | 'toggle' | 'socials'
 export type Field = { key: string; label: string; type: FieldType; placeholder?: string; hint?: string; half?: boolean; items?: { key: string; label: string; placeholder?: string; multiline?: boolean }[]; max?: number }
 type Section = { id: string; label: string; sub: string; fields: Field[] }
 
@@ -138,6 +138,11 @@ const FOOTER: Section = { id: 'footer', label: 'Footer', sub: 'About text and co
   t('instagram', 'Instagram handle', { half: true, placeholder: '@yourbrand' }),
   t('address', 'Address / city', { half: true }),
   t('footerNote', 'Footer note', { placeholder: '© Your Brand. All rights reserved.' }),
+] }
+
+const SOCIALS: Section = { id: 'socials', label: 'Social buttons', sub: 'Choose the networks to show at the bottom of your store and add their URLs.', fields: [
+  t('socialTitle', 'Section heading', { half: true, placeholder: 'Connect with us' }),
+  { key: 'socialLinks', label: 'Social profiles', type: 'socials', hint: 'Turn platforms on or off. Add a full URL; Instagram handles and WhatsApp numbers also work. WhatsApp can use your store number if its URL is blank.' },
 ] }
 
 const heroFields = (extra: Field[] = [], second = false): Field[] => [
@@ -230,7 +235,7 @@ export function buildSchema(themeId: string): Section[] {
   const id = (EXTRA[themeId as ThemeId] ? themeId : 'spike-premium') as ThemeId
   const second = ['sleek-beige', 'sleek-editorial', 'trenzo-luxury', 'saffron-table', 'atelier-bloom', 'noir-gilt'].includes(id)
   const hero: Section = { id: 'hero', label: 'Hero', sub: 'Headline, buttons and header image', fields: heroFields([], second) }
-  return [BRAND, hero, EXTRA[id], HIGHLIGHTS, COLLECTION, PRODUCT, CART, FOOTER]
+  return [BRAND, hero, EXTRA[id], HIGHLIGHTS, COLLECTION, PRODUCT, CART, SOCIALS, FOOTER]
 }
 
 /* -------------------------------- defaults -------------------------------- */
@@ -245,7 +250,11 @@ const COMMON: Record<string, any> = {
   sizeGuide: 'Choose your usual size. Between sizes? Go one size up for comfort.',
   showSimilar: true,
   cartTitle: 'Your cart', cartEmpty: 'Your cart is empty', orderButton: 'Order on WhatsApp', orderIntro: 'New order', freeShippingOver: '5000', currency: 'Rs.',
-  footerAbout: 'Quality products, delivered to your door with cash on delivery.', instagram: '', address: '', footerNote: '',
+  footerAbout: 'Quality products, delivered to your door with cash on delivery.', instagram: '', address: '', footerNote: '', socialTitle: 'Connect with us',
+  socialLinks: {
+    instagram: { enabled: false, url: '' }, whatsapp: { enabled: false, url: '' },
+    facebook: { enabled: false, url: '' }, linkedin: { enabled: false, url: '' },
+  },
 }
 
 const DEFAULTS: Record<ThemeId, Record<string, any>> = {
@@ -357,6 +366,10 @@ export function resolveContent(themeId: string, profile: any): Record<string, an
   const clean: Record<string, any> = {}
   Object.keys(raw).forEach(k => { const v = raw[k]; if (!(v === '' || v === null || v === undefined || (Array.isArray(v) && v.length === 0))) clean[k] = v })
   const out: Record<string, any> = { ...COMMON, ...DEFAULTS[id], ...legacy, ...clean }
+  const savedSocials = out.socialLinks && typeof out.socialLinks === 'object' ? out.socialLinks : {}
+  out.socialLinks = Object.fromEntries(Object.entries(COMMON.socialLinks).map(([platform, defaults]: [string, any]) => [
+    platform, { ...defaults, ...(savedSocials[platform] || {}) },
+  ]))
   if (!Array.isArray(out.brands) || out.brands.length === 0) out.brands = ['All']
   if (!out.headerLabel) out.headerLabel = profile?.business_name || 'Store'
   return out
@@ -931,10 +944,49 @@ function CartDrawer({ S, skin }: { S: any; skin: Skin }) {
   )
 }
 
+function safeSocialHref(platform: string, value: unknown): string | null {
+  let href = String(value || '').trim()
+  if (!href) return null
+  if (platform === 'instagram' && /^@[\w.]+$/.test(href)) href = `https://instagram.com/${href.slice(1)}`
+  if (platform === 'whatsapp' && /^[+\d\s().-]+$/.test(href)) href = `https://wa.me/${href.replace(/\D/g, '')}`
+  try {
+    const parsed = new URL(href)
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:' ? parsed.href : null
+  } catch {
+    return null
+  }
+}
+
+function SocialMark({ platform }: { platform: string }) {
+  if (platform === 'instagram') return <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.6" cy="6.7" r=".9" fill="currentColor" stroke="none"/></svg>
+  if (platform === 'whatsapp') return <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M20 11.7a8 8 0 0 1-11.8 7l-4.2 1.1 1.1-4.1A8 8 0 1 1 20 11.7Z"/><path d="M9 8.5c.3-.5.6-.5.9-.5h.4c.2 0 .4.1.5.4l.7 1.7c.1.2 0 .4-.1.6l-.5.6c-.2.2-.2.4 0 .7.5.8 1.2 1.5 2.1 1.9.3.1.5.1.7-.1l.7-.8c.2-.2.4-.2.7-.1l1.6.8c.3.1.4.3.4.5 0 .4-.2 1-.6 1.3-.4.4-1.1.6-1.7.5-1-.1-2.2-.7-3.5-1.8-1.1-.9-2-2.1-2.3-3.2-.3-1 .1-2 .5-2.5Z"/></svg>
+  if (platform === 'facebook') return <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden><path d="M13.4 21v-8h2.7l.4-3.1h-3.1V8c0-.9.3-1.5 1.6-1.5h1.7V3.7c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.3v2.1H7.2v3.1H10v8h3.4Z"/></svg>
+  return <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden><path d="M5.2 8.5a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6ZM3.7 10h3v10h-3zM9 10h2.9v1.4h.1c.4-.8 1.4-1.7 2.9-1.7 3.1 0 3.7 2 3.7 4.6V20h-3v-5.1c0-1.2 0-2.7-1.7-2.7s-2 1.3-2 2.6V20H9z"/></svg>
+}
+
+function SocialLinks({ S }: { S: any }) {
+  const { c } = S
+  const available = [
+    ['instagram', 'Instagram'], ['whatsapp', 'WhatsApp'], ['facebook', 'Facebook'], ['linkedin', 'LinkedIn'],
+  ].flatMap(([platform, label]) => {
+    const entry = c.socialLinks?.[platform]
+    const href = entry?.enabled ? safeSocialHref(platform, entry.url || (platform === 'whatsapp' ? S.profile?.whatsapp_number : '')) : null
+    return href ? [{ platform, label, href }] : []
+  })
+  if (!available.length) return null
+  return (
+    <nav aria-label="Social links" className="pm-social-buttons mx-auto flex w-full max-w-[1320px] flex-wrap items-center justify-center gap-2.5 border-t border-[var(--pm-accent)]/25 px-4 py-7 sm:gap-3 sm:px-6">
+      {c.socialTitle && <span className="mr-1 w-full text-center text-[9px] font-semibold uppercase tracking-[.2em] text-current/55 sm:w-auto">{c.socialTitle}</span>}
+      {available.map(({ platform, label, href }) => <a key={platform} href={href} target="_blank" rel="noopener noreferrer" aria-label={`Visit ${label}`} className="pm-social-pill inline-flex h-10 items-center gap-2 border border-[var(--pm-accent)]/50 px-4 text-[10px] font-semibold tracking-[.08em] transition hover:-translate-y-0.5 hover:bg-[var(--pm-accent)] hover:text-black"><SocialMark platform={platform} /><span>{label}</span></a>)}
+    </nav>
+  )
+}
+
 /* ------------------------------ toast + overlays ------------------------------ */
 function Overlays({ S, skin, layout }: { S: any; skin: Skin; layout: 'modal' | 'sheet' | 'full' }) {
   return (
     <>
+      <SocialLinks S={S} />
       {S.sel && <ProductDetail key={S.sel.id} S={S} skin={skin} layout={layout} />}
       <CartDrawer S={S} skin={skin} />
       <div aria-live="polite" className={`fixed left-1/2 -translate-x-1/2 bottom-20 md:bottom-6 z-[150] transition-all duration-500 ease-[cubic-bezier(.2,.9,.25,1.2)] ${S.toast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
@@ -975,6 +1027,63 @@ const PM_BASE_CSS = `
 .pm-ken{animation:pmKen 16s ease-in-out infinite alternate}
 .pm-sb{scrollbar-width:none}.pm-sb::-webkit-scrollbar{display:none}
 .pm-reveal{opacity:1}
+@keyframes pmThemeEnter{from{opacity:.5;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.pm-spike main>section,
+.pm-shoe main>section,
+.pm-trenzo main>section,
+.pm-beige main>section,
+.pm-dark main>section,
+.pm-edit main>section,
+.pm-saffron main>section,
+.pm-atelier main>section,
+.pm-mono main>section,
+.pm-noir main>section{animation:pmThemeEnter .72s cubic-bezier(.2,.8,.2,1) both}
+.pm-spike main>section:nth-child(2),
+.pm-shoe main>section:nth-child(2),
+.pm-trenzo main>section:nth-child(2),
+.pm-beige main>section:nth-child(2),
+.pm-dark main>section:nth-child(2),
+.pm-edit main>section:nth-child(2),
+.pm-saffron main>section:nth-child(2),
+.pm-atelier main>section:nth-child(2),
+.pm-mono main>section:nth-child(2),
+.pm-noir main>section:nth-child(2){animation-delay:.08s}
+.pm-spike main>section:nth-child(3),
+.pm-shoe main>section:nth-child(3),
+.pm-trenzo main>section:nth-child(3),
+.pm-beige main>section:nth-child(3),
+.pm-dark main>section:nth-child(3),
+.pm-edit main>section:nth-child(3),
+.pm-saffron main>section:nth-child(3),
+.pm-atelier main>section:nth-child(3),
+.pm-mono main>section:nth-child(3),
+.pm-noir main>section:nth-child(3){animation-delay:.16s}
+.pm-spike button:not(:disabled),
+.pm-shoe button:not(:disabled),
+.pm-trenzo button:not(:disabled),
+.pm-beige button:not(:disabled),
+.pm-dark button:not(:disabled),
+.pm-edit button:not(:disabled),
+.pm-saffron button:not(:disabled),
+.pm-atelier button:not(:disabled),
+.pm-mono button:not(:disabled),
+.pm-noir button:not(:disabled){transition:transform .22s ease,filter .22s ease,background-color .22s ease,border-color .22s ease}
+.pm-spike button:not(:disabled):hover,
+.pm-shoe button:not(:disabled):hover,
+.pm-trenzo button:not(:disabled):hover,
+.pm-beige button:not(:disabled):hover,
+.pm-dark button:not(:disabled):hover,
+.pm-edit button:not(:disabled):hover,
+.pm-saffron button:not(:disabled):hover,
+.pm-atelier button:not(:disabled):hover,
+.pm-mono button:not(:disabled):hover,
+.pm-noir button:not(:disabled):hover{filter:brightness(1.06)}
+.pm-social-buttons{animation:pmThemeEnter .55s cubic-bezier(.2,.8,.2,1) both}
+.pm-saffron .pm-social-pill{border-radius:999px;background:#FFFCF7;color:#8C3F2B}
+.pm-atelier .pm-social-pill{border-width:0 0 1px;border-radius:0;background:transparent;color:#536746}
+.pm-mono .pm-social-pill{border:2px solid #111;border-radius:0;background:#fff;color:#111}
+.pm-noir .pm-social-pill{border-color:var(--pm-accent);border-radius:0;background:#14110C;color:#D8C59B}
+.pm-social-pill:hover{box-shadow:0 8px 22px rgba(0,0,0,.14)}
 @supports (animation-timeline: view()){.pm-reveal{animation:pmRise linear both;animation-timeline:view();animation-range:entry 0% entry 42%}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
 `
