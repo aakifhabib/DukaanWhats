@@ -14,6 +14,9 @@ const THEMES = [
   { id: 'sleek-beige', name: 'Sleek Beige', color: '#F5F1EB', accent: '#0A0A0A', icon: '◧' },
   { id: 'sleek-dark', name: 'Sleek Dark', color: '#0A0A0A', accent: '#E8FF86', icon: '◫' },
   { id: 'sleek-editorial', name: 'Sleek Editorial', color: '#FCFBF9', accent: '#0A0A0A', icon: '◩' },
+  { id: 'saffron-table', name: 'Saffron Table', color: '#F8F0E3', accent: '#C95C3A', icon: '✿' },
+  { id: 'atelier-bloom', name: 'Atelier Bloom', color: '#F4EFE9', accent: '#718463', icon: '❀' },
+  { id: 'mono-market', name: 'Mono Market', color: '#F3F3EF', accent: '#D9FF3F', icon: '▦' },
 ]
 
 /* Sample products shown in the preview until the customer adds real ones */
@@ -494,8 +497,17 @@ export function PremiumThemeEditor({ profile, onSave }: { profile: any; onSave: 
     if (!profile?.id) return
     setSaving(true)
     try {
-      // legacy keys are still written so older store pages keep working
-      const toSave = { ...custom, spikeTitle: custom.heroTitle, spikeSub: custom.heroSubtitle, spikeBrands: custom.brands, filters: custom.brands, badge: custom.heroBadge, announcement: custom.announcement }
+      // Keep theme-specific edits separate; migrate existing flat edits onto the currently selected theme.
+      const existing = profile?.premium_custom || {}
+      const themes = { ...(existing.themes || {}) }
+      if (!Object.keys(themes).length && Object.keys(existing).length) {
+        const { themes: _ignored, ...legacyEdits } = existing
+        themes[profile?.store_theme || themeId] = legacyEdits
+      }
+      const themeEdits = { ...custom, spikeTitle: custom.heroTitle, spikeSub: custom.heroSubtitle, spikeBrands: custom.brands, filters: custom.brands, badge: custom.heroBadge, announcement: custom.announcement }
+      themes[themeId] = themeEdits
+      // Keep top-level legacy keys for older storefront code; modern renderers use the theme bucket.
+      const toSave = { ...existing, ...themeEdits, themes }
       const { error } = await (supabase as any).from('profiles').update({ premium_custom: toSave }).eq('id', profile.id)
       if (error) throw error
       onSave(toSave)

@@ -18,7 +18,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
    and the editor's field schema (so EVERYTHING in a theme is editable).
    ===================================================================== */
 
-type ThemeId = 'spike-premium' | 'shoe-app-premium' | 'trenzo-luxury' | 'sleek-beige' | 'sleek-dark' | 'sleek-editorial'
+type ThemeId = 'spike-premium' | 'shoe-app-premium' | 'trenzo-luxury' | 'sleek-beige' | 'sleek-dark' | 'sleek-editorial' | 'saffron-table' | 'atelier-bloom' | 'mono-market'
 
 /* ----------------------------- product helpers ----------------------------- */
 function toList(v: any): string[] {
@@ -195,11 +195,33 @@ const EXTRA: Record<ThemeId, Section> = {
     ta('pullQuote', 'Pull quote'),
     t('pullQuoteBy', 'Quote credit'),
   ] },
+  'saffron-table': { id: 'table', label: 'The table', sub: 'Menu intro and house special', fields: [
+    t('menuEyebrow', 'Menu eyebrow'),
+    t('dishNote', 'Featured dish note'),
+    t('specialTitle', 'House special title'),
+    ta('specialText', 'House special description'),
+    t('specialButton', 'House special button'),
+  ] },
+  'atelier-bloom': { id: 'atelier', label: 'Atelier notes', sub: 'Studio story and collection notes', fields: [
+    t('journalEyebrow', 'Collection label'),
+    t('manifestoTitle', 'Studio heading'),
+    ta('manifestoText', 'Studio story'),
+    t('craftTitle', 'Craft note title'),
+    ta('craftText', 'Craft note'),
+    img('storyImage', 'Story image', { hint: 'Optional second image for the studio story section.' }),
+  ] },
+  'mono-market': { id: 'mono', label: 'Drop details', sub: 'Drop label, ticker and manifesto', fields: [
+    t('dropNumber', 'Drop number'),
+    t('tickerText', 'Ticker text'),
+    t('manifestoTitle', 'Manifesto heading'),
+    ta('manifestoText', 'Manifesto text'),
+    t('specLine', 'Edition detail'),
+  ] },
 }
 
 export function buildSchema(themeId: string): Section[] {
   const id = (EXTRA[themeId as ThemeId] ? themeId : 'spike-premium') as ThemeId
-  const second = id === 'sleek-beige' || id === 'sleek-editorial' || id === 'trenzo-luxury'
+  const second = ['sleek-beige', 'sleek-editorial', 'trenzo-luxury', 'saffron-table', 'atelier-bloom'].includes(id)
   const hero: Section = { id: 'hero', label: 'Hero', sub: 'Headline, buttons and header image', fields: heroFields([], second) }
   return [BRAND, hero, EXTRA[id], HIGHLIGHTS, COLLECTION, PRODUCT, CART, FOOTER]
 }
@@ -271,12 +293,43 @@ const DEFAULTS: Record<ThemeId, Record<string, any>> = {
     collectionTitle: 'The index', collectionSubtitle: 'Every piece in this issue', brands: ['All', 'New', 'Sale'],
     footerAbout: 'An independent store with an editorial eye. Printed on nothing, delivered to everywhere.',
   },
+  'saffron-table': {
+    accent: '#C95C3A', headerLabel: 'SAFFRON TABLE', announcement: 'FRESHLY MADE • LOCAL DELIVERY • ORDER ON WHATSAPP',
+    heroBadge: 'FROM OUR KITCHEN', heroTitle: 'Good food,\nshared well.', heroSubtitle: 'A menu made with care, packed fresh and brought to your table.',
+    ctaText: 'Explore the menu', secondaryCta: 'Open your bag', featuredLabel: 'Today’s pick',
+    menuEyebrow: 'MADE FRESH DAILY', dishNote: 'Made fresh when you order', showStats: false, stats: [], trustBadges: ['Made fresh', 'Local delivery', 'Cash on delivery'],
+    specialTitle: 'A little something special', specialText: 'Prepared in small batches with ingredients we are proud to serve.', specialButton: 'Ask about today’s menu',
+    collectionTitle: 'Order from the menu', collectionSubtitle: 'Fresh from our kitchen', brands: ['All', 'Meals', 'Sides', 'Drinks', 'Desserts'],
+    footerAbout: 'Fresh food, thoughtfully made and delivered with care.', deliveryNote: 'Freshly prepared. Delivery times are confirmed on WhatsApp.',
+  },
+  'atelier-bloom': {
+    accent: '#718463', headerLabel: 'ATELIER BLOOM', announcement: 'SMALL BATCH • NATURAL MATERIALS • MADE TO KEEP',
+    heroBadge: 'A SLOWER KIND OF BEAUTY', heroTitle: 'Made by hand.\nMade to last.', heroSubtitle: 'Thoughtful objects and soft essentials, chosen for the way they make everyday life feel.',
+    ctaText: 'Explore the collection', secondaryCta: 'View bag', featuredLabel: 'Studio favourite',
+    journalEyebrow: 'NOTES FROM THE STUDIO', manifestoTitle: 'Objects with a softer story', manifestoText: 'We believe the things we keep should be made with care. Each piece is selected for its material, its maker and the small joy it brings to an ordinary day.',
+    craftTitle: 'Made slowly, chosen carefully', craftText: 'Small-batch pieces, natural textures and considered details. We share the story behind every item so you can choose with confidence.',
+    collectionTitle: 'The collection', collectionSubtitle: 'A considered edit for everyday living', brands: ['All', 'New', 'Home', 'Wear', 'Sale'],
+    footerAbout: 'A small independent studio for thoughtful things and everyday rituals.', showStats: false, stats: [], trustBadges: ['WhatsApp ordering', 'Cash on delivery'],
+  },
+  'mono-market': {
+    accent: '#D9FF3F', headerLabel: 'MONO / MARKET', announcement: 'DROP 01 — LIMITED RELEASE — WORLDWIDE ENERGY, LOCAL DELIVERY',
+    heroBadge: 'IN STOCK / READY TO SHIP', heroTitle: 'Less noise.\nBetter gear.', heroSubtitle: 'A tightly edited lineup of useful things, selected for form, function and staying power.',
+    ctaText: 'Shop the drop', secondaryCta: 'Open bag', featuredLabel: 'Staff pick',
+    dropNumber: 'DROP 001 / 2026', tickerText: 'DESIGNED FOR DAILY USE • NO FILLER • GOOD THINGS ONLY', manifestoTitle: 'Buy less. Choose better.', manifestoText: 'Every item earns its place. Clear specs, honest pricing and no clutter between you and the product.', specLine: 'CURATED GOODS / DELIVERED LOCALLY',
+    collectionTitle: 'Available now', collectionSubtitle: 'Selected stock / updated regularly', brands: ['All', 'New', 'Essentials', 'Sale'],
+    footerAbout: 'A focused edit of practical, well-made goods. Nothing extra.', showStats: false, stats: [], trustBadges: ['WhatsApp ordering', 'Cash on delivery'],
+  },
 }
 
 /* --------------------------- content resolution --------------------------- */
 export function resolveContent(themeId: string, profile: any): Record<string, any> {
   const id = (DEFAULTS[themeId as ThemeId] ? themeId : 'spike-premium') as ThemeId
-  const raw = profile?.premium_custom || {}
+  const stored = profile?.premium_custom || {}
+  const themeBuckets = stored.themes
+  // Keep each Premium theme's edits independent, while continuing to read older flat saves.
+  const raw = themeBuckets && Object.keys(themeBuckets).length
+    ? (themeBuckets[id] || {})
+    : stored
   const legacy: Record<string, any> = {}
   if (!raw.heroTitle && raw.spikeTitle) legacy.heroTitle = raw.spikeTitle
   if (!raw.heroSubtitle && raw.spikeSub) legacy.heroSubtitle = raw.spikeSub
@@ -601,7 +654,7 @@ function ProductDetail({ S, skin, layout }: { S: any; skin: Skin; layout: 'modal
   ]
 
   const closeBtn = (
-    <button type="button" onClick={S.closeProduct} aria-label="Close" className={`w-9 h-9 grid place-items-center border ${skin.line} ${skin.chipR} hover:opacity-70 transition`}><Ic.x c="w-4 h-4" /></button>
+    <button type="button" onClick={S.closeProduct} aria-label="Close" title="Close product details" className={`w-9 h-9 grid place-items-center border ${skin.line} ${skin.chipR} hover:opacity-70 transition`}><Ic.x c="w-4 h-4" /></button>
   )
 
   const info = (
@@ -721,7 +774,7 @@ function ProductDetail({ S, skin, layout }: { S: any; skin: Skin; layout: 'modal
   const lightbox = zoom !== null && (
     <div className="fixed inset-0 z-[160] bg-black/92 flex items-center justify-center pm-fade" onClick={() => setZoom(null)} role="dialog" aria-label="Image viewer">
       <img src={p.images[zoom]} alt={p.name} className="max-w-[94vw] max-h-[90vh] object-contain" />
-      <button type="button" aria-label="Close viewer" className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/15 text-white grid place-items-center"><Ic.x c="w-5 h-5" /></button>
+      <button type="button" aria-label="Close viewer" title="Close image viewer" className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/15 text-white grid place-items-center"><Ic.x c="w-5 h-5" /></button>
       {p.images.length > 1 && <>
         <button type="button" aria-label="Previous" onClick={e => { e.stopPropagation(); setZoom((zoom - 1 + p.images.length) % p.images.length) }} className="absolute left-3 w-11 h-11 rounded-full bg-white/15 text-white grid place-items-center"><Ic.left c="w-5 h-5" /></button>
         <button type="button" aria-label="Next" onClick={e => { e.stopPropagation(); setZoom((zoom + 1) % p.images.length) }} className="absolute right-3 w-11 h-11 rounded-full bg-white/15 text-white grid place-items-center"><Ic.right c="w-5 h-5" /></button>
@@ -806,7 +859,7 @@ function CartDrawer({ S, skin }: { S: any; skin: Skin }) {
       <aside role="dialog" aria-modal="true" aria-label="Cart" className={`absolute right-0 top-0 bottom-0 w-full max-w-[420px] flex flex-col transition-transform duration-[450ms] ease-[cubic-bezier(.2,.8,.2,1)] ${open ? 'translate-x-0' : 'translate-x-full'} ${skin.drawer}`}>
         <div className={`px-5 h-16 shrink-0 flex items-center justify-between border-b ${skin.line}`}>
           <h3 className={`text-[17px] ${skin.title}`}>{c.cartTitle} <span className={`text-[13px] font-medium ${skin.muted}`}>({S.cartCount})</span></h3>
-          <button type="button" onClick={S.closeCart} aria-label="Close cart" className={`w-9 h-9 grid place-items-center border ${skin.line} ${skin.chipR} hover:opacity-70`}><Ic.x c="w-4 h-4" /></button>
+          <button type="button" onClick={S.closeCart} aria-label="Close cart" title="Close shopping bag" className={`w-9 h-9 grid place-items-center border ${skin.line} ${skin.chipR} hover:opacity-70`}><Ic.x c="w-4 h-4" /></button>
         </div>
 
         {thr > 0 && S.cartCount > 0 && (
@@ -886,6 +939,9 @@ const PM_BASE_CSS = `
 @keyframes pmSheet{from{transform:translateY(100%)}to{transform:none}}
 @keyframes pmRise{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
 @keyframes pmMarquee{to{transform:translateX(-50%)}}
+@keyframes pmMonoSlide{to{transform:translateX(-25%)}}
+.pm-mono-marquee{animation:pmMonoSlide 30s linear infinite}
+@media(prefers-reduced-motion:reduce){.pm-mono-marquee{animation:none}}
 @keyframes pmFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
 @keyframes pmShake{0%,100%{transform:none}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
 @keyframes pmSpin{to{transform:rotate(1turn)}}
@@ -949,7 +1005,7 @@ function Card({ p, i, S }: any) {
         <button type="button" onClick={() => S.toggleWish(p.id)} aria-label="Save" aria-pressed={S.isWished(p.id)} className={`absolute top-2 right-2 w-8 h-8 grid place-items-center rounded-full border-2 border-black transition ${S.isWished(p.id) ? 'bg-black text-[var(--pm-accent)]' : 'bg-white hover:bg-[var(--pm-accent)]'}`}><Ic.heart c="w-3.5 h-3.5" fill={S.isWished(p.id)} /></button>
         {st === 'out'
           ? <div className="absolute inset-0 bg-white/70 grid place-items-center pointer-events-none"><span className="mono text-[11px] font-bold bg-black text-white px-3 h-7 inline-flex items-center rounded-full">SOLD OUT</span></div>
-          : <button type="button" onClick={() => S.quickAdd(p)} aria-label={`Quick add ${p.name}`} className="absolute bottom-2 right-2 w-10 h-10 grid place-items-center rounded-full border-2 border-black bg-[var(--pm-accent)] md:translate-y-14 md:group-hover:translate-y-0 transition-transform duration-300 hover:rotate-90"><Ic.plus c="w-4 h-4" /></button>}
+          : <button type="button" onClick={() => S.quickAdd(p)} aria-label={`Quick add ${p.name}`} title="Add this product to your bag" className="absolute bottom-2 right-2 w-10 h-10 grid place-items-center rounded-full border-2 border-black bg-[var(--pm-accent)] md:translate-y-14 md:group-hover:translate-y-0 transition-transform duration-300 hover:rotate-90"><Ic.plus c="w-4 h-4" /></button>}
       </div>
       <button type="button" onClick={() => S.openProduct(p)} className="block w-full text-left mt-3 px-0.5">
         <div className="text-[13px] font-bold truncate">{p.name}</div>
@@ -986,7 +1042,7 @@ function SpikePremiumTheme({ S }: { S: any }) {
           </a>
           <div className="flex items-center gap-2">
             <span className="hidden md:inline-flex mono items-center gap-2 h-8 px-3 rounded-full border-2 border-black bg-white text-[10px] font-bold"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />LIVE • {S.products.length} ITEMS</span>
-            <button type="button" onClick={e => { S.setSavedOnly(!S.savedOnly); S.scrollTo(e, 'pm-collection') }} aria-label="Saved items" className={`relative w-10 h-10 grid place-items-center rounded-full border-2 border-black transition ${S.savedOnly ? 'bg-black text-[var(--pm-accent)]' : 'bg-white hover:bg-[var(--pm-accent)]'}`}>
+            <button type="button" onClick={e => { S.setSavedOnly(!S.savedOnly); S.scrollTo(e, 'pm-collection') }} aria-label="Saved items" title={S.savedOnly ? 'Show all products' : 'Filter to saved items'} className={`relative w-10 h-10 grid place-items-center rounded-full border-2 border-black transition ${S.savedOnly ? 'bg-black text-[var(--pm-accent)]' : 'bg-white hover:bg-[var(--pm-accent)]'}`}>
               <Ic.heart c="w-4 h-4" fill={S.savedOnly} />{S.wish.length > 0 && <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 grid place-items-center rounded-full bg-black text-white text-[10px] font-bold">{S.wish.length}</span>}
             </button>
             <button type="button" onClick={S.openCart} className="h-10 pl-4 pr-1.5 inline-flex items-center gap-2.5 rounded-full bg-black text-white text-[13px] font-bold hover:-translate-y-0.5 transition">
@@ -1138,7 +1194,7 @@ function ShoeCard({ p, S, compact = false }: any) {
         <button type="button" onClick={() => S.toggleWish(p.id)} aria-label="Save" aria-pressed={S.isWished(p.id)} className={`absolute top-3 right-3 w-9 h-9 grid place-items-center rounded-full backdrop-blur-md transition active:scale-90 ${S.isWished(p.id) ? 'bg-white text-red-500' : 'bg-white/70 text-[#14112B]'}`}><Ic.heart c="w-4 h-4" fill={S.isWished(p.id)} /></button>
         {st === 'out'
           ? <div className="absolute inset-x-3 bottom-3 h-9 grid place-items-center rounded-full bg-white/90 text-[11px] font-bold pointer-events-none">Sold out</div>
-          : <button type="button" onClick={() => S.quickAdd(p)} aria-label={`Quick add ${p.name}`} className="absolute bottom-3 right-3 w-11 h-11 grid place-items-center rounded-full bg-[#14112B] text-white shadow-lg active:scale-90 transition hover:bg-[var(--pm-accent)]"><Ic.plus c="w-5 h-5" /></button>}
+          : <button type="button" onClick={() => S.quickAdd(p)} aria-label={`Quick add ${p.name}`} title="Add this product to your bag" className="absolute bottom-3 right-3 w-11 h-11 grid place-items-center rounded-full bg-[#14112B] text-white shadow-lg active:scale-90 transition hover:bg-[var(--pm-accent)]"><Ic.plus c="w-5 h-5" /></button>}
       </div>
       <button type="button" onClick={() => S.openProduct(p)} className="block w-full text-left mt-3 px-1">
         <div className="text-[13.5px] font-bold truncate">{p.name}</div>
@@ -1184,8 +1240,8 @@ function ShoeAppPremiumTheme({ S }: { S: any }) {
             <div className="min-w-0"><div className="text-[11.5px] text-[#14112B]/55 font-medium truncate">{c.greeting}</div><div className="text-[16px] font-[800] tracking-[-0.02em] truncate">{c.headerLabel}</div></div>
           </div>
           <div className="flex items-center gap-2">
-            <button type="button" onClick={() => S.setSavedOnly(!S.savedOnly)} aria-label="Saved items" aria-pressed={S.savedOnly} className={`relative w-11 h-11 grid place-items-center rounded-2xl transition active:scale-95 ${S.savedOnly ? 'bg-[var(--pm-accent)] text-white' : 'bg-white'}`}><Ic.heart c="w-[18px] h-[18px]" fill={S.savedOnly} />{S.wish.length > 0 && <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 grid place-items-center rounded-full bg-red-500 text-white text-[10px] font-bold">{S.wish.length}</span>}</button>
-            <button type="button" onClick={S.openCart} aria-label="Open cart" className="relative w-11 h-11 grid place-items-center rounded-2xl bg-[#14112B] text-white transition active:scale-95"><Ic.bag c="w-[18px] h-[18px]" />{S.cartCount > 0 && <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 grid place-items-center rounded-full bg-[var(--pm-accent)] text-white text-[10px] font-bold pm-pop">{S.cartCount}</span>}</button>
+            <button type="button" onClick={() => S.setSavedOnly(!S.savedOnly)} aria-label="Saved items" title={S.savedOnly ? 'Show all products' : 'Filter to saved items'} aria-pressed={S.savedOnly} className={`relative w-11 h-11 grid place-items-center rounded-2xl transition active:scale-95 ${S.savedOnly ? 'bg-[var(--pm-accent)] text-white' : 'bg-white'}`}><Ic.heart c="w-[18px] h-[18px]" fill={S.savedOnly} />{S.wish.length > 0 && <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 grid place-items-center rounded-full bg-red-500 text-white text-[10px] font-bold">{S.wish.length}</span>}</button>
+            <button type="button" onClick={S.openCart} aria-label="Open cart" title="Open your shopping bag" className="relative w-11 h-11 grid place-items-center rounded-2xl bg-[#14112B] text-white transition active:scale-95"><Ic.bag c="w-[18px] h-[18px]" />{S.cartCount > 0 && <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 grid place-items-center rounded-full bg-[var(--pm-accent)] text-white text-[10px] font-bold pm-pop">{S.cartCount}</span>}</button>
           </div>
         </div>
       </header>
@@ -1379,8 +1435,8 @@ function TrenzoLuxuryTheme({ S }: { S: any }) {
           <div className="md:hidden" />
           <a href="#" onClick={e => e.preventDefault()} className="justify-self-center serif text-[22px] md:text-[28px] tracking-[0.34em] uppercase font-medium whitespace-nowrap">{c.logoImage ? <img src={c.logoImage} alt={c.headerLabel} className="h-9 max-w-[200px] object-contain" /> : <>✦ {c.headerLabel}</>}</a>
           <div className="flex items-center justify-end gap-1.5">
-            <button type="button" onClick={() => S.setSavedOnly(!S.savedOnly)} aria-label="Saved pieces" aria-pressed={S.savedOnly} className={`relative w-10 h-10 grid place-items-center transition ${S.savedOnly ? 'text-[var(--pm-accent)]' : 'hover:text-[var(--pm-accent)]'}`}><Ic.heart c="w-[19px] h-[19px]" fill={S.savedOnly} />{S.wish.length > 0 && <span className="absolute top-1 right-0 min-w-[16px] h-4 px-1 grid place-items-center rounded-full bg-[var(--pm-accent)] text-black text-[9px] font-bold">{S.wish.length}</span>}</button>
-            <button type="button" onClick={S.openCart} aria-label="Open cart" className="relative h-10 pl-2 pr-1 inline-flex items-center gap-2 hover:text-[var(--pm-accent)] transition-colors"><Ic.bag c="w-[19px] h-[19px]" /><span className="text-[11px] uppercase tracking-[0.22em] hidden sm:inline">Bag</span><span className="min-w-[22px] h-[22px] px-1 grid place-items-center rounded-full border border-[var(--pm-accent)] text-[var(--pm-accent)] text-[11px] tabular-nums">{S.cartCount}</span></button>
+            <button type="button" onClick={() => S.setSavedOnly(!S.savedOnly)} aria-label="Saved pieces" title={S.savedOnly ? 'Show all products' : 'Filter to saved items'} aria-pressed={S.savedOnly} className={`relative w-10 h-10 grid place-items-center transition ${S.savedOnly ? 'text-[var(--pm-accent)]' : 'hover:text-[var(--pm-accent)]'}`}><Ic.heart c="w-[19px] h-[19px]" fill={S.savedOnly} />{S.wish.length > 0 && <span className="absolute top-1 right-0 min-w-[16px] h-4 px-1 grid place-items-center rounded-full bg-[var(--pm-accent)] text-black text-[9px] font-bold">{S.wish.length}</span>}</button>
+            <button type="button" onClick={S.openCart} aria-label="Open cart" title="Open your shopping bag" className="relative h-10 pl-2 pr-1 inline-flex items-center gap-2 hover:text-[var(--pm-accent)] transition-colors"><Ic.bag c="w-[19px] h-[19px]" /><span className="text-[11px] uppercase tracking-[0.22em] hidden sm:inline">Bag</span><span className="min-w-[22px] h-[22px] px-1 grid place-items-center rounded-full border border-[var(--pm-accent)] text-[var(--pm-accent)] text-[11px] tabular-nums">{S.cartCount}</span></button>
           </div>
         </div>
       </header>
@@ -1535,7 +1591,7 @@ function SleekBeigePremiumTheme({ S }: { S: any }) {
             {[['Shop', 'pm-collection'], ...(reviews.length ? [['Lookbook', 'pm-lookbook'], ['Reviews', 'pm-reviews']] : [['Lookbook', 'pm-lookbook']])].map(([l, id]) => <button type="button" key={id} onClick={e => S.scrollTo(e, id)} className="h-10 px-4 rounded-full hover:bg-[#2B2118]/[0.06] transition">{l}</button>)}
           </nav>
           <div className="flex items-center gap-1.5">
-            <button type="button" onClick={() => S.setSavedOnly(!S.savedOnly)} aria-label="Saved" aria-pressed={S.savedOnly} className={`relative w-11 h-11 grid place-items-center rounded-full transition ${S.savedOnly ? 'bg-[var(--pm-accent)] text-white' : 'hover:bg-[#2B2118]/[0.06]'}`}><Ic.heart c="w-[19px] h-[19px]" fill={S.savedOnly} />{S.wish.length > 0 && <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 grid place-items-center rounded-full bg-[#2B2118] text-white text-[9px] font-bold">{S.wish.length}</span>}</button>
+            <button type="button" onClick={() => S.setSavedOnly(!S.savedOnly)} aria-label="Saved" title={S.savedOnly ? 'Show all products' : 'Filter to saved items'} aria-pressed={S.savedOnly} className={`relative w-11 h-11 grid place-items-center rounded-full transition ${S.savedOnly ? 'bg-[var(--pm-accent)] text-white' : 'hover:bg-[#2B2118]/[0.06]'}`}><Ic.heart c="w-[19px] h-[19px]" fill={S.savedOnly} />{S.wish.length > 0 && <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 grid place-items-center rounded-full bg-[#2B2118] text-white text-[9px] font-bold">{S.wish.length}</span>}</button>
             <button type="button" onClick={S.openCart} className="h-11 pl-4 pr-2 rounded-full bg-[#2B2118] text-[#FBF8F3] inline-flex items-center gap-2.5 text-[13px] font-semibold hover:bg-[var(--pm-accent)] transition"><Ic.bag c="w-[17px] h-[17px]" /><span className="hidden sm:inline">Bag</span><span className="min-w-[26px] h-[26px] px-1.5 grid place-items-center rounded-full bg-white/20 text-[12px] tabular-nums">{S.cartCount}</span></button>
           </div>
         </div>
@@ -1686,7 +1742,7 @@ function SleekDarkPremiumTheme({ S }: { S: any }) {
         <div className="max-w-[1320px] mx-auto px-4 md:px-6 h-16 flex items-center justify-between gap-3">
           <a href="#" onClick={e => e.preventDefault()} className="flex items-center gap-3 min-w-0">{c.logoImage ? <img src={c.logoImage} alt={c.headerLabel} className="h-8 max-w-[160px] object-contain" /> : <><span className="w-8 h-8 grid place-items-center rounded-lg bg-[var(--pm-accent)] text-black font-bold text-[15px]">{S.initial}</span><span className="mono text-[13px] font-semibold tracking-[0.12em] uppercase truncate">[ {c.headerLabel} ]</span></>}</a>
           <div className="flex items-center gap-2">
-            <button type="button" onClick={() => S.setSavedOnly(!S.savedOnly)} aria-label="Saved" aria-pressed={S.savedOnly} className={`relative w-10 h-10 grid place-items-center rounded-lg border transition ${S.savedOnly ? 'border-[var(--pm-accent)] text-[var(--pm-accent)] bg-[var(--pm-accent)]/10' : 'border-white/12 hover:border-white/30'}`}><Ic.heart c="w-4 h-4" fill={S.savedOnly} />{S.wish.length > 0 && <span className="absolute -top-1.5 -right-1.5 min-w-[17px] h-[17px] px-1 grid place-items-center rounded-full bg-[var(--pm-accent)] text-black text-[9.5px] font-bold">{S.wish.length}</span>}</button>
+            <button type="button" onClick={() => S.setSavedOnly(!S.savedOnly)} aria-label="Saved" title={S.savedOnly ? 'Show all products' : 'Filter to saved items'} aria-pressed={S.savedOnly} className={`relative w-10 h-10 grid place-items-center rounded-lg border transition ${S.savedOnly ? 'border-[var(--pm-accent)] text-[var(--pm-accent)] bg-[var(--pm-accent)]/10' : 'border-white/12 hover:border-white/30'}`}><Ic.heart c="w-4 h-4" fill={S.savedOnly} />{S.wish.length > 0 && <span className="absolute -top-1.5 -right-1.5 min-w-[17px] h-[17px] px-1 grid place-items-center rounded-full bg-[var(--pm-accent)] text-black text-[9.5px] font-bold">{S.wish.length}</span>}</button>
             <button type="button" onClick={S.openCart} className="mono h-10 px-4 rounded-lg border border-[var(--pm-accent)]/60 text-[var(--pm-accent)] text-[12px] font-semibold tracking-wider inline-flex items-center gap-2 hover:bg-[var(--pm-accent)] hover:text-black transition"><Ic.bag c="w-4 h-4" />CART[{S.cartCount}]</button>
           </div>
         </div>
@@ -1767,7 +1823,7 @@ function SleekDarkPremiumTheme({ S }: { S: any }) {
                     <button type="button" onClick={() => S.openProduct(p)} className="block w-full text-left"><div className="text-[13.5px] font-semibold truncate">{p.name}</div><div className="mono mt-1 text-[10.5px] text-white/40 truncate">{p.category || 'UNIT'}{p.sizes.length ? ` · ${p.sizes.length} sizes` : ''}</div></button>
                     <div className="mt-2.5"><StockBar p={p} /></div>
                     <div className="mt-3 flex items-center justify-between"><div className="mono"><span className="text-[15px] font-semibold text-[var(--pm-accent)]">{S.m(p.price)}</span>{p.original_price > 0 && <span className="ml-2 text-[10.5px] line-through text-white/30">{S.m(p.original_price)}</span>}</div>
-                      <button type="button" disabled={st === 'out'} onClick={() => S.quickAdd(p)} aria-label={`Add ${p.name}`} className="w-9 h-9 grid place-items-center rounded-lg border border-white/15 hover:bg-[var(--pm-accent)] hover:text-black hover:border-[var(--pm-accent)] disabled:opacity-30 disabled:pointer-events-none transition"><Ic.plus c="w-4 h-4" /></button></div>
+                      <button type="button" disabled={st === 'out'} onClick={() => S.quickAdd(p)} aria-label={`Add ${p.name}`} title="Add this product to your bag" className="w-9 h-9 grid place-items-center rounded-lg border border-white/15 hover:bg-[var(--pm-accent)] hover:text-black hover:border-[var(--pm-accent)] disabled:opacity-30 disabled:pointer-events-none transition"><Ic.plus c="w-4 h-4" /></button></div>
                   </div>
                 </article>
               )
@@ -1784,7 +1840,7 @@ function SleekDarkPremiumTheme({ S }: { S: any }) {
                   <div className="hidden md:block"><StockBar p={p} /></div>
                   <div className="hidden md:block mono text-[11px] text-white/40 truncate">{p.sizes.length ? p.sizes.join(' / ') : '—'}</div>
                   <div className="mono text-right md:text-left"><div className="text-[15px] font-semibold text-[var(--pm-accent)]">{S.m(p.price)}</div>{p.original_price > 0 && <div className="text-[10.5px] line-through text-white/30">{S.m(p.original_price)}</div>}</div>
-                  <button type="button" disabled={st === 'out'} onClick={() => S.quickAdd(p)} aria-label={`Add ${p.name}`} className="hidden md:grid w-10 h-10 place-items-center rounded-lg border border-white/15 hover:bg-[var(--pm-accent)] hover:text-black disabled:opacity-30 transition"><Ic.plus c="w-4 h-4" /></button>
+                  <button type="button" disabled={st === 'out'} onClick={() => S.quickAdd(p)} aria-label={`Add ${p.name}`} title="Add this product to your bag" className="hidden md:grid w-10 h-10 place-items-center rounded-lg border border-white/15 hover:bg-[var(--pm-accent)] hover:text-black disabled:opacity-30 transition"><Ic.plus c="w-4 h-4" /></button>
                 </div>
               )
             })}
@@ -1906,7 +1962,7 @@ function SleekEditorialPremiumTheme({ S }: { S: any }) {
                 <button type="button" onClick={() => S.openProduct(p)} className="text-left min-w-0 md:col-start-2"><span className="serif block text-[24px] md:text-[clamp(30px,3.6vw,52px)] leading-[1] tracking-[-0.02em] truncate group-hover:italic group-hover:translate-x-2 transition-all duration-500">{p.name}{S.isHot(p) && <sup className="ml-3 align-top text-[10px] not-italic font-sans font-semibold uppercase tracking-[0.2em] text-[var(--pm-accent)]">{S.c.hotBadge}</sup>}</span><span className="md:hidden block mt-1 text-[11px] uppercase tracking-[0.16em] text-black/50">{p.category}</span></button>
                 <span className="hidden md:block text-[11px] uppercase tracking-[0.2em] text-black/50">{p.category || '—'}{st === 'low' && <span className="block text-[var(--pm-accent)] font-semibold mt-1">Only {p.stock} left</span>}{st === 'out' && <span className="block text-black font-semibold mt-1">Sold out</span>}</span>
                 <span className="text-right md:text-left tabular-nums text-[14px] md:text-[16px]">{S.m(p.price)}{pct > 0 && <span className="block text-[11px] text-black/40 line-through">{S.m(p.original_price)}</span>}</span>
-                <button type="button" disabled={st === 'out'} onClick={() => S.quickAdd(p)} aria-label={`Add ${p.name}`} className="hidden md:grid w-11 h-11 place-items-center border border-black hover:bg-black hover:text-white disabled:opacity-30 transition"><Ic.plus c="w-4 h-4" /></button>
+                <button type="button" disabled={st === 'out'} onClick={() => S.quickAdd(p)} aria-label={`Add ${p.name}`} title="Add this product to your bag" className="hidden md:grid w-11 h-11 place-items-center border border-black hover:bg-black hover:text-white disabled:opacity-30 transition"><Ic.plus c="w-4 h-4" /></button>
               </div>
             )
           })}
@@ -1943,6 +1999,211 @@ function SleekEditorialPremiumTheme({ S }: { S: any }) {
 }
 
 /* ============================== 4. RENDERER ============================== */
+/* ============================== NEW PREMIUM VIEWS ============================== */
+function NewThemeCatalog({ S, variant }: { S: any; variant: 'saffron' | 'atelier' | 'mono' }) {
+  const { c, filtered } = S
+  const cardStyle = variant === 'saffron'
+    ? 'rounded-[24px] border border-[#E6D7C3] bg-[#FFFCF7] shadow-[0_12px_30px_-24px_rgba(58,35,24,.45)]'
+    : variant === 'atelier'
+      ? 'rounded-[28px] border border-[#E3DCD1] bg-[#FFFCF7]'
+      : 'rounded-none border-2 border-black bg-white shadow-[5px_5px_0_#111]'
+  const imageStyle = variant === 'saffron' ? 'aspect-[4/3] rounded-[20px]' : variant === 'atelier' ? 'aspect-[4/5] rounded-t-[999px]' : 'aspect-[4/5] rounded-none'
+  const gridStyle = variant === 'atelier' ? 'grid-cols-2 gap-x-4 gap-y-9 sm:gap-x-7 lg:grid-cols-3' : variant === 'mono' ? 'grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4 md:gap-5' : 'grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 xl:grid-cols-4'
+
+  return (
+    <section id="pm-collection" className="mx-auto max-w-[1320px] scroll-mt-24 px-4 py-14 sm:px-6 md:py-20">
+      <div className={`flex flex-col gap-5 border-b pb-5 sm:flex-row sm:items-end sm:justify-between ${variant === 'mono' ? 'border-black' : variant === 'atelier' ? 'border-[#D7D2C6]' : 'border-[#E6D7C3]'}`}>
+        <div className="min-w-0">
+          <p className={`text-[10px] font-bold uppercase tracking-[0.22em] ${variant === 'saffron' ? 'text-[#C95C3A]' : variant === 'atelier' ? 'text-[#718463]' : 'text-zinc-500'}`}>{variant === 'saffron' ? c.menuEyebrow : variant === 'atelier' ? c.journalEyebrow : c.dropNumber}</p>
+          <h2 className={`${variant === 'atelier' ? 'font-serif font-normal tracking-[-0.04em]' : variant === 'mono' ? 'font-mono font-black uppercase tracking-[-0.06em]' : 'font-bold tracking-[-0.04em]'} mt-2 text-3xl sm:text-4xl`}>{c.collectionTitle}</h2>
+          <p className="mt-2 max-w-xl text-sm opacity-65">{c.collectionSubtitle}</p>
+        </div>
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+          {c.showSearch && <SearchBox S={S} className="w-full sm:w-52" inputClass={`h-11 rounded-xl border px-3 text-sm ${variant === 'mono' ? 'border-black bg-white font-mono' : variant === 'atelier' ? 'border-[#D7D2C6] bg-white' : 'border-[#E6D7C3] bg-[#FFFCF7]'}`} />}
+          {c.showSort && <SortSelect S={S} className={`h-11 rounded-xl border px-3 text-sm ${variant === 'mono' ? 'border-black bg-white font-mono' : variant === 'atelier' ? 'border-[#D7D2C6] bg-white' : 'border-[#E6D7C3] bg-[#FFFCF7]'}`} />}
+        </div>
+      </div>
+      <div className="pm-sb -mx-1 mt-5 flex gap-2 overflow-x-auto px-1 pb-2" role="group" aria-label="Filter products">
+        {S.chips.map((chip: string) => <button key={chip} type="button" onClick={() => S.setActive(chip)} aria-pressed={S.active === chip} className={`shrink-0 px-4 py-2 text-xs font-semibold transition ${variant === 'mono' ? `border-2 border-black ${S.active === chip ? 'bg-[#D9FF3F] text-black' : 'bg-white hover:bg-[#D9FF3F]'}` : variant === 'atelier' ? `rounded-full border ${S.active === chip ? 'border-[#718463] bg-[#718463] text-white' : 'border-[#D7D2C6] bg-transparent hover:bg-white'}` : `rounded-full border ${S.active === chip ? 'border-[#291B16] bg-[#291B16] text-white' : 'border-[#E6D7C3] bg-white hover:bg-[#F5E9D5]'}`}`}>{chip}</button>)}
+        {S.savedOnly && <button type="button" onClick={() => S.setSavedOnly(false)} className="shrink-0 rounded-full border border-black px-4 py-2 text-xs font-semibold">Saved only ×</button>}
+      </div>
+      {filtered.length ? <div className={`mt-5 grid ${gridStyle}`}>
+        {filtered.map((p: any, index: number) => {
+          const discount = discountPct(p)
+          const stock = stockState(p)
+          return (
+            <article key={p.id} className={`group min-w-0 p-2 transition ${cardStyle} ${variant === 'atelier' ? 'hover:-translate-y-1' : ''}`}>
+              <div className={`relative overflow-hidden bg-black/5 ${imageStyle}`}>
+                <button type="button" onClick={() => S.openProduct(p)} aria-label={`View ${p.name}`} className="absolute inset-0 z-[1] h-full w-full"><Img src={p.images[0]} alt={p.name} className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.04]" /></button>
+                <div className="pointer-events-none absolute left-2 top-2 z-[2] flex flex-col gap-1">
+                  {S.isHot(p) && <span className={`rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider ${variant === 'mono' ? 'pm-accent-fill bg-[#D9FF3F] text-black' : variant === 'atelier' ? 'pm-accent-fill bg-[#718463] text-white' : 'pm-accent-fill bg-[#C95C3A] text-white'}`}>{c.hotBadge}</span>}
+                  {discount > 0 && <span className="w-fit rounded-full bg-white px-2.5 py-1 text-[9px] font-bold text-black">-{discount}%</span>}
+                  {stock === 'out' && <span className="rounded-full bg-black px-2.5 py-1 text-[9px] font-bold text-white">Sold out</span>}
+                </div>
+                <button type="button" onClick={() => S.toggleWish(p.id)} aria-label={S.isWished(p.id) ? 'Remove from saved items' : 'Save this product'} title={S.isWished(p.id) ? 'Remove from saved items' : 'Save this product'} aria-pressed={S.isWished(p.id)} className={`absolute right-2 top-2 z-[3] grid h-9 w-9 place-items-center rounded-full bg-white/90 text-zinc-800 shadow-sm transition hover:scale-105 ${variant === 'mono' ? 'border border-black' : ''}`}><Ic.heart c="h-4 w-4" fill={S.isWished(p.id)} /></button>
+                {stock !== 'out' && <button type="button" onClick={() => S.quickAdd(p)} aria-label={`Add ${p.name} to bag`} title="Add to bag" className={`absolute bottom-2 right-2 z-[3] grid h-10 w-10 place-items-center rounded-full shadow-md transition hover:scale-105 ${variant === 'saffron' ? 'pm-accent-fill bg-[#C95C3A] text-white' : variant === 'atelier' ? 'pm-accent-fill bg-[#718463] text-white' : 'pm-accent-fill border-2 border-black bg-[#D9FF3F] text-black'}`}><Ic.plus c="h-4 w-4" /></button>}
+              </div>
+              <button type="button" onClick={() => S.openProduct(p)} className={`block w-full min-w-0 px-1 pb-1 pt-3 text-left ${variant === 'mono' ? 'font-mono' : ''}`}>
+                <span className="block truncate text-[10px] uppercase tracking-[0.14em] opacity-50">{p.category || 'Featured'}</span>
+                <span className="mt-1 block truncate text-sm font-bold sm:text-base">{p.name}</span>
+                <span className="mt-1 block"><PriceLine p={p} S={S} big="text-[13px] sm:text-[14px]" strike="text-[10px] opacity-45" /></span>
+                {stock === 'low' && <span className="mt-1 block text-[10px] font-semibold text-red-600">Only {p.stock} left</span>}
+              </button>
+              <button type="button" onClick={() => S.quickAdd(p)} disabled={stock === 'out'} className={`mt-1 h-10 w-full px-2 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-40 ${variant === 'saffron' ? 'rounded-xl bg-[#F3E6D3] text-[#43271E] hover:bg-[#E9D5B8]' : variant === 'atelier' ? 'rounded-full border border-[#D7D2C6] hover:border-[#718463] hover:bg-[#718463] hover:text-white' : 'border-2 border-black bg-white hover:bg-[#D9FF3F]'}`}>{stock === 'out' ? 'Sold out' : 'Add to bag'}</button>
+            </article>
+          )
+        })}
+      </div> : <div className={`mt-8 border p-10 text-center ${variant === 'mono' ? 'border-2 border-black bg-white font-mono' : 'rounded-3xl border-zinc-200 bg-white/70'}`}><p className="font-semibold">{S.products.length ? 'No products match these filters.' : 'Products will be here soon.'}</p><button type="button" onClick={() => { S.setQuery(''); S.setActive('All'); S.setSavedOnly(false) }} className="mt-3 text-sm font-semibold underline underline-offset-4">Clear filters</button></div>}
+    </section>
+  )
+}
+
+
+function NewThemeHighlights({ S, variant }: { S: any; variant: 'saffron' | 'atelier' | 'mono' }) {
+  const { c } = S
+  const stats = c.showStats && Array.isArray(c.stats) ? c.stats.slice(0, 3) : []
+  const badges = Array.isArray(c.trustBadges) ? c.trustBadges.filter(Boolean).slice(0, 4) : []
+  if (!stats.length && !badges.length) return null
+  const border = variant === 'saffron' ? 'border-[#E6D7C3]' : variant === 'atelier' ? 'border-[#D7D2C6]' : 'border-black'
+  const muted = variant === 'saffron' ? 'text-[#291B16]/60' : variant === 'atelier' ? 'text-[#2B3327]/60' : 'text-black/55'
+  return (
+    <section className={`flex flex-col gap-4 border-y py-4 sm:flex-row sm:items-center sm:justify-between ${border}`} aria-label="Store information">
+      {stats.length > 0 && <div className="grid flex-1 grid-cols-3 divide-x divide-black/10">{stats.map((item: any, i: number) => <div key={i} className="px-3 text-center first:pl-0 last:pr-0"><div className="text-base font-bold leading-none">{item.value}</div><div className={`mt-1 text-[9px] uppercase tracking-[.12em] ${muted}`}>{item.label}</div></div>)}</div>}
+      {badges.length > 0 && <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end">{badges.map((badge: string, i: number) => <span key={`${badge}-${i}`} className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[9px] font-semibold ${border} ${muted}`}><Ic.check c={`h-3 w-3 ${variant === 'saffron' ? 'text-[#C95C3A]' : variant === 'atelier' ? 'text-[#718463]' : 'text-black'}`} />{badge}</span>)}</div>}
+    </section>
+  )
+}
+
+const SAFFRON_SKIN: Skin = {
+  root: 'bg-[#F8F0E3] text-[#291B16]', panel: 'bg-[#FFFDF8] text-[#291B16] rounded-[28px]', drawer: 'bg-[#FFFDF8] text-[#291B16]', scrim: 'bg-[#291B16]/55 backdrop-blur-sm',
+  muted: 'text-[#291B16]/55', line: 'border-[#E6D7C3]', soft: 'bg-[#F4E8D5]', chip: 'border-[#D9C5AB] bg-white', chipOn: 'bg-[#291B16] text-white border-[#291B16]', chipR: 'rounded-full',
+  btn: 'bg-[#C95C3A] text-white rounded-full hover:bg-[#A94329]', btnAlt: 'border border-[#C95C3A] text-[#A94329] rounded-full hover:bg-[#C95C3A] hover:text-white', input: 'bg-white border border-[#E6D7C3] rounded-xl', title: 'font-bold tracking-[-0.04em]', dock: 'bg-[#FFFDF8]/95 backdrop-blur border-[#E6D7C3]',
+}
+
+function SaffronTableTheme({ S }: { S: any }) {
+  const { c, products } = S
+  const first = products[0]
+  const lines = splitLines(c.heroTitle)
+  return (
+    <div ref={S.rootRef} style={S.cssVars} className="pm-saffron min-h-screen overflow-x-clip bg-[#F8F0E3] text-[#291B16] antialiased">
+      <style>{PM_BASE_CSS + `@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght,SOFT,WONK@9..144,400,20,1;9..144,500,20,1;9..144,600,20,1&display=swap');.pm-saffron{font-family:'DM Sans',sans-serif}.pm-saffron .food-serif{font-family:'Fraunces',Georgia,serif}.pm-saffron .pm-accent-fill{background:var(--pm-accent)!important}.pm-saffron .pm-accent-text{color:var(--pm-accent)!important}`}</style>
+      {c.showAnnouncement && c.announcement && <div className="bg-[#291B16] px-4 py-2 text-center text-[9px] font-semibold uppercase tracking-[0.2em] text-[#F8E7CA] sm:text-[10px]">{c.announcement}</div>}
+      <header className="sticky top-0 z-30 border-b border-[#E6D7C3] bg-[#F8F0E3]/95 backdrop-blur-xl">
+        <div className="mx-auto flex h-[68px] max-w-[1320px] items-center justify-between gap-3 px-4 sm:px-6">
+          <a href="#top" className="flex min-w-0 items-center gap-2.5"><span className="grid h-9 w-9 shrink-0 place-items-center pm-accent-fill rounded-full bg-[#C95C3A] text-lg text-white">✿</span><span className="truncate text-sm font-bold tracking-[-0.03em] sm:text-base">{c.headerLabel}</span></a>
+          <nav className="hidden items-center gap-6 text-xs font-semibold text-[#291B16]/65 md:flex"><a href="#pm-collection" className="hover:text-[#C95C3A]">{c.collectionTitle}</a><a href="#saffron-special" className="hover:text-[#C95C3A]">{c.specialTitle}</a></nav>
+          <div className="flex items-center gap-1.5">
+            <button type="button" onClick={() => S.setSavedOnly(!S.savedOnly)} aria-label="Filter to saved products" title={S.savedOnly ? 'Show all products' : 'Filter to saved products'} className="grid h-10 w-10 place-items-center rounded-full hover:bg-white"><Ic.heart c="h-[18px] w-[18px]" fill={S.savedOnly} /></button>
+            <button type="button" onClick={S.openCart} aria-label="Open shopping bag" title="Open shopping bag" className="inline-flex h-10 items-center gap-2 rounded-full bg-[#291B16] px-3 text-xs font-bold text-white"><Ic.bag c="h-4 w-4" /><span className="hidden sm:inline">Bag</span><span className="grid h-5 min-w-5 place-items-center rounded-full bg-[#E8FF86] px-1 text-[10px] text-black">{S.cartCount}</span></button>
+          </div>
+        </div>
+      </header>
+      <main id="top" className="mx-auto max-w-[1320px] px-4 sm:px-6">
+        <section className="grid gap-8 py-10 sm:py-14 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:gap-14 lg:py-20">
+          <div className="relative order-2 lg:order-1">
+            <div className="absolute -left-5 top-1/4 h-28 w-28 rounded-full bg-[#E5B675]/30 blur-2xl" aria-hidden />
+            <div className="relative inline-flex items-center gap-2 rounded-full border border-[#DCC7AA] bg-[#FFFCF7] px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.18em]"><span className="pm-accent-fill h-1.5 w-1.5 rounded-full bg-[#C95C3A]" />{c.heroBadge}</div>
+            <h1 className="food-serif mt-5 text-[clamp(52px,8vw,100px)] leading-[.92] tracking-[-.055em]">{lines.map((line: string, i: number) => <span key={i} className={`block ${i === 1 ? 'pm-accent-text italic text-[#C95C3A]' : ''}`}>{line}</span>)}</h1>
+            <p className="mt-5 max-w-lg text-sm leading-7 text-[#291B16]/65 sm:text-base">{c.heroSubtitle}</p>
+            <div className="mt-7 flex flex-wrap gap-3"><button type="button" onClick={e => S.scrollTo(e, 'pm-collection')} className={`h-12 px-6 text-sm font-bold pm-accent-fill ${SAFFRON_SKIN.btn}`}>{c.ctaText} <Ic.right c="ml-2 inline h-4 w-4" /></button>{c.secondaryCta && <button type="button" onClick={S.openCart} className={`h-12 px-6 text-sm font-bold ${SAFFRON_SKIN.btnAlt}`}>{c.secondaryCta}</button>}</div>
+            <div className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2 text-[10px] font-semibold text-[#291B16]/55"><span className="inline-flex items-center gap-1.5"><Ic.truck c="h-4 w-4 text-[#C95C3A]" />{c.deliveryNote}</span><span className="inline-flex items-center gap-1.5"><Ic.check c="h-4 w-4 text-[#C95C3A]" />{c.dishNote}</span></div>
+          </div>
+          <div className="relative order-1 mx-auto w-full max-w-[520px] lg:order-2">
+            <div className="absolute -inset-3 rotate-2 rounded-[42%_42%_24px_24px] border border-[#D9B991]" aria-hidden />
+            <button type="button" onClick={() => first && S.openProduct(first)} aria-label={first ? `View ${first.name}` : c.featuredLabel} className="relative block w-full overflow-hidden rounded-[42%_42%_24px_24px] bg-[#E6D7C3]">
+              <Img src={S.heroImg} alt={first?.name || c.featuredLabel} className="aspect-[4/4.3] w-full object-cover transition duration-700 hover:scale-[1.03]" />
+              <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#291B16]/80 to-transparent px-5 pb-6 pt-16 text-left text-white"><span className="block text-[9px] font-bold uppercase tracking-[0.2em] text-[#F5D4A5]">{c.featuredLabel}</span><span className="mt-1 block text-xl font-bold">{first?.name || c.headerLabel}</span>{first && <span className="mt-1 block text-sm">{S.m(first.price)}</span>}</span>
+            </button>
+            <span className="absolute -bottom-3 -left-2 grid h-16 w-16 rotate-[-9deg] place-items-center pm-accent-fill rounded-full bg-[#C95C3A] text-center text-[8px] font-bold uppercase leading-tight tracking-[0.12em] text-white shadow-lg">{c.menuEyebrow}</span>
+          </div>
+        </section>
+        <NewThemeHighlights S={S} variant="saffron" />
+        <NewThemeCatalog S={S} variant="saffron" />
+        <section id="saffron-special" className="mx-auto mb-16 grid max-w-[1320px] overflow-hidden rounded-[28px] bg-[#291B16] text-white md:grid-cols-2">
+          <div className="flex flex-col justify-center p-6 sm:p-10 md:p-12"><div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#E8B97B]">{c.menuEyebrow}</div><h2 className="food-serif mt-3 text-4xl leading-tight sm:text-5xl">{c.specialTitle}</h2><p className="mt-4 max-w-lg text-sm leading-7 text-white/65">{c.specialText}</p><a href="#pm-collection" className="pm-accent-fill mt-6 inline-flex w-fit items-center gap-2 rounded-full bg-[#C95C3A] px-5 py-3 text-xs font-bold text-white">{c.specialButton}<Ic.right c="h-4 w-4" /></a></div>
+          <div className="min-h-[240px] bg-[#503126]"><Img src={S.heroImg2} alt="" className="h-full min-h-[240px] w-full object-cover opacity-90" /></div>
+        </section>
+      </main>
+      <footer className="border-t border-[#E6D7C3] bg-[#F3E8D7] px-4 py-9"><div className="mx-auto flex max-w-[1320px] flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"><div><div className="font-bold">{c.headerLabel}</div><p className="mt-2 max-w-md text-xs leading-6 text-[#291B16]/60">{c.footerAbout}</p></div><div className="text-xs text-[#291B16]/60">{c.address && <span>{c.address} · </span>}WhatsApp {S.profile?.whatsapp_number}</div></div><div className="mx-auto mt-7 max-w-[1320px] border-t border-[#291B16]/10 pt-4 text-[10px] text-[#291B16]/40">{c.footerNote || `© ${S.profile?.business_name || c.headerLabel}`}</div></footer>
+      <Overlays S={S} skin={SAFFRON_SKIN} layout="sheet" />
+    </div>
+  )
+}
+
+const ATELIER_SKIN: Skin = {
+  root: 'bg-[#F4EFE9] text-[#2B3327]', panel: 'bg-[#FFFCF7] text-[#2B3327] rounded-[28px]', drawer: 'bg-[#FFFCF7] text-[#2B3327]', scrim: 'bg-[#263222]/50 backdrop-blur-sm',
+  muted: 'text-[#2B3327]/55', line: 'border-[#E3DCD1]', soft: 'bg-[#ECE6DC]', chip: 'border-[#CFC9BC] bg-transparent', chipOn: 'bg-[#718463] text-white border-[#718463]', chipR: 'rounded-full',
+  btn: 'bg-[#718463] text-white rounded-full hover:bg-[#536746]', btnAlt: 'border border-[#718463] text-[#536746] rounded-full hover:bg-[#718463] hover:text-white', input: 'bg-white border border-[#E3DCD1] rounded-full', title: 'font-serif font-normal tracking-[-0.04em]', dock: 'bg-[#FFFCF7]/95 backdrop-blur border-[#E3DCD1]',
+}
+
+function AtelierBloomTheme({ S }: { S: any }) {
+  const { c, products } = S
+  const lines = splitLines(c.heroTitle)
+  const first = products[0]
+  const storyImg = c.storyImage || S.heroImg2
+  return (
+    <div ref={S.rootRef} style={S.cssVars} className="pm-atelier min-h-screen overflow-x-clip bg-[#F4EFE9] text-[#2B3327] antialiased">
+      <style>{PM_BASE_CSS + `@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap');.pm-atelier{font-family:'DM Sans',sans-serif}.pm-atelier .atelier-serif{font-family:'Playfair Display',Georgia,serif}.pm-atelier .pm-accent-fill{background:var(--pm-accent)!important}.pm-atelier .pm-accent-text{color:var(--pm-accent)!important}`}</style>
+      {c.showAnnouncement && c.announcement && <div className="px-4 py-2 text-center text-[9px] font-semibold uppercase tracking-[0.2em] text-[#536746]">{c.announcement}</div>}
+      <header className="sticky top-0 z-30 border-y border-[#E3DCD1] bg-[#F4EFE9]/90 backdrop-blur-xl"><div className="mx-auto flex h-[72px] max-w-[1320px] items-center justify-between px-4 sm:px-6">
+        <a href="#top" className="flex items-center gap-3"><span className="atelier-serif text-2xl pm-accent-text italic text-[#718463]">a.</span><span className="text-xs font-semibold uppercase tracking-[0.2em]">{c.headerLabel}</span></a>
+        <nav className="hidden gap-7 text-[11px] uppercase tracking-[0.14em] md:flex"><a href="#pm-collection" className="hover:text-[#718463]">{c.collectionTitle}</a><a href="#atelier-story" className="hover:text-[#718463]">{c.manifestoTitle}</a></nav>
+        <div className="flex items-center gap-1"><button type="button" onClick={() => S.setSavedOnly(!S.savedOnly)} aria-label="Saved pieces" title={S.savedOnly ? 'Show all products' : 'Filter to saved pieces'} className="grid h-10 w-10 place-items-center rounded-full hover:bg-white"><Ic.heart c="h-[18px] w-[18px]" fill={S.savedOnly} /></button><button type="button" onClick={S.openCart} aria-label="Open bag" title="Open shopping bag" className="inline-flex h-10 items-center gap-2 rounded-full px-3 text-xs font-semibold hover:bg-white"><Ic.bag c="h-4 w-4" />{S.cartCount}</button></div>
+      </div></header>
+      <main id="top" className="mx-auto max-w-[1320px] px-4 sm:px-6">
+        <section className="relative grid min-h-[620px] items-center gap-8 py-12 md:grid-cols-2 md:py-16">
+          <div className="absolute right-[8%] top-[8%] h-40 w-40 rounded-full bg-[#D7DEC9]/60 blur-2xl" aria-hidden />
+          <div className="relative z-10 order-2 md:order-1 md:pl-8"><div className="text-[10px] font-semibold uppercase tracking-[0.24em] pm-accent-text text-[#718463]">{c.heroBadge}</div><h1 className="atelier-serif mt-6 text-[clamp(48px,7.2vw,88px)] leading-[1.06] tracking-[-0.045em]">{lines.map((line: string, i: number) => <span key={i} className={`block ${i === 1 ? 'pm-accent-text italic text-[#718463]' : ''}`}>{line}</span>)}</h1><p className="mt-6 max-w-md text-sm leading-7 text-[#2B3327]/65">{c.heroSubtitle}</p><div className="mt-7 flex flex-wrap gap-3"><button type="button" onClick={e => S.scrollTo(e, 'pm-collection')} className={`h-12 px-6 text-xs font-semibold pm-accent-fill ${ATELIER_SKIN.btn}`}>{c.ctaText}<Ic.right c="ml-2 inline h-4 w-4" /></button>{c.secondaryCta && <button type="button" onClick={S.openCart} className={`h-12 px-6 text-xs font-semibold ${ATELIER_SKIN.btnAlt}`}>{c.secondaryCta}</button>}</div></div>
+          <div className="relative order-1 mx-auto w-full max-w-[520px] md:order-2"><div className="absolute -right-3 -top-5 h-32 w-32 rounded-full border border-[#AAB69B]" aria-hidden /><button type="button" onClick={() => first && S.openProduct(first)} aria-label={first ? `View ${first.name}` : c.featuredLabel} className="relative z-10 block w-full overflow-hidden rounded-t-[999px] bg-[#E3DCD1]"><Img src={S.heroImg} alt={first?.name || ''} className="aspect-[4/5] w-full object-cover transition duration-700 hover:scale-[1.035]" /></button><div className="absolute -bottom-5 -left-4 z-20 pm-accent-fill rounded-full bg-[#718463] px-5 py-3 text-[9px] font-bold uppercase tracking-[0.17em] text-white shadow-lg">{c.featuredLabel}</div></div>
+        </section>
+        <NewThemeHighlights S={S} variant="atelier" />
+        <section id="atelier-story" className="grid gap-8 border-y border-[#D7D2C6] py-12 md:grid-cols-[.85fr_1.15fr] md:items-center md:gap-16 md:py-16"><div className="relative mx-auto w-full max-w-[390px]"><div className="absolute -inset-3 rounded-t-[999px] border border-[#AAB69B]" aria-hidden /><Img src={storyImg} alt="" className="relative aspect-[4/5] w-full rounded-t-[999px] object-cover" /></div><div className="max-w-xl"><div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#718463]">{c.journalEyebrow}</div><h2 className="atelier-serif mt-4 text-4xl leading-tight sm:text-5xl">{c.manifestoTitle}</h2><p className="mt-5 text-sm leading-7 text-[#2B3327]/65">{c.manifestoText}</p><div className="mt-8 border-t border-[#D7D2C6] pt-5"><div className="text-xs font-semibold">{c.craftTitle}</div><p className="mt-2 text-xs leading-6 text-[#2B3327]/60">{c.craftText}</p></div></div></section>
+        <NewThemeCatalog S={S} variant="atelier" />
+      </main>
+      <footer className="border-t border-[#D7D2C6] px-4 py-9"><div className="mx-auto flex max-w-[1320px] flex-col justify-between gap-4 sm:flex-row"><div><div className="atelier-serif text-xl">{c.headerLabel}</div><p className="mt-2 max-w-md text-xs leading-6 text-[#2B3327]/60">{c.footerAbout}</p></div><div className="self-end text-xs text-[#2B3327]/55">{c.instagram && <span>{c.instagram} · </span>}{c.address}{S.profile?.whatsapp_number && <div className="mt-1">WhatsApp {S.profile.whatsapp_number}</div>}</div></div><div className="mx-auto mt-7 max-w-[1320px] border-t border-[#D7D2C6] pt-4 text-[10px] text-[#2B3327]/45">{c.footerNote || `© ${S.profile?.business_name || c.headerLabel}`}</div></footer>
+      <Overlays S={S} skin={ATELIER_SKIN} layout="full" />
+    </div>
+  )
+}
+
+const MONO_SKIN: Skin = {
+  root: 'bg-[#F3F3EF] text-[#111111]', panel: 'bg-white text-black border-2 border-black rounded-none shadow-[8px_8px_0_#D9FF3F]', drawer: 'bg-[#F3F3EF] text-black border-l-2 border-black', scrim: 'bg-black/60',
+  muted: 'text-black/55', line: 'border-black/20', soft: 'bg-black/[0.04]', chip: 'border-2 border-black bg-white', chipOn: 'bg-[#D9FF3F] text-black border-black', chipR: 'rounded-none',
+  btn: 'bg-[#D9FF3F] text-black border-2 border-black rounded-none shadow-[4px_4px_0_#111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_#111]', btnAlt: 'bg-black text-white border-2 border-black rounded-none', input: 'bg-white border-2 border-black rounded-none', title: 'font-mono font-black uppercase tracking-[-0.06em]', dock: 'bg-[#F3F3EF]/95 backdrop-blur border-black',
+}
+
+function MonoMarketTheme({ S }: { S: any }) {
+  const { c, products } = S
+  const lines = splitLines(c.heroTitle)
+  const first = products[0]
+  const tickerText = c.tickerText || c.dropNumber
+  return (
+    <div ref={S.rootRef} style={S.cssVars} className="pm-mono min-h-screen overflow-x-clip bg-[#F3F3EF] text-[#111] antialiased">
+      <style>{PM_BASE_CSS + `@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');.pm-mono{font-family:'Space Grotesk',sans-serif;background-image:linear-gradient(rgba(0,0,0,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,.045) 1px,transparent 1px);background-size:24px 24px}.pm-mono .mono-type{font-family:'DM Mono',monospace}.pm-mono .pm-accent-fill{background:var(--pm-accent)!important;border-color:var(--pm-accent)!important}.pm-mono .pm-accent-text{color:var(--pm-accent)!important}.pm-mono .pm-accent-hover:hover{color:var(--pm-accent)!important;border-color:var(--pm-accent)!important}`}</style>
+      {c.showAnnouncement && c.announcement && <div className="bg-[#D9FF3F] px-4 py-2 text-center font-mono text-[9px] font-bold uppercase tracking-[0.16em] sm:text-[10px]">{c.announcement}</div>}
+      <header className="sticky top-0 z-30 border-b-2 border-black bg-[#F3F3EF]/95 backdrop-blur-xl"><div className="mx-auto flex h-[66px] max-w-[1320px] items-center justify-between px-4 sm:px-6"><a href="#top" className="mono-type text-sm font-bold tracking-[-0.06em]">{c.headerLabel}</a><div className="hidden items-center gap-6 text-[10px] font-bold uppercase tracking-[0.13em] md:flex"><a href="#pm-collection">{c.collectionTitle}</a><a href="#mono-manifesto">{c.manifestoTitle}</a></div><div className="flex items-center gap-2"><button type="button" onClick={() => S.setSavedOnly(!S.savedOnly)} title={S.savedOnly ? 'Show all products' : 'Filter saved products'} aria-label="Filter saved products" className="grid h-9 w-9 place-items-center border-2 border-black bg-white"><Ic.heart c="h-4 w-4" fill={S.savedOnly} /></button><button type="button" onClick={S.openCart} title="Open shopping bag" aria-label="Open shopping bag" className="inline-flex h-9 items-center gap-2 border-2 border-black bg-black px-3 text-xs font-bold text-white"><Ic.bag c="h-4 w-4" /><span>{S.cartCount}</span></button></div></div></header>
+      <main id="top" className="mx-auto max-w-[1320px] px-4 sm:px-6">
+        <section className="grid gap-4 py-6 md:grid-cols-12 md:py-10">
+          <div className="relative flex min-h-[390px] flex-col justify-between overflow-hidden border-2 border-black bg-[#111] p-5 text-white sm:min-h-[510px] sm:p-10 md:col-span-8">
+            <div className="absolute right-[-5%] top-[8%] select-none text-[clamp(180px,34vw,440px)] font-black leading-none text-[#D9FF3F]/10" aria-hidden>01</div>
+            <div className="relative flex items-center justify-between gap-3"><span className="mono-type inline-flex border border-[#D9FF3F] px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.16em] pm-accent-text text-[#D9FF3F]">{c.dropNumber}</span><span className="mono-type text-[9px] uppercase tracking-[0.14em] text-white/55">{c.heroBadge}</span></div>
+            <div className="relative z-10 max-w-3xl"><h1 className="text-[clamp(52px,10vw,120px)] font-bold uppercase leading-[.84] tracking-[-.09em]">{lines.map((line: string, i: number) => <span key={i} className={`block ${i === 1 ? 'pm-accent-text text-[#D9FF3F]' : ''}`}>{line}</span>)}</h1><p className="mt-6 max-w-xl text-sm leading-6 text-white/60">{c.heroSubtitle}</p><div className="mt-6 flex flex-wrap gap-3"><button type="button" onClick={e => S.scrollTo(e, 'pm-collection')} className={`h-12 px-5 text-xs font-bold uppercase pm-accent-fill ${MONO_SKIN.btn}`}>{c.ctaText}<Ic.right c="ml-2 inline h-4 w-4" /></button>{c.secondaryCta && <button type="button" onClick={S.openCart} className="h-12 border-2 border-white/40 px-5 text-xs font-bold uppercase hover:border-[#D9FF3F] pm-accent-hover text-[#D9FF3F]">{c.secondaryCta}</button>}</div></div>
+            <div className="relative mt-8 flex items-center justify-between border-t border-white/20 pt-3 mono-type text-[9px] uppercase tracking-[0.12em] text-white/45"><span>{c.specLine}</span><span>{c.currency} / {products.length} items</span></div>
+          </div>
+          <button type="button" onClick={() => first && S.openProduct(first)} aria-label={first ? `View ${first.name}` : c.featuredLabel} className="group relative min-h-[320px] overflow-hidden border-2 border-black bg-white md:col-span-4 md:min-h-0"><Img src={S.heroImg} alt={first?.name || ''} className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-[1.04]"/><span className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"/><span className="absolute left-4 top-4 pm-accent-fill border-2 border-black bg-[#D9FF3F] px-2 py-1 mono-type text-[9px] font-bold uppercase">{c.featuredLabel}</span><span className="absolute bottom-4 left-4 right-4 text-left text-white"><span className="mono-type block text-[9px] uppercase tracking-wider pm-accent-text text-[#D9FF3F]">{c.dropNumber}</span><span className="mt-1 block text-xl font-bold">{first?.name}</span>{first && <span className="mt-1 block text-sm">{S.m(first.price)}</span>}</span></button>
+        </section>
+        <NewThemeHighlights S={S} variant="mono" />
+        <div className="relative overflow-hidden border-y-2 border-black bg-white py-2"><div className="pm-mono-marquee flex min-w-max gap-10 mono-type text-[10px] font-bold uppercase tracking-[.15em]">{[0,1,2,3].map(i => <span key={i} className="flex gap-10">{tickerText}<span className="text-[#718463]">◆</span></span>)}</div></div>
+        <NewThemeCatalog S={S} variant="mono" />
+        <section id="mono-manifesto" className="mb-14 grid border-2 border-black pm-accent-fill bg-[#D9FF3F] md:grid-cols-[.72fr_1.28fr]"><div className="border-b-2 border-black p-5 mono-type text-[10px] font-bold uppercase tracking-[.14em] md:border-b-0 md:border-r-2">{c.dropNumber}<br/><span className="mt-2 inline-block">{products.length} ITEMS / SELECTED STOCK</span></div><div className="p-6 sm:p-10"><h2 className="text-3xl font-bold uppercase leading-none tracking-[-.07em] sm:text-5xl">{c.manifestoTitle}</h2><p className="mt-4 max-w-2xl text-sm leading-7 text-black/70">{c.manifestoText}</p></div></section>
+      </main>
+      <footer className="border-t-2 border-black bg-white px-4 py-8"><div className="mx-auto flex max-w-[1320px] flex-col justify-between gap-4 sm:flex-row"><div><div className="mono-type text-sm font-bold uppercase">{c.headerLabel}</div><p className="mt-2 max-w-lg text-xs leading-6 text-black/60">{c.footerAbout}</p></div><div className="mono-type self-end text-[10px] uppercase">{c.address}{S.profile?.whatsapp_number && <div className="mt-1">WA {S.profile.whatsapp_number}</div>}</div></div><div className="mx-auto mt-7 max-w-[1320px] border-t border-black/15 pt-4 mono-type text-[9px] text-black/45">{c.footerNote || `© ${S.profile?.business_name || c.headerLabel}`}</div></footer>
+      <Overlays S={S} skin={MONO_SKIN} layout="full" />
+    </div>
+  )
+}
+
+
 const THEME_VIEWS: Record<string, (p: { S: any }) => any> = {
   'spike-premium': SpikePremiumTheme,
   'shoe-app-premium': ShoeAppPremiumTheme,
@@ -1950,6 +2211,9 @@ const THEME_VIEWS: Record<string, (p: { S: any }) => any> = {
   'sleek-beige': SleekBeigePremiumTheme,
   'sleek-dark': SleekDarkPremiumTheme,
   'sleek-editorial': SleekEditorialPremiumTheme,
+  'saffron-table': SaffronTableTheme,
+  'atelier-bloom': AtelierBloomTheme,
+  'mono-market': MonoMarketTheme,
 }
 
 function ThemeHost({ View, themeId, ...rest }: any) {

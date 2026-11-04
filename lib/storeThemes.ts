@@ -32,14 +32,17 @@ export const STORE_THEMES: ThemeDef[] = [
   { id: 'spike-premium', name: 'Spike Pro', category: 'premium', colors: { bg: '#FCFBF9', text: '#0A0A0A', accent: '#0A0A0A', card: '#FFFFFF', border: '#E8E6E1' }, isPremium: true, tier: 'premium' },
   { id: 'shoe-app-premium', name: 'Shoe App Pro', category: 'premium', colors: { bg: '#F2F0FF', text: '#0A0A0A', accent: '#7C3AED', card: '#FFFFFF', border: '#E8E0FF' }, isPremium: true, tier: 'premium' },
   { id: 'trenzo-luxury', name: 'Trenzo Luxury', category: 'premium', colors: { bg: '#0A0A0A', text: '#FFFFFF', accent: '#FFFFFF', card: '#141414', border: '#2A2A2A' }, isPremium: true, tier: 'premium' },
+  { id: 'saffron-table', name: 'Saffron Table', category: 'premium', colors: { bg: '#F8F0E3', text: '#291B16', accent: '#C95C3A', card: '#FFFDF8', border: '#E6D7C3' }, isPremium: true, tier: 'premium' },
+  { id: 'atelier-bloom', name: 'Atelier Bloom', category: 'premium', colors: { bg: '#F4EFE9', text: '#2B3327', accent: '#718463', card: '#FFFCF7', border: '#E3DCD1' }, isPremium: true, tier: 'premium' },
+  { id: 'mono-market', name: 'Mono Market', category: 'premium', colors: { bg: '#F3F3EF', text: '#111111', accent: '#D9FF3F', card: '#FFFFFF', border: '#111111' }, isPremium: true, tier: 'premium' },
 ]
 
 export const getTheme = (id: string) => STORE_THEMES.find(t=>t.id===id) || STORE_THEMES[0]
 
 // For dashboard glass container - 3 sleek = old glass, now we merge all 6
 export const getAdvancedThemes = () => STORE_THEMES.filter(t=> ['sleek-beige','sleek-dark','sleek-editorial'].includes(t.id))
-export const getPremiumThemes = () => STORE_THEMES.filter(t=> ['spike-premium','shoe-app-premium','trenzo-luxury'].includes(t.id))
-export const getAllPremiumGlass = () => STORE_THEMES.filter(t=> t.category==='premium' && t.tier==='premium') // All 6 glass
+export const getPremiumThemes = () => STORE_THEMES.filter(t=> ['spike-premium','shoe-app-premium','trenzo-luxury','saffron-table','atelier-bloom','mono-market'].includes(t.id))
+export const getAllPremiumGlass = () => STORE_THEMES.filter(t=> t.category==='premium' && t.tier==='premium') // All 9 premium themes
 
 export const getStandardThemes = () => STORE_THEMES.filter(t=> t.tier==='basic')
 export const getAdvancedList = () => STORE_THEMES.filter(t=> t.tier==='advanced')

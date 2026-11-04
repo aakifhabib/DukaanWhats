@@ -135,8 +135,7 @@ export default function PlansPage() {
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 bg-black text-white px-4 py-2 rounded-full text-[11px] font-bold tracking-widest">Till ID: {TILL_ID} • JazzCash Only</div>
           <h1 className="text-[32px] md:text-[44px] font-black tracking-tight mt-4 leading-[0.9]">Pay with <span className="bg-[#E8FF86] px-2">JazzCash Till ID</span></h1>
-          <p className="text-[13px] text-zinc-500 mt-3 max-w-xl mx-auto">Only 1 method — simple, secure, no card details on our site • Monthly / Yearly billing</p>
-          <p className="text-[11px] text-zinc-400 mt-2">Basic: 5 products • 1 image • 3 advanced themes • Advanced: 25 products • 5 images • All 8 advanced themes • Premium: Unlimited • No watermark • Live analytics</p>
+          <p className="text-[13px] text-zinc-500 mt-3 max-w-xl mx-auto">Choose a plan and pay securely with JazzCash.</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
@@ -164,8 +163,7 @@ export default function PlansPage() {
         </div>
 
         <div className="mt-10 bg-black text-white rounded-[20px] p-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-[#E8FF86] text-black flex items-center justify-center font-bold">!</div><div><div className="font-bold text-[13px]">JazzCash Till ID {TILL_ID} — Only Payment Method</div><div className="text-[11px] opacity-60 mt-1">Basic 5 products 1 image 3 advanced themes • Advanced 25 products 5 images all 8 advanced themes • Premium unlimited no watermark live analytics</div></div></div>
-          <div className="flex items-center gap-2"><span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span><span className="text-[11px] opacity-70">Secure • Verified in 30 mins</span></div>
+          <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-[#E8FF86] text-black flex items-center justify-center font-bold">!</div><div><div className="font-bold text-[13px]">JazzCash Till ID {TILL_ID}</div><div className="text-[11px] opacity-60 mt-1">Payments are verified within 30 minutes.</div></div></div>
         </div>
       </main>
 
@@ -201,7 +199,7 @@ export default function PlansPage() {
                   <div className="text-[10px] tracking-[0.2em] uppercase opacity-50">JAZZCASH TILL ID</div>
                   <div className="flex items-center justify-center gap-2 mt-2">
                     <div className="text-[34px] font-black tracking-[0.18em] font-mono">{TILL_ID}</div>
-                    <button onClick={copyTill} className="h-7 px-3 bg-white/10 border border-white/20 rounded-full text-[10px]">{copiedTill?'Copied!':'Copy'}</button>
+                    <button onClick={copyTill} title="Copy JazzCash Till ID" className="h-7 px-3 bg-white/10 border border-white/20 rounded-full text-[10px]">{copiedTill?'Copied!':'Copy'}</button>
                   </div>
                   <div className="mt-4 bg-white rounded-[12px] p-3"><img src={`https://barcodeapi.org/api/code128/${TILL_ID}`} alt="Till Barcode" className="w-full h-[56px] object-contain" /><div className="text-center text-[10px] tracking-[0.3em] mt-2 font-mono text-black font-bold">{TILL_ID}</div></div>
                   <div className="mt-4 bg-white rounded-[16px] p-3 inline-block"><img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=JAZZCASH_TILL_${TILL_ID}_AMOUNT_${getTotal(selected)}_PLAN_${selected.id}_BILLING_${billing}`} alt="Till QR" className="w-[170px] h-[170px]" /></div>
