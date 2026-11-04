@@ -37,10 +37,10 @@ function Card({ p, i, S }: any) {
           {i < 2 && st !== 'out' && <span className="h-5 px-2 inline-flex items-center text-[9px] font-black mono bg-[var(--pm-accent)] border border-black rounded-full">{S.c.hotBadge}</span>}
           {pct > 0 && <span className="h-5 px-2 inline-flex items-center text-[9px] font-black mono bg-black text-white rounded-full">−{pct}%</span>}
         </div>
-        <button type="button" onClick={() => S.toggleWish(p.id)} aria-label="Save" aria-pressed={S.isWished(p.id)} className={`absolute top-2 right-2 w-8 h-8 grid place-items-center rounded-full border-2 border-black transition ${S.isWished(p.id) ? 'bg-black text-[var(--pm-accent)]' : 'bg-white hover:bg-[var(--pm-accent)]'}`}><Ic.heart c="w-3.5 h-3.5" fill={S.isWished(p.id)} /></button>
+        <button type="button" onClick={() => S.toggleWish(p.id)} aria-label="Save" title={S.isWished(p.id) ? 'Remove from saved items' : 'Save this product'} aria-pressed={S.isWished(p.id)} className={`absolute top-2 right-2 w-8 h-8 grid place-items-center rounded-full border-2 border-black transition ${S.isWished(p.id) ? 'bg-black text-[var(--pm-accent)]' : 'bg-white hover:bg-[var(--pm-accent)]'}`}><Ic.heart c="w-3.5 h-3.5" fill={S.isWished(p.id)} /></button>
         {st === 'out'
           ? <div className="absolute inset-0 bg-white/70 grid place-items-center pointer-events-none"><span className="mono text-[11px] font-bold bg-black text-white px-3 h-7 inline-flex items-center rounded-full">SOLD OUT</span></div>
-          : <button type="button" onClick={() => S.quickAdd(p)} aria-label={`Quick add ${p.name}`} className="absolute bottom-2 right-2 w-10 h-10 grid place-items-center rounded-full border-2 border-black bg-[var(--pm-accent)] md:translate-y-14 md:group-hover:translate-y-0 transition-transform duration-300 hover:rotate-90"><Ic.plus c="w-4 h-4" /></button>}
+          : <button type="button" onClick={() => S.quickAdd(p)} aria-label={`Quick add ${p.name}`} title="Add this product to your bag" className="absolute bottom-2 right-2 w-10 h-10 grid place-items-center rounded-full border-2 border-black bg-[var(--pm-accent)] md:translate-y-14 md:group-hover:translate-y-0 transition-transform duration-300 hover:rotate-90"><Ic.plus c="w-4 h-4" /></button>}
       </div>
       <button type="button" onClick={() => S.openProduct(p)} className="block w-full text-left mt-3 px-0.5">
         <div className="text-[13px] font-bold truncate">{p.name}</div>

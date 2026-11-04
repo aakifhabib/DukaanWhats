@@ -1,25 +1,14 @@
 'use client'
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 
 export default function LandingPage() {
-  const [copied, setCopied] = useState(false);
-  const [showTooltip, setShowTooltip] = useState(true);
   const [loggedIn, setLoggedIn] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setLoggedIn(!!data.session))
-    const t = setTimeout(() => setShowTooltip(false), 4500);
-    return () => clearTimeout(t);
   }, []);
-
-  useEffect(() => {
-    if (!toast) return;
-    const id = setTimeout(() => setToast(null), 3200);
-    return () => clearTimeout(id);
-  }, [toast]);
 
   const handleCreate = () => {
     window.location.href = loggedIn ? '/dashboard' : '/login'
@@ -41,15 +30,7 @@ export default function LandingPage() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Fragment+Mono&display=swap');
         @keyframes fadeUp { from { opacity:0; transform: translateY(14px); } to { opacity:1; transform: translateY(0); } }
-        @keyframes float { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-6px) } }
-        @keyframes marquee { from { transform: translateX(0) } to { transform: translateX(-50%) } }
       `}</style>
-
-      {toast && (
-        <div className="fixed left-1/2 top-4 z-[100] flex -translate-x-1/2 items-center gap-3 rounded-[12px] border border-black/10 bg-black px-4 py-3 text-white shadow-[0_20px_40px_-12px_rgba(0,0,0,0.4)]">
-          <span className="text-[13px] font-medium">{toast}</span>
-        </div>
-      )}
 
       <header className="sticky top-0 z-40 border-b border-black/[0.06] w-full"
         style={{ backdropFilter: 'blur(22px)', WebkitBackdropFilter: 'blur(22px)', background: 'rgba(248,247,245,0.84)' }}
@@ -95,7 +76,7 @@ export default function LandingPage() {
             </h1>
 
             <p className="mt-5 max-w-[440px] text-[18px] leading-[1.5] tracking-[-0.01em] text-zinc-600">
-              No app downloads. No commission. Just paste your products, get a link, and take orders directly on WhatsApp.
+              Create your store, share one link, and receive orders directly on WhatsApp. No coding or commission.
             </p>
 
 
@@ -111,17 +92,6 @@ export default function LandingPage() {
             </div>
 
 
-            <div className="mt-8 flex items-center gap-3">
-              <div className="flex -space-x-2">
-                <div className="h-8 w-8 rounded-full bg-zinc-200 border-2 border-white" />
-                <div className="h-8 w-8 rounded-full bg-zinc-300 border-2 border-white" />
-                <div className="h-8 w-8 rounded-full bg-zinc-900 border-2 border-white grid place-items-center text-white text-[11px]">A</div>
-              </div>
-              <div className="text-[13px] leading-[1.2]">
-                <div className="font-medium">Trusted by 1,200+ stores</div>
-                <div className="text-zinc-500">Karachi • Lahore • Islamabad</div>
-              </div>
-            </div>
           </div>
 
           <div className="relative">
@@ -150,50 +120,32 @@ export default function LandingPage() {
                     </div>
                   </div>
                   <div className="mt-4 flex gap-2">
-                    <button className="flex-1 h-9 rounded-[10px] bg-black text-white text-[12px] font-medium">Add to Cart</button>
-                    <button className="h-9 w-9 grid place-items-center rounded-[10px] border bg-white">♥</button>
+                    <div className="flex-1 h-9 rounded-[10px] bg-black text-white text-[12px] font-medium grid place-items-center">Add to bag</div>
+                    <div className="h-9 w-9 grid place-items-center rounded-[10px] border bg-white" aria-hidden="true">♥</div>
                   </div>
                 </div>
               </div>
 
-              {showTooltip && (
-                <div className="absolute -right-4 -top-4 z-20 flex items-center gap-2 rounded-[12px] border bg-black px-3 py-2 text-white shadow-xl animate-[float_3s_ease_infinite]">
-                  <span className="grid h-6 w-6 place-items-center rounded-[8px] bg-white text-black text-[12px]">🔗</span>
-                  <span className="text-[12px] font-medium">Link copied!</span>
-                </div>
-              )}
             </div>
 
-            <div className="absolute -bottom-6 -left-6 hidden md:flex items-center gap-2 rounded-[12px] border bg-white px-3 py-2 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.2)]">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[12px] font-medium">Aleena just sold 3 suits • Rs. 8,400</span>
-            </div>
           </div>
         </section>
-
-        <div className="relative overflow-hidden rounded-[16px] border bg-white py-3">
-          <div className="flex animate-[marquee_22s_linear_infinite] gap-8 whitespace-nowrap">
-            {['/s/ayesha-boutique','/s/lahore-fabrics','/s/karachi-shoes','/s/islamabad-decor','/s/premiumstore','/s/noor-collection','/s/ayesha-boutique','/s/lahore-fabrics'].map((s,i)=>(
-              <span key={i} className="text-[13px] font-mono text-zinc-500">{s}</span>
-            ))}
-          </div>
-        </div>
 
         <section className="mt-16 grid gap-4 md:grid-cols-3">
           <div className="rounded-[20px] border bg-white p-6">
             <div className="grid h-10 w-10 place-items-center rounded-[12px] bg-[#E8FF86]">🖼️</div>
             <h3 className="mt-4 text-[16px] font-semibold">Multi-Photo Galleries</h3>
-            <p className="mt-2 text-[13px] leading-[1.5] text-zinc-600">Upload 5 photos per product. Customers swipe, tap thumbnails. Like Daraz, but instant.</p>
+            <p className="mt-2 text-[13px] leading-[1.5] text-zinc-600">Show products from every angle with multiple photos.</p>
           </div>
           <div className="rounded-[20px] border bg-white p-6">
             <div className="grid h-10 w-10 place-items-center rounded-[12px] bg-zinc-900 text-white">💬</div>
-            <h3 className="mt-4 text-[16px] font-semibold">No Popup Block</h3>
-            <p className="mt-2 text-[13px] leading-[1.5] text-zinc-600">We use window.location.href to WhatsApp — works on every phone. Zero blocked popups.</p>
+            <h3 className="mt-4 text-[16px] font-semibold">WhatsApp orders</h3>
+            <p className="mt-2 text-[13px] leading-[1.5] text-zinc-600">Customers contact you directly to place their orders.</p>
           </div>
           <div className="rounded-[20px] border bg-black text-white p-6">
             <div className="grid h-10 w-10 place-items-center rounded-[12px] bg-white/10">⚡</div>
             <h3 className="mt-4 text-[16px] font-semibold">Copy Link in 1 Tap</h3>
-            <p className="mt-2 text-[13px] leading-[1.5] text-zinc-400">Share in WhatsApp Status, Instagram bio, Facebook. Link never expires.</p>
+            <p className="mt-2 text-[13px] leading-[1.5] text-zinc-400">Share your store link on social media or in chat.</p>
           </div>
         </section>
 
@@ -202,9 +154,8 @@ export default function LandingPage() {
             <div className="pointer-events-none absolute right-0 -top-10 h-[360px] w-[360px] rounded-full bg-[#E8FF86] opacity-90" style={{ clipPath: 'ellipse(60% 50% at 60% 40%)' }} />
             <div className="relative z-10 grid gap-10 md:grid-cols-[1.2fr_0.8fr] md:items-end">
               <div>
-                <div className="inline-flex items-center gap-2 rounded-[10px] bg-white/10 px-3 py-1.5 text-[12px] font-medium backdrop-blur">● 1,200+ stores live • Free forever for first 50 products</div>
-                <h2 className="mt-6 max-w-[560px] text-[38px] font-bold leading-[0.9] tracking-[-0.04em] md:text-[64px]">Ready to sell<br/>on WhatsApp?</h2>
-                <p className="mt-4 max-w-[420px] text-[16px] leading-[1.5] text-zinc-300">Create your store in 30 seconds. No app, no fees, no excuses. Your customers are already on WhatsApp.</p>
+                <h2 className="max-w-[560px] text-[38px] font-bold leading-[0.9] tracking-[-0.04em] md:text-[64px]">Ready to sell<br/>on WhatsApp?</h2>
+                <p className="mt-4 max-w-[420px] text-[16px] leading-[1.5] text-zinc-300">Create your store and start sharing your products with customers.</p>
               </div>
 
               <div className="md:text-right flex flex-col items-end gap-3">
@@ -217,9 +168,6 @@ export default function LandingPage() {
                     {loggedIn ? 'Open Dashboard' : 'Create Store — Free'}
                     <span className="grid h-6 w-6 place-items-center rounded-[8px] bg-black text-white">→</span>
                   </button>
-                </div>
-                <div className="mt-1 flex items-center justify-center gap-2 text-[12px] text-zinc-400 md:justify-end">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#25D366]" /> Takes 30 seconds • No card required
                 </div>
               </div>
 
@@ -253,7 +201,7 @@ export default function LandingPage() {
                 </div>
                 <div className="flex items-center gap-2 text-[11px] text-zinc-400">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#25D366] animate-pulse" />
-                  <span>Built solo by M Aakif • 100% solo • No team • All systems operational</span>
+                  <span>Built in Karachi for Pakistani sellers</span>
                 </div>
               </div>
             </div>

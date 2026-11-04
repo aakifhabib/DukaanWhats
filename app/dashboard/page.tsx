@@ -9,7 +9,7 @@ import { PremiumThemeEditor } from '@/components/PremiumThemeEditor'
 
 const TILL_ID = '984837533'
 
-type Profile = { id: string; business_name: string; whatsapp_number: string; store_slug: string; store_theme?: string; current_plan?: string }
+type Profile = { id: string; business_name: string; whatsapp_number: string; store_slug: string; store_theme?: string; current_plan?: string; premium_custom?: any }
 type Product = { id: string; name: string; price: number; image_url: string; image_urls?: string[]; user_id: string }
 type Billing = 'monthly' | 'yearly'
 type PlanDef = { id: 'basic' | 'advanced' | 'premium'; name: string; monthly: number; yearlyMonthly: number; yearlyTotal: number; products: number; imagesPerProduct: number; advancedAllowed: number | 'all'; premiumAllowed: number | 'all'; stores: number; features: string[] }
@@ -168,6 +168,39 @@ function MiniStorefront({ theme }: { theme: any }) {
           </div>
           <div className="w-[44%] aspect-[4/5] rounded-[14px] overflow-hidden border bg-white"><img src={img1} className="w-full h-full object-cover" alt="" /></div>
         </div>
+      </div>
+    )
+  }
+
+  if (id === 'saffron-table') {
+    return (
+      <div className="h-full w-full flex flex-col overflow-hidden bg-[#F8F0E3] text-[#291B16]">
+        <div className="h-3 bg-[#291B16] text-center text-[4px] font-bold tracking-[.18em] text-[#F8E7CA]">FRESHLY MADE • ORDER ON WHATSAPP</div>
+        <div className="flex items-center justify-between border-b border-[#E6D7C3] px-2 py-1"><b className="text-[6px]">✿ SAFFRON TABLE</b><span className="rounded-full bg-[#291B16] px-1.5 py-1 text-[4px] text-white">BAG · 2</span></div>
+        <div className="relative mx-2 mt-2 flex-1 overflow-hidden rounded-t-[45%] bg-[#E6D7C3]"><img src={img1} className="h-full w-full object-cover" alt=""/><div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent p-2 pt-5 text-white"><div className="text-[4px] uppercase tracking-[.2em]">FROM OUR KITCHEN</div><div className="mt-0.5 text-[10px] font-bold">Good food,<br/>shared well.</div></div></div>
+        <div className="grid grid-cols-3 gap-1 p-2">{[img1,img2,img3].map((im,i)=><div key={i} className="overflow-hidden rounded-lg border border-[#E6D7C3] bg-white"><img src={im} className="aspect-square w-full object-cover" alt=""/><div className="p-1 text-[4px] font-bold">Fresh pick · Rs.</div></div>)}</div>
+      </div>
+    )
+  }
+
+  if (id === 'atelier-bloom') {
+    return (
+      <div className="h-full w-full flex flex-col overflow-hidden bg-[#F4EFE9] text-[#2B3327]">
+        <div className="py-1 text-center text-[4px] uppercase tracking-[.2em] text-[#718463]">SMALL BATCH • NATURAL MATERIALS</div>
+        <div className="flex items-center justify-between border-y border-[#D7D2C6] px-2 py-1.5"><span className="font-serif text-[10px] italic text-[#718463]">a.</span><b className="text-[5px] tracking-[.18em]">ATELIER BLOOM</b><span className="text-[5px]">BAG · 2</span></div>
+        <div className="grid flex-1 grid-cols-2 items-center gap-1 p-2"><div><div className="text-[4px] uppercase tracking-[.15em] text-[#718463]">A SLOWER KIND OF BEAUTY</div><div className="mt-1 font-serif text-[12px] leading-[.95]">Made by hand.<br/><i className="text-[#718463]">Made to last.</i></div><div className="mt-1 h-3 w-14 rounded-full bg-[#718463]"/></div><div className="overflow-hidden rounded-t-[999px] border border-[#AAB69B]"><img src={img1} className="aspect-[4/5] w-full object-cover" alt=""/></div></div>
+        <div className="grid grid-cols-3 gap-1 border-t border-[#D7D2C6] p-2">{[img1,img2,img3].map((im,i)=><div key={i} className="overflow-hidden rounded-t-[999px]"><img src={im} className="aspect-[4/5] w-full object-cover" alt=""/></div>)}</div>
+      </div>
+    )
+  }
+
+  if (id === 'mono-market') {
+    return (
+      <div className="h-full w-full flex flex-col overflow-hidden bg-[#F3F3EF] text-black">
+        <div className="bg-[#D9FF3F] py-1 text-center font-mono text-[4px] font-bold tracking-[.15em]">DROP 01 — LIMITED RELEASE</div>
+        <div className="flex items-center justify-between border-b-2 border-black px-2 py-1.5 font-mono text-[6px] font-bold"><span>MONO / MARKET</span><span>♡　BAG 02</span></div>
+        <div className="m-1.5 flex flex-1 flex-col justify-between border-2 border-black bg-[#111] p-2 text-white"><div className="text-[4px] font-mono text-[#D9FF3F]">DROP 001 / 2026</div><div className="text-[16px] font-black uppercase leading-[.83] tracking-[-.08em]">Less noise.<br/><span className="text-[#D9FF3F]">Better gear.</span></div><div className="border-t border-white/30 pt-1 font-mono text-[4px] uppercase">CURATED GOODS / LOCAL DELIVERY</div></div>
+        <div className="grid grid-cols-3 gap-1 p-1.5">{[img1,img2,img3].map((im,i)=><div key={i} className="border-2 border-black bg-white p-1"><img src={im} className="aspect-square w-full object-cover" alt=""/><div className="mt-1 h-1 bg-[#D9FF3F]"/></div>)}</div>
       </div>
     )
   }
@@ -438,7 +471,7 @@ function PremiumProductCard({ p, onEdit, onDelete, imageLimit }: { p: any; onEdi
         </div>
         <div className="mt-3.5 flex gap-1.5">
           <button type="button" onClick={() => onEdit(p)} className={`${BTN_DARK} flex-1 h-9 text-[12px]`}>Edit</button>
-          <button type="button" aria-label="Delete product" onClick={() => onDelete(p.id)} className={`${BTN_LIGHT} w-9 h-9 !p-0 text-zinc-500 hover:!border-red-300 hover:!text-red-600 hover:!bg-red-50`}>
+          <button type="button" aria-label="Delete product" title="Delete this product" onClick={() => onDelete(p.id)} className={`${BTN_LIGHT} w-9 h-9 !p-0 text-zinc-500 hover:!border-red-300 hover:!text-red-600 hover:!bg-red-50`}>
             <IconX c="w-3.5 h-3.5" />
           </button>
         </div>
@@ -486,7 +519,7 @@ export default function Dashboard() {
   const plans: PlanDef[] = [
     { id: 'basic', name: 'Basic', monthly: 0, yearlyMonthly: 0, yearlyTotal: 0, products: 5, imagesPerProduct: 1, advancedAllowed: 3, premiumAllowed: 0, stores: 1, features: ['5 Products', '1 Image / product', '3 Advanced Themes', '0 Premium (Glass)', 'COD Only', 'Watermark'] },
     { id: 'advanced', name: 'Advanced', monthly: 899, yearlyMonthly: 699, yearlyTotal: 8388, products: 25, imagesPerProduct: 5, advancedAllowed: 8, premiumAllowed: 0, stores: 3, features: ['25 Products', '5 Images / product', 'All 8 Advanced Themes', '0 Premium Glass (locked)', 'Orders Dashboard'] },
-    { id: 'premium', name: 'Premium', monthly: 2999, yearlyMonthly: 2499, yearlyTotal: 29988, products: 999999, imagesPerProduct: 999999, advancedAllowed: 'all', premiumAllowed: 'all', stores: 999999, features: ['Unlimited Products', 'Unlimited Images', 'Every Theme (8 Advanced + 3 Premium)', 'No Watermark', 'Live Analytics'] },
+    { id: 'premium', name: 'Premium', monthly: 2999, yearlyMonthly: 2499, yearlyTotal: 29988, products: 999999, imagesPerProduct: 999999, advancedAllowed: 'all', premiumAllowed: 'all', stores: 999999, features: ['Unlimited Products', 'Unlimited Images', 'Every Theme (8 Advanced + 9 Premium)', 'No Watermark', 'Live Analytics'] },
   ]
 
   const currentPlanId = (profile?.current_plan || 'basic') as 'basic' | 'advanced' | 'premium'
@@ -497,7 +530,7 @@ export default function Dashboard() {
   const imageLimit = currentPlanDef.imagesPerProduct
 
   /* theme buckets — mirrors original logic exactly */
-  const PREMIUM_NEW_IDS = ['spike-premium', 'shoe-app-premium', 'trenzo-luxury']
+  const PREMIUM_NEW_IDS = ['spike-premium', 'shoe-app-premium', 'trenzo-luxury', 'saffron-table', 'atelier-bloom', 'mono-market']
   const advancedGlassRaw = getAdvancedThemes()
   const premiumNewRaw = getPremiumThemes()
   const premiumThemes = [...advancedGlassRaw, ...premiumNewRaw]
@@ -597,16 +630,24 @@ This theme needs Advanced — Till ${TILL_ID} Rs. 899/mo
 Upgrade to unlock all 8 Advanced themes.`)
       setActiveTab('payments'); return
     }
-    // THEME-SPECIFIC EDITOR AUTO-SWITCH - FIXED BY AAKIF PATCH
+    // Migrate old flat Premium edits before changing the selected theme, then keep future edits per-theme.
+    const oldCustom = profile?.premium_custom || {}
+    let migratedCustom = oldCustom
+    if (!Object.keys(oldCustom.themes || {}).length && Object.keys(oldCustom).length) {
+      const { themes: _ignored, ...legacyEdits } = oldCustom
+      migratedCustom = { ...oldCustom, themes: { [profile?.store_theme || theme]: legacyEdits } }
+    }
     setTheme(t.id)
-    setProfile((prev: any) => prev ? ({ ...prev, store_theme: t.id }) : prev)
+    setProfile((prev: any) => prev ? ({ ...prev, store_theme: t.id, premium_custom: migratedCustom }) : prev)
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (user && profile) {
-        await supabase.from('profiles').update({ store_theme: t.id }).eq('id', user.id)
+        const patch: any = { store_theme: t.id }
+        if (migratedCustom !== oldCustom) patch.premium_custom = migratedCustom
+        await supabase.from('profiles').update(patch).eq('id', user.id)
       }
     } catch {}
-    if (['spike-premium','shoe-app-premium','trenzo-luxury','sleek-beige','sleek-dark','sleek-editorial'].includes(t.id)) {
+    if (['spike-premium','shoe-app-premium','trenzo-luxury','sleek-beige','sleek-dark','sleek-editorial','saffron-table','atelier-bloom','mono-market'].includes(t.id)) {
       setTimeout(()=> {
         document.getElementById('premium-editor-anchor')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }, 150)
@@ -1055,7 +1096,7 @@ Upgrade to unlock all 8 Advanced themes.`)
                 {previews.map((src, i) => (
                   <div key={i} className="relative group/img">
                     <img src={src} alt="" className="w-full aspect-square object-cover rounded-xl border border-zinc-200/80" />
-                    <button type="button" aria-label="Remove image" onClick={(e) => { e.preventDefault(); removeFileAt(i) }} className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-[#0A0A0A] text-white rounded-full opacity-100 md:opacity-0 md:group-hover/img:opacity-100 transition-opacity border-none cursor-pointer flex items-center justify-center">
+                    <button type="button" aria-label="Remove image" title="Remove this image" onClick={(e) => { e.preventDefault(); removeFileAt(i) }} className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-[#0A0A0A] text-white rounded-full opacity-100 md:opacity-0 md:group-hover/img:opacity-100 transition-opacity border-none cursor-pointer flex items-center justify-center">
                       <IconX c="w-2.5 h-2.5" />
                     </button>
                   </div>
@@ -1166,7 +1207,7 @@ Upgrade to unlock all 8 Advanced themes.`)
             </div>
           </Field>
           <div className="flex gap-2 pt-1 flex-wrap">
-            <button type="button" onClick={copyLink} className={`${BTN_LIGHT} h-10 px-5 text-[13px]`}>
+            <button type="button" onClick={copyLink} title="Copy your store link to share" className={`${BTN_LIGHT} h-10 px-5 text-[13px]`}>
               {copied ? <><IconCheck c="w-3.5 h-3.5" /> Copied</> : <><IconCopy c="w-3.5 h-3.5" /> Copy link</>}
             </button>
             <Link href={slug ? `/s/${slug}` : '#'} target="_blank" className={`${BTN_LIGHT} h-10 px-5 text-[13px] no-underline`}>Preview <IconExternal c="w-3 h-3" /></Link>
@@ -1317,7 +1358,7 @@ Upgrade to unlock all 8 Advanced themes.`)
             <div className="relative">
               <div className="flex justify-between items-center mb-3">
                 <div className="text-[12px] font-medium text-white/55">JazzCash till</div>
-                <button type="button" onClick={copyTill} className="h-7 px-3 bg-white/10 border border-white/10 backdrop-blur-md rounded-full text-[11.5px] font-semibold text-white hover:bg-white/20 transition-colors cursor-pointer inline-flex items-center gap-1.5">
+                <button type="button" onClick={copyTill} title="Copy JazzCash Till ID" className="h-7 px-3 bg-white/10 border border-white/10 backdrop-blur-md rounded-full text-[11.5px] font-semibold text-white hover:bg-white/20 transition-colors cursor-pointer inline-flex items-center gap-1.5">
                   {copiedTill ? <><IconCheck c="w-3 h-3 text-[#E8FF86]" /> Copied</> : <><IconCopy c="w-3 h-3" /> Copy</>}
                 </button>
               </div>
