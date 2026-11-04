@@ -172,6 +172,17 @@ function MiniStorefront({ theme }: { theme: any }) {
     )
   }
 
+  if (id === 'noir-gilt') {
+    return (
+      <div className="h-full w-full flex flex-col overflow-hidden bg-[#0C0A07] text-[#F4EBD6]">
+        <div className="border-b border-[#B79A62]/50 py-1 text-center text-[4px] uppercase tracking-[.24em] text-[#D8C59B]">THE SIGNATURE EDIT • SELECTED PIECES</div>
+        <div className="flex items-center justify-between px-2 py-1.5"><span className="font-serif text-[10px] italic text-[#C8A96B]">N/G</span><b className="text-[5px] tracking-[.2em]">NOIR &amp; GILT</b><span className="text-[5px] text-[#D8C59B]">BAG · 2</span></div>
+        <div className="grid flex-1 grid-cols-2 items-center gap-2 px-2 py-2"><div><div className="text-[4px] uppercase tracking-[.2em] text-[#C8A96B]">A STUDY IN CONTRAST</div><div className="mt-1 font-serif text-[13px] leading-[.95]">Quiet luxury,<br/><i className="text-[#C8A96B]">made personal.</i></div><div className="mt-2 h-4 w-20 bg-[#C8A96B]"/></div><div className="relative border border-[#C8A96B]/60 p-1"><img src={img1} className="aspect-[4/5] w-full object-cover opacity-85" alt=""/><span className="absolute -right-1 -top-1 grid h-6 w-6 place-items-center rounded-full bg-[#C8A96B] font-serif text-[6px] italic text-black">N/G</span></div></div>
+        <div className="grid grid-cols-3 gap-1 border-t border-[#B79A62]/30 p-2">{[img1,img2,img3].map((im,i)=><div key={i} className="border border-[#B79A62]/40 bg-[#14110C] p-1"><img src={im} className="aspect-[4/5] w-full object-cover" alt=""/><div className="mt-1 h-1 w-1/2 bg-[#C8A96B]"/></div>)}</div>
+      </div>
+    )
+  }
+
   if (id === 'saffron-table') {
     return (
       <div className="h-full w-full flex flex-col overflow-hidden bg-[#F8F0E3] text-[#291B16]">
@@ -519,7 +530,7 @@ export default function Dashboard() {
   const plans: PlanDef[] = [
     { id: 'basic', name: 'Basic', monthly: 0, yearlyMonthly: 0, yearlyTotal: 0, products: 5, imagesPerProduct: 1, advancedAllowed: 3, premiumAllowed: 0, stores: 1, features: ['5 Products', '1 Image / product', '3 Advanced Themes', '0 Premium (Glass)', 'COD Only', 'Watermark'] },
     { id: 'advanced', name: 'Advanced', monthly: 899, yearlyMonthly: 699, yearlyTotal: 8388, products: 25, imagesPerProduct: 5, advancedAllowed: 8, premiumAllowed: 0, stores: 3, features: ['25 Products', '5 Images / product', 'All 8 Advanced Themes', '0 Premium Glass (locked)', 'Orders Dashboard'] },
-    { id: 'premium', name: 'Premium', monthly: 2999, yearlyMonthly: 2499, yearlyTotal: 29988, products: 999999, imagesPerProduct: 999999, advancedAllowed: 'all', premiumAllowed: 'all', stores: 999999, features: ['Unlimited Products', 'Unlimited Images', 'Every Theme (8 Advanced + 9 Premium)', 'No Watermark', 'Live Analytics'] },
+    { id: 'premium', name: 'Premium', monthly: 2999, yearlyMonthly: 2499, yearlyTotal: 29988, products: 999999, imagesPerProduct: 999999, advancedAllowed: 'all', premiumAllowed: 'all', stores: 999999, features: ['Unlimited Products', 'Unlimited Images', 'Every Theme (8 Advanced + 10 Premium)', 'No Watermark', 'Live Analytics'] },
   ]
 
   const currentPlanId = (profile?.current_plan || 'basic') as 'basic' | 'advanced' | 'premium'
@@ -530,7 +541,7 @@ export default function Dashboard() {
   const imageLimit = currentPlanDef.imagesPerProduct
 
   /* theme buckets — mirrors original logic exactly */
-  const PREMIUM_NEW_IDS = ['spike-premium', 'shoe-app-premium', 'trenzo-luxury', 'saffron-table', 'atelier-bloom', 'mono-market']
+  const PREMIUM_NEW_IDS = ['spike-premium', 'shoe-app-premium', 'trenzo-luxury', 'saffron-table', 'atelier-bloom', 'mono-market', 'noir-gilt']
   const advancedGlassRaw = getAdvancedThemes()
   const premiumNewRaw = getPremiumThemes()
   const premiumThemes = [...advancedGlassRaw, ...premiumNewRaw]
@@ -647,7 +658,7 @@ Upgrade to unlock all 8 Advanced themes.`)
         await supabase.from('profiles').update(patch).eq('id', user.id)
       }
     } catch {}
-    if (['spike-premium','shoe-app-premium','trenzo-luxury','sleek-beige','sleek-dark','sleek-editorial','saffron-table','atelier-bloom','mono-market'].includes(t.id)) {
+    if (['spike-premium','shoe-app-premium','trenzo-luxury','sleek-beige','sleek-dark','sleek-editorial','saffron-table','atelier-bloom','mono-market','noir-gilt'].includes(t.id)) {
       setTimeout(()=> {
         document.getElementById('premium-editor-anchor')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }, 150)

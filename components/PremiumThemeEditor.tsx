@@ -17,6 +17,7 @@ const THEMES = [
   { id: 'saffron-table', name: 'Saffron Table', color: '#F8F0E3', accent: '#C95C3A', icon: '✿' },
   { id: 'atelier-bloom', name: 'Atelier Bloom', color: '#F4EFE9', accent: '#718463', icon: '❀' },
   { id: 'mono-market', name: 'Mono Market', color: '#F3F3EF', accent: '#D9FF3F', icon: '▦' },
+  { id: 'noir-gilt', name: 'Noir & Gilt', color: '#0C0A07', accent: '#C8A96B', icon: '✦' },
 ]
 
 /* Sample products shown in the preview until the customer adds real ones */
