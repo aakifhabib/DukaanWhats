@@ -439,6 +439,35 @@ function ListField({ f, value, onChange }: { f: Field; value: any[]; onChange: (
   )
 }
 
+const SOCIAL_PLATFORMS = [
+  { id: 'instagram', label: 'Instagram', placeholder: 'https://instagram.com/yourbrand' },
+  { id: 'whatsapp', label: 'WhatsApp', placeholder: 'https://wa.me/923001234567' },
+  { id: 'facebook', label: 'Facebook', placeholder: 'https://facebook.com/yourpage' },
+  { id: 'linkedin', label: 'LinkedIn', placeholder: 'https://linkedin.com/company/yourbrand' },
+]
+
+function SocialsField({ f, value, onChange }: { f: Field; value: any; onChange: (v: any) => void }) {
+  const links = value && typeof value === 'object' ? value : {}
+  const update = (id: string, patch: any) => onChange({ ...links, [id]: { ...(links[id] || { enabled: false, url: '' }), ...patch } })
+  return (
+    <div className="space-y-2.5">
+      <span className="block text-[12px] font-medium text-zinc-600">{f.label}</span>
+      {SOCIAL_PLATFORMS.map(platform => {
+        const item = links[platform.id] || { enabled: false, url: '' }
+        return (
+          <div key={platform.id} className={`grid gap-2 rounded-2xl border p-3 sm:grid-cols-[135px_1fr] sm:items-center ${item.enabled ? 'border-zinc-900 bg-white' : 'border-zinc-200/80 bg-zinc-50/60'}`}>
+            <button type="button" aria-pressed={!!item.enabled} onClick={() => update(platform.id, { enabled: !item.enabled })} className={`inline-flex h-9 items-center justify-center gap-2 rounded-full px-3 text-[12px] font-semibold transition ${item.enabled ? 'bg-[#0A0A0A] text-white' : 'border border-zinc-200 bg-white text-zinc-600 hover:border-zinc-500'}`}>
+              <span className="text-[15px] leading-none">{item.enabled ? '−' : '+'}</span>{item.enabled ? `Remove ${platform.label}` : `Add ${platform.label}`}
+            </button>
+            <input type="text" inputMode="url" value={item.url || ''} onChange={e => update(platform.id, { url: e.target.value })} placeholder={platform.placeholder} aria-label={`${platform.label} profile URL`} className={`${INPUT} min-w-0 font-mono !text-[11.5px]`} />
+          </div>
+        )
+      })}
+      {f.hint && <span className="block text-[11.5px] text-zinc-400">{f.hint}</span>}
+    </div>
+  )
+}
+
 function FieldRenderer({ f, value, onChange, ctx }: { f: Field; value: any; onChange: (v: any) => void; ctx: Ctx }) {
   const span = f.half ? '' : 'sm:col-span-2'
   let body: React.ReactNode = null
@@ -449,6 +478,7 @@ function FieldRenderer({ f, value, onChange, ctx }: { f: Field; value: any; onCh
   else if (f.type === 'image') body = <ImageField f={f} value={value || ''} onChange={onChange} ctx={ctx} />
   else if (f.type === 'chips') body = <div><span className="block text-[12px] font-medium text-zinc-600 mb-1.5">{f.label}</span><ChipInput value={Array.isArray(value) ? value : []} onChange={onChange} placeholder="Type and press Enter" />{f.hint && <span className="block text-[11.5px] text-zinc-400 mt-1.5">{f.hint}</span>}</div>
   else if (f.type === 'list') body = <ListField f={f} value={value} onChange={onChange} />
+  else if (f.type === 'socials') body = <SocialsField f={f} value={value} onChange={onChange} />
   return <div className={span}>{body}</div>
 }
 
