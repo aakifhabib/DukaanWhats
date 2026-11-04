@@ -24,8 +24,7 @@ export const STORE_THEMES: ThemeDef[] = [
   { id: 'tech-gadget', name: 'Gadget Pro', category: 'advanced', colors: { bg: '#F0F0FF', text: '#0A0A0A', accent: '#6366F1', card: '#FFFFFF', border: '#E0E0FF' }, tier: 'advanced' },
   { id: 'clothing-denim', name: 'Denim', category: 'advanced', colors: { bg: '#E8F0FF', text: '#0A0A0A', accent: '#3B82F6', card: '#FFFFFF', border: '#BFDBFE' }, tier: 'advanced' },
 
-  // PREMIUM GLASS - 6 themes (Premium only) - These are now FULL COMPONENTS in /components/premium/
-  // Keep IDs here for dashboard glass cards to show, but rendering is via PremiumThemeRenderer
+  // PREMIUM - Themes are rendered through PremiumThemeRenderer and the dashboard glass showcase.
   { id: 'sleek-beige', name: 'Sleek Beige', category: 'premium', colors: { bg: '#F5F1EB', text: '#0A0A0A', accent: '#E8FF86', card: '#FFFFFF', border: '#E8E6E1' }, isPremium: true, tier: 'premium' },
   { id: 'sleek-dark', name: 'Sleek Dark', category: 'premium', colors: { bg: '#0A0A0A', text: '#FFFFFF', accent: '#E8FF86', card: '#141414', border: '#2A2A2A' }, isPremium: true, tier: 'premium' },
   { id: 'sleek-editorial', name: 'Editorial', category: 'premium', colors: { bg: '#FCFBF9', text: '#0A0A0A', accent: '#0A0A0A', card: '#FFFFFF', border: '#E8E6E1' }, isPremium: true, tier: 'premium' },
@@ -35,14 +34,15 @@ export const STORE_THEMES: ThemeDef[] = [
   { id: 'saffron-table', name: 'Saffron Table', category: 'premium', colors: { bg: '#F8F0E3', text: '#291B16', accent: '#C95C3A', card: '#FFFDF8', border: '#E6D7C3' }, isPremium: true, tier: 'premium' },
   { id: 'atelier-bloom', name: 'Atelier Bloom', category: 'premium', colors: { bg: '#F4EFE9', text: '#2B3327', accent: '#718463', card: '#FFFCF7', border: '#E3DCD1' }, isPremium: true, tier: 'premium' },
   { id: 'mono-market', name: 'Mono Market', category: 'premium', colors: { bg: '#F3F3EF', text: '#111111', accent: '#D9FF3F', card: '#FFFFFF', border: '#111111' }, isPremium: true, tier: 'premium' },
+  { id: 'noir-gilt', name: 'Noir & Gilt', category: 'premium', colors: { bg: '#0C0A07', text: '#F4EBD6', accent: '#C8A96B', card: '#14110C', border: '#B79A62' }, isPremium: true, tier: 'premium' },
 ]
 
 export const getTheme = (id: string) => STORE_THEMES.find(t=>t.id===id) || STORE_THEMES[0]
 
-// For dashboard glass container - 3 sleek = old glass, now we merge all 6
+// Dashboard combines the 3 legacy Sleek cards with the 7 Premium renderer themes.
 export const getAdvancedThemes = () => STORE_THEMES.filter(t=> ['sleek-beige','sleek-dark','sleek-editorial'].includes(t.id))
-export const getPremiumThemes = () => STORE_THEMES.filter(t=> ['spike-premium','shoe-app-premium','trenzo-luxury','saffron-table','atelier-bloom','mono-market'].includes(t.id))
-export const getAllPremiumGlass = () => STORE_THEMES.filter(t=> t.category==='premium' && t.tier==='premium') // All 9 premium themes
+export const getPremiumThemes = () => STORE_THEMES.filter(t=> ['spike-premium','shoe-app-premium','trenzo-luxury','saffron-table','atelier-bloom','mono-market','noir-gilt'].includes(t.id))
+export const getAllPremiumGlass = () => STORE_THEMES.filter(t=> t.category==='premium' && t.tier==='premium') // All 10 premium themes
 
 export const getStandardThemes = () => STORE_THEMES.filter(t=> t.tier==='basic')
 export const getAdvancedList = () => STORE_THEMES.filter(t=> t.tier==='advanced')

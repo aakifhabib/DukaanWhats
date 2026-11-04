@@ -225,7 +225,7 @@ export default function StorePage({ params }: { params: { slug: string } }) {
   if (!profile) return <div className="min-h-screen grid place-items-center bg-[#F8F7F5] p-5"><div className="text-center"><div className="font-black text-[20px]">Store not found</div><div className="mt-2 text-[12px] opacity-60">We couldn’t find a store at /s/{slug}</div><Link href="/" className="mt-5 inline-flex h-10 items-center justify-center rounded-full bg-black px-5 text-[12px] font-bold text-white">Go Home</Link></div></div>
 
   const themeId = profile?.store_theme || 'classic'
-  const isPremium = ['spike-premium', 'shoe-app-premium', 'trenzo-luxury', 'sleek-beige', 'sleek-dark', 'sleek-editorial', 'saffron-table', 'atelier-bloom', 'mono-market'].includes(themeId)
+  const isPremium = ['spike-premium', 'shoe-app-premium', 'trenzo-luxury', 'sleek-beige', 'sleek-dark', 'sleek-editorial', 'saffron-table', 'atelier-bloom', 'mono-market', 'noir-gilt'].includes(themeId)
   const enrichedProfile = { ...profile, premium_custom: profile?.premium_custom || {}, business_name: profile.business_name, whatsapp_number: profile.whatsapp_number }
   const rendererProps = { themeId, profile: enrichedProfile, products, cart, setShowCart, onAdd, onOpen, track, selectedProduct, setSelectedProduct, onRemove }
 

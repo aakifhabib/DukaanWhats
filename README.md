@@ -9,7 +9,7 @@ Next.js 14, React 18, TypeScript
 Tailwind CSS
 Supabase (Auth, Postgres, Storage)
 Zustand
-20 Store Themes (6 Basic + 5 Advanced + 9 Premium: Spike Pro, Shoe App Pro, Trenzo Luxury, Sleek Beige/Dark/Editorial, Saffron Table, Atelier Bloom, Mono Market)
+21 Store Themes (6 Basic + 5 Advanced + 10 Premium: Spike Pro, Shoe App Pro, Trenzo Luxury, Sleek Beige/Dark/Editorial, Saffron Table, Atelier Bloom, Mono Market, Noir & Gilt)
 Setup
 Create Supabase project
 Enable Email + Google Auth

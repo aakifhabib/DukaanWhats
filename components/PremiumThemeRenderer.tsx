@@ -8,7 +8,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
    This file also holds the shared pieces every premium theme builds on:
      1. CONFIG   product helpers, default copy per theme, the editor's field schema
      2. ENGINE   useStore (catalog, cart, wishlist), the full product page, the cart drawer, icons, base CSS
-   The six theme views (section 3) are plain components that receive the prepared store context as `S`.
+   The ten theme views (section 3) are plain components that receive the prepared store context as `S`.
    ===================================================================== */
 
 /* ============================== 1. CONFIG ============================== */
@@ -18,7 +18,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
    and the editor's field schema (so EVERYTHING in a theme is editable).
    ===================================================================== */
 
-type ThemeId = 'spike-premium' | 'shoe-app-premium' | 'trenzo-luxury' | 'sleek-beige' | 'sleek-dark' | 'sleek-editorial' | 'saffron-table' | 'atelier-bloom' | 'mono-market'
+type ThemeId = 'spike-premium' | 'shoe-app-premium' | 'trenzo-luxury' | 'sleek-beige' | 'sleek-dark' | 'sleek-editorial' | 'saffron-table' | 'atelier-bloom' | 'mono-market' | 'noir-gilt'
 
 /* ----------------------------- product helpers ----------------------------- */
 function toList(v: any): string[] {
@@ -217,11 +217,18 @@ const EXTRA: Record<ThemeId, Section> = {
     ta('manifestoText', 'Manifesto text'),
     t('specLine', 'Edition detail'),
   ] },
+  'noir-gilt': { id: 'gilt', label: 'Signature story', sub: 'Gilt monogram and house note', fields: [
+    t('goldLine', 'Collection line'),
+    t('monogram', 'Monogram'),
+    t('storyTitle', 'House note title'),
+    ta('storyText', 'House note'),
+    t('signatureLine', 'Signature line'),
+  ] },
 }
 
 export function buildSchema(themeId: string): Section[] {
   const id = (EXTRA[themeId as ThemeId] ? themeId : 'spike-premium') as ThemeId
-  const second = ['sleek-beige', 'sleek-editorial', 'trenzo-luxury', 'saffron-table', 'atelier-bloom'].includes(id)
+  const second = ['sleek-beige', 'sleek-editorial', 'trenzo-luxury', 'saffron-table', 'atelier-bloom', 'noir-gilt'].includes(id)
   const hero: Section = { id: 'hero', label: 'Hero', sub: 'Headline, buttons and header image', fields: heroFields([], second) }
   return [BRAND, hero, EXTRA[id], HIGHLIGHTS, COLLECTION, PRODUCT, CART, FOOTER]
 }
@@ -318,6 +325,15 @@ const DEFAULTS: Record<ThemeId, Record<string, any>> = {
     dropNumber: 'DROP 001 / 2026', tickerText: 'DESIGNED FOR DAILY USE • NO FILLER • GOOD THINGS ONLY', manifestoTitle: 'Buy less. Choose better.', manifestoText: 'Every item earns its place. Clear specs, honest pricing and no clutter between you and the product.', specLine: 'CURATED GOODS / DELIVERED LOCALLY',
     collectionTitle: 'Available now', collectionSubtitle: 'Selected stock / updated regularly', brands: ['All', 'New', 'Essentials', 'Sale'],
     footerAbout: 'A focused edit of practical, well-made goods. Nothing extra.', showStats: false, stats: [], trustBadges: ['WhatsApp ordering', 'Cash on delivery'],
+  },
+  'noir-gilt': {
+    accent: '#C8A96B', headerLabel: 'NOIR & GILT', announcement: 'THE SIGNATURE EDIT • SELECTED PIECES • ORDER ON WHATSAPP',
+    heroBadge: 'A STUDY IN CONTRAST', heroTitle: 'Quiet luxury,\nmade personal.', heroSubtitle: 'A considered collection of distinctive pieces, selected for their finish, character and lasting appeal.',
+    ctaText: 'Discover the edit', secondaryCta: 'Open the bag', featuredLabel: 'The signature piece',
+    goldLine: 'COLLECTION NO. 01', monogram: 'N/G', storyTitle: 'A note on the details', storyText: 'We look for thoughtful materials, precise finishing and pieces that feel special without asking for attention.', signatureLine: 'SELECTED WITH INTENTION',
+    collectionTitle: 'The signature collection', collectionSubtitle: 'A focused edit, chosen piece by piece', brands: ['All', 'Signature', 'New', 'Sale'],
+    footerAbout: 'An independent edit of considered pieces and enduring details.', showStats: false, stats: [], trustBadges: ['WhatsApp ordering', 'Cash on delivery'],
+    deliveryNote: 'Delivery details are confirmed when you order.', returnNote: 'Contact us on WhatsApp for help with an exchange.',
   },
 }
 
@@ -2000,64 +2016,75 @@ function SleekEditorialPremiumTheme({ S }: { S: any }) {
 
 /* ============================== 4. RENDERER ============================== */
 /* ============================== NEW PREMIUM VIEWS ============================== */
-function NewThemeCatalog({ S, variant }: { S: any; variant: 'saffron' | 'atelier' | 'mono' }) {
+function NewThemeCatalog({ S, variant }: { S: any; variant: 'saffron' | 'atelier' | 'mono' | 'noir' }) {
   const { c, filtered } = S
-  const cardStyle = variant === 'saffron'
-    ? 'rounded-[24px] border border-[#E6D7C3] bg-[#FFFCF7] shadow-[0_12px_30px_-24px_rgba(58,35,24,.45)]'
+  const isNoir = variant === 'noir'
+  const shell = variant === 'saffron' ? 'border-[#E6D7C3]' : variant === 'atelier' ? 'border-[#D7D2C6]' : isNoir ? 'border-[#B79A62]/45' : 'border-black'
+  const filters = variant === 'saffron'
+    ? 'rounded-full border-[#DCC7AA] bg-[#FFFCF7] text-[#43271E] data-[active=true]:bg-[#8C3F2B] data-[active=true]:text-white'
     : variant === 'atelier'
-      ? 'rounded-[28px] border border-[#E3DCD1] bg-[#FFFCF7]'
-      : 'rounded-none border-2 border-black bg-white shadow-[5px_5px_0_#111]'
-  const imageStyle = variant === 'saffron' ? 'aspect-[4/3] rounded-[20px]' : variant === 'atelier' ? 'aspect-[4/5] rounded-t-[999px]' : 'aspect-[4/5] rounded-none'
-  const gridStyle = variant === 'atelier' ? 'grid-cols-2 gap-x-4 gap-y-9 sm:gap-x-7 lg:grid-cols-3' : variant === 'mono' ? 'grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4 md:gap-5' : 'grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 xl:grid-cols-4'
+      ? 'rounded-none border-transparent text-[#536746] data-[active=true]:border-b-2 data-[active=true]:border-[#718463] data-[active=true]:font-bold'
+      : isNoir
+        ? 'border border-[#B79A62]/50 text-[#D8C59B] data-[active=true]:bg-[#B79A62] data-[active=true]:text-[#0A0805]'
+        : 'border-2 border-black bg-white text-black data-[active=true]:bg-[#D9FF3F]'
+  const resultLayout = variant === 'saffron' ? 'flex flex-col divide-y divide-[#E6D7C3]' : variant === 'atelier' ? 'grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-7 lg:grid-cols-12' : variant === 'mono' ? 'divide-y-2 divide-black border-y-2 border-black' : 'grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3'
 
   return (
-    <section id="pm-collection" className="mx-auto max-w-[1320px] scroll-mt-24 px-4 py-14 sm:px-6 md:py-20">
-      <div className={`flex flex-col gap-5 border-b pb-5 sm:flex-row sm:items-end sm:justify-between ${variant === 'mono' ? 'border-black' : variant === 'atelier' ? 'border-[#D7D2C6]' : 'border-[#E6D7C3]'}`}>
+    <section id="pm-collection" className={`mx-auto max-w-[1320px] scroll-mt-24 px-4 py-14 sm:px-6 md:py-20 ${isNoir ? 'text-[#F4EBD6]' : ''}`}>
+      <div className={`flex flex-col gap-5 border-b pb-5 sm:flex-row sm:items-end sm:justify-between ${shell}`}>
         <div className="min-w-0">
-          <p className={`text-[10px] font-bold uppercase tracking-[0.22em] ${variant === 'saffron' ? 'text-[#C95C3A]' : variant === 'atelier' ? 'text-[#718463]' : 'text-zinc-500'}`}>{variant === 'saffron' ? c.menuEyebrow : variant === 'atelier' ? c.journalEyebrow : c.dropNumber}</p>
-          <h2 className={`${variant === 'atelier' ? 'font-serif font-normal tracking-[-0.04em]' : variant === 'mono' ? 'font-mono font-black uppercase tracking-[-0.06em]' : 'font-bold tracking-[-0.04em]'} mt-2 text-3xl sm:text-4xl`}>{c.collectionTitle}</h2>
+          <p className={`text-[10px] font-bold uppercase tracking-[0.24em] ${variant === 'saffron' ? 'text-[#A34830]' : variant === 'atelier' ? 'text-[#718463]' : isNoir ? 'text-[#C8A96B]' : 'text-zinc-500'}`}>{variant === 'saffron' ? c.menuEyebrow : variant === 'atelier' ? c.journalEyebrow : isNoir ? c.goldLine : c.dropNumber}</p>
+          <h2 className={`${variant === 'atelier' ? 'font-serif font-normal tracking-[-0.04em]' : variant === 'mono' ? 'font-mono font-black uppercase tracking-[-0.06em]' : isNoir ? 'font-serif font-normal tracking-[0.02em]' : 'font-bold tracking-[-0.04em]'} mt-2 text-3xl sm:text-4xl`}>{c.collectionTitle}</h2>
           <p className="mt-2 max-w-xl text-sm opacity-65">{c.collectionSubtitle}</p>
         </div>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-          {c.showSearch && <SearchBox S={S} className="w-full sm:w-52" inputClass={`h-11 rounded-xl border px-3 text-sm ${variant === 'mono' ? 'border-black bg-white font-mono' : variant === 'atelier' ? 'border-[#D7D2C6] bg-white' : 'border-[#E6D7C3] bg-[#FFFCF7]'}`} />}
-          {c.showSort && <SortSelect S={S} className={`h-11 rounded-xl border px-3 text-sm ${variant === 'mono' ? 'border-black bg-white font-mono' : variant === 'atelier' ? 'border-[#D7D2C6] bg-white' : 'border-[#E6D7C3] bg-[#FFFCF7]'}`} />}
+          {c.showSearch && <SearchBox S={S} className="w-full sm:w-52" inputClass={`h-11 border px-3 text-sm ${variant === 'mono' ? 'border-black bg-white font-mono' : variant === 'atelier' ? 'border-[#D7D2C6] bg-transparent' : isNoir ? 'border-[#B79A62]/50 bg-[#15120D] text-[#F4EBD6] placeholder:text-[#C8B98F]/55' : 'rounded-xl border-[#E6D7C3] bg-[#FFFCF7]'}`} />}
+          {c.showSort && <SortSelect S={S} className={`h-11 border px-3 text-sm ${variant === 'mono' ? 'border-black bg-white font-mono' : variant === 'atelier' ? 'border-[#D7D2C6] bg-transparent' : isNoir ? 'border-[#B79A62]/50 bg-[#15120D] text-[#F4EBD6]' : 'rounded-xl border-[#E6D7C3] bg-[#FFFCF7]'}`} />}
         </div>
       </div>
-      <div className="pm-sb -mx-1 mt-5 flex gap-2 overflow-x-auto px-1 pb-2" role="group" aria-label="Filter products">
-        {S.chips.map((chip: string) => <button key={chip} type="button" onClick={() => S.setActive(chip)} aria-pressed={S.active === chip} className={`shrink-0 px-4 py-2 text-xs font-semibold transition ${variant === 'mono' ? `border-2 border-black ${S.active === chip ? 'bg-[#D9FF3F] text-black' : 'bg-white hover:bg-[#D9FF3F]'}` : variant === 'atelier' ? `rounded-full border ${S.active === chip ? 'border-[#718463] bg-[#718463] text-white' : 'border-[#D7D2C6] bg-transparent hover:bg-white'}` : `rounded-full border ${S.active === chip ? 'border-[#291B16] bg-[#291B16] text-white' : 'border-[#E6D7C3] bg-white hover:bg-[#F5E9D5]'}`}`}>{chip}</button>)}
-        {S.savedOnly && <button type="button" onClick={() => S.setSavedOnly(false)} className="shrink-0 rounded-full border border-black px-4 py-2 text-xs font-semibold">Saved only ×</button>}
+      <div className={`pm-sb -mx-1 mt-5 flex gap-1 overflow-x-auto px-1 pb-2 ${variant === 'atelier' ? 'border-b border-[#D7D2C6]' : ''}`} role="group" aria-label="Filter products">
+        {S.chips.map((chip: string) => <button key={chip} type="button" onClick={() => S.setActive(chip)} aria-pressed={S.active === chip} data-active={S.active === chip} className={`shrink-0 px-4 py-2 text-[11px] font-semibold transition ${filters}`}>{chip}</button>)}
+        <button type="button" onClick={() => S.setSavedOnly(!S.savedOnly)} aria-pressed={S.savedOnly} title={S.savedOnly ? 'Show all products' : 'Filter to saved products'} className={`ml-auto shrink-0 px-3 py-2 text-[11px] font-semibold ${isNoir ? 'text-[#D8C59B]' : ''}`}>{S.savedOnly ? 'Saved only ×' : '♡ Saved'}</button>
       </div>
-      {filtered.length ? <div className={`mt-5 grid ${gridStyle}`}>
+      {filtered.length ? <div className={`mt-5 ${resultLayout}`}>
         {filtered.map((p: any, index: number) => {
           const discount = discountPct(p)
           const stock = stockState(p)
+          const open = () => S.openProduct(p)
+          const favorite = <button type="button" onClick={() => S.toggleWish(p.id)} aria-label={S.isWished(p.id) ? 'Remove from saved items' : 'Save this product'} title={S.isWished(p.id) ? 'Remove from saved items' : 'Save this product'} aria-pressed={S.isWished(p.id)} className={`${isNoir ? 'border border-[#B79A62]/40 text-[#D8C59B]' : variant === 'saffron' ? 'bg-[#FFFDF8] text-[#8C3F2B]' : variant === 'atelier' ? 'text-[#718463]' : 'border-2 border-black'} grid h-10 w-10 shrink-0 place-items-center`}><Ic.heart c="h-4 w-4" fill={S.isWished(p.id)} /></button>
+          const add = <button type="button" onClick={() => S.quickAdd(p)} disabled={stock === 'out'} aria-label={`Add ${p.name} to bag`} title="Add to bag" className={`${isNoir ? 'border border-[#C8A96B] bg-[#C8A96B] text-black hover:bg-[#E0C887]' : variant === 'saffron' ? 'rounded-full bg-[#8C3F2B] px-5 text-white hover:bg-[#6E3022]' : variant === 'atelier' ? 'rounded-none border border-[#718463] px-5 text-[#536746] hover:bg-[#718463] hover:text-white' : 'border-2 border-black bg-[#D9FF3F] px-4 text-black hover:bg-black hover:text-[#D9FF3F]'} inline-flex h-10 items-center justify-center gap-2 text-[11px] font-bold transition disabled:cursor-not-allowed disabled:opacity-35`}>{stock === 'out' ? 'Sold out' : variant === 'saffron' ? 'Add to order' : isNoir ? 'Add piece' : variant === 'atelier' ? 'Add to bag' : 'Add +'}</button>
+          const badges = <>{S.isHot(p) && <span className={`text-[9px] font-bold uppercase tracking-[.16em] ${isNoir ? 'text-[#D8C59B]' : variant === 'saffron' ? 'text-[#A34830]' : variant === 'atelier' ? 'text-[#718463]' : 'bg-[#D9FF3F] px-2 py-1 text-black'}`}>{c.hotBadge}</span>}{discount > 0 && <span className={`text-[9px] font-bold ${isNoir ? 'text-[#D8C59B]' : 'text-red-700'}`}>-{discount}%</span>}{stock === 'low' && <span className="text-[9px] font-semibold text-red-600">Only {p.stock} left</span>}</>
+
+          if (variant === 'saffron') return (
+            <article key={p.id} className="flex items-center gap-3 py-4 sm:gap-5">
+              <button type="button" onClick={open} aria-label={`View ${p.name}`} className="h-[82px] w-[82px] shrink-0 overflow-hidden rounded-2xl bg-[#E9D8C2] sm:h-[104px] sm:w-[104px]"><Img src={p.images[0]} alt={p.name} className="h-full w-full object-cover" /></button>
+              <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2">{badges}<span className="text-[9px] uppercase tracking-[.14em] text-[#7C695C]">{p.category}</span></div><button type="button" onClick={open} className="mt-1 block max-w-full truncate text-left font-serif text-lg font-semibold sm:text-xl">{p.name}</button><p className="mt-1 line-clamp-1 text-xs text-[#6F5C4D]">{p.description || c.dishNote}</p><div className="mt-2 flex flex-wrap items-center justify-between gap-2"><PriceLine p={p} S={S} big="text-[14px] text-[#43271E]" strike="text-[10px] text-[#7C695C]" />{add}</div></div>{favorite}
+            </article>
+          )
+          if (variant === 'atelier') return (
+            <article key={p.id} className={`group min-w-0 ${index === 0 ? 'col-span-2 lg:col-span-7' : index === 1 ? 'col-span-2 lg:col-span-5 lg:mt-16' : 'col-span-1 lg:col-span-4'}`}>
+              <div className={`relative overflow-hidden bg-[#E3DCD1] ${index < 2 ? 'aspect-[5/4] sm:aspect-[4/3]' : 'aspect-[4/5]'} ${index % 3 === 0 ? 'rounded-t-[48%]' : 'rounded-t-[999px]'}`}><button type="button" onClick={open} aria-label={`View ${p.name}`} className="absolute inset-0 h-full w-full"><Img src={p.images[0]} alt={p.name} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.035]" /></button><div className="absolute right-3 top-3">{favorite}</div><div className="absolute bottom-3 left-3 flex flex-wrap gap-2">{badges}</div></div>
+              <div className="flex items-start justify-between gap-3 border-b border-[#D7D2C6] py-4"><div className="min-w-0"><div className="text-[9px] uppercase tracking-[.17em] text-[#718463]">{p.category || c.featuredLabel}</div><button type="button" onClick={open} className="mt-1 block text-left font-serif text-xl leading-tight text-[#2B3327]">{p.name}</button><div className="mt-2"><PriceLine p={p} S={S} big="text-[14px]" strike="text-[10px] opacity-45" /></div></div>{add}</div>
+            </article>
+          )
+          if (variant === 'mono') return (
+            <article key={p.id} className="grid grid-cols-[22px_64px_1fr_auto] items-center gap-3 py-3 sm:grid-cols-[44px_80px_1fr_150px_116px] sm:gap-5 sm:py-4">
+              <span className="font-mono text-sm font-bold text-black/35">{String(index + 1).padStart(2, '0')}</span><button type="button" onClick={open} aria-label={`View ${p.name}`} className="aspect-square w-16 overflow-hidden border-2 border-black bg-white sm:w-20"><Img src={p.images[0]} alt={p.name} className="h-full w-full object-cover" /></button>
+              <div className="min-w-0"><div className="flex flex-wrap gap-2">{badges}</div><button type="button" onClick={open} className="mt-1 block max-w-full truncate text-left font-mono text-sm font-bold uppercase sm:text-base">{p.name}</button><span className="mt-1 block truncate font-mono text-[9px] uppercase tracking-wider text-black/50">{p.category || c.featuredLabel}</span></div>
+              <div className="hidden font-mono text-sm font-bold tabular-nums sm:block"><PriceLine p={p} S={S} big="text-[14px]" strike="text-[10px] opacity-45" /></div><div className="flex items-center gap-2">{favorite}{add}</div>
+            </article>
+          )
           return (
-            <article key={p.id} className={`group min-w-0 p-2 transition ${cardStyle} ${variant === 'atelier' ? 'hover:-translate-y-1' : ''}`}>
-              <div className={`relative overflow-hidden bg-black/5 ${imageStyle}`}>
-                <button type="button" onClick={() => S.openProduct(p)} aria-label={`View ${p.name}`} className="absolute inset-0 z-[1] h-full w-full"><Img src={p.images[0]} alt={p.name} className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.04]" /></button>
-                <div className="pointer-events-none absolute left-2 top-2 z-[2] flex flex-col gap-1">
-                  {S.isHot(p) && <span className={`rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider ${variant === 'mono' ? 'pm-accent-fill bg-[#D9FF3F] text-black' : variant === 'atelier' ? 'pm-accent-fill bg-[#718463] text-white' : 'pm-accent-fill bg-[#C95C3A] text-white'}`}>{c.hotBadge}</span>}
-                  {discount > 0 && <span className="w-fit rounded-full bg-white px-2.5 py-1 text-[9px] font-bold text-black">-{discount}%</span>}
-                  {stock === 'out' && <span className="rounded-full bg-black px-2.5 py-1 text-[9px] font-bold text-white">Sold out</span>}
-                </div>
-                <button type="button" onClick={() => S.toggleWish(p.id)} aria-label={S.isWished(p.id) ? 'Remove from saved items' : 'Save this product'} title={S.isWished(p.id) ? 'Remove from saved items' : 'Save this product'} aria-pressed={S.isWished(p.id)} className={`absolute right-2 top-2 z-[3] grid h-9 w-9 place-items-center rounded-full bg-white/90 text-zinc-800 shadow-sm transition hover:scale-105 ${variant === 'mono' ? 'border border-black' : ''}`}><Ic.heart c="h-4 w-4" fill={S.isWished(p.id)} /></button>
-                {stock !== 'out' && <button type="button" onClick={() => S.quickAdd(p)} aria-label={`Add ${p.name} to bag`} title="Add to bag" className={`absolute bottom-2 right-2 z-[3] grid h-10 w-10 place-items-center rounded-full shadow-md transition hover:scale-105 ${variant === 'saffron' ? 'pm-accent-fill bg-[#C95C3A] text-white' : variant === 'atelier' ? 'pm-accent-fill bg-[#718463] text-white' : 'pm-accent-fill border-2 border-black bg-[#D9FF3F] text-black'}`}><Ic.plus c="h-4 w-4" /></button>}
-              </div>
-              <button type="button" onClick={() => S.openProduct(p)} className={`block w-full min-w-0 px-1 pb-1 pt-3 text-left ${variant === 'mono' ? 'font-mono' : ''}`}>
-                <span className="block truncate text-[10px] uppercase tracking-[0.14em] opacity-50">{p.category || 'Featured'}</span>
-                <span className="mt-1 block truncate text-sm font-bold sm:text-base">{p.name}</span>
-                <span className="mt-1 block"><PriceLine p={p} S={S} big="text-[13px] sm:text-[14px]" strike="text-[10px] opacity-45" /></span>
-                {stock === 'low' && <span className="mt-1 block text-[10px] font-semibold text-red-600">Only {p.stock} left</span>}
-              </button>
-              <button type="button" onClick={() => S.quickAdd(p)} disabled={stock === 'out'} className={`mt-1 h-10 w-full px-2 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-40 ${variant === 'saffron' ? 'rounded-xl bg-[#F3E6D3] text-[#43271E] hover:bg-[#E9D5B8]' : variant === 'atelier' ? 'rounded-full border border-[#D7D2C6] hover:border-[#718463] hover:bg-[#718463] hover:text-white' : 'border-2 border-black bg-white hover:bg-[#D9FF3F]'}`}>{stock === 'out' ? 'Sold out' : 'Add to bag'}</button>
+            <article key={p.id} className="group relative border border-[#B79A62]/25 bg-[#100E0A] p-2 transition hover:border-[#C8A96B]/75 sm:p-3">
+              <div className="relative overflow-hidden border border-[#B79A62]/20 bg-[#1C1912]"><button type="button" onClick={open} aria-label={`View ${p.name}`} className="block w-full"><Img src={p.images[0]} alt={p.name} className="aspect-[4/5] w-full object-cover opacity-90 transition duration-700 group-hover:scale-[1.035]" /></button><div className="absolute left-2 top-2 flex flex-col gap-1">{badges}</div><div className="absolute right-2 top-2">{favorite}</div></div>
+              <div className="px-1 pb-1 pt-4"><div className="text-[9px] uppercase tracking-[.2em] text-[#C8A96B]">{p.category || c.featuredLabel}</div><button type="button" onClick={open} className="mt-1 block min-h-10 text-left font-serif text-lg leading-tight text-[#F4EBD6]">{p.name}</button><div className="mt-2 flex items-center justify-between gap-2"><PriceLine p={p} S={S} big="text-[14px] text-[#F4EBD6]" strike="text-[10px] text-[#9E906F]" />{add}</div></div>
             </article>
           )
         })}
-      </div> : <div className={`mt-8 border p-10 text-center ${variant === 'mono' ? 'border-2 border-black bg-white font-mono' : 'rounded-3xl border-zinc-200 bg-white/70'}`}><p className="font-semibold">{S.products.length ? 'No products match these filters.' : 'Products will be here soon.'}</p><button type="button" onClick={() => { S.setQuery(''); S.setActive('All'); S.setSavedOnly(false) }} className="mt-3 text-sm font-semibold underline underline-offset-4">Clear filters</button></div>}
+      </div> : <div className={`mt-8 border p-10 text-center ${isNoir ? 'border-[#B79A62]/35 bg-[#100E0A] text-[#F4EBD6]' : variant === 'mono' ? 'border-2 border-black bg-white font-mono' : 'rounded-3xl border-zinc-200 bg-white/70'}`}><p className="font-semibold">{S.products.length ? 'No products match these filters.' : 'Products will be here soon.'}</p><button type="button" onClick={() => { S.setQuery(''); S.setActive('All'); S.setSavedOnly(false) }} className="mt-3 text-sm font-semibold underline underline-offset-4">Clear filters</button></div>}
     </section>
   )
 }
-
 
 function NewThemeHighlights({ S, variant }: { S: any; variant: 'saffron' | 'atelier' | 'mono' }) {
   const { c } = S
@@ -2105,7 +2132,7 @@ function SaffronTableTheme({ S }: { S: any }) {
             <div className="relative inline-flex items-center gap-2 rounded-full border border-[#DCC7AA] bg-[#FFFCF7] px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.18em]"><span className="pm-accent-fill h-1.5 w-1.5 rounded-full bg-[#C95C3A]" />{c.heroBadge}</div>
             <h1 className="food-serif mt-5 text-[clamp(52px,8vw,100px)] leading-[.92] tracking-[-.055em]">{lines.map((line: string, i: number) => <span key={i} className={`block ${i === 1 ? 'pm-accent-text italic text-[#C95C3A]' : ''}`}>{line}</span>)}</h1>
             <p className="mt-5 max-w-lg text-sm leading-7 text-[#291B16]/65 sm:text-base">{c.heroSubtitle}</p>
-            <div className="mt-7 flex flex-wrap gap-3"><button type="button" onClick={e => S.scrollTo(e, 'pm-collection')} className={`h-12 px-6 text-sm font-bold pm-accent-fill ${SAFFRON_SKIN.btn}`}>{c.ctaText} <Ic.right c="ml-2 inline h-4 w-4" /></button>{c.secondaryCta && <button type="button" onClick={S.openCart} className={`h-12 px-6 text-sm font-bold ${SAFFRON_SKIN.btnAlt}`}>{c.secondaryCta}</button>}</div>
+            <div className="mt-7 flex flex-wrap gap-3"><button type="button" onClick={e => S.scrollTo(e, 'pm-collection')} className="pm-accent-fill inline-flex h-12 items-center gap-4 rounded-tl-[2px] rounded-br-[18px] bg-[#C95C3A] px-6 text-sm font-bold text-white shadow-[0_8px_20px_-12px_rgba(77,38,24,.55)] transition hover:-translate-y-0.5 hover:bg-[#A94329]">{c.ctaText} <Ic.right c="ml-2 inline h-4 w-4" /></button>{c.secondaryCta && <button type="button" onClick={S.openCart} className={`h-12 px-6 text-sm font-bold ${SAFFRON_SKIN.btnAlt}`}>{c.secondaryCta}</button>}</div>
             <div className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2 text-[10px] font-semibold text-[#291B16]/55"><span className="inline-flex items-center gap-1.5"><Ic.truck c="h-4 w-4 text-[#C95C3A]" />{c.deliveryNote}</span><span className="inline-flex items-center gap-1.5"><Ic.check c="h-4 w-4 text-[#C95C3A]" />{c.dishNote}</span></div>
           </div>
           <div className="relative order-1 mx-auto w-full max-w-[520px] lg:order-2">
@@ -2153,7 +2180,7 @@ function AtelierBloomTheme({ S }: { S: any }) {
       <main id="top" className="mx-auto max-w-[1320px] px-4 sm:px-6">
         <section className="relative grid min-h-[620px] items-center gap-8 py-12 md:grid-cols-2 md:py-16">
           <div className="absolute right-[8%] top-[8%] h-40 w-40 rounded-full bg-[#D7DEC9]/60 blur-2xl" aria-hidden />
-          <div className="relative z-10 order-2 md:order-1 md:pl-8"><div className="text-[10px] font-semibold uppercase tracking-[0.24em] pm-accent-text text-[#718463]">{c.heroBadge}</div><h1 className="atelier-serif mt-6 text-[clamp(48px,7.2vw,88px)] leading-[1.06] tracking-[-0.045em]">{lines.map((line: string, i: number) => <span key={i} className={`block ${i === 1 ? 'pm-accent-text italic text-[#718463]' : ''}`}>{line}</span>)}</h1><p className="mt-6 max-w-md text-sm leading-7 text-[#2B3327]/65">{c.heroSubtitle}</p><div className="mt-7 flex flex-wrap gap-3"><button type="button" onClick={e => S.scrollTo(e, 'pm-collection')} className={`h-12 px-6 text-xs font-semibold pm-accent-fill ${ATELIER_SKIN.btn}`}>{c.ctaText}<Ic.right c="ml-2 inline h-4 w-4" /></button>{c.secondaryCta && <button type="button" onClick={S.openCart} className={`h-12 px-6 text-xs font-semibold ${ATELIER_SKIN.btnAlt}`}>{c.secondaryCta}</button>}</div></div>
+          <div className="relative z-10 order-2 md:order-1 md:pl-8"><div className="text-[10px] font-semibold uppercase tracking-[0.24em] pm-accent-text text-[#718463]">{c.heroBadge}</div><h1 className="atelier-serif mt-6 text-[clamp(48px,7.2vw,88px)] leading-[1.06] tracking-[-0.045em]">{lines.map((line: string, i: number) => <span key={i} className={`block ${i === 1 ? 'pm-accent-text italic text-[#718463]' : ''}`}>{line}</span>)}</h1><p className="mt-6 max-w-md text-sm leading-7 text-[#2B3327]/65">{c.heroSubtitle}</p><div className="mt-7 flex flex-wrap gap-3"><button type="button" onClick={e => S.scrollTo(e, 'pm-collection')} className="pm-accent-fill inline-flex h-12 items-center gap-5 border border-[#718463] bg-[#718463] px-5 text-xs font-semibold text-white transition hover:bg-[#536746]">{c.ctaText}<Ic.right c="ml-2 inline h-4 w-4" /></button>{c.secondaryCta && <button type="button" onClick={S.openCart} className="h-12 px-3 text-xs font-semibold text-[#536746] underline decoration-[#718463]/50 underline-offset-4 hover:text-[#2B3327]">{c.secondaryCta}</button>}</div></div>
           <div className="relative order-1 mx-auto w-full max-w-[520px] md:order-2"><div className="absolute -right-3 -top-5 h-32 w-32 rounded-full border border-[#AAB69B]" aria-hidden /><button type="button" onClick={() => first && S.openProduct(first)} aria-label={first ? `View ${first.name}` : c.featuredLabel} className="relative z-10 block w-full overflow-hidden rounded-t-[999px] bg-[#E3DCD1]"><Img src={S.heroImg} alt={first?.name || ''} className="aspect-[4/5] w-full object-cover transition duration-700 hover:scale-[1.035]" /></button><div className="absolute -bottom-5 -left-4 z-20 pm-accent-fill rounded-full bg-[#718463] px-5 py-3 text-[9px] font-bold uppercase tracking-[0.17em] text-white shadow-lg">{c.featuredLabel}</div></div>
         </section>
         <NewThemeHighlights S={S} variant="atelier" />
@@ -2204,6 +2231,43 @@ function MonoMarketTheme({ S }: { S: any }) {
 }
 
 
+const NOIR_SKIN: Skin = {
+  root: 'bg-[#0C0A07] text-[#F4EBD6]', panel: 'bg-[#14110C] text-[#F4EBD6] border border-[#B79A62]/40 rounded-none', drawer: 'bg-[#0C0A07] text-[#F4EBD6] border-l border-[#B79A62]/40', scrim: 'bg-black/80 backdrop-blur-sm',
+  muted: 'text-[#C8B98F]/60', line: 'border-[#B79A62]/35', soft: 'bg-[#C8A96B]/10', chip: 'border-[#B79A62]/45 text-[#D8C59B]', chipOn: 'bg-[#C8A96B] text-black border-[#C8A96B]', chipR: 'rounded-none',
+  btn: 'bg-[#C8A96B] text-black rounded-none hover:bg-[#E0C887]', btnAlt: 'border border-[#C8A96B] text-[#D8C59B] rounded-none hover:bg-[#C8A96B] hover:text-black', input: 'bg-[#15120D] border border-[#B79A62]/45 text-[#F4EBD6]', title: 'font-serif tracking-[0.02em]', dock: 'bg-[#0C0A07]/95 backdrop-blur border-[#B79A62]/35',
+}
+
+function NoirGiltTheme({ S }: { S: any }) {
+  const { c, products } = S
+  const first = products[0]
+  const trustBadges = Array.isArray(c.trustBadges) ? c.trustBadges.slice(0, 3) : []
+  const lines = splitLines(c.heroTitle)
+  return (
+    <div ref={S.rootRef} style={S.cssVars} className="pm-noir min-h-screen overflow-x-clip bg-[#0C0A07] text-[#F4EBD6] antialiased">
+      <style>{PM_BASE_CSS + `@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap');.pm-noir{font-family:'DM Sans',sans-serif;background-image:radial-gradient(ellipse at 75% 16%,rgba(200,169,107,.09),transparent 32%),linear-gradient(180deg,#0C0A07,#100D08 55%,#0C0A07)}.pm-noir .noir-serif{font-family:'Playfair Display',Georgia,serif}.pm-noir .noir-gold{color:var(--pm-accent)!important}.pm-noir .noir-gold-bg{background:var(--pm-accent)!important}.pm-noir .noir-gold-border{border-color:var(--pm-accent)!important}`}</style>
+      {c.showAnnouncement && c.announcement && <div className="border-b border-[#B79A62]/30 px-4 py-2 text-center text-[9px] uppercase tracking-[.24em] text-[#D8C59B]">{c.announcement}</div>}
+      <header className="sticky top-0 z-30 border-b border-[#B79A62]/25 bg-[#0C0A07]/95 backdrop-blur-xl"><div className="mx-auto flex h-[76px] max-w-[1320px] items-center justify-between gap-4 px-4 sm:px-6">
+        <a href="#top" className="flex min-w-0 items-center gap-3">{c.logoImage ? <img src={c.logoImage} alt={c.headerLabel} className="h-9 max-w-[140px] object-contain" /> : <span className="noir-serif noir-gold text-2xl italic">{c.monogram}</span>}<span className="hidden text-[10px] font-semibold uppercase tracking-[.2em] text-[#E5DAC2] sm:inline">{c.headerLabel}</span></a>
+        <nav className="hidden items-center gap-7 text-[9px] uppercase tracking-[.22em] text-[#C8B98F]/75 md:flex"><a href="#pm-collection" className="hover:text-[#F4EBD6]">{c.collectionTitle}</a><a href="#noir-story" className="hover:text-[#F4EBD6]">{c.storyTitle}</a></nav>
+        <div className="flex items-center gap-2"><button type="button" onClick={() => S.setSavedOnly(!S.savedOnly)} aria-label="Filter to saved pieces" title={S.savedOnly ? 'Show all pieces' : 'Filter to saved pieces'} className="grid h-10 w-10 place-items-center border border-[#B79A62]/40 text-[#D8C59B]"><Ic.heart c="h-4 w-4" fill={S.savedOnly} /></button><button type="button" onClick={S.openCart} aria-label="Open shopping bag" title="Open shopping bag" className="inline-flex h-10 items-center gap-2 border border-[#C8A96B] px-3 text-[10px] uppercase tracking-[.15em] text-[#F4EBD6] hover:bg-[#C8A96B] hover:text-black"><Ic.bag c="h-4 w-4" /><span>Bag · {S.cartCount}</span></button></div>
+      </div></header>
+      <main id="top" className="mx-auto max-w-[1320px] px-4 sm:px-6">
+        <section className="grid min-h-[680px] items-center gap-9 py-10 sm:py-14 lg:grid-cols-[1fr_.84fr] lg:gap-16 lg:py-20">
+          <div className="relative order-2 lg:order-1"><div className="flex items-center gap-3 text-[9px] font-semibold uppercase tracking-[.24em] text-[#C8A96B]"><span className="h-px w-9 bg-[#C8A96B]" />{c.goldLine}</div><div className="mt-6 text-[10px] uppercase tracking-[.2em] text-[#C8B98F]/55">{c.heroBadge}</div><h1 className="noir-serif mt-4 text-[clamp(50px,8vw,104px)] leading-[.98] tracking-[-.045em]">{lines.map((line: string, i: number) => <span key={i} className={`block ${i === 1 ? 'italic noir-gold' : ''}`}>{line}</span>)}</h1><p className="mt-6 max-w-lg text-sm leading-7 text-[#C8B98F]/70">{c.heroSubtitle}</p>
+            <div className="mt-8 flex flex-wrap items-center gap-3"><button type="button" onClick={e => S.scrollTo(e, 'pm-collection')} className="group inline-flex h-12 items-center gap-4 border border-[#C8A96B] bg-[#C8A96B] pl-5 pr-2 text-[10px] font-bold uppercase tracking-[.14em] text-black transition hover:bg-[#E0C887]"><span>{c.ctaText}</span><span className="grid h-8 w-8 place-items-center bg-black text-[#D8C59B] transition group-hover:translate-x-0.5"><Ic.right c="h-4 w-4" /></span></button>{c.secondaryCta && <button type="button" onClick={S.openCart} className="h-12 border border-[#B79A62]/45 px-5 text-[10px] uppercase tracking-[.12em] text-[#D8C59B] hover:border-[#C8A96B] hover:text-white">{c.secondaryCta}</button>}</div>
+            <div className="mt-10 flex flex-wrap gap-x-5 gap-y-2 border-t border-[#B79A62]/25 pt-4 text-[9px] uppercase tracking-[.13em] text-[#C8B98F]/60">{trustBadges.map((badge: string, i: number) => <span key={i} className="inline-flex items-center gap-2"><span className="noir-gold">✦</span>{badge}</span>)}</div>
+          </div>
+          <div className="relative order-1 mx-auto w-full max-w-[510px] lg:order-2"><div className="absolute -inset-3 border border-[#C8A96B]/50" aria-hidden /><div className="absolute -inset-6 border border-[#C8A96B]/15" aria-hidden /><button type="button" onClick={() => first && S.openProduct(first)} aria-label={first ? `View ${first.name}` : c.featuredLabel} className="group relative z-10 block w-full border border-[#C8A96B]/60 bg-[#19150F] p-2"><div className="relative overflow-hidden"><Img src={S.heroImg} alt={first?.name || c.featuredLabel} className="aspect-[4/5] w-full object-cover opacity-85 transition duration-700 group-hover:scale-[1.035]"/><div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"/><div className="absolute bottom-5 left-5 right-5 text-left"><div className="text-[9px] uppercase tracking-[.23em] text-[#D8C59B]">{c.featuredLabel}</div><div className="noir-serif mt-2 text-2xl">{first?.name || c.headerLabel}</div>{first && <div className="mt-2 text-sm text-[#F4EBD6]">{S.m(first.price)}</div>}</div></div></button><div className="noir-gold-bg absolute -right-4 -top-4 z-20 grid h-[76px] w-[76px] place-items-center rounded-full text-black"><span className="noir-serif text-2xl italic">{c.monogram}</span></div></div>
+        </section>
+        <section id="noir-story" className="grid gap-8 border-y border-[#B79A62]/30 py-12 md:grid-cols-[.72fr_1.28fr] md:items-center md:gap-14 md:py-16"><div className="relative mx-auto w-full max-w-[380px] border border-[#B79A62]/50 p-2"><Img src={S.heroImg2} alt="" className="aspect-[4/3] w-full object-cover opacity-80"/><div className="absolute -bottom-4 -right-4 border border-[#C8A96B] bg-[#0C0A07] px-4 py-3 noir-serif text-xl italic text-[#D8C59B]">{c.monogram}</div></div><div className="max-w-2xl"><div className="text-[9px] uppercase tracking-[.23em] text-[#C8A96B]">{c.signatureLine}</div><h2 className="noir-serif mt-4 text-4xl leading-tight sm:text-5xl">{c.storyTitle}</h2><p className="mt-5 max-w-xl text-sm leading-7 text-[#C8B98F]/70">{c.storyText}</p><button type="button" onClick={e => S.scrollTo(e, 'pm-collection')} className="mt-7 inline-flex items-center gap-4 border-b border-[#C8A96B] pb-2 text-[10px] uppercase tracking-[.2em] text-[#D8C59B] hover:text-white">{c.ctaText}<Ic.right c="h-4 w-4" /></button></div></section>
+        <NewThemeCatalog S={S} variant="noir" />
+      </main>
+      <footer className="border-t border-[#B79A62]/30 bg-[#090806] px-4 py-9"><div className="mx-auto flex max-w-[1320px] flex-col justify-between gap-5 sm:flex-row"><div><div className="noir-serif text-xl text-[#E5DAC2]">{c.headerLabel}</div><p className="mt-2 max-w-md text-xs leading-6 text-[#C8B98F]/55">{c.footerAbout}</p></div><div className="self-end text-right text-[10px] uppercase tracking-[.12em] text-[#C8B98F]/55">{c.address}{S.profile?.whatsapp_number && <div className="mt-1">WhatsApp {S.profile.whatsapp_number}</div>}</div></div><div className="mx-auto mt-7 max-w-[1320px] border-t border-[#B79A62]/20 pt-4 text-[9px] uppercase tracking-[.14em] text-[#C8B98F]/40">{c.footerNote || `© ${S.profile?.business_name || c.headerLabel}`}</div></footer>
+      <Overlays S={S} skin={NOIR_SKIN} layout="sheet" />
+    </div>
+  )
+}
+
 const THEME_VIEWS: Record<string, (p: { S: any }) => any> = {
   'spike-premium': SpikePremiumTheme,
   'shoe-app-premium': ShoeAppPremiumTheme,
@@ -2214,6 +2278,7 @@ const THEME_VIEWS: Record<string, (p: { S: any }) => any> = {
   'saffron-table': SaffronTableTheme,
   'atelier-bloom': AtelierBloomTheme,
   'mono-market': MonoMarketTheme,
+  'noir-gilt': NoirGiltTheme,
 }
 
 function ThemeHost({ View, themeId, ...rest }: any) {
