@@ -188,24 +188,37 @@ export default function StorePageClient({ slug }: { slug: string }) {
   const [showCart, setShowCart] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
+    let active = true
     const load = async () => {
+      setLoading(true)
+      setLoadError('')
       try {
         const { data: prof, error: profErr } = await (supabase as any).from('profiles').select('*').eq('store_slug', slug).maybeSingle()
         if (profErr) throw profErr
-        if (!prof) { setLoading(false); return }
+        if (!prof) { if (active) setProfile(null); return }
+        const { data: prods, error: productsError } = await (supabase as any).from('products').select('*').eq('user_id', prof.id).order('created_at', { ascending: false })
+        if (productsError) throw productsError
+        if (!active) return
         setProfile(prof)
-        const { data: prods } = await (supabase as any).from('products').select('*').eq('user_id', prof.id).order('created_at', { ascending: false })
-        if (prods) setProducts(prods)
-        try {
-          await fetch('/api/analytics/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ store_slug: slug, event_type: 'store_view' }) })
-        } catch {}
-      } catch (e) { console.error(e) }
-      setLoading(false)
+        setProducts(prods || [])
+        void fetch('/api/analytics/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ store_slug: slug, event_type: 'store_view' }) }).catch(() => {})
+      } catch (error: any) {
+        console.error('Store could not be loaded:', error)
+        if (active) {
+          setProfile(null)
+          setLoadError(error?.message || 'This store could not be loaded. Please try again.')
+        }
+      } finally {
+        if (active) setLoading(false)
+      }
     }
-    if (slug) load()
-  }, [slug])
+    if (slug) void load()
+    return () => { active = false }
+  }, [slug, reloadKey])
 
   const track = async (type: string, productId?: string) => {
     try {
@@ -221,7 +234,8 @@ export default function StorePageClient({ slug }: { slug: string }) {
   const onRemove = (index: number) => setCart(prev => prev.filter((_, i) => i !== index))
 
   if (loading) return <div className="min-h-screen bg-[#F8F7F5] grid place-items-center" role="status" aria-label="Loading store"><div className="w-6 h-6 border-2 border-black border-t-transparent rounded-full animate-spin" /></div>
-  if (!profile) return <div className="min-h-screen grid place-items-center bg-[#F8F7F5] p-5"><div className="text-center"><div className="font-black text-[20px]">Store not found</div><div className="mt-2 text-[12px] opacity-60">We couldn’t find a store at /s/{slug}</div><Link href="/" className="mt-5 inline-flex h-10 items-center justify-center rounded-full bg-black px-5 text-[12px] font-bold text-white">Go Home</Link></div></div>
+  if (loadError) return <main className="min-h-screen grid place-items-center bg-[#F8F7F5] p-5"><section className="w-full max-w-md rounded-3xl border bg-white p-7 text-center"><h1 className="text-xl font-black">This store could not load</h1><p role="alert" className="mt-2 text-sm leading-6 text-zinc-500">Please check your connection and try again. {loadError}</p><div className="mt-5 flex justify-center gap-2"><button type="button" onClick={() => setReloadKey(key => key + 1)} className="h-10 rounded-full bg-black px-5 text-xs font-bold text-white">Try again</button><Link href="/" className="inline-flex h-10 items-center rounded-full border px-5 text-xs font-bold">Go home</Link></div></section></main>
+  if (!profile) return <main className="min-h-screen grid place-items-center bg-[#F8F7F5] p-5"><div className="text-center"><h1 className="font-black text-[20px]">Store not found</h1><p className="mt-2 text-[12px] opacity-60">We couldn’t find a store at /s/{slug}</p><Link href="/" className="mt-5 inline-flex h-10 items-center justify-center rounded-full bg-black px-5 text-[12px] font-bold text-white">Go home</Link></div></main>
 
   const themeId = profile?.store_theme || 'classic'
   const isPremium = ['spike-premium', 'shoe-app-premium', 'trenzo-luxury', 'sleek-beige', 'sleek-dark', 'sleek-editorial', 'saffron-table', 'atelier-bloom', 'mono-market', 'noir-gilt'].includes(themeId)
