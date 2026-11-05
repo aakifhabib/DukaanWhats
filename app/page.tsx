@@ -175,47 +175,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-                <footer className="mt-16 border-t border-black/[0.08]">
-          <div className="mx-auto max-w-[1280px] px-0 py-12">
-            {/* Top */}
-            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-10">
-              <div className="max-w-[320px]">
-                <div className="flex items-center gap-3">
-                  <div className="grid h-8 w-8 place-items-center rounded-[10px] bg-black text-white text-[13px] font-bold">D</div>
-                  <span className="font-semibold tracking-[-0.02em] text-[15px]">DukaanWhats.pk</span>
-                  <span className="hidden md:inline-flex h-5 items-center rounded-full bg-[#E8FF86] border border-black/10 px-2 text-[9px] font-black tracking-widest">BY M AAKIF</span>
-                </div>
-                <p className="mt-3 text-[13px] leading-[1.6] text-zinc-500">One-page WhatsApp store for Pakistani Instagram sellers. No commission. Based in Islamabad.</p>
-              </div>
 
-              {/* Elegant pill menu */}
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Link href="/about" className="h-9 rounded-full border bg-white px-4 text-[13px] font-medium hover:bg-black hover:text-white transition">about</Link>
-                  <Link href="/pricing" className="h-9 rounded-full border bg-white px-4 text-[13px] font-medium hover:bg-black hover:text-white transition">pricing</Link>
-                  <Link href="/s/premiumstore" className="h-9 rounded-full border bg-white px-4 text-[13px] font-medium hover:bg-black hover:text-white transition">store demo</Link>
-                  <Link href="/dashboard" className="h-9 rounded-full border bg-white px-4 text-[13px] font-medium hover:bg-black hover:text-white transition">dashboard</Link>
-                  {!loggedIn && (
-                    <Link href="/login" className="h-9 rounded-full bg-black px-5 text-[13px] font-medium text-white hover:scale-[1.02] transition">login</Link>
-                  )}
-                </div>
-                <div className="flex items-center gap-2 text-[11px] text-zinc-400">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#25D366] animate-pulse" />
-                  <span>Based in Islamabad, built for Pakistani sellers</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom */}
-            <div className="mt-10 flex flex-col md:flex-row md:items-center md:justify-between gap-3 border-t border-black/[0.06] pt-6 text-[11px] text-zinc-500">
-              <span>© 2026 DukaanWhats.pk • Built solo by M Aakif • Islamabad</span>
-              <span className="flex items-center gap-2">
-                <span className="hidden md:inline-flex h-5 items-center rounded-full bg-[#F8F7F5] border px-2.5 text-[10px] font-bold">MA</span>
-                <span>Made for Pakistan ♥</span>
-              </span>
-            </div>
-          </div>
-        </footer>
       </main>
     </div>
   )

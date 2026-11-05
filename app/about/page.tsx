@@ -1,85 +1,107 @@
+import Link from 'next/link'
+
+const principles = [
+  {
+    number: '01',
+    title: 'Easy to start',
+    text: 'Create a shareable storefront, add your products and put the link in your social profiles. No coding or separate shopping app is required.',
+  },
+  {
+    number: '02',
+    title: 'WhatsApp at the centre',
+    text: 'Customers can browse first and then start an order with you on WhatsApp, where many local sellers already talk to their customers.',
+  },
+  {
+    number: '03',
+    title: 'Made for local selling',
+    text: 'DukaanWhats is designed around Pakistani sellers, with rupee pricing and a simple direct-to-seller ordering flow.',
+  },
+]
+
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-[#F8F7F5] text-[#0A0A0A] antialiased selection:bg-[#E8FF86] selection:text-black">
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700;800;900&display=swap'); *{font-family:'Geist',system-ui,sans-serif}`}</style>
-      
-      {/* Top bar like login - dotted */}
-      <div className="h-[72px] border-b bg-white/80 backdrop-blur sticky top-0 z-20 flex items-center">
-        <div className="max-w-[720px] w-full mx-auto px-5 md:px-8 flex justify-between items-center">
-          <a href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-[10px] bg-black text-[#E8FF86] grid place-items-center font-black text-[14px]">D</div>
-            <span className="font-black tracking-tight text-[14px]">DukaanWhats.pk</span>
-          </a>
-          <a href="/" className="h-8 px-4 bg-black text-white rounded-full text-[11px] font-bold grid place-items-center">Back to home</a>
+    <div className="min-h-screen bg-[#F8F7F5] text-[#0A0A0A]">
+      <header className="sticky top-0 z-20 border-b border-black/5 bg-white/90 backdrop-blur">
+        <div className="mx-auto flex h-[68px] max-w-6xl items-center justify-between px-5 sm:px-8">
+          <Link href="/" className="inline-flex items-center gap-2.5 rounded-sm font-black tracking-tight">
+            <span className="grid h-8 w-8 place-items-center rounded-[10px] bg-black text-sm text-[#E8FF86]">D</span>
+            DukaanWhats.pk
+          </Link>
+          <Link href="/pricing" className="rounded-full bg-black px-4 py-2.5 text-xs font-bold text-white hover:bg-zinc-800">View pricing</Link>
         </div>
-      </div>
+      </header>
 
-      <div className="max-w-[720px] mx-auto px-5 md:px-8 py-10 md:py-16">
-        {/* Hero */}
-        <div className="text-center">
-          <div className="inline-flex h-6 px-3 bg-white border rounded-full text-[10px] font-black tracking-widest">ABOUT</div>
-          <h1 className="mt-5 text-[32px] md:text-[48px] leading-[0.9] font-black tracking-[-0.04em]">We are building the<br/>easiest way for<br/>Pakistan to sell online.</h1>
-          <p className="mt-4 text-[14px] md:text-[15px] leading-[1.6] text-zinc-500 max-w-[520px] mx-auto">A simple way for Pakistani sellers to share products and take orders on WhatsApp.</p>
-        </div>
+      <main className="mx-auto max-w-6xl px-5 py-12 sm:px-8 sm:py-20">
+        <section className="max-w-3xl">
+          <div className="inline-flex rounded-full border border-black/10 bg-white px-3 py-1.5 text-[10px] font-black tracking-[0.18em]">ABOUT DUKAANWHATS</div>
+          <h1 className="mt-6 text-4xl font-black leading-[0.98] tracking-[-0.055em] sm:text-6xl">A simpler way for Pakistan to sell online.</h1>
+          <p className="mt-6 max-w-2xl text-base leading-7 text-zinc-600 sm:text-lg sm:leading-8">DukaanWhats helps independent sellers turn a product list into a clean online storefront, then continue the conversation and order on WhatsApp.</p>
+        </section>
 
-        {/* Mission */}
-        <div className="mt-12 grid md:grid-cols-2 gap-4">
-          <div className="bg-white border rounded-[24px] p-6 md:p-7">
-            <div className="text-[11px] font-black tracking-widest opacity-40">OUR MISSION</div>
-            <p className="mt-3 text-[16px] md:text-[18px] leading-[1.3] font-bold tracking-[-0.02em]">Every seller should have a store link, not just a DM inbox.</p>
-            <p className="mt-3 text-[13px] leading-[1.6] text-zinc-500">Give customers one link to browse products and start an order.</p>
-          </div>
-          <div className="bg-black text-white rounded-[24px] p-6 md:p-7 relative overflow-hidden">
-            <div className="absolute -top-20 -right-20 w-[200px] h-[200px] bg-[#E8FF86]/20 rounded-full blur-[40px]" />
-            <div className="relative text-[11px] font-black tracking-widest opacity-50">STORY</div>
-            <p className="relative mt-3 text-[14px] leading-[1.5] text-white/80">Based in Islamabad, Pakistan, DukaanWhats is built by M Aakif for local sellers.</p>
-            <div className="relative mt-6 flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-[#E8FF86] text-black grid place-items-center font-black text-[12px]">MA</div>
-              <div><div className="text-[12px] font-bold">M Aakif</div><div className="text-[10px] opacity-60">Solo Founder</div></div>
+        <section className="mt-12 grid gap-5 md:mt-16 md:grid-cols-[1.2fr_0.8fr]">
+          <article className="rounded-[28px] border border-black/[0.06] bg-white p-6 sm:p-9">
+            <p className="text-[10px] font-black tracking-[0.18em] text-zinc-400">THE STORY</p>
+            <h2 className="mt-4 text-2xl font-black tracking-tight sm:text-3xl">Built in Islamabad, for sellers across Pakistan.</h2>
+            <div className="mt-5 space-y-4 text-sm leading-7 text-zinc-600">
+              <p>I’m M Aakif, an independent maker based in Islamabad. I built DukaanWhats to make it easier for local businesses to present their products without needing to set up and maintain a complicated online shop.</p>
+              <p>For many small sellers, social media is already where customers discover products and WhatsApp is where questions and orders happen. DukaanWhats connects those steps with one storefront link: customers can browse a catalogue, choose what they want and start a conversation with the seller.</p>
+              <p>The goal is practical: help sellers get online with less friction, keep the buying conversation direct, and give each business a page that feels like its own.</p>
             </div>
-          </div>
-        </div>
-
-        {/* Values */}
-        <div className="mt-12">
-          <div className="text-[11px] font-black tracking-widest opacity-40">VALUES</div>
-          <div className="mt-4 grid md:grid-cols-3 gap-3">
-            <div className="bg-white border rounded-[20px] p-5"><div className="w-8 h-8 bg-[#F8F7F5] border rounded-full grid place-items-center text-[12px]">◐</div><div className="mt-3 font-bold text-[13px]">Simple</div><div className="mt-1 text-[12px] text-zinc-500 leading-[1.5]">One page. No dashboard maze. Your customer sees products and clicks WhatsApp.</div></div>
-            <div className="bg-white border rounded-[20px] p-5"><div className="w-8 h-8 bg-[#F8F7F5] border rounded-full grid place-items-center text-[12px]">♥</div><div className="mt-3 font-bold text-[13px]">Pakistani</div><div className="mt-1 text-[12px] text-zinc-500 leading-[1.5]">Made for local sellers. PKR pricing, Urdu-friendly, COD by default.</div></div>
-            <div className="bg-white border rounded-[20px] p-5"><div className="w-8 h-8 bg-[#F8F7F5] border rounded-full grid place-items-center text-[12px]">↗</div><div className="mt-3 font-bold text-[13px]">WhatsApp First</div><div className="mt-1 text-[12px] text-zinc-500 leading-[1.5]">No new app to learn. Orders land where you already live — WhatsApp.</div></div>
-          </div>
-        </div>
-
-        {/* Footer Menu - names like "about" not "/about" */}
-        <div className="mt-16 border-t pt-8">
-          <div className="flex flex-wrap justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2"><div className="w-6 h-6 rounded-[8px] bg-black text-[#E8FF86] grid place-items-center font-black text-[11px]">D</div><span className="font-bold text-[13px]">DukaanWhats.pk</span></div>
-              <div className="mt-2 text-[11px] text-zinc-500 max-w-[220px]">Built solo by M Aakif • For Pakistani sellers • Islamabad</div>
+          </article>
+          <aside className="relative overflow-hidden rounded-[28px] bg-black p-7 text-white sm:p-9">
+            <div aria-hidden="true" className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-[#E8FF86]/20 blur-3xl" />
+            <div className="relative">
+              <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#E8FF86] text-sm font-black text-black">MA</div>
+              <p className="mt-7 text-[10px] font-bold tracking-[0.18em] text-white/50">FOUNDER & BUILDER</p>
+              <h2 className="mt-2 text-2xl font-black">M Aakif</h2>
+              <p className="mt-4 text-sm leading-7 text-white/70">Building DukaanWhats from Islamabad with a focus on useful, approachable tools for Pakistani sellers.</p>
+              <p className="mt-7 inline-flex items-center gap-2 rounded-full border border-white/15 px-3 py-2 text-xs text-white/75"><span className="h-2 w-2 rounded-full bg-[#E8FF86]" /> Islamabad, Pakistan</p>
             </div>
-            <div className="grid grid-cols-2 gap-8">
-              <div>
-                <div className="text-[10px] font-black tracking-widest opacity-40">EXPLORE</div>
-                <div className="mt-3 space-y-2 text-[13px]">
-                  <a href="/about" className="block font-bold hover:opacity-60">About</a>
-                  <a href="/pricing" className="block font-bold hover:opacity-60">Pricing</a>
-                  <a href="/login" className="block font-bold hover:opacity-60">Login</a>
-                  <a href="/dashboard" className="block font-bold hover:opacity-60">Dashboard</a>
-                </div>
-              </div>
-              <div>
-                <div className="text-[10px] font-black tracking-widest opacity-40">STORE</div>
-                <div className="mt-3 space-y-2 text-[13px]">
-                  <a href="/s/demo" className="block font-bold hover:opacity-60">Store demo</a>
-                  <a href="/reset-password" className="block font-bold hover:opacity-60">Reset password</a>
-                  <a href="mailto:hello@dukaanwhats.pk" className="block font-bold hover:opacity-60">Contact</a>
-                </div>
-              </div>
-            </div>
+          </aside>
+        </section>
+
+        <section className="mt-16 sm:mt-20">
+          <div className="max-w-xl">
+            <p className="text-[10px] font-black tracking-[0.18em] text-zinc-400">HOW IT WORKS</p>
+            <h2 className="mt-3 text-3xl font-black tracking-[-0.04em] sm:text-4xl">From products to a WhatsApp conversation.</h2>
           </div>
-          <div className="mt-8 flex justify-between text-[11px] text-zinc-400"><span>© 2026 M Aakif • DukaanWhats.pk • Based in Islamabad</span><span className="hidden md:block">Made for Pakistan ♥</span></div>
-        </div>
-      </div>
+          <div className="mt-7 grid gap-3 md:grid-cols-3">
+            {[
+              ['01', 'Set up your page', 'Choose a store name and add the products you want customers to see.'],
+              ['02', 'Share one link', 'Put your store link on Instagram, WhatsApp Status or anywhere customers find you.'],
+              ['03', 'Talk directly', 'A customer can start an order conversation with you on WhatsApp. You manage payment and fulfilment directly.'],
+            ].map(([number, title, text]) => (
+              <article key={number} className="rounded-[22px] border border-black/[0.06] bg-white p-6">
+                <div className="text-xs font-black text-zinc-300">{number}</div>
+                <h3 className="mt-5 text-lg font-extrabold tracking-tight">{title}</h3>
+                <p className="mt-2 text-sm leading-6 text-zinc-500">{text}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-16 sm:mt-20">
+          <p className="text-[10px] font-black tracking-[0.18em] text-zinc-400">WHAT MATTERS TO US</p>
+          <div className="mt-7 grid gap-3 md:grid-cols-3">
+            {principles.map(({ number, title, text }) => (
+              <article key={number} className="rounded-[22px] border border-black/[0.06] bg-white p-6">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E8FF86] text-xs font-black">{number}</div>
+                <h3 className="mt-5 text-lg font-extrabold tracking-tight">{title}</h3>
+                <p className="mt-2 text-sm leading-6 text-zinc-500">{text}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-16 flex flex-col items-start justify-between gap-6 rounded-[28px] bg-[#E8FF86] p-7 sm:mt-20 sm:flex-row sm:items-center sm:p-10">
+          <div>
+            <p className="text-[10px] font-black tracking-[0.18em]">READY WHEN YOU ARE</p>
+            <h2 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">Give your products a home online.</h2>
+            <p className="mt-2 text-sm text-black/65">Start with the free plan, then choose a plan that fits your store.</p>
+          </div>
+          <Link href="/login?signup=true" className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-full bg-black px-6 text-sm font-bold text-white hover:bg-zinc-800">Create your store <span aria-hidden="true" className="ml-2">↗</span></Link>
+        </section>
+      </main>
     </div>
   )
 }

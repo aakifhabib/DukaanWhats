@@ -20,10 +20,18 @@ export default function AuthCompletePage() {
       const params = new URLSearchParams(window.location.search)
       const code = params.get('code')
       const type = params.get('type')
+      const saveTermsAcceptance = async () => {
+        if (params.get('signup') === 'true' && params.get('termsAccepted') === 'true') {
+          const { error } = await supabase.auth.updateUser({ data: { terms_accepted_at: new Date().toISOString(), terms_version: '2026-11-04' } })
+          if (error) throw error
+        }
+      }
       if (!code) {
         const { data, error: sessionError } = await supabase.auth.getSession()
         if (!active) return
         if (data.session && !sessionError) {
+          await saveTermsAcceptance()
+          if (!active) return
           router.replace(safeDestination(params.get('next')))
           return
         }
@@ -41,6 +49,7 @@ export default function AuthCompletePage() {
         }
       }
       if (!active) return
+      await saveTermsAcceptance()
       const destination = type === 'recovery' || params.get('next') === '/reset-password'
         ? '/reset-password'
         : safeDestination(params.get('next'))

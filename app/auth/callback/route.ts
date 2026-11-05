@@ -8,7 +8,7 @@ export async function GET(request: Request) {
   // Exchange PKCE codes in the browser so Supabase can persist the session there.
   const destination = new URL('/auth/complete', source.origin)
   destination.searchParams.set('code', code)
-  for (const key of ['type', 'next']) {
+  for (const key of ['type', 'next', 'signup', 'termsAccepted']) {
     const value = source.searchParams.get(key)
     if (value) destination.searchParams.set(key, value)
   }
