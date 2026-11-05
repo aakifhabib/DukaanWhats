@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     const token = request.headers.get('authorization')?.match(/^Bearer\s+(.+)$/i)?.[1]
     if (!token) return json({ error: 'Sign in before submitting a payment.' }, 401)
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     if (!url || !anonKey) return json({ error: 'Payment submission is not configured.' }, 503)
 
     const supabase = createClient(url, anonKey, {
