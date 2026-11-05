@@ -35,6 +35,36 @@ const LiveDot = () => (
 
 /* -------------------- MINI STOREFRONT -------------------- */
 
+function normalizeProductImages(product: any): string[] {
+  const raw = product?.image_urls
+  if (Array.isArray(raw)) return raw.filter((value: unknown): value is string => typeof value === 'string' && Boolean(value))
+  if (typeof raw === 'string' && raw.trim()) {
+    try {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed)) return parsed.filter((value: unknown): value is string => typeof value === 'string' && Boolean(value))
+    } catch { return [raw] }
+    return [raw]
+  }
+  return typeof product?.image_url === 'string' && product.image_url ? [product.image_url] : []
+}
+
+async function copyText(value: string) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(value)
+    return
+  }
+  const field = document.createElement('textarea')
+  field.value = value
+  field.setAttribute('readonly', '')
+  field.style.position = 'fixed'
+  field.style.opacity = '0'
+  document.body.appendChild(field)
+  field.select()
+  const copied = document.execCommand('copy')
+  field.remove()
+  if (!copied) throw new Error('Clipboard is unavailable.')
+}
+
 function MiniStorefront({ theme }: { theme: any }) {
   const id = theme?.id || ''
   const c = theme?.colors || {}
@@ -513,6 +543,7 @@ export default function Dashboard() {
   const [prodColors, setProdColors] = useState('')
   const [prodOrigPrice, setProdOrigPrice] = useState('')
   const [files, setFiles] = useState<File[]>([])
+  const [existingImages, setExistingImages] = useState<string[]>([])
   const [previews, setPreviews] = useState<string[]>([])
   const [uploading, setUploading] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -573,7 +604,7 @@ export default function Dashboard() {
         if (!user) { window.location.href = '/login'; return }
         let { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
         if (!prof) {
-          const metaName = user.email?.split('@')[0] || 'My Store'
+          const metaName = String(user.user_metadata?.business_name || user.email?.split('@')[0] || 'My Store')
           const baseSlug = metaName.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 20)
           const newProfile = { id: user.id, business_name: metaName, whatsapp_number: '', store_slug: `${baseSlug}-${Math.floor(Math.random() * 900 + 100)}`, store_theme: 'clothing-noor', current_plan: 'basic' }
           const { data: created } = await supabase.from('profiles').upsert(newProfile, { onConflict: 'id' }).select().single()
@@ -677,39 +708,68 @@ Upgrade to unlock all 8 Advanced themes.`)
     } catch (e: any) { setErrorMsg(e.message) }
     setSaving(false)
   }
-  const copyLink = async () => { const url = `${window.location.origin}/s/${slug}`; await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 2000) }
-  const copyTill = async () => { await navigator.clipboard.writeText(TILL_ID); setCopiedTill(true); setTimeout(() => setCopiedTill(false), 2000) }
+  const copyLink = async () => {
+    if (!slug) { setErrorMsg('Save your store details before copying its link.'); return }
+    try {
+      await copyText(`${window.location.origin}/s/${slug}`)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch { setErrorMsg('Could not copy the store link. Please copy it from the address bar.') }
+  }
+  const copyTill = async () => {
+    try {
+      await copyText(TILL_ID)
+      setCopiedTill(true)
+      setTimeout(() => setCopiedTill(false), 2000)
+    } catch { setErrorMsg('Could not copy the Till ID.') }
+  }
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = Array.from(e.target.files || [])
+  const readImagePreview = (file: File) => new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => typeof reader.result === 'string' ? resolve(reader.result) : reject(new Error('Could not preview image.'))
+    reader.onerror = () => reject(new Error(`Could not read ${file.name}.`))
+    reader.readAsDataURL(file)
+  })
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.currentTarget
+    const selected = Array.from(input.files || [])
     if (!selected.length) return
-    const totalFiles = editingId ? selected.length : selected.length
-    if (totalFiles > imageLimit && imageLimit !== 999999) {
-      setErrorMsg(`❌ ${currentPlanId.toUpperCase()} allows ${imageLimit} images per product. You selected ${totalFiles}. Upgrade: Till ${TILL_ID}`)
-      setTimeout(() => setErrorMsg(null), 4000)
+    const invalidType = selected.find(file => !file.type.startsWith('image/'))
+    const oversized = selected.find(file => file.size > 5 * 1024 * 1024)
+    if (invalidType || oversized) {
+      setErrorMsg(invalidType ? `${invalidType.name} is not a supported image.` : `${oversized?.name} is larger than 5 MB.`)
+      input.value = ''
       return
     }
-    const newFiles = editingId ? [...files, ...selected].slice(0, imageLimit === 999999 ? 20 : imageLimit) : selected
-    setFiles(newFiles)
-    const pr: string[] = []
-    const existingPreviews = editingId ? previews : []
-    newFiles.forEach(file => {
-      const r = new FileReader()
-      r.onload = ev => {
-        pr.push(ev.target?.result as string)
-        if (pr.length === newFiles.length) {
-          setPreviews(editingId ? [...existingPreviews, ...pr].slice(0, newFiles.length) : pr)
-        }
-      }
-      r.readAsDataURL(file)
-    })
-    if (newFiles.length === 0) setPreviews([])
+    const maxImages = imageLimit === 999999 ? 20 : imageLimit
+    const remaining = Math.max(0, maxImages - existingImages.length - files.length)
+    const accepted = selected.slice(0, remaining)
+    if (!accepted.length) {
+      setErrorMsg(`Your plan allows ${maxImages} image${maxImages === 1 ? '' : 's'} per product. Remove an image or upgrade to add more.`)
+      input.value = ''
+      return
+    }
+    try {
+      const previewsForNewFiles = await Promise.all(accepted.map(readImagePreview))
+      setFiles(current => [...current, ...accepted].slice(0, remaining + files.length))
+      setPreviews(current => [...current, ...previewsForNewFiles].slice(0, maxImages))
+      if (accepted.length < selected.length) setErrorMsg(`Only ${maxImages} image${maxImages === 1 ? '' : 's'} per product are allowed on your plan.`)
+    } catch (error: any) {
+      setErrorMsg(error.message || 'Could not read the selected images.')
+    }
+    input.value = ''
   }
 
   const removeFileAt = (idx: number) => {
-    const nf = files.filter((_, i) => i !== idx)
-    const np = previews.filter((_, i) => i !== idx)
-    setFiles(nf); setPreviews(np)
+    if (idx < existingImages.length) {
+      setExistingImages(current => current.filter((_, index) => index !== idx))
+      setPreviews(current => current.filter((_, index) => index !== idx))
+      return
+    }
+    const fileIndex = idx - existingImages.length
+    setFiles(current => current.filter((_, index) => index !== fileIndex))
+    setPreviews(current => current.filter((_, index) => index !== idx))
   }
 
   const uploadOne = async (file: File, userId: string) => {
@@ -731,7 +791,9 @@ Upgrade to unlock all 8 Advanced themes.`)
     setProdSizes(Array.isArray(p.sizes) ? p.sizes.join(', ') : p.sizes || '')
     setProdColors(Array.isArray(p.colors) ? p.colors.join(', ') : p.colors || '')
     setProdOrigPrice(p.original_price ? String(p.original_price) : '')
-    setPreviews(p.image_urls && p.image_urls.length ? p.image_urls : [p.image_url])
+    const images = normalizeProductImages(p)
+    setExistingImages(images)
+    setPreviews(images)
     setFiles([])
     setActiveTab('products')
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -741,70 +803,76 @@ Upgrade to unlock all 8 Advanced themes.`)
     setEditingId(null)
     setProdName(''); setProdPrice(''); setProdDesc(''); setProdCategory('General')
     setProdStock('100'); setProdSizes(''); setProdColors(''); setProdOrigPrice('')
-    setFiles([]); setPreviews([])
+    setFiles([]); setExistingImages([]); setPreviews([])
   }
 
   const addProduct = async () => {
-    if (editingId === null && products.length >= productLimit) {
-      setErrorMsg(`🔒 ${currentPlanId.toUpperCase()} allows ${productLimit === 999999 ? 'Unlimited' : productLimit} products. Upgrade via PRO → Till ${TILL_ID}`)
+    if (!editingId && products.length >= productLimit) {
+      setErrorMsg(`Your ${currentPlanDef.name} plan allows ${productLimit === 999999 ? 'unlimited' : productLimit} products. Choose a plan to upgrade.`)
       setTimeout(() => setErrorMsg(null), 4000)
-      setActiveTab('payments'); return
+      setActiveTab('payments')
+      return
     }
-    if (!prodName.trim() || !prodPrice) { setErrorMsg('Name and price required'); setTimeout(() => setErrorMsg(null), 3000); return }
-    if (files.length === 0 && !editingId) { setErrorMsg('Photo required - select at least 1 image'); setTimeout(() => setErrorMsg(null), 3000); return }
-    if (files.length > imageLimit && imageLimit !== 999999) { setErrorMsg(`❌ ${currentPlanId.toUpperCase()} allows ${imageLimit} images. You selected ${files.length}`); setTimeout(() => setErrorMsg(null), 4000); return }
+    const price = Number(prodPrice)
+    const stock = prodStock.trim() === '' ? 100 : Number(prodStock)
+    const originalPrice = prodOrigPrice.trim() ? Number(prodOrigPrice) : 0
+    if (!prodName.trim()) { setErrorMsg('Enter a product name.'); return }
+    if (!Number.isFinite(price) || price <= 0) { setErrorMsg('Enter a price greater than zero.'); return }
+    if (!Number.isInteger(stock) || stock < 0) { setErrorMsg('Stock must be a whole number of zero or more.'); return }
+    if (prodOrigPrice.trim() && (!Number.isFinite(originalPrice) || originalPrice <= price)) { setErrorMsg('Compare price must be a number greater than the product price.'); return }
+    if (!editingId && files.length === 0) { setErrorMsg('Select at least one product image.'); return }
+    const maxImages = imageLimit === 999999 ? 20 : imageLimit
+    if (files.length + existingImages.length > maxImages) { setErrorMsg(`Your plan allows ${maxImages} image${maxImages === 1 ? '' : 's'} per product.`); return }
+
     setUploading(true)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not logged in')
-      let urls: string[] = []
-      for (const f of files) {
-        const url = await uploadOne(f, user.id)
-        urls.push(url)
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError || !user) throw new Error('Your session has expired. Please sign in again.')
+      const uploadedUrls: string[] = []
+      for (const file of files) uploadedUrls.push(await uploadOne(file, user.id))
+      const urls = [...existingImages, ...uploadedUrls]
+      if (!urls.length) throw new Error('Add at least one product image before saving.')
+      const sizes = prodSizes.split(',').map(value => value.trim()).filter(Boolean)
+      const colors = prodColors.split(',').map(value => value.trim()).filter(Boolean)
+      const payload = {
+        name: prodName.trim(), price, image_url: urls[0], image_urls: urls,
+        description: prodDesc.trim(), category: prodCategory, stock,
+        sizes, colors, original_price: originalPrice,
       }
-      if (editingId && urls.length === 0) {
-        const existing = products.find(p => p.id === editingId)
-        if (existing) {
-          urls = existing.image_urls && existing.image_urls.length ? existing.image_urls : [existing.image_url].filter(Boolean) as string[]
-        }
-      }
-      if (urls.length === 0) throw new Error('No images to save')
 
       if (editingId) {
-        const sizesArr = prodSizes.split(',').map(s => s.trim()).filter(Boolean)
-        const colorsArr = prodColors.split(',').map(s => s.trim()).filter(Boolean)
-        const payload: any = {
-          name: prodName.trim(), price: Number(prodPrice), image_url: urls[0], image_urls: urls,
-          description: prodDesc.trim(), category: prodCategory, stock: Number(prodStock) || 100,
-          sizes: sizesArr, colors: colorsArr, original_price: prodOrigPrice ? Number(prodOrigPrice) : 0,
-        }
-        const { data, error } = await supabase.from('products').update(payload).eq('id', editingId).select().single()
+        const { data, error } = await supabase.from('products').update(payload).eq('id', editingId).eq('user_id', user.id).select().single()
         if (error) throw error
-        if (data) setProducts(products.map(pr => pr.id === editingId ? data : pr))
+        setProducts(current => current.map(product => product.id === editingId ? data : product))
         setEditingId(null)
       } else {
-        const sizesArr = prodSizes.split(',').map(s => s.trim()).filter(Boolean)
-        const colorsArr = prodColors.split(',').map(s => s.trim()).filter(Boolean)
-        const { data, error } = await supabase.from('products').insert({
-          user_id: user.id, name: prodName.trim(), price: Number(prodPrice),
-          image_url: urls[0], image_urls: urls, description: prodDesc.trim(), category: prodCategory,
-          stock: Number(prodStock) || 100, sizes: sizesArr, colors: colorsArr,
-          original_price: prodOrigPrice ? Number(prodOrigPrice) : 0,
-        }).select().single()
+        const { data, error } = await supabase.from('products').insert({ ...payload, user_id: user.id }).select().single()
         if (error) throw error
-        if (data) setProducts([data, ...products])
+        setProducts(current => [data, ...current])
       }
       setProdName(''); setProdPrice(''); setProdDesc(''); setProdCategory('General')
       setProdStock('100'); setProdSizes(''); setProdColors(''); setProdOrigPrice('')
-      setFiles([]); setPreviews([])
-    } catch (e: any) { setErrorMsg(e.message); setTimeout(() => setErrorMsg(null), 5000) }
-    setUploading(false)
+      setFiles([]); setExistingImages([]); setPreviews([])
+    } catch (e: any) {
+      setErrorMsg(e.message || 'Product could not be saved.')
+      setTimeout(() => setErrorMsg(null), 5000)
+    } finally {
+      setUploading(false)
+    }
   }
 
   const deleteProduct = async (id: string) => {
-    if (!confirm('Delete?')) return
-    await supabase.from('products').delete().eq('id', id)
-    setProducts(products.filter(p => p.id !== id))
+    if (!window.confirm('Delete this product? This cannot be undone.')) return
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError || !user) throw new Error('Your session has expired. Please sign in again.')
+      const { error } = await supabase.from('products').delete().eq('id', id).eq('user_id', user.id)
+      if (error) throw error
+      setProducts(current => current.filter(product => product.id !== id))
+    } catch (reason: any) {
+      setErrorMsg(reason.message || 'Product could not be deleted.')
+      setTimeout(() => setErrorMsg(null), 5000)
+    }
   }
 
   const handleBuyPlan = async () => {
@@ -812,19 +880,22 @@ Upgrade to unlock all 8 Advanced themes.`)
     if (selectedPlan.monthly === 0) { setSelectedPlan(null); return }
     if (!txnId.trim()) { setErrorMsg('Enter Transaction ID'); setTimeout(() => setErrorMsg(null), 3000); return }
     setPurchasing(true)
-    const amount = billing === 'monthly' ? selectedPlan.monthly : selectedPlan.yearlyTotal
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not logged in')
-      const { error } = await supabase.from('plan_payments').insert({
-        user_id: user.id, plan_id: selectedPlan.id, amount, till_id: TILL_ID, txn_id: txnId.trim(), status: 'pending',
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error('Your session has expired. Please sign in again.')
+      const response = await fetch('/api/payments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ planId: selectedPlan.id, billing, transactionId: txnId }),
       })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error || 'Payment could not be submitted.')
+      const { data: pays, error } = await supabase.from('plan_payments').select('*').eq('user_id', session.user.id).order('created_at', { ascending: false })
       if (error) throw error
-      const { data: pays } = await supabase.from('plan_payments').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
       if (pays) { setMyPayments(pays); if (pays[0]) setJustSubmitted(pays[0]) }
       setSelectedPlan(null); setTxnId('')
     } catch (e: any) { setErrorMsg(e.message); setTimeout(() => setErrorMsg(null), 4000) }
-    setPurchasing(false)
+    finally { setPurchasing(false) }
   }
 
   const getDisplayPrice = (p: PlanDef) => billing === 'monthly' ? p.monthly : p.yearlyMonthly

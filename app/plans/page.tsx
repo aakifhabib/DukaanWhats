@@ -61,15 +61,8 @@ export default function PlansPage() {
           features: ['Unlimited Products', 'Unlimited Image Uploads', 'Access to Every Theme', 'No DukaanWhats Watermark', 'Live Analytics + Dashboard', 'Priority Support'] 
         },
       ]
-      const { data } = await supabase.from('plans').select('*').order('price')
-      if (data && data.length && data[0].price===899) {
-        setPlans(data.map((storedPlan: any) => {
-          const currentCopy = newPlans.find(plan => plan.id === storedPlan.id)
-          return currentCopy
-            ? { ...storedPlan, advancedThemes: currentCopy.advancedThemes, features: currentCopy.features }
-            : storedPlan
-        }) as any)
-      } else setPlans(newPlans)
+      // Keep displayed prices and feature copy in sync with the values used by checkout.
+      setPlans(newPlans)
       setLoading(false)
     }
     load()
@@ -78,28 +71,43 @@ export default function PlansPage() {
   const getPrice = (p: Plan) => billing==='monthly' ? p.monthly : p.yearlyMonthly
   const getTotal = (p: Plan) => billing==='monthly' ? p.monthly : p.yearlyTotal
 
-  const copyTill = async () => { await navigator.clipboard.writeText(TILL_ID); setCopiedTill(true); setTimeout(()=>setCopiedTill(false),2000) }
+  const copyTill = async () => {
+    try {
+      if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(TILL_ID)
+      else {
+        const field = document.createElement('textarea')
+        field.value = TILL_ID
+        field.style.position = 'fixed'
+        field.style.opacity = '0'
+        document.body.appendChild(field)
+        field.select()
+        const copied = document.execCommand('copy')
+        field.remove()
+        if (!copied) throw new Error('Clipboard is unavailable.')
+      }
+      setCopiedTill(true)
+      setTimeout(() => setCopiedTill(false), 2000)
+    } catch { alert(`Copy the Till ID manually: ${TILL_ID}`) }
+  }
 
   const handlePay = async () => {
     if (!selected || selected.monthly === 0) { router.push('/dashboard'); return }
-    if (!txnId.trim()) { alert('Enter Transaction ID from JazzCash App after paying to Till ID '+TILL_ID); return }
+    if (!txnId.trim()) { alert('Enter the transaction ID from your JazzCash payment history.'); return }
     setSubmitting(true)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/login'); return }
-      await supabase.from('plan_payments').insert({
-        user_id: user.id,
-        plan_id: selected.id,
-        amount: getTotal(selected),
-        till_id: TILL_ID,
-        txn_id: txnId.trim(),
-        status: 'pending',
-        billing_cycle: billing
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) { router.push('/login?next=%2Fplans'); return }
+      const response = await fetch('/api/payments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ planId: selected.id, billing, transactionId: txnId }),
       })
-      alert(`Payment submitted!\nTill ID: ${TILL_ID}\nPlan: ${selected.name} (${billing})\nAmount: Rs. ${getTotal(selected)}\nTxn: ${txnId}\nWe will verify in 30 mins.`)
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error || 'Payment could not be submitted.')
+      alert(`Payment submitted!\nTill ID: ${TILL_ID}\nPlan: ${selected.name} (${billing})\nAmount: Rs. ${getTotal(selected)}\nTxn: ${txnId}\nWe will verify it within 30 minutes.`)
       router.push('/dashboard')
-    } catch (e: any) { alert(e.message) }
-    setSubmitting(false)
+    } catch (e: any) { alert(e.message || 'Payment could not be submitted.') }
+    finally { setSubmitting(false) }
   }
 
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-[#F8F7F5]">Loading plans...</div>

@@ -98,30 +98,28 @@ export default function PricingPage() {
 
   const handlePay = async () => {
     if (!selectedPlan) return
-    if (selectedPlan.monthly===0) { router.push('/dashboard'); return }
-    if (!txnId.trim()) return
+    if (selectedPlan.monthly === 0) { router.push('/dashboard'); return }
+    if (!txnId.trim()) { setPaymentError('Enter the transaction ID from your JazzCash payment history.'); return }
     setSubmitting(true)
     setPaymentError('')
-    try{
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { closePayment(); router.push('/login'); return }
-      const { error } = await supabase.from('plan_payments').insert({
-        user_id: user.id,
-        plan_id: selectedPlan.id,
-        amount: getTotal(selectedPlan),
-        till_id: TILL_ID,
-        txn_id: txnId.trim(),
-        status: 'pending',
-        billing_cycle: billing
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) { closePayment(); router.push('/login?next=%2Fpricing'); return }
+      const response = await fetch('/api/payments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ planId: selectedPlan.id, billing, transactionId: txnId }),
       })
-      if (error) throw error
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error || 'Payment could not be submitted. Please try again.')
       const planName = selectedPlan.name
       closePayment()
       setPaymentNotice(`${planName} payment submitted. We’ll verify it within 30 minutes.`)
-    }catch(e:any){
+    } catch (e: any) {
       setPaymentError(e.message || 'Payment could not be submitted. Please try again.')
+    } finally {
+      setSubmitting(false)
     }
-    finally { setSubmitting(false) }
   }
 
   return (

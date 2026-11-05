@@ -1,4 +1,5 @@
 import './globals.css';
+import { SiteFooter } from '@/components/SiteFooter';
 
 export const metadata = {
   title: {
@@ -18,7 +19,12 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <div className="flex min-h-screen flex-col">
+          <div className="flex-1">{children}</div>
+          <SiteFooter />
+        </div>
+      </body>
     </html>
   );
 }

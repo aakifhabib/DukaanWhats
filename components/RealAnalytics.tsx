@@ -17,12 +17,14 @@ type AnalyticsData = {
 export function RealAnalytics({ userId, currentPlanId }: { userId: string, currentPlanId: string }) {
   const [data, setData] = useState<AnalyticsData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [period, setPeriod] = useState<'7d'|'30d'|'all'>('7d')
 
-  useEffect(() => { fetchAnalytics() }, [period])
+  useEffect(() => { fetchAnalytics() }, [period, userId])
 
   const fetchAnalytics = async () => {
     setLoading(true)
+    setError('')
     try {
       let query = supabase.from('store_analytics').select('*, products(name)').eq('store_owner_id', userId)
       if (period === '7d') {
@@ -30,7 +32,8 @@ export function RealAnalytics({ userId, currentPlanId }: { userId: string, curre
       } else if (period === '30d') {
         const d = new Date(); d.setDate(d.getDate() - 30); query = query.gte('created_at', d.toISOString())
       }
-      const { data: events } = await query.order('created_at', { ascending: false }).limit(1000)
+      const { data: events, error: queryError } = await query.order('created_at', { ascending: false }).limit(1000)
+      if (queryError) throw queryError
       if (!events || events.length === 0) {
         setData({ totalViews: 0, todayViews: 0, productViews: 0, whatsappClicks: 0, conversionRate: 0, dailyData: [], topProducts: [], recentEvents: [], hourlyData: [] })
         setLoading(false); return
@@ -70,7 +73,11 @@ export function RealAnalytics({ userId, currentPlanId }: { userId: string, curre
       const topProducts = Array.from(productMap.values()).sort((a,b) => (b.views + b.clicks) - (a.views + a.clicks)).slice(0,5)
 
       setData({ totalViews, todayViews, productViews, whatsappClicks, conversionRate, dailyData, topProducts, recentEvents: events.slice(0,8), hourlyData })
-    } catch (e) { console.error(e) }
+    } catch (e: any) {
+      console.error('Analytics request failed:', e)
+      setData(null)
+      setError(e?.message || 'Analytics could not be loaded. Please try again.')
+    }
     setLoading(false)
   }
 
@@ -79,6 +86,14 @@ export function RealAnalytics({ userId, currentPlanId }: { userId: string, curre
       <div className="flex items-center gap-3 mb-8"><div className="w-10 h-10 bg-black rounded-[12px] animate-pulse" /><div className="h-4 w-32 bg-zinc-100 rounded-full animate-pulse" /></div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">{[1,2,3,4].map(i=><div key={i} className="h-[110px] bg-[#F8F7F5] border rounded-[20px] animate-pulse" />)}</div>
     </div>
+  )
+
+  if (error) return (
+    <section role="alert" className="rounded-2xl border border-red-200 bg-white p-8 text-center">
+      <h3 className="font-semibold text-zinc-900">Analytics unavailable</h3>
+      <p className="mt-2 text-sm text-zinc-500">{error}</p>
+      <button type="button" onClick={fetchAnalytics} className="mt-4 rounded-full bg-black px-4 py-2 text-sm font-semibold text-white">Try again</button>
+    </section>
   )
 
   if (!data || data.totalViews === 0) {
@@ -132,7 +147,7 @@ export function RealAnalytics({ userId, currentPlanId }: { userId: string, curre
         <div className="relative mt-6 grid grid-cols-3 gap-3">
           <div className="bg-white/[0.06] border border-white/10 rounded-[16px] p-4 backdrop-blur">
             <div className="text-[10px] tracking-widest uppercase opacity-50 font-bold">Today</div>
-            <div className="flex items-baseline gap-2 mt-2"><span className="text-[28px] font-black">{data.todayViews}</span><span className="text-[11px] bg-[#E8FF86] text-black px-1.5 py-0.5 rounded-full font-bold">+{data.todayViews > 0 ? Math.floor(Math.random()*40+5) : 0}%</span></div>
+            <div className="flex items-baseline gap-2 mt-2"><span className="text-[28px] font-black">{data.todayViews}</span><span className="text-[11px] bg-white/10 text-white/70 px-1.5 py-0.5 rounded-full font-semibold">TODAY</span></div>
             <div className="text-[11px] opacity-50 mt-1">Store views</div>
           </div>
           <div className="bg-white/[0.06] border border-white/10 rounded-[16px] p-4 backdrop-blur">
@@ -155,7 +170,8 @@ export function RealAnalytics({ userId, currentPlanId }: { userId: string, curre
           <div className="flex justify-between items-start"><div className="w-9 h-9 bg-[#F8F7F5] border rounded-[10px] flex items-center justify-center text-[14px]">👁</div><span className="text-[10px] bg-black text-white px-2 h-5 rounded-full font-bold flex items-center">LIVE</span></div>
           <div className="text-[28px] font-black tracking-tight mt-4">{data.totalViews}</div>
           <div className="text-[11px] font-bold tracking-widest uppercase text-zinc-500 mt-1">Total Views</div>
-          <div className="mt-3 h-1 bg-[#F8F7F5] rounded-full overflow-hidden"><div className="h-full bg-black rounded-full" style={{width: '78%'}} /></div>
+          <div className="mt-3 h-1 bg-[#F8F7F5] rounded-full overflow-hidden" aria-label="Today's views compared with the busiest day"><div className="h-full bg-black rounded-full" style={{ width: `${Math.min(100, Math.round((data.todayViews / maxViews) * 100))}%` }} /></div>
+          <div className="mt-1.5 text-[10px] text-zinc-400">Today vs. busiest day</div>
         </div>
         <div className="bg-white border rounded-[20px] p-5 relative overflow-hidden">
           <div className="w-9 h-9 bg-black text-white rounded-[10px] flex items-center justify-center text-[14px]">◐</div>

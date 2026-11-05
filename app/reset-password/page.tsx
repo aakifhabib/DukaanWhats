@@ -14,56 +14,63 @@ export default function ResetPasswordPage() {
   const router = useRouter()
 
   useEffect(() => {
+    let alive = true
+    let timeoutId: ReturnType<typeof setTimeout> | undefined
+    let unsubscribe = () => {}
     const init = async () => {
       try {
-        // 1. Handle PKCE code exchange (new Supabase flow: ?code=xxx)
         const params = new URLSearchParams(window.location.search)
         const code = params.get('code')
-        
         if (code) {
-          // Exchange code for session
           const { error } = await supabase.auth.exchangeCodeForSession(code)
           if (error) throw error
+          if (!alive) return
           setValid(true)
           setChecking(false)
-          // Clean URL
           window.history.replaceState({}, '', '/reset-password')
           return
         }
 
-        // 2. Handle hash recovery (old flow: #access_token=...&type=recovery)
-        // supabase client auto parses hash, so just check session
-        const { data } = await supabase.auth.getSession()
+        const { data, error } = await supabase.auth.getSession()
+        if (error) throw error
+        if (!alive) return
         if (data.session) {
           setValid(true)
-        } else {
-          // Listen for PASSWORD_RECOVERY event
-          const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'PASSWORD_RECOVERY' && session) {
-              setValid(true)
-              setChecking(false)
-            }
-          })
-          // Give it 2 sec to detect
-          setTimeout(() => {
-            setChecking(false)
-            supabase.auth.getSession().then(({ data }) => {
-              if (data.session) setValid(true)
-              else {
-                setValid(false)
-                setMsg('Invalid or expired link. Request a new reset link from login page.')
-              }
-            })
-          }, 2000)
-          return () => subscription.unsubscribe()
+          setChecking(false)
+          return
         }
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+          if (event === 'PASSWORD_RECOVERY' && session && alive) {
+            setValid(true)
+            setChecking(false)
+          }
+        })
+        unsubscribe = () => subscription.unsubscribe()
+        timeoutId = setTimeout(async () => {
+          const { data: latest } = await supabase.auth.getSession()
+          if (!alive) return
+          setChecking(false)
+          if (latest.session) setValid(true)
+          else {
+            setValid(false)
+            setMsg('Invalid or expired link. Request a new reset link from login page.')
+          }
+        }, 2000)
       } catch (e: any) {
-        setMsg('Link expired or invalid. Request new one. ' + e.message)
-        setValid(false)
+        if (alive) {
+          setMsg('Link expired or invalid. Request a new one. ' + e.message)
+          setValid(false)
+          setChecking(false)
+        }
       }
-      setChecking(false)
     }
-    init()
+    void init()
+    return () => {
+      alive = false
+      if (timeoutId) clearTimeout(timeoutId)
+      unsubscribe()
+    }
   }, [])
 
   const handleReset = async (e: React.FormEvent) => {

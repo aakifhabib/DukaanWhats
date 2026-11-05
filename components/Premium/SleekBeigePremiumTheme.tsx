@@ -62,7 +62,7 @@ export function SleekBeigePremiumTheme({ S }: { S: any }) {
 
       <header className="sticky top-3 z-30 px-3 mt-3">
         <div className="max-w-[1120px] mx-auto h-[62px] pl-5 pr-2.5 rounded-full bg-white/75 backdrop-blur-xl border border-white shadow-[0_14px_40px_-22px_rgba(60,40,20,0.6)] flex items-center justify-between gap-3">
-          <a href="#" onClick={e => e.preventDefault()} className="serif text-[21px] md:text-[24px] font-medium tracking-[-0.02em] truncate">{c.logoImage ? <img src={c.logoImage} alt={c.headerLabel} className="h-8 max-w-[150px] object-contain" /> : c.headerLabel}</a>
+          <a href="#top" className="serif text-[21px] md:text-[24px] font-medium tracking-[-0.02em] truncate">{c.logoImage ? <img src={c.logoImage} alt={c.headerLabel} className="h-8 max-w-[150px] object-contain" /> : c.headerLabel}</a>
           <nav className="hidden md:flex items-center gap-1 text-[13.5px] font-medium" aria-label="Sections">
             {[['Shop', 'pm-collection'], ...(reviews.length ? [['Lookbook', 'pm-lookbook'], ['Reviews', 'pm-reviews']] : [['Lookbook', 'pm-lookbook']])].map(([l, id]) => <button type="button" key={id} onClick={e => S.scrollTo(e, id)} className="h-10 px-4 rounded-full hover:bg-[#2B2118]/[0.06] transition">{l}</button>)}
           </nav>

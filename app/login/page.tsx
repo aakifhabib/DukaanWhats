@@ -4,44 +4,65 @@ import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
+function getSafeNextPath() {
+  const next = new URLSearchParams(window.location.search).get('next')
+  return next && next.startsWith('/') && !next.startsWith('//') ? next : '/dashboard'
+}
+
 export default function LoginPage() {
   const [isSignup, setIsSignup] = useState(false)
+  const [termsAccepted, setTermsAccepted] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [storeName, setStoreName] = useState('')
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
+  const [resetLoading, setResetLoading] = useState(false)
   const [msg, setMsg] = useState('')
   const router = useRouter()
 
   useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search)
+    if (searchParams.get('signup') === 'true') setIsSignup(true)
+    const authError = searchParams.get('authError')
+    if (authError) setMsg('The sign-in link could not be opened. Please sign in again.')
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) router.push('/dashboard')
+      if (data.session) router.push(getSafeNextPath())
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      if (session) router.push('/dashboard')
+      if (session) router.push(getSafeNextPath())
     })
     return () => subscription.unsubscribe()
   }, [router])
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (isSignup && !termsAccepted) {
+      setMsg('Please accept the Terms of Service and Privacy Policy to create an account.')
+      return
+    }
     setLoading(true)
     setMsg('')
     try {
       if (isSignup) {
-        const { data, error } = await supabase.auth.signUp({ email, password })
+        const { data, error } = await supabase.auth.signUp({
+          email: email.trim(), password,
+          options: { data: { business_name: storeName.trim() || 'My Store', terms_accepted_at: new Date().toISOString(), terms_version: '2026-11-04' } },
+        })
         if (error) throw error
-        if (data.user) {
-          const slug = (storeName || email.split('@')[0]).toLowerCase().trim().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'')
-          await supabase.from('profiles').upsert({ id: data.user.id, business_name: storeName || 'My Store', store_slug: slug })
+        if (data.user && data.session) {
+          const baseSlug = (storeName || email.split('@')[0]).toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, 36) || 'my-store'
+          const slug = `${baseSlug}-${data.user.id.slice(0, 6)}`
+          const { error: profileError } = await supabase.from('profiles').upsert({ id: data.user.id, business_name: storeName.trim() || 'My Store', store_slug: slug, current_plan: 'basic', store_theme: 'clothing-noor' })
+          if (profileError) throw profileError
+          router.push(getSafeNextPath())
+        } else {
+          setMsg('Account created. Check your email to confirm your address, then sign in to continue.')
         }
-        setMsg('Account created! Redirecting...')
-        setTimeout(() => router.push('/dashboard'), 800)
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password })
+        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
         if (error) throw error
-        router.push('/dashboard')
+        router.push(getSafeNextPath())
       }
     } catch (err: any) {
       setMsg(err.message)
@@ -50,19 +71,45 @@ export default function LoginPage() {
   }
 
   const handleGoogleLogin = async () => {
+    if (isSignup && !termsAccepted) {
+      setMsg('Please accept the Terms of Service and Privacy Policy to create an account.')
+      return
+    }
     setGoogleLoading(true)
     setMsg('')
     try {
+      const callback = new URL('/auth/callback', window.location.origin)
+      callback.searchParams.set('next', getSafeNextPath())
+      if (isSignup) {
+        callback.searchParams.set('signup', 'true')
+        callback.searchParams.set('termsAccepted', 'true')
+      }
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/dashboard`
-        }
+        options: { redirectTo: callback.toString() }
       })
       if (error) throw error
     } catch (err: any) {
       setMsg(err.message || 'Google login failed. Check Supabase Google config.')
       setGoogleLoading(false)
+    }
+  }
+
+  const handlePasswordResetRequest = async () => {
+    if (!email.trim()) { setMsg('Enter your account email first, then choose Forgot password.'); return }
+    setResetLoading(true)
+    setMsg('')
+    try {
+      const callback = new URL('/auth/callback', window.location.origin)
+      callback.searchParams.set('type', 'recovery')
+      callback.searchParams.set('next', '/reset-password')
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: callback.toString() })
+      if (error) throw error
+      setMsg('If an account exists for this email, a password reset link is on its way.')
+    } catch (err: any) {
+      setMsg(err.message || 'Could not send a reset link. Please try again.')
+    } finally {
+      setResetLoading(false)
     }
   }
 
@@ -171,8 +218,11 @@ export default function LoginPage() {
         }
         .btn-submit:hover { background: #E8FF86; transform: translateY(-2px); box-shadow: 0 8px 20px var(--btn-hover-glow); }
         .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+        .terms-consent { display: flex; align-items: flex-start; gap: 9px; margin: 2px 0 16px; color: rgba(255,255,255,0.68); font-size: 11px; line-height: 1.55; cursor: pointer; }
+        .terms-consent input { appearance: auto; flex: 0 0 15px; width: 15px; height: 15px; margin-top: 1px; accent-color: #E8FF86; cursor: pointer; }
+        .terms-consent a { color: #E8FF86; text-decoration: underline; text-underline-offset: 2px; }
         .signup-prompt { margin-top: 18px; text-align: center; color: rgba(255,255,255,0.5); font-size: 13px; }
-        .toggle-link { color: #ffffff; font-weight: 600; margin-left: 6px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+        .toggle-link { color: #ffffff; font: inherit; font-weight: 600; margin-left: 6px; padding: 0; border: 0; background: transparent; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
         .toggle-link:hover { color: #E8FF86; }
         .trust-row { margin-top: 16px; display: flex; align-items: center; justify-content: center; gap: 6px; color: rgba(255,255,255,0.4); font-size: 11px; }
         .trust-dot { width: 6px; height: 6px; border-radius: 50%; background: #25D366; box-shadow: 0 0 8px rgba(37,211,102,0.6); }
@@ -224,6 +274,13 @@ export default function LoginPage() {
                   <div className="input-group">
                     <input className="input-field" type="password" placeholder={isSignup ? 'Create password' : 'Password'} value={password} onChange={e=>setPassword(e.target.value)} required autoComplete={isSignup ? 'new-password' : 'current-password'} />
                   </div>
+                  {isSignup && (
+                    <label className="terms-consent">
+                      <input type="checkbox" checked={termsAccepted} onChange={event => setTermsAccepted(event.target.checked)} required />
+                      <span>I agree to the <Link href="/terms" target="_blank">Terms of Service</Link> and acknowledge the <Link href="/privacy" target="_blank">Privacy Policy</Link>.</span>
+                    </label>
+                  )}
+                  {!isSignup && <div style={{display:'flex',justifyContent:'flex-end',margin:'-4px 0 14px'}}><button type="button" onClick={handlePasswordResetRequest} disabled={resetLoading} style={{color:'#E8FF86',fontSize:12,textDecoration:'underline',textUnderlineOffset:3,background:'transparent',border:0,cursor:'pointer'}}>{resetLoading ? 'Sending reset link…' : 'Forgot password?'}</button></div>}
 
                   <button type="submit" className="btn-submit" disabled={loading}>
                     {loading ? 'Please wait...' : isSignup ? 'Create Store' : 'Log In'}
@@ -231,9 +288,9 @@ export default function LoginPage() {
 
                   <p className="signup-prompt">
                     {isSignup ? 'Already have store?' : "Don't have account?"}
-                    <span className="toggle-link" onClick={()=>{ setIsSignup(!isSignup); setMsg('') }}>
+                    <button type="button" className="toggle-link" onClick={()=>{ setIsSignup(!isSignup); setTermsAccepted(false); setMsg('') }}>
                       {isSignup ? 'Login' : 'Create Store'}
-                    </span>
+                    </button>
                   </p>
 
                   <div className="trust-row"><span className="trust-dot" />{isSignup ? 'No credit card • Free 14-day trial' : 'Secured • 256-bit encrypted'}</div>

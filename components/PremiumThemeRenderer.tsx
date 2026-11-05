@@ -803,7 +803,7 @@ function ProductDetail({ S, skin, layout }: { S: any; skin: Skin; layout: 'modal
   const lightbox = zoom !== null && (
     <div className="fixed inset-0 z-[160] bg-black/92 flex items-center justify-center pm-fade" onClick={() => setZoom(null)} role="dialog" aria-label="Image viewer">
       <img src={p.images[zoom]} alt={p.name} className="max-w-[94vw] max-h-[90vh] object-contain" />
-      <button type="button" aria-label="Close viewer" title="Close image viewer" className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/15 text-white grid place-items-center"><Ic.x c="w-5 h-5" /></button>
+      <button type="button" aria-label="Close viewer" title="Close image viewer" onClick={event => { event.stopPropagation(); setZoom(null) }} className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/15 text-white grid place-items-center"><Ic.x c="w-5 h-5" /></button>
       {p.images.length > 1 && <>
         <button type="button" aria-label="Previous" onClick={e => { e.stopPropagation(); setZoom((zoom - 1 + p.images.length) % p.images.length) }} className="absolute left-3 w-11 h-11 rounded-full bg-white/15 text-white grid place-items-center"><Ic.left c="w-5 h-5" /></button>
         <button type="button" aria-label="Next" onClick={e => { e.stopPropagation(); setZoom((zoom + 1) % p.images.length) }} className="absolute right-3 w-11 h-11 rounded-full bg-white/15 text-white grid place-items-center"><Ic.right c="w-5 h-5" /></button>
@@ -1148,7 +1148,7 @@ function SpikePremiumTheme({ S }: { S: any }) {
   const first = S.products[0]
 
   return (
-    <div ref={S.rootRef} style={S.cssVars} className={`pm-spike relative min-h-screen antialiased overflow-x-clip ${SPIKE_SKIN.root}`}>
+    <div id="top" ref={S.rootRef} style={S.cssVars} className={`pm-spike relative min-h-screen antialiased overflow-x-clip ${SPIKE_SKIN.root}`}>
       <style>{PM_BASE_CSS + SPIKE_CSS}</style>
 
       {c.showAnnouncement && c.announcement && (
@@ -1159,7 +1159,7 @@ function SpikePremiumTheme({ S }: { S: any }) {
 
       <header className="sticky top-0 z-30 bg-[#F2F1EC]/85 backdrop-blur-md border-b-2 border-black">
         <div className="max-w-[1320px] mx-auto px-4 md:px-6 h-16 flex items-center justify-between gap-3">
-          <a href="#" onClick={e => e.preventDefault()} className="flex items-center gap-2.5 min-w-0">
+          <a href="#top" className="flex items-center gap-2.5 min-w-0">
             {c.logoImage ? <img src={c.logoImage} alt={c.headerLabel} className="h-9 max-w-[160px] object-contain" /> : <>
               <span className="w-9 h-9 shrink-0 grid place-items-center bg-[var(--pm-accent)] border-2 border-black rounded-[10px] font-[800] text-[16px] -rotate-6">{S.initial}</span>
               <span className="font-[800] text-[18px] md:text-[20px] tracking-[-0.04em] uppercase truncate">{c.headerLabel}</span>
@@ -1348,7 +1348,7 @@ function ShoeAppPremiumTheme({ S }: { S: any }) {
   const focusSearch = (e: React.MouseEvent) => { const d = (e.currentTarget as HTMLElement).ownerDocument; (d.getElementById('pm-app-search') as HTMLInputElement | null)?.focus(); d.getElementById('pm-app-search')?.scrollIntoView({ behavior: 'smooth', block: 'center' }) }
 
   return (
-    <div ref={S.rootRef} style={S.cssVars} className={`pm-shoe relative min-h-screen antialiased overflow-x-clip pb-28 md:pb-10 ${SHOE_SKIN.root}`}>
+    <div id="top" ref={S.rootRef} style={S.cssVars} className={`pm-shoe relative min-h-screen antialiased overflow-x-clip pb-28 md:pb-10 ${SHOE_SKIN.root}`}>
       <style>{PM_BASE_CSS + SHOE_CSS}</style>
 
       {c.showAnnouncement && c.announcement && (
@@ -1545,7 +1545,7 @@ function TrenzoLuxuryTheme({ S }: { S: any }) {
   const conciergeLink = () => window.open(`https://wa.me/${S.digits}?text=${encodeURIComponent(`Hello ${S.profile?.business_name || ''}, I would like some help with a private order.`)}`, '_blank')
 
   return (
-    <div ref={S.rootRef} style={S.cssVars} className={`pm-trenzo relative min-h-screen antialiased overflow-x-clip ${TRENZO_SKIN.root}`}>
+    <div id="top" ref={S.rootRef} style={S.cssVars} className={`pm-trenzo relative min-h-screen antialiased overflow-x-clip ${TRENZO_SKIN.root}`}>
       <style>{PM_BASE_CSS + TRENZO_CSS}</style>
 
       {c.showAnnouncement && c.announcement && <div className="h-9 grid place-items-center text-[10px] uppercase tracking-[0.34em] text-[var(--pm-accent)] border-b border-white/10 px-4 truncate">✦&nbsp;&nbsp;{c.announcement}&nbsp;&nbsp;✦</div>}
@@ -1558,7 +1558,7 @@ function TrenzoLuxuryTheme({ S }: { S: any }) {
             <button type="button" onClick={e => S.scrollTo(e, 'pm-concierge')} className="hover:text-[var(--pm-accent)] transition-colors">Concierge</button>
           </nav>
           <div className="md:hidden" />
-          <a href="#" onClick={e => e.preventDefault()} className="justify-self-center serif text-[22px] md:text-[28px] tracking-[0.34em] uppercase font-medium whitespace-nowrap">{c.logoImage ? <img src={c.logoImage} alt={c.headerLabel} className="h-9 max-w-[200px] object-contain" /> : <>✦ {c.headerLabel}</>}</a>
+          <a href="#top" className="justify-self-center serif text-[22px] md:text-[28px] tracking-[0.34em] uppercase font-medium whitespace-nowrap">{c.logoImage ? <img src={c.logoImage} alt={c.headerLabel} className="h-9 max-w-[200px] object-contain" /> : <>✦ {c.headerLabel}</>}</a>
           <div className="flex items-center justify-end gap-1.5">
             <button type="button" onClick={() => S.setSavedOnly(!S.savedOnly)} aria-label="Saved pieces" title={S.savedOnly ? 'Show all products' : 'Filter to saved items'} aria-pressed={S.savedOnly} className={`relative w-10 h-10 grid place-items-center transition ${S.savedOnly ? 'text-[var(--pm-accent)]' : 'hover:text-[var(--pm-accent)]'}`}><Ic.heart c="w-[19px] h-[19px]" fill={S.savedOnly} />{S.wish.length > 0 && <span className="absolute top-1 right-0 min-w-[16px] h-4 px-1 grid place-items-center rounded-full bg-[var(--pm-accent)] text-black text-[9px] font-bold">{S.wish.length}</span>}</button>
             <button type="button" onClick={S.openCart} aria-label="Open cart" title="Open your shopping bag" className="relative h-10 pl-2 pr-1 inline-flex items-center gap-2 hover:text-[var(--pm-accent)] transition-colors"><Ic.bag c="w-[19px] h-[19px]" /><span className="text-[11px] uppercase tracking-[0.22em] hidden sm:inline">Bag</span><span className="min-w-[22px] h-[22px] px-1 grid place-items-center rounded-full border border-[var(--pm-accent)] text-[var(--pm-accent)] text-[11px] tabular-nums">{S.cartCount}</span></button>
@@ -1704,14 +1704,14 @@ function SleekBeigePremiumTheme({ S }: { S: any }) {
   const avatars = S.products.slice(0, 4).map((p: any) => p.images[0])
 
   return (
-    <div ref={S.rootRef} style={S.cssVars} className={`pm-beige relative min-h-screen antialiased overflow-x-clip ${BEIGE_SKIN.root}`}>
+    <div id="top" ref={S.rootRef} style={S.cssVars} className={`pm-beige relative min-h-screen antialiased overflow-x-clip ${BEIGE_SKIN.root}`}>
       <style>{PM_BASE_CSS + BEIGE_CSS}</style>
 
       {c.showAnnouncement && c.announcement && <div className="h-9 grid place-items-center bg-[var(--pm-accent)] text-white text-[11px] font-medium tracking-[0.14em] px-4 truncate">{c.announcement}</div>}
 
       <header className="sticky top-3 z-30 px-3 mt-3">
         <div className="max-w-[1120px] mx-auto h-[62px] pl-5 pr-2.5 rounded-full bg-white/75 backdrop-blur-xl border border-white shadow-[0_14px_40px_-22px_rgba(60,40,20,0.6)] flex items-center justify-between gap-3">
-          <a href="#" onClick={e => e.preventDefault()} className="serif text-[21px] md:text-[24px] font-medium tracking-[-0.02em] truncate">{c.logoImage ? <img src={c.logoImage} alt={c.headerLabel} className="h-8 max-w-[150px] object-contain" /> : c.headerLabel}</a>
+          <a href="#top" className="serif text-[21px] md:text-[24px] font-medium tracking-[-0.02em] truncate">{c.logoImage ? <img src={c.logoImage} alt={c.headerLabel} className="h-8 max-w-[150px] object-contain" /> : c.headerLabel}</a>
           <nav className="hidden md:flex items-center gap-1 text-[13.5px] font-medium" aria-label="Sections">
             {[['Shop', 'pm-collection'], ...(reviews.length ? [['Lookbook', 'pm-lookbook'], ['Reviews', 'pm-reviews']] : [['Lookbook', 'pm-lookbook']])].map(([l, id]) => <button type="button" key={id} onClick={e => S.scrollTo(e, id)} className="h-10 px-4 rounded-full hover:bg-[#2B2118]/[0.06] transition">{l}</button>)}
           </nav>
@@ -1854,7 +1854,7 @@ function SleekDarkPremiumTheme({ S }: { S: any }) {
   const first = S.products[0]
 
   return (
-    <div ref={S.rootRef} style={S.cssVars} className={`pm-dark relative min-h-screen antialiased overflow-x-clip ${DARK_SKIN.root}`}>
+    <div id="top" ref={S.rootRef} style={S.cssVars} className={`pm-dark relative min-h-screen antialiased overflow-x-clip ${DARK_SKIN.root}`}>
       <style>{PM_BASE_CSS + DARK_CSS}</style>
 
       <div className="mono h-9 border-b border-white/10 px-4 md:px-6 flex items-center justify-between text-[10.5px] text-white/50 tracking-wider">
@@ -1865,7 +1865,7 @@ function SleekDarkPremiumTheme({ S }: { S: any }) {
 
       <header className="sticky top-0 z-30 bg-[#06070A]/75 backdrop-blur-xl border-b border-white/10">
         <div className="max-w-[1320px] mx-auto px-4 md:px-6 h-16 flex items-center justify-between gap-3">
-          <a href="#" onClick={e => e.preventDefault()} className="flex items-center gap-3 min-w-0">{c.logoImage ? <img src={c.logoImage} alt={c.headerLabel} className="h-8 max-w-[160px] object-contain" /> : <><span className="w-8 h-8 grid place-items-center rounded-lg bg-[var(--pm-accent)] text-black font-bold text-[15px]">{S.initial}</span><span className="mono text-[13px] font-semibold tracking-[0.12em] uppercase truncate">[ {c.headerLabel} ]</span></>}</a>
+          <a href="#top" className="flex items-center gap-3 min-w-0">{c.logoImage ? <img src={c.logoImage} alt={c.headerLabel} className="h-8 max-w-[160px] object-contain" /> : <><span className="w-8 h-8 grid place-items-center rounded-lg bg-[var(--pm-accent)] text-black font-bold text-[15px]">{S.initial}</span><span className="mono text-[13px] font-semibold tracking-[0.12em] uppercase truncate">[ {c.headerLabel} ]</span></>}</a>
           <div className="flex items-center gap-2">
             <button type="button" onClick={() => S.setSavedOnly(!S.savedOnly)} aria-label="Saved" title={S.savedOnly ? 'Show all products' : 'Filter to saved items'} aria-pressed={S.savedOnly} className={`relative w-10 h-10 grid place-items-center rounded-lg border transition ${S.savedOnly ? 'border-[var(--pm-accent)] text-[var(--pm-accent)] bg-[var(--pm-accent)]/10' : 'border-white/12 hover:border-white/30'}`}><Ic.heart c="w-4 h-4" fill={S.savedOnly} />{S.wish.length > 0 && <span className="absolute -top-1.5 -right-1.5 min-w-[17px] h-[17px] px-1 grid place-items-center rounded-full bg-[var(--pm-accent)] text-black text-[9.5px] font-bold">{S.wish.length}</span>}</button>
             <button type="button" onClick={S.openCart} className="mono h-10 px-4 rounded-lg border border-[var(--pm-accent)]/60 text-[var(--pm-accent)] text-[12px] font-semibold tracking-wider inline-flex items-center gap-2 hover:bg-[var(--pm-accent)] hover:text-black transition"><Ic.bag c="w-4 h-4" />CART[{S.cartCount}]</button>
@@ -2021,7 +2021,7 @@ function SleekEditorialPremiumTheme({ S }: { S: any }) {
   const fine = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(hover:hover)').matches : true
 
   return (
-    <div ref={S.rootRef} style={S.cssVars} className={`pm-edit relative min-h-screen antialiased overflow-x-clip ${EDITORIAL_SKIN.root}`}>
+    <div id="top" ref={S.rootRef} style={S.cssVars} className={`pm-edit relative min-h-screen antialiased overflow-x-clip ${EDITORIAL_SKIN.root}`}>
       <style>{PM_BASE_CSS + EDITORIAL_CSS}</style>
 
       {c.showAnnouncement && c.announcement && <div className="h-9 grid place-items-center border-b border-black/15 text-[10.5px] uppercase tracking-[0.3em] px-4 truncate">{c.announcement}</div>}
@@ -2030,7 +2030,7 @@ function SleekEditorialPremiumTheme({ S }: { S: any }) {
       <div className="max-w-[1320px] mx-auto px-4 md:px-8 pt-5">
         <div className="flex items-center justify-between text-[10.5px] uppercase tracking-[0.22em] text-black/60"><span className="hidden sm:block" suppressHydrationWarning>{today}</span><span className="text-[var(--pm-accent)] font-semibold">{c.issueLabel}</span><button type="button" onClick={S.openCart} className="inline-flex items-center gap-2 hover:text-[var(--pm-accent)] transition"><Ic.bag c="w-4 h-4" />Bag ({S.cartCount})</button></div>
         <div className="py-4 md:py-6 text-center">
-          <a href="#" onClick={e => e.preventDefault()}>{c.logoImage ? <img src={c.logoImage} alt={c.headerLabel} className="h-14 md:h-20 mx-auto object-contain" /> : <span className="serif block text-[clamp(48px,11vw,168px)] leading-[0.88] tracking-[-0.045em]">{c.headerLabel}</span>}</a>
+          <a href="#top">{c.logoImage ? <img src={c.logoImage} alt={c.headerLabel} className="h-14 md:h-20 mx-auto object-contain" /> : <span className="serif block text-[clamp(48px,11vw,168px)] leading-[0.88] tracking-[-0.045em]">{c.headerLabel}</span>}</a>
         </div>
       </div>
       <nav className="sticky top-0 z-30 bg-[#FBFAF7]/92 backdrop-blur-md" aria-label="Filters">
@@ -2221,7 +2221,7 @@ function SaffronTableTheme({ S }: { S: any }) {
   const first = products[0]
   const lines = splitLines(c.heroTitle)
   return (
-    <div ref={S.rootRef} style={S.cssVars} className="pm-saffron min-h-screen overflow-x-clip bg-[#F8F0E3] text-[#291B16] antialiased">
+    <div id="top" ref={S.rootRef} style={S.cssVars} className="pm-saffron min-h-screen overflow-x-clip bg-[#F8F0E3] text-[#291B16] antialiased">
       <style>{PM_BASE_CSS + `@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght,SOFT,WONK@9..144,400,20,1;9..144,500,20,1;9..144,600,20,1&display=swap');.pm-saffron{font-family:'DM Sans',sans-serif}.pm-saffron .food-serif{font-family:'Fraunces',Georgia,serif}.pm-saffron .pm-accent-fill{background:var(--pm-accent)!important}.pm-saffron .pm-accent-text{color:var(--pm-accent)!important}`}</style>
       {c.showAnnouncement && c.announcement && <div className="bg-[#291B16] px-4 py-2 text-center text-[9px] font-semibold uppercase tracking-[0.2em] text-[#F8E7CA] sm:text-[10px]">{c.announcement}</div>}
       <header className="sticky top-0 z-30 border-b border-[#E6D7C3] bg-[#F8F0E3]/95 backdrop-blur-xl">
@@ -2234,7 +2234,7 @@ function SaffronTableTheme({ S }: { S: any }) {
           </div>
         </div>
       </header>
-      <main id="top" className="mx-auto max-w-[1320px] px-4 sm:px-6">
+      <main className="mx-auto max-w-[1320px] px-4 sm:px-6">
         <section className="grid gap-8 py-10 sm:py-14 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:gap-14 lg:py-20">
           <div className="relative order-2 lg:order-1">
             <div className="absolute -left-5 top-1/4 h-28 w-28 rounded-full bg-[#E5B675]/30 blur-2xl" aria-hidden />
@@ -2278,7 +2278,7 @@ function AtelierBloomTheme({ S }: { S: any }) {
   const first = products[0]
   const storyImg = c.storyImage || S.heroImg2
   return (
-    <div ref={S.rootRef} style={S.cssVars} className="pm-atelier min-h-screen overflow-x-clip bg-[#F4EFE9] text-[#2B3327] antialiased">
+    <div id="top" ref={S.rootRef} style={S.cssVars} className="pm-atelier min-h-screen overflow-x-clip bg-[#F4EFE9] text-[#2B3327] antialiased">
       <style>{PM_BASE_CSS + `@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap');.pm-atelier{font-family:'DM Sans',sans-serif}.pm-atelier .atelier-serif{font-family:'Playfair Display',Georgia,serif}.pm-atelier .pm-accent-fill{background:var(--pm-accent)!important}.pm-atelier .pm-accent-text{color:var(--pm-accent)!important}`}</style>
       {c.showAnnouncement && c.announcement && <div className="px-4 py-2 text-center text-[9px] font-semibold uppercase tracking-[0.2em] text-[#536746]">{c.announcement}</div>}
       <header className="sticky top-0 z-30 border-y border-[#E3DCD1] bg-[#F4EFE9]/90 backdrop-blur-xl"><div className="mx-auto flex h-[72px] max-w-[1320px] items-center justify-between px-4 sm:px-6">
@@ -2286,7 +2286,7 @@ function AtelierBloomTheme({ S }: { S: any }) {
         <nav className="hidden gap-7 text-[11px] uppercase tracking-[0.14em] md:flex"><a href="#pm-collection" className="hover:text-[#718463]">{c.collectionTitle}</a><a href="#atelier-story" className="hover:text-[#718463]">{c.manifestoTitle}</a></nav>
         <div className="flex items-center gap-1"><button type="button" onClick={() => S.setSavedOnly(!S.savedOnly)} aria-label="Saved pieces" title={S.savedOnly ? 'Show all products' : 'Filter to saved pieces'} className="grid h-10 w-10 place-items-center rounded-full hover:bg-white"><Ic.heart c="h-[18px] w-[18px]" fill={S.savedOnly} /></button><button type="button" onClick={S.openCart} aria-label="Open bag" title="Open shopping bag" className="inline-flex h-10 items-center gap-2 rounded-full px-3 text-xs font-semibold hover:bg-white"><Ic.bag c="h-4 w-4" />{S.cartCount}</button></div>
       </div></header>
-      <main id="top" className="mx-auto max-w-[1320px] px-4 sm:px-6">
+      <main className="mx-auto max-w-[1320px] px-4 sm:px-6">
         <section className="relative grid min-h-[620px] items-center gap-8 py-12 md:grid-cols-2 md:py-16">
           <div className="absolute right-[8%] top-[8%] h-40 w-40 rounded-full bg-[#D7DEC9]/60 blur-2xl" aria-hidden />
           <div className="relative z-10 order-2 md:order-1 md:pl-8"><div className="text-[10px] font-semibold uppercase tracking-[0.24em] pm-accent-text text-[#718463]">{c.heroBadge}</div><h1 className="atelier-serif mt-6 text-[clamp(48px,7.2vw,88px)] leading-[1.06] tracking-[-0.045em]">{lines.map((line: string, i: number) => <span key={i} className={`block ${i === 1 ? 'pm-accent-text italic text-[#718463]' : ''}`}>{line}</span>)}</h1><p className="mt-6 max-w-md text-sm leading-7 text-[#2B3327]/65">{c.heroSubtitle}</p><div className="mt-7 flex flex-wrap gap-3"><button type="button" onClick={e => S.scrollTo(e, 'pm-collection')} className="pm-accent-fill inline-flex h-12 items-center gap-5 border border-[#718463] bg-[#718463] px-5 text-xs font-semibold text-white transition hover:bg-[#536746]">{c.ctaText}<Ic.right c="ml-2 inline h-4 w-4" /></button>{c.secondaryCta && <button type="button" onClick={S.openCart} className="h-12 px-3 text-xs font-semibold text-[#536746] underline decoration-[#718463]/50 underline-offset-4 hover:text-[#2B3327]">{c.secondaryCta}</button>}</div></div>
@@ -2314,11 +2314,11 @@ function MonoMarketTheme({ S }: { S: any }) {
   const first = products[0]
   const tickerText = c.tickerText || c.dropNumber
   return (
-    <div ref={S.rootRef} style={S.cssVars} className="pm-mono min-h-screen overflow-x-clip bg-[#F3F3EF] text-[#111] antialiased">
+    <div id="top" ref={S.rootRef} style={S.cssVars} className="pm-mono min-h-screen overflow-x-clip bg-[#F3F3EF] text-[#111] antialiased">
       <style>{PM_BASE_CSS + `@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');.pm-mono{font-family:'Space Grotesk',sans-serif;background-image:linear-gradient(rgba(0,0,0,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,.045) 1px,transparent 1px);background-size:24px 24px}.pm-mono .mono-type{font-family:'DM Mono',monospace}.pm-mono .pm-accent-fill{background:var(--pm-accent)!important;border-color:var(--pm-accent)!important}.pm-mono .pm-accent-text{color:var(--pm-accent)!important}.pm-mono .pm-accent-hover:hover{color:var(--pm-accent)!important;border-color:var(--pm-accent)!important}`}</style>
       {c.showAnnouncement && c.announcement && <div className="bg-[#D9FF3F] px-4 py-2 text-center font-mono text-[9px] font-bold uppercase tracking-[0.16em] sm:text-[10px]">{c.announcement}</div>}
       <header className="sticky top-0 z-30 border-b-2 border-black bg-[#F3F3EF]/95 backdrop-blur-xl"><div className="mx-auto flex h-[66px] max-w-[1320px] items-center justify-between px-4 sm:px-6"><a href="#top" className="mono-type text-sm font-bold tracking-[-0.06em]">{c.headerLabel}</a><div className="hidden items-center gap-6 text-[10px] font-bold uppercase tracking-[0.13em] md:flex"><a href="#pm-collection">{c.collectionTitle}</a><a href="#mono-manifesto">{c.manifestoTitle}</a></div><div className="flex items-center gap-2"><button type="button" onClick={() => S.setSavedOnly(!S.savedOnly)} title={S.savedOnly ? 'Show all products' : 'Filter saved products'} aria-label="Filter saved products" className="grid h-9 w-9 place-items-center border-2 border-black bg-white"><Ic.heart c="h-4 w-4" fill={S.savedOnly} /></button><button type="button" onClick={S.openCart} title="Open shopping bag" aria-label="Open shopping bag" className="inline-flex h-9 items-center gap-2 border-2 border-black bg-black px-3 text-xs font-bold text-white"><Ic.bag c="h-4 w-4" /><span>{S.cartCount}</span></button></div></div></header>
-      <main id="top" className="mx-auto max-w-[1320px] px-4 sm:px-6">
+      <main className="mx-auto max-w-[1320px] px-4 sm:px-6">
         <section className="grid gap-4 py-6 md:grid-cols-12 md:py-10">
           <div className="relative flex min-h-[390px] flex-col justify-between overflow-hidden border-2 border-black bg-[#111] p-5 text-white sm:min-h-[510px] sm:p-10 md:col-span-8">
             <div className="absolute right-[-5%] top-[8%] select-none text-[clamp(180px,34vw,440px)] font-black leading-none text-[#D9FF3F]/10" aria-hidden>01</div>
@@ -2352,7 +2352,7 @@ function NoirGiltTheme({ S }: { S: any }) {
   const trustBadges = Array.isArray(c.trustBadges) ? c.trustBadges.slice(0, 3) : []
   const lines = splitLines(c.heroTitle)
   return (
-    <div ref={S.rootRef} style={S.cssVars} className="pm-noir min-h-screen overflow-x-clip bg-[#0C0A07] text-[#F4EBD6] antialiased">
+    <div id="top" ref={S.rootRef} style={S.cssVars} className="pm-noir min-h-screen overflow-x-clip bg-[#0C0A07] text-[#F4EBD6] antialiased">
       <style>{PM_BASE_CSS + `@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap');.pm-noir{font-family:'DM Sans',sans-serif;background-image:radial-gradient(ellipse at 75% 16%,rgba(200,169,107,.09),transparent 32%),linear-gradient(180deg,#0C0A07,#100D08 55%,#0C0A07)}.pm-noir .noir-serif{font-family:'Playfair Display',Georgia,serif}.pm-noir .noir-gold{color:var(--pm-accent)!important}.pm-noir .noir-gold-bg{background:var(--pm-accent)!important}.pm-noir .noir-gold-border{border-color:var(--pm-accent)!important}`}</style>
       {c.showAnnouncement && c.announcement && <div className="border-b border-[#B79A62]/30 px-4 py-2 text-center text-[9px] uppercase tracking-[.24em] text-[#D8C59B]">{c.announcement}</div>}
       <header className="sticky top-0 z-30 border-b border-[#B79A62]/25 bg-[#0C0A07]/95 backdrop-blur-xl"><div className="mx-auto flex h-[76px] max-w-[1320px] items-center justify-between gap-4 px-4 sm:px-6">
@@ -2360,7 +2360,7 @@ function NoirGiltTheme({ S }: { S: any }) {
         <nav className="hidden items-center gap-7 text-[9px] uppercase tracking-[.22em] text-[#C8B98F]/75 md:flex"><a href="#pm-collection" className="hover:text-[#F4EBD6]">{c.collectionTitle}</a><a href="#noir-story" className="hover:text-[#F4EBD6]">{c.storyTitle}</a></nav>
         <div className="flex items-center gap-2"><button type="button" onClick={() => S.setSavedOnly(!S.savedOnly)} aria-label="Filter to saved pieces" title={S.savedOnly ? 'Show all pieces' : 'Filter to saved pieces'} className="grid h-10 w-10 place-items-center border border-[#B79A62]/40 text-[#D8C59B]"><Ic.heart c="h-4 w-4" fill={S.savedOnly} /></button><button type="button" onClick={S.openCart} aria-label="Open shopping bag" title="Open shopping bag" className="inline-flex h-10 items-center gap-2 border border-[#C8A96B] px-3 text-[10px] uppercase tracking-[.15em] text-[#F4EBD6] hover:bg-[#C8A96B] hover:text-black"><Ic.bag c="h-4 w-4" /><span>Bag · {S.cartCount}</span></button></div>
       </div></header>
-      <main id="top" className="mx-auto max-w-[1320px] px-4 sm:px-6">
+      <main className="mx-auto max-w-[1320px] px-4 sm:px-6">
         <section className="grid min-h-[680px] items-center gap-9 py-10 sm:py-14 lg:grid-cols-[1fr_.84fr] lg:gap-16 lg:py-20">
           <div className="relative order-2 lg:order-1"><div className="flex items-center gap-3 text-[9px] font-semibold uppercase tracking-[.24em] text-[#C8A96B]"><span className="h-px w-9 bg-[#C8A96B]" />{c.goldLine}</div><div className="mt-6 text-[10px] uppercase tracking-[.2em] text-[#C8B98F]/55">{c.heroBadge}</div><h1 className="noir-serif mt-4 text-[clamp(50px,8vw,104px)] leading-[.98] tracking-[-.045em]">{lines.map((line: string, i: number) => <span key={i} className={`block ${i === 1 ? 'italic noir-gold' : ''}`}>{line}</span>)}</h1><p className="mt-6 max-w-lg text-sm leading-7 text-[#C8B98F]/70">{c.heroSubtitle}</p>
             <div className="mt-8 flex flex-wrap items-center gap-3"><button type="button" onClick={e => S.scrollTo(e, 'pm-collection')} className="group inline-flex h-12 items-center gap-4 border border-[#C8A96B] bg-[#C8A96B] pl-5 pr-2 text-[10px] font-bold uppercase tracking-[.14em] text-black transition hover:bg-[#E0C887]"><span>{c.ctaText}</span><span className="grid h-8 w-8 place-items-center bg-black text-[#D8C59B] transition group-hover:translate-x-0.5"><Ic.right c="h-4 w-4" /></span></button>{c.secondaryCta && <button type="button" onClick={S.openCart} className="h-12 border border-[#B79A62]/45 px-5 text-[10px] uppercase tracking-[.12em] text-[#D8C59B] hover:border-[#C8A96B] hover:text-white">{c.secondaryCta}</button>}</div>
