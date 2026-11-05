@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { ThemeToggle } from '@/components/ThemeToggle'
 
 const links = [
   { href: '/about', label: 'About' },
@@ -10,7 +11,7 @@ const links = [
 
 export function SiteFooter() {
   return (
-    <footer className="mt-auto border-t border-black/10 bg-white px-5 py-8 text-[#111] sm:px-8">
+    <footer id="site-footer" className="mt-auto border-t border-black/10 bg-white px-5 py-8 text-[#111] sm:px-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Link href="/" className="inline-flex items-center gap-2.5 rounded-sm font-bold tracking-tight">
@@ -19,13 +20,16 @@ export function SiteFooter() {
           </Link>
           <p className="mt-2 max-w-sm text-xs leading-5 text-zinc-500">A simple WhatsApp storefront for Pakistani sellers. Built in Islamabad, Pakistan.</p>
         </div>
-        <nav aria-label="Footer navigation" className="flex flex-wrap gap-2">
-          {links.map(({ href, label }) => (
-            <Link key={href} href={href} className="inline-flex min-h-10 items-center justify-center rounded-full border border-black/10 bg-[#F8F7F5] px-4 text-xs font-semibold hover:border-black hover:bg-black hover:text-white focus-visible:outline-offset-2">
-              {label}
-            </Link>
-          ))}
-        </nav>
+        <div className="flex flex-wrap items-center gap-3">
+          <nav aria-label="Footer navigation" className="flex flex-wrap gap-2">
+            {links.map(({ href, label }) => (
+              <Link key={href} href={href} className="inline-flex min-h-10 items-center justify-center rounded-full border border-black/10 bg-[#F8F7F5] px-4 text-xs font-semibold hover:border-black hover:bg-black hover:text-white focus-visible:outline-offset-2">
+                {label}
+              </Link>
+            ))}
+          </nav>
+          <ThemeToggle />
+        </div>
       </div>
       <div className="mx-auto mt-6 flex max-w-7xl flex-col gap-1 border-t border-black/[0.06] pt-4 text-[11px] text-zinc-400 sm:flex-row sm:justify-between">
         <span>© {new Date().getFullYear()} DukaanWhats.pk · Islamabad, Pakistan</span>

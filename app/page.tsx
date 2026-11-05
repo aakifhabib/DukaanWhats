@@ -15,7 +15,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F7F5] text-[#0A0A0A] selection:bg-[#E8FF86] selection:text-black antialiased overflow-x-clip relative w-full max-w-full"
+    <div data-app-page className="min-h-screen bg-[#F8F7F5] text-[#0A0A0A] selection:bg-[#E8FF86] selection:text-black antialiased overflow-x-clip relative w-full max-w-full"
       style={{ fontFamily: `'Instrument Sans', system-ui, -apple-system, sans-serif` }}
     >
       <div className="pointer-events-none fixed inset-0 z-0 opacity-[0.55] mix-blend-multiply"

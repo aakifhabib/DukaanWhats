@@ -174,7 +174,7 @@ function PreviewPane({ themeId, storeHost, device, setDevice, expanded, setExpan
   const idx = (Object.keys(DEVICES) as DeviceKey[]).indexOf(device)
 
   return (
-    <div className="flex flex-col h-full min-h-0 bg-[#0A0A0A] text-white">
+    <div data-theme-exempt className="flex flex-col h-full min-h-0 bg-[#0A0A0A] text-white">
       <div className="h-[56px] shrink-0 px-4 bg-[#141414] border-b border-white/10 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5 min-w-0">
           <span className="relative flex w-2 h-2 shrink-0"><span className="absolute inset-0 rounded-full bg-[#E8FF86] animate-ping opacity-60" /><span className="relative w-2 h-2 rounded-full bg-[#E8FF86]" /></span>

@@ -129,10 +129,10 @@ export default function AdminPayments() {
     setError('')
   }
 
-  if (checkingSession) return <main className="grid min-h-screen place-items-center bg-[#F8F7F5] text-sm text-zinc-500">Checking your session…</main>
+  if (checkingSession) return <main data-app-page className="grid min-h-screen place-items-center bg-[#F8F7F5] text-sm text-zinc-500">Checking your session…</main>
 
   if (!session) return (
-    <main className="grid min-h-screen place-items-center bg-[#F8F7F5] p-5 text-zinc-900">
+    <main data-app-page className="grid min-h-screen place-items-center bg-[#F8F7F5] p-5 text-zinc-900">
       <section className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-8 text-center shadow-sm">
         <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-black text-xl text-[#E8FF86]">D</div>
         <h1 className="mt-5 text-2xl font-bold tracking-tight">Administrator sign in</h1>
@@ -148,7 +148,7 @@ export default function AdminPayments() {
   const activeUsers = users.filter(user => user.profile?.current_plan && user.profile.current_plan !== 'basic').length
 
   return (
-    <main className="min-h-screen bg-[#F7F7F5] text-zinc-900">
+    <main data-app-page className="min-h-screen bg-[#F7F7F5] text-zinc-900">
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <header className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-zinc-200 bg-white p-5 sm:p-6">
           <div className="flex items-center gap-3">

@@ -309,7 +309,7 @@ function ScaledPreview({ theme, baseW = 240 }: { theme: any; baseW?: number }) {
   const s = box.w ? box.w / baseW : 0
   const baseH = s ? box.h / s : 0
   return (
-    <div ref={ref} className="absolute inset-0 overflow-hidden">
+    <div ref={ref} data-theme-exempt className="absolute inset-0 overflow-hidden">
       {s > 0 && (
         <div style={{ width: baseW, height: baseH, transform: `scale(${s})`, transformOrigin: 'top left' }}>
           <MiniStorefront theme={theme} />
@@ -1527,6 +1527,7 @@ Upgrade to unlock all 8 Advanced themes.`)
   /* ---------------- LAYOUT ---------------- */
   return (
     <div
+      data-app-page
       className="dw-root min-h-screen bg-[#FAFAF9] text-zinc-900"
       onPointerMove={(e) => {
         const t = e.target as HTMLElement
