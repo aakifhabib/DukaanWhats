@@ -16,10 +16,10 @@ async function authorize(request: Request): Promise<
   if (!token) return { response: json({ error: 'Sign in with an administrator account.' }, 401) }
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!url || !anonKey || !serviceKey) {
-    return { response: json({ error: 'Admin data is not configured. Set the Supabase URL, anon key, and service-role key on the server.' }, 503) }
+    return { response: json({ error: 'Admin data is not configured. Set NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (or the legacy anon-key variable), and the server-only SUPABASE_SERVICE_ROLE_KEY.' }, 503) }
   }
 
   const authClient = createClient(url, anonKey, {
