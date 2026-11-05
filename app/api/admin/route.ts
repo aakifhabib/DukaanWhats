@@ -51,11 +51,13 @@ export async function GET(request: Request) {
     const view = searchParams.get('view') || 'payments'
 
     if (view === 'users') {
-      const page = Math.max(1, Number(searchParams.get('page')) || 1)
+      const requestedPage = Number(searchParams.get('page')) || 1
+      const page = Math.min(100000, Math.max(1, Math.floor(requestedPage)))
       const perPage = 50
-      const { data: authData, error: usersError } = await admin.auth.admin.listUsers({ page, perPage })
+      const { data: authData, error: usersError } = await admin.auth.admin.listUsers({ page, perPage: perPage + 1 })
       if (usersError) return json({ error: usersError.message }, 500)
-      const users = authData.users
+      const hasMore = authData.users.length > perPage
+      const users = authData.users.slice(0, perPage)
       const ids = users.map(user => user.id)
       const { data: profiles, error: profilesError } = ids.length
         ? await admin.from('profiles').select('id,business_name,whatsapp_number,store_slug,current_plan').in('id', ids)
@@ -72,19 +74,29 @@ export async function GET(request: Request) {
           email_confirmed_at: user.email_confirmed_at,
           profile: profileById.get(user.id) || null,
         })),
-        hasMore: users.length === perPage,
+        hasMore,
         page,
         perPage,
       })
     }
 
     if (view !== 'payments') return json({ error: 'Unknown admin view.' }, 400)
-    const { data: payments, error: paymentsError } = await admin
+    const requestedPage = Number(searchParams.get('page')) || 1
+    const page = Math.min(100000, Math.max(1, Math.floor(requestedPage)))
+    const perPage = 50
+    const status = searchParams.get('status') || 'pending'
+    if (!['pending', 'approved', 'rejected', 'all'].includes(status)) return json({ error: 'Unknown payment status filter.' }, 400)
+    let paymentsQuery = admin
       .from('plan_payments')
-      .select('*')
+      .select('*', { count: 'exact' })
       .order('created_at', { ascending: false })
-      .range(0, 499)
+    if (status !== 'all') paymentsQuery = paymentsQuery.eq('status', status)
+    const [{ data: payments, count, error: paymentsError }, { count: pendingCount, error: pendingError }] = await Promise.all([
+      paymentsQuery.range((page - 1) * perPage, page * perPage - 1),
+      admin.from('plan_payments').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+    ])
     if (paymentsError) return json({ error: `Could not load payments: ${paymentsError.message}` }, 500)
+    if (pendingError) return json({ error: `Could not count pending payments: ${pendingError.message}` }, 500)
 
     const userIds = [...new Set((payments || []).map(payment => payment.user_id).filter(Boolean))]
     const { data: profiles, error: profilesError } = userIds.length
@@ -93,7 +105,14 @@ export async function GET(request: Request) {
     if (profilesError) return json({ error: `Could not load payment owners: ${profilesError.message}` }, 500)
 
     const profileById = new Map((profiles || []).map(profile => [profile.id, profile]))
-    return json({ payments: (payments || []).map(payment => ({ ...payment, profiles: profileById.get(payment.user_id) || null })) })
+    return json({
+      payments: (payments || []).map(payment => ({ ...payment, profiles: profileById.get(payment.user_id) || null })),
+      page,
+      perPage,
+      total: count || 0,
+      hasMore: page * perPage < (count || 0),
+      pendingCount: pendingCount || 0,
+    })
   } catch (error: any) {
     return json({ error: error?.message || 'Admin request failed.' }, 500)
   }

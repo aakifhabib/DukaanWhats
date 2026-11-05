@@ -1,5 +1,7 @@
 import './globals.css';
 import { SiteFooter } from '@/components/SiteFooter';
+import { AppThemeProvider } from '@/components/AppThemeProvider';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export const metadata = {
   title: {
@@ -18,12 +20,15 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
-        <div className="flex min-h-screen flex-col">
-          <div className="flex-1">{children}</div>
-          <SiteFooter />
-        </div>
+        <AppThemeProvider>
+          <ThemeToggle />
+          <div className="flex min-h-screen flex-col">
+            <div className="flex-1">{children}</div>
+            <SiteFooter />
+          </div>
+        </AppThemeProvider>
       </body>
     </html>
   );

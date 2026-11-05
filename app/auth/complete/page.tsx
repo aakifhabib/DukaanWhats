@@ -60,7 +60,7 @@ export default function AuthCompletePage() {
   }, [router])
 
   return (
-    <main className="grid min-h-screen place-items-center bg-[#F8F7F5] p-5 text-zinc-900">
+    <main data-app-page className="grid min-h-screen place-items-center bg-[#F8F7F5] p-5 text-zinc-900">
       <section className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-8 text-center shadow-sm">
         {!error ? <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-zinc-200 border-t-black" aria-label="Completing sign-in" /> : <div className="mx-auto grid h-10 w-10 place-items-center rounded-full bg-red-50 text-red-700">!</div>}
         <h1 className="mt-4 text-xl font-bold">{error ? 'Sign-in link problem' : 'Completing sign in…'}</h1>

@@ -123,7 +123,7 @@ export default function PricingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#07052e] text-white relative overflow-hidden">
+    <div data-app-page className="min-h-screen bg-[#07052e] text-white relative overflow-hidden">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         .card { height: 400px; width: 285px; background-image: linear-gradient(to top, #210c93, #0d117a, #011160, #010e47, #07052e); box-shadow: rgba(0,0,0,0.24) -20px 30px 10px; transform-style: preserve-3d; transform: perspective(400px) rotateX(60deg) rotateZ(-30deg); border-radius: 16px; transition: transform 2s, filter 0.6s ease, opacity 0.6s ease, box-shadow 0.6s ease; position: relative; overflow: hidden; filter: brightness(0.55) saturate(0.7); opacity: 0.7; }

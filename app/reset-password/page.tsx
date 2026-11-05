@@ -91,7 +91,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="app-shell">
+    <div data-app-page className="app-shell">
       <style>{`
         :root { --page-bg: #F8F7F5; }
         * { -webkit-font-smoothing: antialiased; }

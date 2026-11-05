@@ -10,7 +10,7 @@ const links = [
 
 export function SiteFooter() {
   return (
-    <footer className="mt-auto border-t border-black/10 bg-white px-5 py-8 text-[#111] sm:px-8">
+    <footer id="site-footer" className="mt-auto border-t border-black/10 bg-white px-5 py-8 text-[#111] sm:px-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Link href="/" className="inline-flex items-center gap-2.5 rounded-sm font-bold tracking-tight">

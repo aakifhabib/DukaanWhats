@@ -20,7 +20,7 @@ const principles = [
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-[#F8F7F5] text-[#0A0A0A]">
+    <div data-app-page className="min-h-screen bg-[#F8F7F5] text-[#0A0A0A]">
       <header className="sticky top-0 z-20 border-b border-black/5 bg-white/90 backdrop-blur">
         <div className="mx-auto flex h-[68px] max-w-6xl items-center justify-between px-5 sm:px-8">
           <Link href="/" className="inline-flex items-center gap-2.5 rounded-sm font-black tracking-tight">

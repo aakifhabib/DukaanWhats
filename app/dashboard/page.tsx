@@ -309,7 +309,7 @@ function ScaledPreview({ theme, baseW = 240 }: { theme: any; baseW?: number }) {
   const s = box.w ? box.w / baseW : 0
   const baseH = s ? box.h / s : 0
   return (
-    <div ref={ref} className="absolute inset-0 overflow-hidden">
+    <div ref={ref} data-theme-exempt className="absolute inset-0 overflow-hidden">
       {s > 0 && (
         <div style={{ width: baseW, height: baseH, transform: `scale(${s})`, transformOrigin: 'top left' }}>
           <MiniStorefront theme={theme} />
@@ -596,55 +596,75 @@ export default function Dashboard() {
 
   /* ---------------- INIT ---------------- */
   useEffect(() => {
+    let active = true
     const init = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (!session) { window.location.href = '/login'; return }
-        const { data: { user } } = await supabase.auth.getUser()
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+        if (sessionError) throw sessionError
+        if (!sessionData.session) { window.location.href = '/login'; return }
+        const { data: userData, error: userError } = await supabase.auth.getUser()
+        if (userError) throw userError
+        const user = userData.user
         if (!user) { window.location.href = '/login'; return }
-        let { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
+
+        const { data: profileData, error: profileError } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
+        if (profileError) throw profileError
+        let prof = profileData
         if (!prof) {
-          const metaName = String(user.user_metadata?.business_name || user.email?.split('@')[0] || 'My Store')
-          const baseSlug = metaName.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 20)
-          const newProfile = { id: user.id, business_name: metaName, whatsapp_number: '', store_slug: `${baseSlug}-${Math.floor(Math.random() * 900 + 100)}`, store_theme: 'clothing-noor', current_plan: 'basic' }
-          const { data: created } = await supabase.from('profiles').upsert(newProfile, { onConflict: 'id' }).select().single()
-          prof = created || newProfile as any
+          const metaName = String(user.user_metadata?.business_name || user.email?.split('@')[0] || 'My Store').trim() || 'My Store'
+          const baseSlug = metaName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 20) || 'my-store'
+          const newProfile = { id: user.id, business_name: metaName, whatsapp_number: '', store_slug: `${baseSlug}-${user.id.slice(0, 6)}`, store_theme: 'clothing-noor', current_plan: 'basic' }
+          const { data: created, error: createError } = await supabase.from('profiles').upsert(newProfile, { onConflict: 'id' }).select().single()
+          if (createError) throw createError
+          if (!created) throw new Error('Your store profile could not be created. Please refresh or contact support.')
+          prof = created
         }
-        if (prof) {
-          setProfile(prof)
-          setBusinessName(prof.business_name || '')
-          setWhatsapp(prof.whatsapp_number || '')
-          setSlug(prof.store_slug || '')
-          setTheme(prof.store_theme || 'clothing-noor')
-          setPremiumCustom((prof as any).premium_custom || {})
-          const { data: prods } = await supabase.from('products').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
-          if (prods) setProducts(prods)
-          const { data: pays } = await supabase.from('plan_payments').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
-          if (pays) {
-            setMyPayments(pays)
-            const lastSeenId = localStorage.getItem('dw_last_seen_payment')
-            const latest = pays[0]
-            if (latest && latest.id !== lastSeenId) {
-              if (latest.status === 'approved' || latest.status === 'rejected') {
-                setShowStatusModal({ type: latest.status, payment: latest })
-                localStorage.setItem('dw_last_seen_payment', latest.id)
-              } else if (latest.status === 'pending') {
-                localStorage.setItem('dw_last_seen_payment_pending', latest.id)
-              }
-            } else if (latest && latest.status !== 'pending') {
-              const lastStatus = localStorage.getItem('dw_last_seen_status_' + latest.id)
-              if (lastStatus !== latest.status && (latest.status === 'approved' || latest.status === 'rejected')) {
-                setShowStatusModal({ type: latest.status, payment: latest })
-                localStorage.setItem('dw_last_seen_status_' + latest.id, latest.status)
-              }
+
+        if (!active) return
+        setProfile(prof)
+        setBusinessName(prof.business_name || '')
+        setWhatsapp(prof.whatsapp_number || '')
+        setSlug(prof.store_slug || '')
+        setTheme(prof.store_theme || 'clothing-noor')
+        setPremiumCustom((prof as any).premium_custom || {})
+
+        const { data: prods, error: productsError } = await supabase.from('products').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
+        if (productsError) throw productsError
+        if (active) setProducts(prods || [])
+
+        const { data: pays, error: paymentsError } = await supabase.from('plan_payments').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
+        if (paymentsError) {
+          if (active) setErrorMsg(`Store loaded, but payment history could not be loaded: ${paymentsError.message}`)
+          return
+        }
+        if (active && pays) {
+          setMyPayments(pays)
+          const lastSeenId = localStorage.getItem('dw_last_seen_payment')
+          const latest = pays[0]
+          if (latest && latest.id !== lastSeenId) {
+            if (latest.status === 'approved' || latest.status === 'rejected') {
+              setShowStatusModal({ type: latest.status, payment: latest })
+              localStorage.setItem('dw_last_seen_payment', latest.id)
+            } else if (latest.status === 'pending') {
+              localStorage.setItem('dw_last_seen_payment_pending', latest.id)
             }
-            if (latest) localStorage.setItem('dw_last_seen_status_' + latest.id, latest.status)
+          } else if (latest && latest.status !== 'pending') {
+            const lastStatus = localStorage.getItem('dw_last_seen_status_' + latest.id)
+            if (lastStatus !== latest.status && (latest.status === 'approved' || latest.status === 'rejected')) {
+              setShowStatusModal({ type: latest.status, payment: latest })
+              localStorage.setItem('dw_last_seen_status_' + latest.id, latest.status)
+            }
           }
+          if (latest) localStorage.setItem('dw_last_seen_status_' + latest.id, latest.status)
         }
-      } catch (e: any) { setErrorMsg(e.message) }
-      setTimeout(() => setLoading(false), 700)
+      } catch (e: any) {
+        if (active) setErrorMsg(e?.message || 'Your store could not be loaded. Please try again.')
+      } finally {
+        if (active) setLoading(false)
+      }
     }
-    init()
+    void init()
+    return () => { active = false }
   }, [])
 
   /* ---------------- HANDLERS ---------------- */
@@ -674,16 +694,23 @@ Upgrade to unlock all 8 Advanced themes.`)
       migratedCustom = { ...oldCustom, themes: { [profile?.store_theme || theme]: legacyEdits } }
     }
     setTheme(t.id)
+    setSaved(false)
     if (migratedCustom !== oldCustom) setPremiumCustom(migratedCustom)
     setProfile((prev: any) => prev ? ({ ...prev, store_theme: t.id, premium_custom: migratedCustom }) : prev)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user && profile) {
-        const patch: any = { store_theme: t.id }
-        if (migratedCustom !== oldCustom) patch.premium_custom = migratedCustom
-        await supabase.from('profiles').update(patch).eq('id', user.id)
-      }
-    } catch {}
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError) throw userError
+      if (!user || !profile) throw new Error('Sign in again to publish this theme.')
+      const patch: any = { store_theme: t.id }
+      if (migratedCustom !== oldCustom) patch.premium_custom = migratedCustom
+      const { data, error } = await supabase.from('profiles').update(patch).eq('id', user.id).select('id').maybeSingle()
+      if (error) throw error
+      if (!data) throw new Error('Theme was selected but not saved. Use Save & publish to retry.')
+      setSaved(true)
+      window.setTimeout(() => setSaved(false), 2500)
+    } catch (error: any) {
+      setErrorMsg(error?.message || 'Theme was selected but could not be saved. Use Save & publish to retry.')
+    }
     if (['spike-premium','shoe-app-premium','trenzo-luxury','sleek-beige','sleek-dark','sleek-editorial','saffron-table','atelier-bloom','mono-market','noir-gilt'].includes(t.id)) {
       setTimeout(()=> {
         document.getElementById('premium-editor-anchor')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -692,28 +719,58 @@ Upgrade to unlock all 8 Advanced themes.`)
   }
 
   const saveStore = async () => {
-    if (!profile) return
+    if (!profile || saving) return
+    const cleanName = businessName.trim()
+    const cleanSlug = slug.trim().toLowerCase()
+    let cleanWhatsApp = whatsapp.replace(/\D/g, '')
+    if (!cleanName) { setErrorMsg('Enter a business name before saving your store.'); return }
+    if (cleanName.length > 80) { setErrorMsg('Business name must be 80 characters or fewer.'); return }
+    if (cleanSlug.length < 3 || cleanSlug.length > 40 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(cleanSlug)) {
+      setErrorMsg('Store URL must be 3–40 characters using lowercase letters, numbers, and single hyphens.')
+      return
+    }
+    if (cleanWhatsApp.startsWith('0')) cleanWhatsApp = `92${cleanWhatsApp.slice(1)}`
+    else if (cleanWhatsApp.length === 10 && cleanWhatsApp.startsWith('3')) cleanWhatsApp = `92${cleanWhatsApp}`
+    if (cleanWhatsApp && (cleanWhatsApp.length < 10 || cleanWhatsApp.length > 15)) {
+      setErrorMsg('Enter a valid WhatsApp number with its country code, for example 923001234567.')
+      return
+    }
+
     setSaving(true)
+    setErrorMsg(null)
     try {
-      const { error } = await supabase.from('profiles').update({
-        business_name: businessName.trim(),
-        whatsapp_number: whatsapp.trim(),
-        store_slug: slug.trim(),
+      const updatedProfile = {
+        business_name: cleanName,
+        whatsapp_number: cleanWhatsApp,
+        store_slug: cleanSlug,
         store_theme: theme,
         premium_custom: premiumCustom,
-      }).eq('id', profile.id)
-      if (error) throw error
+      }
+      const { data, error } = await supabase.from('profiles').update(updatedProfile).eq('id', profile.id).select('id').maybeSingle()
+      if (error) {
+        if (error.code === '23505') throw new Error('That store URL is already taken. Choose a different URL.')
+        throw error
+      }
+      if (!data) throw new Error('Your store changes were not saved. Check your account permissions and try again.')
+      setProfile((current: any) => current ? { ...current, ...updatedProfile } : current)
+      setBusinessName(cleanName)
+      setWhatsapp(cleanWhatsApp)
+      setSlug(cleanSlug)
       setSaved(true)
-      setTimeout(() => setSaved(false), 2500)
-    } catch (e: any) { setErrorMsg(e.message) }
-    setSaving(false)
+      window.setTimeout(() => setSaved(false), 2500)
+    } catch (e: any) {
+      setErrorMsg(e?.message || 'Store changes could not be saved. Please try again.')
+    } finally {
+      setSaving(false)
+    }
   }
   const copyLink = async () => {
-    if (!slug) { setErrorMsg('Save your store details before copying its link.'); return }
+    const cleanSlug = slug.trim().toLowerCase()
+    if (!cleanSlug || cleanSlug !== profile?.store_slug) { setErrorMsg('Save your store URL before copying the link.'); return }
     try {
-      await copyText(`${window.location.origin}/s/${slug}`)
+      await copyText(`${window.location.origin}/s/${cleanSlug}`)
       setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      window.setTimeout(() => setCopied(false), 2000)
     } catch { setErrorMsg('Could not copy the store link. Please copy it from the address bar.') }
   }
   const copyTill = async () => {
@@ -926,6 +983,7 @@ Upgrade to unlock all 8 Advanced themes.`)
   const maxLabel = (n: number) => (n === 999999 ? '∞' : String(n))
   const productPct = productLimit === 999999 ? 3 : Math.min(100, (products.length / productLimit) * 100)
   const limitReached = products.length >= productLimit
+  const publishedSlug = String(profile?.store_slug || '')
   const activeIdx = Math.max(0, sidebarNav.findIndex(n => n.id === activeTab))
 
   const CurrentPlanButton = () => (
@@ -996,9 +1054,15 @@ Upgrade to unlock all 8 Advanced themes.`)
               <span className="font-mono text-[12px] text-[#E8FF86] bg-white/[0.06] border border-white/10 rounded-md px-2 py-0.5">/s/{slug || 'your-slug'}</span>
             </div>
             <div className="flex gap-2 mt-7 flex-wrap">
-              <Link href={slug ? `/s/${slug}` : '#'} target="_blank" className={`${BTN} dw-shine h-10 px-5 bg-[#E8FF86] text-black text-[13px] no-underline hover:brightness-95`}>
-                View live <IconExternal c="w-3.5 h-3.5" />
-              </Link>
+              {publishedSlug ? (
+                <Link href={`/s/${publishedSlug}`} target="_blank" rel="noopener noreferrer" className={`${BTN} dw-shine h-10 px-5 bg-[#E8FF86] text-black text-[13px] no-underline hover:brightness-95`}>
+                  View live <IconExternal c="w-3.5 h-3.5" />
+                </Link>
+              ) : (
+                <button type="button" disabled title="Save your store URL before previewing" className={`${BTN} h-10 px-5 bg-zinc-200 text-zinc-500 text-[13px] cursor-not-allowed`}>
+                  Save URL to preview <IconExternal c="w-3.5 h-3.5" />
+                </button>
+              )}
               <button type="button" onClick={saveStore} disabled={saving} className={`${BTN} h-10 px-5 bg-white/10 text-white border border-white/15 text-[13px] hover:bg-white/15 backdrop-blur-md`}>
                 {saving ? <><Spinner /> Publishing...</> : 'Republish'}
               </button>
@@ -1269,22 +1333,26 @@ Upgrade to unlock all 8 Advanced themes.`)
       <div className="grid lg:grid-cols-[1fr_340px] gap-4">
         <div className={`${UI.card} space-y-5`}>
           <Field label="Business name">
-            <input value={businessName} onChange={e => setBusinessName(e.target.value)} className={UI.input} />
+            <input value={businessName} onChange={e => { setBusinessName(e.target.value); setSaved(false) }} maxLength={80} className={UI.input} />
           </Field>
           <Field label="WhatsApp number" hint="Include country code, no spaces (e.g. 923001234567)">
-            <input value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="923001234567" className={`${UI.input} font-mono`} />
+            <input value={whatsapp} onChange={e => { setWhatsapp(e.target.value); setSaved(false) }} placeholder="923001234567" inputMode="tel" autoComplete="tel" maxLength={24} className={`${UI.input} font-mono`} />
           </Field>
-          <Field label="Store URL">
+          <Field label="Store URL" hint="3–40 lowercase letters or numbers, separated by single hyphens.">
             <div className="flex items-center rounded-xl border border-zinc-200/80 overflow-hidden bg-white transition-[border-color,box-shadow] focus-within:border-zinc-900 focus-within:ring-4 focus-within:ring-[#E8FF86]/70">
               <span className="pl-3.5 pr-3 mr-2.5 self-stretch flex items-center text-[12.5px] text-zinc-400 font-mono shrink-0 bg-zinc-50 border-r border-zinc-200/80">dukaanwhats.pk/s/</span>
-              <input value={slug} onChange={e => setSlug(e.target.value)} className="flex-1 min-w-0 h-11 pr-3.5 bg-transparent text-[13.5px] font-mono outline-none border-none" />
+              <input value={slug} onChange={e => { setSlug(e.target.value.toLowerCase()); setSaved(false) }} maxLength={40} autoComplete="off" spellCheck={false} className="flex-1 min-w-0 h-11 pr-3.5 bg-transparent text-[13.5px] font-mono outline-none border-none" />
             </div>
           </Field>
           <div className="flex gap-2 pt-1 flex-wrap">
             <button type="button" onClick={copyLink} title="Copy your store link to share" className={`${BTN_LIGHT} h-10 px-5 text-[13px]`}>
               {copied ? <><IconCheck c="w-3.5 h-3.5" /> Copied</> : <><IconCopy c="w-3.5 h-3.5" /> Copy link</>}
             </button>
-            <Link href={slug ? `/s/${slug}` : '#'} target="_blank" className={`${BTN_LIGHT} h-10 px-5 text-[13px] no-underline`}>Preview <IconExternal c="w-3 h-3" /></Link>
+            {publishedSlug && slug.trim().toLowerCase() === publishedSlug ? (
+              <Link href={`/s/${publishedSlug}`} target="_blank" rel="noopener noreferrer" className={`${BTN_LIGHT} h-10 px-5 text-[13px] no-underline`}>Preview <IconExternal c="w-3 h-3" /></Link>
+            ) : (
+              <button type="button" disabled title="Save this store URL before previewing" className={`${BTN_LIGHT} h-10 px-5 text-[13px] cursor-not-allowed opacity-50`}>Save URL to preview</button>
+            )}
           </div>
         </div>
 
@@ -1527,6 +1595,7 @@ Upgrade to unlock all 8 Advanced themes.`)
   /* ---------------- LAYOUT ---------------- */
   return (
     <div
+      data-app-page
       className="dw-root min-h-screen bg-[#FAFAF9] text-zinc-900"
       onPointerMove={(e) => {
         const t = e.target as HTMLElement

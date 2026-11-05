@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 export function LegalPage({ title, summary, children }: { title: string; summary: string; children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#F8F7F5] text-[#111]">
+    <div data-app-page className="min-h-screen bg-[#F8F7F5] text-[#111]">
       <header className="border-b border-black/5 bg-white">
         <div className="mx-auto flex h-[68px] max-w-5xl items-center justify-between px-5 sm:px-8">
           <Link href="/" className="inline-flex items-center gap-2.5 rounded-sm font-black tracking-tight">

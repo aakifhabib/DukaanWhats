@@ -21,6 +21,9 @@ export default function AdminPayments() {
   const [checkingSession, setCheckingSession] = useState(true)
   const [view, setView] = useState<AdminView>('payments')
   const [payments, setPayments] = useState<Payment[]>([])
+  const [paymentsPage, setPaymentsPage] = useState(1)
+  const [paymentsHasMore, setPaymentsHasMore] = useState(false)
+  const [pendingCount, setPendingCount] = useState(0)
   const [users, setUsers] = useState<AdminUser[]>([])
   const [usersPage, setUsersPage] = useState(1)
   const [usersHasMore, setUsersHasMore] = useState(false)
@@ -38,6 +41,10 @@ export default function AdminPayments() {
       if (sessionError) setError(sessionError.message)
       setSession(data.session)
       setCheckingSession(false)
+    }).catch((reason: any) => {
+      if (!alive) return
+      setError(reason?.message || 'Could not verify your administrator session.')
+      setCheckingSession(false)
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       setSession(nextSession)
@@ -46,6 +53,23 @@ export default function AdminPayments() {
     return () => { alive = false; subscription.unsubscribe() }
   }, [])
 
+  const adminFetch = useCallback(async (url: string, init: RequestInit = {}) => {
+    if (!session) throw new Error('Sign in with an administrator account.')
+    const send = (token: string) => {
+      const headers = new Headers(init.headers)
+      headers.set('Authorization', `Bearer ${token}`)
+      return fetch(url, { ...init, headers, cache: 'no-store' })
+    }
+    let response = await send(session.access_token)
+    if (response.status === 401) {
+      const { data, error: refreshError } = await supabase.auth.refreshSession()
+      if (refreshError || !data.session) throw new Error('Your session expired. Sign out and sign in again.')
+      setSession(data.session)
+      response = await send(data.session.access_token)
+    }
+    return response
+  }, [session])
+
   useEffect(() => {
     let alive = true
     const load = async () => {
@@ -53,24 +77,34 @@ export default function AdminPayments() {
       setLoading(true)
       setError('')
       try {
-        const response = await fetch(`/api/admin?view=${view}${view === 'users' ? `&page=${usersPage}` : ''}`, {
-          headers: { Authorization: `Bearer ${session.access_token}` },
-          cache: 'no-store',
-        })
+        const page = view === 'users' ? usersPage : paymentsPage
+        const params = new URLSearchParams({ view, page: String(page) })
+        if (view === 'payments') params.set('status', filter)
+        const response = await adminFetch(`/api/admin?${params.toString()}`)
         const result = await response.json()
         if (!response.ok) throw new Error(result.error || 'Could not load admin data.')
         if (!alive) return
-        if (view === 'payments') setPayments(result.payments || [])
-        else { setUsers(result.users || []); setUsersHasMore(Boolean(result.hasMore)) }
+        if (view === 'payments') {
+          setPayments(result.payments || [])
+          setPaymentsHasMore(Boolean(result.hasMore))
+          setPendingCount(Number(result.pendingCount) || 0)
+        } else {
+          setUsers(result.users || [])
+          setUsersHasMore(Boolean(result.hasMore))
+        }
       } catch (reason: any) {
-        if (alive) setError(reason?.message || 'Could not load admin data.')
+        if (alive) {
+          setError(reason?.message || 'Could not load admin data.')
+          if (view === 'payments') setPayments([])
+          else setUsers([])
+        }
       } finally {
         if (alive) setLoading(false)
       }
     }
     load()
     return () => { alive = false }
-  }, [session, view, refreshKey, usersPage])
+  }, [session, adminFetch, view, refreshKey, usersPage, paymentsPage, filter])
 
   const filteredPayments = useMemo(() => payments.filter(payment => {
     if (filter !== 'all' && payment.status !== filter) return false
@@ -94,9 +128,9 @@ export default function AdminPayments() {
     setWorkingId(payment.id)
     setError('')
     try {
-      const response = await fetch('/api/admin', {
+      const response = await adminFetch('/api/admin', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ paymentId: payment.id, status }),
       })
       const result = await response.json()
@@ -107,7 +141,7 @@ export default function AdminPayments() {
     } finally {
       setWorkingId('')
     }
-  }, [session])
+  }, [session, adminFetch])
 
   const sendWhatsApp = (payment: Payment) => {
     const number = cleanPhone(payment.profiles?.whatsapp_number)
@@ -123,16 +157,17 @@ export default function AdminPayments() {
   }
 
   const signOut = async () => {
-    await supabase.auth.signOut()
+    const { error: signOutError } = await supabase.auth.signOut()
+    if (signOutError) { setError(`Could not sign out: ${signOutError.message}`); return }
     setPayments([])
     setUsers([])
     setError('')
   }
 
-  if (checkingSession) return <main className="grid min-h-screen place-items-center bg-[#F8F7F5] text-sm text-zinc-500">Checking your session…</main>
+  if (checkingSession) return <main data-app-page className="grid min-h-screen place-items-center bg-[#F8F7F5] text-sm text-zinc-500">Checking your session…</main>
 
   if (!session) return (
-    <main className="grid min-h-screen place-items-center bg-[#F8F7F5] p-5 text-zinc-900">
+    <main data-app-page className="grid min-h-screen place-items-center bg-[#F8F7F5] p-5 text-zinc-900">
       <section className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-8 text-center shadow-sm">
         <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-black text-xl text-[#E8FF86]">D</div>
         <h1 className="mt-5 text-2xl font-bold tracking-tight">Administrator sign in</h1>
@@ -144,11 +179,10 @@ export default function AdminPayments() {
     </main>
   )
 
-  const pendingCount = payments.filter(payment => payment.status === 'pending').length
   const activeUsers = users.filter(user => user.profile?.current_plan && user.profile.current_plan !== 'basic').length
 
   return (
-    <main className="min-h-screen bg-[#F7F7F5] text-zinc-900">
+    <main data-app-page className="min-h-screen bg-[#F7F7F5] text-zinc-900">
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <header className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-zinc-200 bg-white p-5 sm:p-6">
           <div className="flex items-center gap-3">
@@ -170,28 +204,46 @@ export default function AdminPayments() {
         <section className="mt-5 overflow-hidden rounded-3xl border border-zinc-200 bg-white">
           <div className="flex flex-wrap items-center gap-2 border-b border-zinc-200 p-4 sm:p-5">
             <div className="flex rounded-full bg-zinc-100 p-1">
-              {(['payments', 'users'] as const).map(item => <button key={item} type="button" aria-pressed={view === item} onClick={() => { setView(item); setSearch(''); setError(''); if (item === 'users') setUsersPage(1) }} className={`rounded-full px-4 py-2 text-sm font-semibold capitalize ${view === item ? 'bg-black text-white' : 'text-zinc-600 hover:text-black'}`}>{item}</button>)}
+              {(['payments', 'users'] as const).map(item => <button key={item} type="button" aria-pressed={view === item} onClick={() => { setView(item); setSearch(''); setError(''); if (item === 'users') setUsersPage(1); else setPaymentsPage(1) }} className={`rounded-full px-4 py-2 text-sm font-semibold capitalize ${view === item ? 'bg-black text-white' : 'text-zinc-600 hover:text-black'}`}>{item}</button>)}
             </div>
-            {view === 'payments' && <div className="flex flex-wrap gap-1">{(['pending', 'approved', 'rejected', 'all'] as const).map(item => <button key={item} type="button" aria-pressed={filter === item} onClick={() => setFilter(item)} className={`rounded-full px-3 py-2 text-xs font-semibold capitalize ${filter === item ? 'bg-[#E8FF86] text-black' : 'text-zinc-500 hover:bg-zinc-100'}`}>{item}{item === 'pending' ? ` · ${pendingCount}` : ''}</button>)}</div>}
-            <label className="ml-auto w-full sm:w-72"><span className="sr-only">Search {view}</span><input value={search} onChange={event => setSearch(event.target.value)} placeholder={view === 'users' ? 'Search email, store, phone…' : 'Search transaction, store…'} className="h-10 w-full rounded-full border border-zinc-200 bg-zinc-50 px-4 text-sm outline-none focus:border-zinc-500 focus:bg-white" /></label>
+            {view === 'payments' && <div className="flex flex-wrap gap-1">{(['pending', 'approved', 'rejected', 'all'] as const).map(item => <button key={item} type="button" aria-pressed={filter === item} onClick={() => { setFilter(item); setPaymentsPage(1) }} className={`rounded-full px-3 py-2 text-xs font-semibold capitalize ${filter === item ? 'bg-[#E8FF86] text-black' : 'text-zinc-500 hover:bg-zinc-100'}`}>{item}{item === 'pending' ? ` · ${pendingCount}` : ''}</button>)}</div>}
+            <label className="ml-auto w-full sm:w-72"><span className="sr-only">Search {view}</span><input value={search} onChange={event => setSearch(event.target.value)} placeholder={view === 'users' ? 'Search this page: email, store, phone…' : 'Search this page: transaction, store…'} className="h-10 w-full rounded-full border border-zinc-200 bg-zinc-50 px-4 text-sm outline-none focus:border-zinc-500 focus:bg-white" /></label>
           </div>
 
           {error && <div role="alert" className="m-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"><span>{error}</span><button type="button" onClick={() => setRefreshKey(key => key + 1)} className="font-semibold underline">Try again</button></div>}
           {loading ? <div className="p-12 text-center text-sm text-zinc-500">Loading {view}…</div> : view === 'users' ? (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[920px] text-left text-sm">
-                <thead className="bg-zinc-50 text-[10px] uppercase tracking-wider text-zinc-500"><tr><th className="px-5 py-3 font-bold">User / store</th><th className="px-5 py-3 font-bold">Contact</th><th className="px-5 py-3 font-bold">Plan</th><th className="px-5 py-3 font-bold">Joined</th><th className="px-5 py-3 font-bold">Last sign-in</th></tr></thead>
-                <tbody className="divide-y divide-zinc-100">
-                  {filteredUsers.map(user => <tr key={user.id} className="align-top hover:bg-zinc-50/70">
-                    <td className="px-5 py-4"><p className="font-semibold">{user.profile?.business_name || 'Store not set up'}</p><p className="mt-1 text-xs text-zinc-500">{user.email || 'No email'} · {user.profile?.store_slug ? `/s/${user.profile.store_slug}` : 'No store link'}</p><p className="mt-1 font-mono text-[10px] text-zinc-400">{user.id}</p></td>
-                    <td className="px-5 py-4 text-xs text-zinc-600">{user.profile?.whatsapp_number || 'No WhatsApp number'}<p className="mt-1 text-zinc-400">{user.email_confirmed_at ? 'Email confirmed' : 'Email unconfirmed'}</p></td>
-                    <td className="px-5 py-4"><span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold capitalize">{user.profile?.current_plan || 'basic'}</span></td>
-                    <td className="px-5 py-4 text-xs text-zinc-600">{date(user.created_at)}</td><td className="px-5 py-4 text-xs text-zinc-600">{date(user.last_sign_in_at)}</td>
-                  </tr>)}
-                  {!filteredUsers.length && <tr><td colSpan={5} className="p-10 text-center text-sm text-zinc-500">{error ? 'User data could not be loaded.' : 'No matching users.'}</td></tr>}
-                </tbody>
-              </table>
-              <div className="flex items-center justify-between border-t border-zinc-100 px-5 py-3 text-xs text-zinc-500"><span>Page {usersPage} · {users.length} users</span><div className="flex gap-2"><button type="button" disabled={usersPage <= 1 || loading} onClick={() => setUsersPage(page => Math.max(1, page - 1))} className="rounded-full border border-zinc-200 px-3 py-1.5 disabled:opacity-40">Previous</button><button type="button" disabled={!usersHasMore || loading} onClick={() => setUsersPage(page => page + 1)} className="rounded-full border border-zinc-200 px-3 py-1.5 disabled:opacity-40">Next</button></div></div>
+            <div>
+              <div className="space-y-3 p-4 md:hidden">
+                {filteredUsers.map(user => <article key={user.id} className="rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0"><p className="truncate font-semibold">{user.profile?.business_name || 'Store not set up'}</p><p className="mt-1 break-all text-xs text-zinc-500">{user.email || 'No email'}</p></div>
+                    <span className="shrink-0 rounded-full bg-zinc-200 px-2.5 py-1 text-[10px] font-bold capitalize">{user.profile?.current_plan || 'basic'}</span>
+                  </div>
+                  <dl className="mt-4 grid grid-cols-2 gap-x-3 gap-y-3 text-xs">
+                    <div><dt className="text-zinc-400">WhatsApp</dt><dd className="mt-0.5 break-all font-medium">{user.profile?.whatsapp_number || 'Not added'}</dd></div>
+                    <div><dt className="text-zinc-400">Email</dt><dd className="mt-0.5 font-medium">{user.email_confirmed_at ? 'Confirmed' : 'Unconfirmed'}</dd></div>
+                    <div><dt className="text-zinc-400">Joined</dt><dd className="mt-0.5 font-medium">{date(user.created_at)}</dd></div>
+                    <div><dt className="text-zinc-400">Last sign-in</dt><dd className="mt-0.5 font-medium">{date(user.last_sign_in_at)}</dd></div>
+                  </dl>
+                  {user.profile?.store_slug && <Link href={`/s/${user.profile.store_slug}`} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex min-h-9 items-center rounded-full border border-zinc-200 bg-white px-3 text-xs font-semibold">Open store <span aria-hidden="true" className="ml-1">↗</span></Link>}
+                </article>)}
+                {!filteredUsers.length && <div className="rounded-xl p-8 text-center text-sm text-zinc-500">{error ? 'User data could not be loaded.' : 'No matching users on this page.'}</div>}
+              </div>
+              <div className="hidden overflow-x-auto md:block">
+                <table className="w-full min-w-[920px] text-left text-sm">
+                  <thead className="bg-zinc-50 text-[10px] uppercase tracking-wider text-zinc-500"><tr><th className="px-5 py-3 font-bold">User / store</th><th className="px-5 py-3 font-bold">Contact</th><th className="px-5 py-3 font-bold">Plan</th><th className="px-5 py-3 font-bold">Joined</th><th className="px-5 py-3 font-bold">Last sign-in</th></tr></thead>
+                  <tbody className="divide-y divide-zinc-100">
+                    {filteredUsers.map(user => <tr key={user.id} className="align-top hover:bg-zinc-50/70">
+                      <td className="px-5 py-4"><p className="font-semibold">{user.profile?.business_name || 'Store not set up'}</p><p className="mt-1 text-xs text-zinc-500">{user.email || 'No email'} · {user.profile?.store_slug ? `/s/${user.profile.store_slug}` : 'No store link'}</p><p className="mt-1 font-mono text-[10px] text-zinc-400">{user.id}</p></td>
+                      <td className="px-5 py-4 text-xs text-zinc-600">{user.profile?.whatsapp_number || 'No WhatsApp number'}<p className="mt-1 text-zinc-400">{user.email_confirmed_at ? 'Email confirmed' : 'Email unconfirmed'}</p></td>
+                      <td className="px-5 py-4"><span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold capitalize">{user.profile?.current_plan || 'basic'}</span></td>
+                      <td className="px-5 py-4 text-xs text-zinc-600">{date(user.created_at)}</td><td className="px-5 py-4 text-xs text-zinc-600">{date(user.last_sign_in_at)}</td>
+                    </tr>)}
+                    {!filteredUsers.length && <tr><td colSpan={5} className="p-10 text-center text-sm text-zinc-500">{error ? 'User data could not be loaded.' : 'No matching users on this page.'}</td></tr>}
+                  </tbody>
+                </table>
+              </div>
+              <div className="flex items-center justify-between border-t border-zinc-100 px-4 py-3 text-xs text-zinc-500 sm:px-5"><span>Page {usersPage} · {users.length} users</span><div className="flex gap-2"><button type="button" disabled={usersPage <= 1 || loading} onClick={() => setUsersPage(page => Math.max(1, page - 1))} className="min-h-9 rounded-full border border-zinc-200 px-3 py-1.5 disabled:opacity-40">Previous</button><button type="button" disabled={!usersHasMore || loading} onClick={() => setUsersPage(page => page + 1)} className="min-h-9 rounded-full border border-zinc-200 px-3 py-1.5 disabled:opacity-40">Next</button></div></div>
             </div>
           ) : (
             <div className="divide-y divide-zinc-100">
@@ -204,6 +256,13 @@ export default function AdminPayments() {
                 </div>
               </article>)}
               {!filteredPayments.length && <div className="p-10 text-center text-sm text-zinc-500">{error ? 'Payment data could not be loaded.' : `No ${filter === 'all' ? '' : filter + ' '}payments found.`}</div>}
+              <div className="flex items-center justify-between border-t border-zinc-100 px-5 py-3 text-xs text-zinc-500">
+                <span>Page {paymentsPage} · {filteredPayments.length} payments shown</span>
+                <div className="flex gap-2">
+                  <button type="button" disabled={paymentsPage <= 1 || loading} onClick={() => setPaymentsPage(page => Math.max(1, page - 1))} className="rounded-full border border-zinc-200 px-3 py-1.5 disabled:opacity-40">Previous</button>
+                  <button type="button" disabled={!paymentsHasMore || loading} onClick={() => setPaymentsPage(page => page + 1)} className="rounded-full border border-zinc-200 px-3 py-1.5 disabled:opacity-40">Next</button>
+                </div>
+              </div>
             </div>
           )}
         </section>

@@ -110,10 +110,10 @@ export default function PlansPage() {
     finally { setSubmitting(false) }
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-[#F8F7F5]">Loading plans...</div>
+  if (loading) return <div data-app-page className="min-h-screen flex items-center justify-center bg-[#F8F7F5]">Loading plans...</div>
 
   return (
-    <div className="min-h-screen bg-[#F8F7F5] text-zinc-900">
+    <div data-app-page className="min-h-screen bg-[#F8F7F5] text-zinc-900">
       <style>{`
         .radio-container{--main-color:#E8FF86;--total-radio:3;display:flex;flex-direction:column;position:relative;padding-left:1rem}
         .radio-container input{appearance:none;position:absolute;opacity:0}
