@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, useMemo, useRef } from 'react'
+import { useOptionalStoreLocale } from '@/lib/storeLocale'
 
 /* =====================================================================
    PremiumThemeRenderer
@@ -469,7 +470,8 @@ const SortSelect = ({ S, className = '' }: any) => (
    useStore — everything a theme needs (content, catalog, cart, wishlist)
    ===================================================================== */
 function useStore(props: any, themeId: string) {
-  const { profile, products: rawProducts, cart: rawCart, setShowCart, onAdd, onOpen, track, selectedProduct, setSelectedProduct, onRemove } = props
+  const { t, language } = useOptionalStoreLocale()
+  const { profile, products: rawProducts, cart: rawCart, setShowCart, onAdd, onOpen, track, selectedProduct, setSelectedProduct, onRemove, onCheckout } = props
   const cart: any[] = rawCart || []
   const rootRef = useRef<HTMLDivElement>(null)
   const c = useMemo(() => resolveContent(themeId, profile), [themeId, profile])
@@ -548,7 +550,8 @@ function useStore(props: any, themeId: string) {
   }
 
   const m = (n: number) => `${c.currency || 'Rs.'} ${fmt(n)}`
-  const digits = String(profile?.whatsapp_number || '').replace(/\D/g, '')
+  const rawDigits = String(profile?.whatsapp_number || '').replace(/\D/g, '')
+  const digits = rawDigits.startsWith('00') ? rawDigits.slice(2) : rawDigits.startsWith('0') ? `92${rawDigits.slice(1)}` : rawDigits
   const storeUrl = typeof window !== 'undefined' ? (profile?.store_slug ? `${window.location.origin}/s/${profile.store_slug}` : window.location.href) : ''
   const scrollTo = (e: React.MouseEvent, id: string) => { (e.currentTarget as HTMLElement).ownerDocument.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }
   const heroImg = c.heroImage || products[0]?.images[0] || ''
@@ -556,9 +559,10 @@ function useStore(props: any, themeId: string) {
   const initial = String(c.headerLabel || profile?.business_name || 'S').trim().charAt(0).toUpperCase()
 
   return {
-    c, profile, products, filtered, chips, active, setActive, query, setQuery, sort, setSort, savedOnly, setSavedOnly,
+    c, profile, t, language, products, filtered, chips, active, setActive, query, setQuery, sort, setSort, savedOnly, setSavedOnly,
     wish, toggleWish, isWished: (id: string) => wish.includes(id),
     cart, cartCount, cartTotal, lines, cartOpen, openCart, closeCart, changeQty, canRemove: !!onRemove,
+    orderInboxEnabled: profile?.current_plan === 'advanced' || profile?.current_plan === 'premium', onCheckout,
     sel, openProduct, closeProduct, addToCart, quickAdd, track, toast, flash, onAdd,
     isHot: (p: any) => products.indexOf(p) < 2 && stockState(p) !== 'out',
     m, digits, storeUrl, scrollTo, heroImg, heroImg2, initial, rootRef, lines2: lines,
@@ -693,7 +697,7 @@ function ProductDetail({ S, skin, layout }: { S: any; skin: Skin; layout: 'modal
           {p.category && <span className={`px-2.5 h-6 inline-flex items-center border ${skin.line} ${skin.chipR}`}>{p.category}</span>}
           <span className="inline-flex items-center gap-1.5">
             <span className={`w-1.5 h-1.5 rounded-full ${st === 'out' ? 'bg-red-500' : st === 'low' ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`} />
-            {st === 'out' ? 'Sold out' : st === 'low' ? `Only ${p.stock} left` : 'In stock'}
+            {st === 'out' ? S.t('soldOut') : st === 'low' ? `Only ${p.stock} left` : S.t('inStock')}
           </span>
         </div>
         <div className="flex items-center gap-1.5">
@@ -722,7 +726,7 @@ function ProductDetail({ S, skin, layout }: { S: any; skin: Skin; layout: 'modal
 
       {p.colors.length > 0 && (
         <div>
-          <div className="text-[12px] font-semibold mb-2.5">Color: <span className={`font-normal ${skin.muted}`}>{color}</span></div>
+          <div className="text-[12px] font-semibold mb-2.5">{S.t('color')}: <span className={`font-normal ${skin.muted}`}>{color}</span></div>
           <div className="flex flex-wrap gap-2.5">{p.colors.map((n: string) => <Swatch key={n} name={n} on={color === n} onClick={() => setColor(n)} skin={skin} />)}</div>
         </div>
       )}
@@ -730,8 +734,8 @@ function ProductDetail({ S, skin, layout }: { S: any; skin: Skin; layout: 'modal
       {p.sizes.length > 0 && (
         <div data-sizes className={err ? 'pm-shake' : ''}>
           <div className="flex items-center justify-between mb-2.5">
-            <div className="text-[12px] font-semibold">Size: <span className={`font-normal ${err ? 'text-red-500' : skin.muted}`}>{size || (err ? 'Please choose a size' : 'Select')}</span></div>
-            <button type="button" onClick={() => setGuide(!guide)} className={`inline-flex items-center gap-1.5 text-[12px] underline underline-offset-4 ${skin.muted}`}><Ic.ruler c="w-3.5 h-3.5" />Size guide</button>
+            <div className="text-[12px] font-semibold">{S.t('availableSizes')}: <span className={`font-normal ${err ? 'text-red-500' : skin.muted}`}>{size || (err ? S.t('chooseSize') : S.t('selectSize'))}</span></div>
+            <button type="button" onClick={() => setGuide(!guide)} className={`inline-flex items-center gap-1.5 text-[12px] underline underline-offset-4 ${skin.muted}`}><Ic.ruler c="w-3.5 h-3.5" />{S.t('sizeGuide')}</button>
           </div>
           <div className="flex flex-wrap gap-2">
             {p.sizes.map((s: string) => (
@@ -791,7 +795,7 @@ function ProductDetail({ S, skin, layout }: { S: any; skin: Skin; layout: 'modal
     <div className={`sticky bottom-0 z-10 px-5 md:px-7 py-3.5 border-t ${skin.dock}`}>
       <div className="grid grid-cols-[1fr_auto] gap-2.5">
         <button type="button" disabled={out} onClick={() => submit(false)} className={`h-12 px-5 text-[13.5px] font-bold transition active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none ${skin.btn}`}>
-          {out ? 'Sold out' : `Add to cart · ${S.m(p.price * qty)}`}
+          {out ? S.t('soldOut') : `${S.t('addToCart')} · ${S.m(p.price * qty)}`}
         </button>
         <button type="button" disabled={out} onClick={() => submit(true)} className={`h-12 px-5 text-[13px] font-bold inline-flex items-center gap-2 transition active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none ${skin.btnAlt}`}>
           <Ic.chat c="w-4 h-4" /><span className="hidden sm:inline">Order now</span>
@@ -873,6 +877,7 @@ function CartDrawer({ S, skin }: { S: any; skin: Skin }) {
 
   const order = () => {
     if (!S.profile || S.cartCount === 0) return
+    if (S.orderInboxEnabled) { S.onCheckout?.(); S.closeCart(); return }
     if (!name.trim()) { setErr('Please enter your name'); return }
     if (!address.trim()) { setErr('Please enter your delivery address'); return }
     setErr('')
@@ -920,23 +925,26 @@ function CartDrawer({ S, skin }: { S: any; skin: Skin }) {
             <div className="py-20 text-center">
               <div className={`w-14 h-14 mx-auto grid place-items-center border ${skin.line} rounded-full ${skin.muted}`}><Ic.bag c="w-6 h-6" /></div>
               <div className="mt-4 text-[14px] font-semibold">{c.cartEmpty}</div>
-              <button type="button" onClick={S.closeCart} className="mt-3 text-[12.5px] underline underline-offset-4">Continue shopping</button>
+              <button type="button" onClick={S.closeCart} className="mt-3 text-[12.5px] underline underline-offset-4">{S.t('continueShopping')}</button>
             </div>
           )}
         </div>
 
         {S.cartCount > 0 && (
           <div className={`px-5 py-4 border-t space-y-2.5 ${skin.line}`}>
-            <input value={name} onChange={e => setName(e.target.value)} placeholder="Full name *" aria-label="Full name" className={`w-full h-11 px-3.5 text-[13px] outline-none ${skin.input}`} />
-            <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="Phone (optional)" inputMode="tel" aria-label="Phone" className={`w-full h-11 px-3.5 text-[13px] outline-none ${skin.input}`} />
-            <input value={address} onChange={e => setAddress(e.target.value)} placeholder="Delivery address *" aria-label="Address" className={`w-full h-11 px-3.5 text-[13px] outline-none ${skin.input}`} />
-            <input value={note} onChange={e => setNote(e.target.value)} placeholder="Note for the seller (optional)" aria-label="Note" className={`w-full h-11 px-3.5 text-[13px] outline-none ${skin.input}`} />
-            {err && <div role="alert" className="text-[12px] font-medium text-red-500 pm-fade">{err}</div>}
-            <div className="flex items-center justify-between pt-1">
-              <span className={`text-[12.5px] ${skin.muted}`}>Total{thr > 0 && left === 0 ? ' · free shipping' : ''}</span>
-              <span className="text-[20px] font-extrabold tabular-nums">{S.m(S.cartTotal)}</span>
-            </div>
-            <button type="button" onClick={order} className={`w-full h-12 text-[13.5px] font-bold inline-flex items-center justify-center gap-2 transition active:scale-[0.98] ${skin.btn}`}><Ic.chat c="w-4 h-4" />{c.orderButton}</button>
+            {S.orderInboxEnabled ? <>
+              <p className={`text-[12px] leading-5 ${skin.muted}`}>Submit your order request, then confirm delivery and payment details with the seller on WhatsApp.</p>
+              <div className="flex items-center justify-between pt-1"><span className={`text-[12.5px] ${skin.muted}`}>{S.t('subtotal')}</span><span className="text-[20px] font-extrabold tabular-nums">{S.m(S.cartTotal)}</span></div>
+              <button type="button" onClick={order} className={`w-full h-12 text-[13.5px] font-bold inline-flex items-center justify-center gap-2 transition active:scale-[0.98] ${skin.btn}`}><Ic.chat c="w-4 h-4" />{S.t('placeOrder')}</button>
+            </> : <>
+              <input value={name} onChange={e => setName(e.target.value)} placeholder={`${S.t('customerName')} *`} aria-label={S.t('customerName')} className={`w-full h-11 px-3.5 text-[13px] outline-none ${skin.input}`} />
+              <input value={phone} onChange={e => setPhone(e.target.value)} placeholder={`${S.t('phone')} (optional)`} inputMode="tel" aria-label={S.t('phone')} className={`w-full h-11 px-3.5 text-[13px] outline-none ${skin.input}`} />
+              <input value={address} onChange={e => setAddress(e.target.value)} placeholder={`${S.t('address')} *`} aria-label={S.t('address')} className={`w-full h-11 px-3.5 text-[13px] outline-none ${skin.input}`} />
+              <input value={note} onChange={e => setNote(e.target.value)} placeholder={S.t('notes')} aria-label={S.t('notes')} className={`w-full h-11 px-3.5 text-[13px] outline-none ${skin.input}`} />
+              {err && <div role="alert" className="text-[12px] font-medium text-red-500 pm-fade">{err}</div>}
+              <div className="flex items-center justify-between pt-1"><span className={`text-[12.5px] ${skin.muted}`}>Total{thr > 0 && left === 0 ? ' · free shipping' : ''}</span><span className="text-[20px] font-extrabold tabular-nums">{S.m(S.cartTotal)}</span></div>
+              <button type="button" onClick={order} className={`w-full h-12 text-[13.5px] font-bold inline-flex items-center justify-center gap-2 transition active:scale-[0.98] ${skin.btn}`}><Ic.chat c="w-4 h-4" />{c.orderButton}</button>
+            </>}
           </div>
         )}
       </aside>
@@ -2396,9 +2404,9 @@ function ThemeHost({ View, themeId, ...rest }: any) {
 }
 
 /* Props are unchanged from before. `onRemove(index)` is new and optional: it lets customers remove items in the cart. */
-export function PremiumThemeRenderer({ themeId, profile, products, cart, setShowCart, onAdd, onOpen, track, selectedProduct, setSelectedProduct, onRemove }: any) {
+export function PremiumThemeRenderer({ themeId, profile, products, cart, setShowCart, onAdd, onOpen, track, selectedProduct, setSelectedProduct, onRemove, onCheckout }: any) {
   const View = THEME_VIEWS[themeId]
   if (!View) return null
   // key: switching theme in the editor starts that theme fresh (filters, search, open product reset)
-  return <ThemeHost key={themeId} View={View} themeId={themeId} profile={profile} products={products} cart={cart} setShowCart={setShowCart} onAdd={onAdd} onOpen={onOpen} track={track} selectedProduct={selectedProduct} setSelectedProduct={setSelectedProduct} onRemove={onRemove} />
+  return <ThemeHost key={themeId} View={View} themeId={themeId} profile={profile} products={products} cart={cart} setShowCart={setShowCart} onAdd={onAdd} onOpen={onOpen} track={track} selectedProduct={selectedProduct} setSelectedProduct={setSelectedProduct} onRemove={onRemove} onCheckout={onCheckout} />
 }

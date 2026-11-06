@@ -30,7 +30,9 @@ Payment submissions are validated server-side; each transaction is still manuall
 ## Production checklist
 
 - Configure `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (or the legacy anon key), `SUPABASE_SERVICE_ROLE_KEY`, and `ADMIN_EMAILS` in the deployment platform.
+- Back up the target database before applying `supabase/migrations/20261106_store_growth_features.sql`; then verify the RPC, constraints, grants, and RLS policies in Supabase before accepting customer orders.
 - Enable Supabase Email confirmation and configure the production Auth redirect allowlist for `/auth/callback`, `/auth/complete`, and `/reset-password`; verify signup confirmation, email/password, Google sign-in (if enabled), and password recovery against the production domain.
-- Confirm database tables, indexes, RLS policies, storage bucket permissions, and public storefront behavior in the target Supabase project.
+- Configure and test automated backups / point-in-time recovery for the Supabase project. Confirm database tables, indexes, RLS policies, storage bucket permissions, and public storefront behavior.
+- Admin TOTP/MFA is not yet enforced by this app. Do not treat an email allowlist as MFA; implement and verify an AAL2 gate for admin API requests before claiming MFA readiness.
 - Verify JazzCash Till ID and payment-review operations before accepting real payments.
-- Run `npx tsc --noEmit` and `npm run build` before deployment.
+- Run `npx tsc --noEmit`, `npm run build`, and authenticated checkout/order/status tests against a staging Supabase project before deployment.

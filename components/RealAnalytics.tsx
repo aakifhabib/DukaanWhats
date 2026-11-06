@@ -6,10 +6,11 @@ type AnalyticsData = {
   totalViews: number
   todayViews: number
   productViews: number
+  addToCart: number
   whatsappClicks: number
   conversionRate: number
   dailyData: { date: string, views: number, clicks: number, wa: number }[]
-  topProducts: { id: string, name: string, views: number, clicks: number }[]
+  topProducts: { id: string, name: string, views: number, adds: number, clicks: number }[]
   recentEvents: any[]
   hourlyData: { hour: string, views: number }[]
 }
@@ -35,7 +36,7 @@ export function RealAnalytics({ userId, currentPlanId }: { userId: string, curre
       const { data: events, error: queryError } = await query.order('created_at', { ascending: false }).limit(1000)
       if (queryError) throw queryError
       if (!events || events.length === 0) {
-        setData({ totalViews: 0, todayViews: 0, productViews: 0, whatsappClicks: 0, conversionRate: 0, dailyData: [], topProducts: [], recentEvents: [], hourlyData: [] })
+        setData({ totalViews: 0, todayViews: 0, productViews: 0, addToCart: 0, whatsappClicks: 0, conversionRate: 0, dailyData: [], topProducts: [], recentEvents: [], hourlyData: [] })
         setLoading(false); return
       }
 
@@ -43,6 +44,7 @@ export function RealAnalytics({ userId, currentPlanId }: { userId: string, curre
       const today = new Date().toDateString()
       const todayViews = events.filter(e => e.event_type === 'store_view' && new Date(e.created_at).toDateString() === today).length
       const productViews = events.filter(e => e.event_type === 'product_view').length
+      const addToCart = events.filter(e => e.event_type === 'add_to_cart').length
       const whatsappClicks = events.filter(e => e.event_type === 'whatsapp_click').length
       const conversionRate = totalViews > 0 ? Math.round((whatsappClicks / totalViews) * 100) : 0
 
@@ -66,13 +68,14 @@ export function RealAnalytics({ userId, currentPlanId }: { userId: string, curre
 
       const productMap = new Map()
       events.filter(e => e.product_id).forEach(e => {
-        if (!productMap.has(e.product_id)) productMap.set(e.product_id, { id: e.product_id, name: e.products?.name || 'Unknown Product', views: 0, clicks: 0 })
+        if (!productMap.has(e.product_id)) productMap.set(e.product_id, { id: e.product_id, name: e.products?.name || 'Unknown Product', views: 0, adds: 0, clicks: 0 })
         if (e.event_type === 'product_view') productMap.get(e.product_id).views++
+        if (e.event_type === 'add_to_cart') productMap.get(e.product_id).adds++
         if (e.event_type === 'whatsapp_click') productMap.get(e.product_id).clicks++
       })
-      const topProducts = Array.from(productMap.values()).sort((a,b) => (b.views + b.clicks) - (a.views + a.clicks)).slice(0,5)
+      const topProducts = Array.from(productMap.values()).sort((a,b) => (b.views + b.adds + b.clicks) - (a.views + a.adds + a.clicks)).slice(0,5)
 
-      setData({ totalViews, todayViews, productViews, whatsappClicks, conversionRate, dailyData, topProducts, recentEvents: events.slice(0,8), hourlyData })
+      setData({ totalViews, todayViews, productViews, addToCart, whatsappClicks, conversionRate, dailyData, topProducts, recentEvents: events.slice(0,8), hourlyData })
     } catch (e: any) {
       console.error('Analytics request failed:', e)
       setData(null)
@@ -163,8 +166,8 @@ export function RealAnalytics({ userId, currentPlanId }: { userId: string, curre
         </div>
       </div>
 
-      {/* 4 Premium Stat Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {/* 5 store performance cards */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <div className="bg-white border rounded-[20px] p-5 relative overflow-hidden group hover:border-black transition-colors">
           <div className="absolute top-0 right-0 w-20 h-20 bg-black/[0.02] rounded-full blur-[20px] group-hover:bg-black/[0.04] transition-colors" />
           <div className="flex justify-between items-start"><div className="w-9 h-9 bg-[#F8F7F5] border rounded-[10px] flex items-center justify-center text-[14px]">👁</div><span className="text-[10px] bg-black text-white px-2 h-5 rounded-full font-bold flex items-center">LIVE</span></div>
@@ -177,7 +180,13 @@ export function RealAnalytics({ userId, currentPlanId }: { userId: string, curre
           <div className="w-9 h-9 bg-black text-white rounded-[10px] flex items-center justify-center text-[14px]">◐</div>
           <div className="text-[28px] font-black tracking-tight mt-4">{data.productViews}</div>
           <div className="text-[11px] font-bold tracking-widest uppercase text-zinc-500 mt-1">Product Views</div>
-          <div className="text-[11px] text-zinc-400 mt-2">{data.topProducts.length} products clicked</div>
+          <div className="text-[11px] text-zinc-400 mt-2">{data.topProducts.length} products with activity</div>
+        </div>
+        <div className="bg-white border rounded-[20px] p-5 relative overflow-hidden">
+          <div className="w-9 h-9 bg-[#E8FF86] text-black rounded-[10px] flex items-center justify-center text-[14px]">＋</div>
+          <div className="text-[28px] font-black tracking-tight mt-4">{data.addToCart}</div>
+          <div className="text-[11px] font-bold tracking-widest uppercase text-zinc-500 mt-1">Added to Bag</div>
+          <div className="text-[11px] text-zinc-400 mt-2">Product interest signals</div>
         </div>
         <div className="bg-black text-white rounded-[20px] p-5 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full blur-[20px]" />
@@ -190,7 +199,7 @@ export function RealAnalytics({ userId, currentPlanId }: { userId: string, curre
           <div className="w-9 h-9 bg-black text-[#E8FF86] rounded-[10px] flex items-center justify-center font-bold">%</div>
           <div className="text-[28px] font-black mt-4">{data.conversionRate}%</div>
           <div className="text-[11px] font-bold tracking-widest uppercase opacity-60 mt-1">Conversion Rate</div>
-          <div className="text-[11px] opacity-60 mt-2">Views → Orders</div>
+          <div className="text-[11px] opacity-60 mt-2">Views → WhatsApp clicks</div>
         </div>
       </div>
 
@@ -229,8 +238,8 @@ export function RealAnalytics({ userId, currentPlanId }: { userId: string, curre
             {data.topProducts.map((p, idx) => (
               <div key={p.id} className="group flex items-center gap-4 bg-[#F8F7F5] border rounded-[16px] p-4 hover:bg-white hover:border-black hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all">
                 <div className="w-8 h-8 bg-black text-white rounded-[10px] flex items-center justify-center font-black text-[12px]">{idx+1}</div>
-                <div className="flex-1 min-w-0"><div className="font-bold text-[13px] truncate">{p.name}</div><div className="text-[11px] text-zinc-500 mt-0.5">{p.views} views • {p.clicks} WA leads</div></div>
-                <div className="text-right"><div className="text-[13px] font-black">{p.views + p.clicks}</div><div className="text-[10px] text-zinc-400">total</div></div>
+                <div className="flex-1 min-w-0"><div className="font-bold text-[13px] truncate">{p.name}</div><div className="text-[11px] text-zinc-500 mt-0.5">{p.views} views • {p.adds} bag adds • {p.clicks} WA clicks</div></div>
+                <div className="text-right"><div className="text-[13px] font-black">{p.views + p.adds + p.clicks}</div><div className="text-[10px] text-zinc-400">total</div></div>
               </div>
             ))}
             {data.topProducts.length === 0 && <div className="text-[12px] text-zinc-500 py-6 text-center">No product views yet</div>}

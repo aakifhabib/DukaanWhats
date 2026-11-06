@@ -6,10 +6,11 @@ import Link from 'next/link'
 import { getTheme, getBasicThemes, getAdvancedList, getAdvancedThemes, getPremiumThemes } from '@/lib/storeThemes'
 import { DukaanWhatsLoader } from '@/components/DukaanWhatsLoader'
 import { PremiumThemeEditor } from '@/components/PremiumThemeEditor'
+import { OrdersDashboard } from '@/components/OrdersDashboard'
 
 const TILL_ID = '984837533'
 
-type Profile = { id: string; business_name: string; whatsapp_number: string; store_slug: string; store_theme?: string; current_plan?: string; premium_custom?: any }
+type Profile = { id: string; business_name: string; whatsapp_number: string; store_slug: string; store_theme?: string; current_plan?: string; premium_custom?: any; store_language?: 'en' | 'ur'; delivery_enabled?: boolean; delivery_fee?: number; delivery_areas?: string[]; pickup_enabled?: boolean; cod_enabled?: boolean; cod_details?: string; seo_title?: string | null; seo_description?: string | null }
 type Product = { id: string; name: string; price: number; image_url: string; image_urls?: string[]; user_id: string }
 type Billing = 'monthly' | 'yearly'
 type PlanDef = { id: 'basic' | 'advanced' | 'premium'; name: string; monthly: number; yearlyMonthly: number; yearlyTotal: number; products: number; imagesPerProduct: number; advancedAllowed: number | 'all'; premiumAllowed: number | 'all'; stores: number; features: string[] }
@@ -19,6 +20,7 @@ const IconThemes = ({ c = '' }) => <svg className={c} viewBox="0 0 24 24" fill="
 const IconProducts = ({ c = '' }) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /><path d="M3.27 6.96 12 12.01l8.73-5.05M12 22.08V12" /></svg>
 const IconStore = ({ c = '' }) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l1.5-5h15L21 9M3 9h18M3 9v11a1 1 0 0 0 1 1h4v-6h8v6h4a1 1 0 0 0 1-1V9" /></svg>
 const IconAnalytics = ({ c = '' }) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18M7 14l4-4 4 4 6-6" /></svg>
+const IconOrders = ({ c = '' }) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h16v15H4zM8 3v4m8-4v4M4 10h16M8 14h3m-3 3h7" /></svg>
 const IconBilling = ({ c = '' }) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></svg>
 const IconLock = ({ c = '' }) => <svg className={c} viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="10" width="14" height="10" rx="3" /><path d="M8 10V7.5C8 5.3 9.8 3.5 12 3.5C14.2 3.5 16 5.3 16 7.5V10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" fill="none" /></svg>
 const IconCheck = ({ c = '' }) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
@@ -530,6 +532,15 @@ export default function Dashboard() {
   const [saving, setSaving] = useState(false)
   const [businessName, setBusinessName] = useState('')
   const [whatsapp, setWhatsapp] = useState('')
+  const [storeLanguage, setStoreLanguage] = useState<'en' | 'ur'>('en')
+  const [deliveryEnabled, setDeliveryEnabled] = useState(false)
+  const [deliveryFee, setDeliveryFee] = useState('0')
+  const [deliveryAreas, setDeliveryAreas] = useState('')
+  const [pickupEnabled, setPickupEnabled] = useState(true)
+  const [codEnabled, setCodEnabled] = useState(true)
+  const [codDetails, setCodDetails] = useState('Cash on delivery details are confirmed on WhatsApp.')
+  const [seoTitle, setSeoTitle] = useState('')
+  const [seoDescription, setSeoDescription] = useState('')
   const [slug, setSlug] = useState('')
   const [theme, setTheme] = useState('clothing-noor')
   const [saved, setSaved] = useState(false)
@@ -547,7 +558,7 @@ export default function Dashboard() {
   const [previews, setPreviews] = useState<string[]>([])
   const [uploading, setUploading] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [activeTab, setActiveTab] = useState<'store' | 'themes' | 'products' | 'analytics' | 'payments'>('themes')
+  const [activeTab, setActiveTab] = useState<'store' | 'themes' | 'products' | 'orders' | 'analytics' | 'payments'>('themes')
   const [selectedPlan, setSelectedPlan] = useState<PlanDef | null>(null)
   const [billing, setBilling] = useState<Billing>('monthly')
   const [txnId, setTxnId] = useState('')
@@ -560,8 +571,8 @@ export default function Dashboard() {
 
   const plans: PlanDef[] = [
     { id: 'basic', name: 'Basic', monthly: 0, yearlyMonthly: 0, yearlyTotal: 0, products: 5, imagesPerProduct: 1, advancedAllowed: 3, premiumAllowed: 0, stores: 1, features: ['5 Products', '1 Image / product', 'All 3 Basic Themes', '3 of 8 Advanced Themes', 'COD Only', 'Watermark'] },
-    { id: 'advanced', name: 'Advanced', monthly: 899, yearlyMonthly: 699, yearlyTotal: 8388, products: 25, imagesPerProduct: 5, advancedAllowed: 8, premiumAllowed: 0, stores: 3, features: ['25 Products', '5 Images / product', 'All 3 Basic Themes', 'All 8 Advanced Themes', 'Premium themes locked', 'Orders Dashboard'] },
-    { id: 'premium', name: 'Premium', monthly: 2999, yearlyMonthly: 2499, yearlyTotal: 29988, products: 999999, imagesPerProduct: 999999, advancedAllowed: 'all', premiumAllowed: 'all', stores: 999999, features: ['Unlimited Products', 'Unlimited Images', 'Every Theme (3 Basic + 8 Advanced + 10 Premium)', 'No Watermark', 'Live Analytics'] },
+    { id: 'advanced', name: 'Advanced', monthly: 899, yearlyMonthly: 699, yearlyTotal: 8388, products: 25, imagesPerProduct: 5, advancedAllowed: 8, premiumAllowed: 0, stores: 3, features: ['25 Products', '5 Images / product', 'All 3 Basic Themes', 'All 8 Advanced Themes', 'Premium themes locked', 'Orders Dashboard', 'Delivery areas, fees, pickup & COD'] },
+    { id: 'premium', name: 'Premium', monthly: 2999, yearlyMonthly: 2499, yearlyTotal: 29988, products: 999999, imagesPerProduct: 999999, advancedAllowed: 'all', premiumAllowed: 'all', stores: 999999, features: ['Unlimited Products', 'Unlimited Images', 'Every Theme (3 Basic + 8 Advanced + 10 Premium)', 'No Watermark', 'Live Analytics', 'Orders Dashboard + delivery settings'] },
   ]
 
   const currentPlanId = (profile?.current_plan || 'basic') as 'basic' | 'advanced' | 'premium'
@@ -624,6 +635,15 @@ export default function Dashboard() {
         setProfile(prof)
         setBusinessName(prof.business_name || '')
         setWhatsapp(prof.whatsapp_number || '')
+        setStoreLanguage(prof.store_language === 'ur' ? 'ur' : 'en')
+        setDeliveryEnabled(Boolean(prof.delivery_enabled))
+        setDeliveryFee(String(prof.delivery_fee ?? 0))
+        setDeliveryAreas(Array.isArray(prof.delivery_areas) ? prof.delivery_areas.join(', ') : '')
+        setPickupEnabled(prof.pickup_enabled !== false)
+        setCodEnabled(prof.cod_enabled !== false)
+        setCodDetails(prof.cod_details || 'Cash on delivery details are confirmed on WhatsApp.')
+        setSeoTitle(prof.seo_title || '')
+        setSeoDescription(prof.seo_description || '')
         setSlug(prof.store_slug || '')
         setTheme(prof.store_theme || 'clothing-noor')
         setPremiumCustom((prof as any).premium_custom || {})
@@ -735,6 +755,28 @@ Upgrade to unlock all 8 Advanced themes.`)
       setErrorMsg('Enter a valid WhatsApp number with its country code, for example 923001234567.')
       return
     }
+    const cleanDeliveryFee = Number(deliveryFee)
+    if (!Number.isInteger(cleanDeliveryFee) || cleanDeliveryFee < 0 || cleanDeliveryFee > 1000000) {
+      setErrorMsg('Delivery fee must be a whole number between Rs. 0 and Rs. 1,000,000.')
+      return
+    }
+    if (!deliveryEnabled && !pickupEnabled) {
+      setErrorMsg('Enable delivery or pickup so customers have a way to receive their order.')
+      return
+    }
+    const cleanDeliveryAreas = [...new Set(deliveryAreas.split(',').map(value => value.trim()).filter(Boolean))]
+    if (deliveryEnabled && cleanDeliveryAreas.length === 0) {
+      setErrorMsg('Add at least one delivery area before enabling delivery.')
+      return
+    }
+    if (cleanDeliveryAreas.length > 50 || cleanDeliveryAreas.some(area => area.length > 80)) {
+      setErrorMsg('Use no more than 50 delivery areas, with each area 80 characters or fewer.')
+      return
+    }
+    if (codDetails.trim().length > 300) {
+      setErrorMsg('Cash-on-delivery details must be 300 characters or fewer.')
+      return
+    }
 
     setSaving(true)
     setErrorMsg(null)
@@ -745,6 +787,15 @@ Upgrade to unlock all 8 Advanced themes.`)
         store_slug: cleanSlug,
         store_theme: theme,
         premium_custom: premiumCustom,
+        store_language: storeLanguage,
+        delivery_enabled: deliveryEnabled,
+        delivery_fee: cleanDeliveryFee,
+        delivery_areas: cleanDeliveryAreas,
+        pickup_enabled: pickupEnabled,
+        cod_enabled: codEnabled,
+        cod_details: codDetails.trim().slice(0, 300),
+        seo_title: seoTitle.trim().slice(0, 80) || null,
+        seo_description: seoDescription.trim().slice(0, 250) || null,
       }
       const { data, error } = await supabase.from('profiles').update(updatedProfile).eq('id', profile.id).select('id').maybeSingle()
       if (error) {
@@ -844,7 +895,7 @@ Upgrade to unlock all 8 Advanced themes.`)
     setProdPrice(String(p.price))
     setProdDesc(p.description || '')
     setProdCategory(p.category || 'General')
-    setProdStock(String(p.stock || 100))
+    setProdStock(String(p.stock ?? 100))
     setProdSizes(Array.isArray(p.sizes) ? p.sizes.join(', ') : p.sizes || '')
     setProdColors(Array.isArray(p.colors) ? p.colors.join(', ') : p.colors || '')
     setProdOrigPrice(p.original_price ? String(p.original_price) : '')
@@ -972,14 +1023,15 @@ Upgrade to unlock all 8 Advanced themes.`)
   const sidebarNav = [
     { id: 'themes', label: 'Themes', Icon: IconThemes },
     { id: 'products', label: 'Products', Icon: IconProducts, badge: `${products.length}/${productLimit === 999999 ? '∞' : productLimit}` },
+    { id: 'orders', label: 'Orders', Icon: IconOrders, pro: !isAdvanced },
     { id: 'store', label: 'Store', Icon: IconStore },
     { id: 'analytics', label: 'Analytics', Icon: IconAnalytics, pro: !isPremium },
     { id: 'payments', label: 'Plans & Billing', Icon: IconBilling },
   ] as const
 
   /* ---------------- SHARED VIEW HELPERS ---------------- */
-  const tabLabel: Record<string, string> = { themes: 'Themes', products: 'Products', store: 'Store', analytics: 'Analytics', payments: 'Plans & billing' }
-  const mobileLabel: Record<string, string> = { themes: 'Themes', products: 'Products', store: 'Store', analytics: 'Analytics', payments: 'Plans' }
+  const tabLabel: Record<string, string> = { themes: 'Themes', products: 'Products', orders: 'Orders', store: 'Store', analytics: 'Analytics', payments: 'Plans & billing' }
+  const mobileLabel: Record<string, string> = { themes: 'Themes', products: 'Products', orders: 'Orders', store: 'Store', analytics: 'Analytics', payments: 'Plans' }
   const maxLabel = (n: number) => (n === 999999 ? '∞' : String(n))
   const productPct = productLimit === 999999 ? 3 : Math.min(100, (products.length / productLimit) * 100)
   const limitReached = products.length >= productLimit
@@ -1344,6 +1396,28 @@ Upgrade to unlock all 8 Advanced themes.`)
               <input value={slug} onChange={e => { setSlug(e.target.value.toLowerCase()); setSaved(false) }} maxLength={40} autoComplete="off" spellCheck={false} className="flex-1 min-w-0 h-11 pr-3.5 bg-transparent text-[13.5px] font-mono outline-none border-none" />
             </div>
           </Field>
+          <section className="space-y-4 border-t border-zinc-200/80 pt-5">
+            <div><h3 className="text-sm font-bold">Store experience</h3><p className="mt-1 text-xs text-zinc-500">Set your storefront language, delivery and search preview.</p></div>
+            <Field label="Storefront language">
+              <select value={storeLanguage} onChange={event => { setStoreLanguage(event.target.value as 'en' | 'ur'); setSaved(false) }} className={UI.input}><option value="en">English</option><option value="ur">اردو</option></select>
+            </Field>
+            <div className="space-y-3 rounded-xl border border-zinc-200 p-4">
+              <label className="flex items-start gap-3 text-sm"><input type="checkbox" checked={deliveryEnabled} onChange={event => { setDeliveryEnabled(event.target.checked); setSaved(false) }} className="mt-0.5 accent-black" /><span><strong>Offer delivery</strong><span className="mt-0.5 block text-xs text-zinc-500">Customers can request delivery from supported areas.</span></span></label>
+              <Field label="Delivery fee (PKR)"><input type="number" min="0" step="1" value={deliveryFee} onChange={event => { setDeliveryFee(event.target.value); setSaved(false) }} className={UI.input} /></Field>
+              <Field label="Delivery areas" hint="Separate areas with commas. Example: Islamabad, Rawalpindi">
+                <input value={deliveryAreas} onChange={event => { setDeliveryAreas(event.target.value); setSaved(false) }} maxLength={500} placeholder="Islamabad, Rawalpindi" className={UI.input} />
+              </Field>
+              <label className="flex items-center gap-3 text-sm"><input type="checkbox" checked={pickupEnabled} onChange={event => { setPickupEnabled(event.target.checked); setSaved(false) }} className="accent-black" /><span>Allow customer pickup</span></label>
+              <label className="flex items-start gap-3 border-t border-zinc-100 pt-3 text-sm"><input type="checkbox" checked={codEnabled} onChange={event => { setCodEnabled(event.target.checked); setSaved(false) }} className="mt-0.5 accent-black" /><span><strong>Cash on delivery</strong><span className="mt-0.5 block text-xs text-zinc-500">Customers can choose COD before confirming on WhatsApp.</span></span></label>
+              <Field label="COD details" hint="For example: cash only; payment is collected when your order arrives."><textarea value={codDetails} onChange={event => { setCodDetails(event.target.value); setSaved(false) }} maxLength={300} className={`${UI.input} !h-auto min-h-[70px] py-3 resize-none`} /></Field>
+            </div>
+            <Field label="Search title" hint="Optional page title shown in search and link previews (up to 80 characters).">
+              <input value={seoTitle} onChange={event => { setSeoTitle(event.target.value); setSaved(false) }} maxLength={80} className={UI.input} placeholder={`${businessName || 'Your store'} | DukaanWhats`} />
+            </Field>
+            <Field label="Search description" hint="Optional description for search and social previews (up to 250 characters).">
+              <textarea value={seoDescription} onChange={event => { setSeoDescription(event.target.value); setSaved(false) }} maxLength={250} className={`${UI.input} !h-auto min-h-[76px] py-3 resize-none`} placeholder="Describe your store and what customers can find." />
+            </Field>
+          </section>
           <div className="flex gap-2 pt-1 flex-wrap">
             <button type="button" onClick={copyLink} title="Copy your store link to share" className={`${BTN_LIGHT} h-10 px-5 text-[13px]`}>
               {copied ? <><IconCheck c="w-3.5 h-3.5" /> Copied</> : <><IconCopy c="w-3.5 h-3.5" /> Copy link</>}
@@ -1376,6 +1450,13 @@ Upgrade to unlock all 8 Advanced themes.`)
           </div>
         </div>
       </div>
+    </div>
+  )
+
+  /* ---------------- ORDERS PAGE ---------------- */
+  const ordersPage = (
+    <div className="dw-page dw-stagger">
+      {profile ? <OrdersDashboard userId={profile.id} isAdvanced={isAdvanced} /> : <div className="p-8 text-center text-zinc-500">Loading orders…</div>}
     </div>
   )
 
@@ -1776,7 +1857,7 @@ Upgrade to unlock all 8 Advanced themes.`)
               <button
                 type="button"
                 key={item.id}
-                onClick={() => setActiveTab(item.id as any)}
+                onClick={() => item.id === 'orders' && !isAdvanced ? setActiveTab('payments') : setActiveTab(item.id as any)}
                 aria-current={active ? 'page' : undefined}
                 className={`group relative z-10 w-full flex items-center gap-3 px-3 h-10 rounded-xl text-[13.5px] font-medium tracking-[-0.01em] transition-colors border-none cursor-pointer bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8FF86]/70 ${active ? 'text-white' : 'text-white/55 hover:text-white hover:bg-white/[0.04]'}`}
               >
@@ -1871,6 +1952,7 @@ Upgrade to unlock all 8 Advanced themes.`)
         <main className="max-w-6xl mx-auto px-4 md:px-8 py-6 md:py-10 pb-28 md:pb-14">
           {activeTab === 'themes' && themesPage}
           {activeTab === 'products' && productsPage}
+          {activeTab === 'orders' && ordersPage}
           {activeTab === 'store' && storePage}
           {activeTab === 'analytics' && analyticsPage}
           {activeTab === 'payments' && paymentsPage}
@@ -1879,15 +1961,15 @@ Upgrade to unlock all 8 Advanced themes.`)
 
       {/* Mobile bottom navigation */}
       <nav aria-label="Primary" className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/80 backdrop-blur-md border-t border-zinc-200/80 pb-[env(safe-area-inset-bottom)]">
-        <div className="relative grid grid-cols-5 px-1.5 pt-2 pb-2">
-          <span aria-hidden className="absolute top-[10px] h-7 w-12 rounded-full bg-[#E8FF86] transition-[left] duration-500 ease-[cubic-bezier(.2,.9,.25,1.05)]" style={{ left: `calc(6px + (100% - 12px) * ${(activeIdx + 0.5) / 5} - 24px)` }} />
+        <div className="relative grid grid-cols-6 px-1.5 pt-2 pb-2">
+          <span aria-hidden className="absolute top-[10px] h-7 w-12 rounded-full bg-[#E8FF86] transition-[left] duration-500 ease-[cubic-bezier(.2,.9,.25,1.05)]" style={{ left: `calc(6px + (100% - 12px) * ${(activeIdx + 0.5) / 6} - 24px)` }} />
           {sidebarNav.map(item => {
             const active = activeTab === item.id
             return (
               <button
                 type="button"
                 key={item.id}
-                onClick={() => setActiveTab(item.id as any)}
+                onClick={() => item.id === 'orders' && !isAdvanced ? setActiveTab('payments') : setActiveTab(item.id as any)}
                 aria-current={active ? 'page' : undefined}
                 className="flex flex-col items-center gap-1 py-0.5 bg-transparent border-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black rounded-xl"
               >
