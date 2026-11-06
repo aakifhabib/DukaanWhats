@@ -16,7 +16,7 @@ DukaanWhats is a Next.js store builder for Pakistani sellers. Customers browse a
 
 ## Admin panel
 
-Open `/admin/payments` and sign in using a Supabase account whose email is in `ADMIN_EMAILS`. The server checks the signed-in user's identity and email allowlist before using the service-role key to read user records or review payments. The panel contains paginated registered-user data and payment review actions. The default allowlisted address retained for compatibility is `nexusdeals235@gmail.com`; set `ADMIN_EMAILS` explicitly in production.
+The customer login page does not link to administrator access. Open `/admin/sign-in` directly and sign in using a Supabase account whose email is explicitly listed in `ADMIN_EMAILS`. The sign-in form has no customer sign-up or Google sign-in; the server independently verifies the user's Supabase identity and allowlist status on every admin API request before using the service-role key. The panel contains paginated registered-user data and payment review actions. There is no default administrator account: if `ADMIN_EMAILS` is unset, admin access fails closed. Keep the admin URL private, but do not treat an unlisted URL as a security boundary—the server-side checks are the protection.
 
 ## Plans and payments
 
@@ -25,7 +25,7 @@ Open `/admin/payments` and sign in using a Supabase account whose email is in `A
 - Premium: Rs. 2,999/month or Rs. 29,988/year; unlimited products and images.
 - JazzCash Till ID: `984837533`.
 
-Payment submissions are validated server-side; each transaction is still manually reviewed in the admin panel before the plan is activated.
+Payment submissions are validated server-side; each transaction is still manually reviewed in the admin panel before the plan is activated. The legacy JazzCash/Alfalah direct-checkout endpoints are disabled because their old callbacks did not verify gateway signatures. Do not enable those routes until the provider's signed callback is verified server-side and the amount, plan, user, and transaction reference are matched to a server-created order.
 
 ## Production checklist
 

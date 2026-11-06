@@ -173,7 +173,7 @@ export default function AdminPayments() {
         <h1 className="mt-5 text-2xl font-bold tracking-tight">Administrator sign in</h1>
         <p className="mt-2 text-sm leading-6 text-zinc-500">Sign in with your approved DukaanWhats account to view payments and registered users.</p>
         {error && <p role="alert" className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-left text-sm text-red-700">{error}</p>}
-        <Link href="/login?next=%2Fadmin%2Fpayments" className="mt-6 inline-flex h-11 w-full items-center justify-center rounded-full bg-black px-5 text-sm font-semibold text-white">Sign in securely</Link>
+        <Link href="/admin/sign-in" className="mt-6 inline-flex h-11 w-full items-center justify-center rounded-full bg-black px-5 text-sm font-semibold text-white">Administrator sign in</Link>
         <Link href="/" className="mt-4 inline-block text-sm text-zinc-500 hover:text-black">Back to home</Link>
       </section>
     </main>

@@ -6,7 +6,9 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
 function safeDestination(value: string | null) {
-  if (!value || !value.startsWith('/') || value.startsWith('//') || value.startsWith('/auth/complete')) return '/dashboard'
+  const pathname = value?.split(/[?#]/, 1)[0] || ''
+  const isAdminPath = pathname === '/admin' || pathname.startsWith('/admin/')
+  if (!value || !value.startsWith('/') || value.startsWith('//') || pathname.startsWith('/auth/complete') || isAdminPath) return '/dashboard'
   return value
 }
 
