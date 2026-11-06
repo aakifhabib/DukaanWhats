@@ -102,10 +102,11 @@ export default function LoginPage() {
     setResetLoading(true)
     setMsg('')
     try {
-      const callback = new URL('/auth/callback', window.location.origin)
-      callback.searchParams.set('type', 'recovery')
-      callback.searchParams.set('next', '/reset-password')
-      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: callback.toString() })
+      // Supabase recovery links may return credentials in the URL fragment, which
+      // a server-side callback route cannot read. Land on the client reset page
+      // so the Supabase browser client can consume the recovery session directly.
+      const redirectTo = new URL('/reset-password', window.location.origin).toString()
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo })
       if (error) throw error
       setMsg('If an account exists for this email, a password reset link is on its way.')
     } catch (err: any) {

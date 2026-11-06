@@ -16,7 +16,15 @@ export default function ResetPasswordPage() {
   useEffect(() => {
     let alive = true
     let timeoutId: ReturnType<typeof setTimeout> | undefined
-    let unsubscribe = () => {}
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!alive) return
+      if (event === 'PASSWORD_RECOVERY' && session) {
+        if (timeoutId) clearTimeout(timeoutId)
+        setValid(true)
+        setChecking(false)
+      }
+    })
+
     const init = async () => {
       try {
         const params = new URLSearchParams(window.location.search)
@@ -31,6 +39,9 @@ export default function ResetPasswordPage() {
           return
         }
 
+        // Supabase's default recovery flow may place the session in the URL
+        // fragment. The browser client consumes it during initialization and
+        // emits PASSWORD_RECOVERY; subscribing above avoids missing that event.
         const { data, error } = await supabase.auth.getSession()
         if (error) throw error
         if (!alive) return
@@ -40,13 +51,6 @@ export default function ResetPasswordPage() {
           return
         }
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-          if (event === 'PASSWORD_RECOVERY' && session && alive) {
-            setValid(true)
-            setChecking(false)
-          }
-        })
-        unsubscribe = () => subscription.unsubscribe()
         timeoutId = setTimeout(async () => {
           const { data: latest } = await supabase.auth.getSession()
           if (!alive) return
@@ -56,7 +60,7 @@ export default function ResetPasswordPage() {
             setValid(false)
             setMsg('Invalid or expired link. Request a new reset link from login page.')
           }
-        }, 2000)
+        }, 2500)
       } catch (e: any) {
         if (alive) {
           setMsg('Link expired or invalid. Request a new one. ' + e.message)
@@ -69,7 +73,7 @@ export default function ResetPasswordPage() {
     return () => {
       alive = false
       if (timeoutId) clearTimeout(timeoutId)
-      unsubscribe()
+      subscription.unsubscribe()
     }
   }, [])
 

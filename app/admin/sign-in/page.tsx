@@ -17,8 +17,8 @@ async function verifyAdmin(accessToken: string) {
 
 export default function AdminSignInPage() {
   const router = useRouter()
-  const [email, nexusdeals235@gmail.com] = useState('')
-  const [password, Malik@235] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
 

@@ -11,7 +11,7 @@ DukaanWhats is a Next.js store builder for Pakistani sellers. Customers browse a
 1. Create a Supabase project and enable the authentication providers you intend to offer (email/password and, optionally, Google).
 2. Create the app's `profiles`, `products`, `plan_payments`, and `store_analytics` tables and the public `product-images` storage bucket. Ensure row-level security lets each authenticated user manage only their own profile/products/payments, and lets storefront visitors read the store/product data needed to render a public shop.
 3. Copy `.env.local.example` to `.env.local` and set the Supabase project URL plus `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (or `NEXT_PUBLIC_SUPABASE_ANON_KEY` for older projects). Set the server-only `SUPABASE_SERVICE_ROLE_KEY` for admin/user data and validated analytics, plus a comma-separated `ADMIN_EMAILS` allowlist. Never expose or commit the service-role key.
-4. In Supabase Auth URL configuration, allow the production, preview, and local callback URLs (`/auth/callback`).
+4. In Supabase Auth URL configuration, allow the production, preview, and local URLs used for auth redirects: `/auth/callback` and `/reset-password`. Password recovery redirects directly to `/reset-password` so the browser client can process Supabase's recovery URL fragment.
 5. Run `npm ci`, then `npm run dev`.
 
 ## Admin panel
