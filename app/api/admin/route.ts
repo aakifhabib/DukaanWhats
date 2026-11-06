@@ -28,10 +28,11 @@ async function authorize(request: Request): Promise<
   const { data, error } = await authClient.auth.getUser(token)
   if (error || !data.user) return { response: json({ error: 'Your session expired. Sign in again.' }, 401) }
 
-  const emails = (process.env.ADMIN_EMAILS || 'nexusdeals235@gmail.com')
+  const emails = (process.env.ADMIN_EMAILS || '')
     .split(',')
     .map(email => email.trim().toLowerCase())
     .filter(Boolean)
+  if (!emails.length) return { response: json({ error: 'Admin access is not configured.' }, 503) }
   if (!data.user.email || !emails.includes(data.user.email.toLowerCase())) {
     return { response: json({ error: 'This account does not have administrator access.' }, 403) }
   }
@@ -49,6 +50,7 @@ export async function GET(request: Request) {
     const { admin } = auth
     const { searchParams } = new URL(request.url)
     const view = searchParams.get('view') || 'payments'
+    if (view === 'verify') return json({ ok: true })
 
     if (view === 'users') {
       const requestedPage = Number(searchParams.get('page')) || 1
@@ -113,8 +115,8 @@ export async function GET(request: Request) {
       hasMore: page * perPage < (count || 0),
       pendingCount: pendingCount || 0,
     })
-  } catch (error: any) {
-    return json({ error: error?.message || 'Admin request failed.' }, 500)
+  } catch {
+    return json({ error: 'Admin request failed.' }, 500)
   }
 }
 

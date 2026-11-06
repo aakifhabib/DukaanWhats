@@ -53,10 +53,10 @@ export async function POST(request: Request) {
     })
     if (insertError) {
       const duplicate = /duplicate|unique/i.test(insertError.message)
-      return json({ error: duplicate ? 'This transaction ID has already been submitted.' : insertError.message }, duplicate ? 409 : 400)
+      return json({ error: duplicate ? 'This transaction ID has already been submitted.' : 'Payment could not be submitted. Check the details and try again.' }, duplicate ? 409 : 400)
     }
     return json({ success: true, message: 'Payment submitted for verification.' }, 201)
-  } catch (error: any) {
-    return json({ error: error?.message || 'Payment could not be submitted. Please try again.' }, 500)
+  } catch {
+    return json({ error: 'Payment could not be submitted. Please try again.' }, 500)
   }
 }

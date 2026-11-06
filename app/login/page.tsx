@@ -6,7 +6,9 @@ import Link from 'next/link'
 
 function getSafeNextPath() {
   const next = new URLSearchParams(window.location.search).get('next')
-  return next && next.startsWith('/') && !next.startsWith('//') ? next : '/dashboard'
+  const pathname = next?.split(/[?#]/, 1)[0] || ''
+  const isAdminPath = pathname === '/admin' || pathname.startsWith('/admin/')
+  return next && next.startsWith('/') && !next.startsWith('//') && !isAdminPath ? next : '/dashboard'
 }
 
 export default function LoginPage() {
