@@ -2,6 +2,8 @@ import './globals.css';
 import { SiteFooter } from '@/components/SiteFooter';
 import { AppThemeProvider } from '@/components/AppThemeProvider';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { FloatingLogoutButton } from '@/components/FloatingLogoutButton';
+import { PageTransition } from '@/components/PageTransition';
 
 export const metadata = {
   title: {
@@ -25,9 +27,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AppThemeProvider>
           <ThemeToggle />
           <div className="flex min-h-screen flex-col">
-            <div className="flex-1">{children}</div>
+            <div className="flex-1"><PageTransition>{children}</PageTransition></div>
             <SiteFooter />
           </div>
+          <FloatingLogoutButton />
         </AppThemeProvider>
       </body>
     </html>
