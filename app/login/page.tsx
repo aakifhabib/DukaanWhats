@@ -29,13 +29,13 @@ export default function LoginPage() {
     const authError = searchParams.get('authError')
     if (authError) setMsg('The sign-in link could not be opened. Please sign in again.')
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) router.push(getSafeNextPath())
+      if (data.session && !isSignup) router.push(getSafeNextPath())
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      if (session) router.push(getSafeNextPath())
+      if (session && !isSignup) router.push(getSafeNextPath())
     })
     return () => subscription.unsubscribe()
-  }, [router])
+  }, [isSignup, router])
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -47,19 +47,26 @@ export default function LoginPage() {
     setMsg('')
     try {
       if (isSignup) {
+        const confirmationCallback = new URL('/auth/complete', window.location.origin)
+        confirmationCallback.searchParams.set('next', '/dashboard')
+        confirmationCallback.searchParams.set('signup', 'true')
+        confirmationCallback.searchParams.set('termsAccepted', 'true')
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(), password,
-          options: { data: { business_name: storeName.trim() || 'My Store', terms_accepted_at: new Date().toISOString(), terms_version: '2026-11-04' } },
+          options: {
+            emailRedirectTo: confirmationCallback.toString(),
+            data: { business_name: storeName.trim() || 'My Store', terms_accepted_at: new Date().toISOString(), terms_version: '2026-11-04' },
+          },
         })
         if (error) throw error
-        if (data.user && data.session) {
-          const baseSlug = (storeName || email.split('@')[0]).toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, 36) || 'my-store'
-          const slug = `${baseSlug}-${data.user.id.slice(0, 6)}`
-          const { error: profileError } = await supabase.from('profiles').upsert({ id: data.user.id, business_name: storeName.trim() || 'My Store', store_slug: slug, current_plan: 'basic', store_theme: 'clothing-noor' })
-          if (profileError) throw profileError
-          router.push(getSafeNextPath())
+        if (data.session) {
+          // A new password account should not become active before email ownership
+          // is verified. This also alerts us if Supabase email confirmation is off.
+          const { error: signOutError } = await supabase.auth.signOut({ scope: 'local' })
+          if (signOutError) throw signOutError
+          setMsg('Email confirmation is required before you can use your account. Check your inbox, and ask the site administrator to enable email confirmations if no link arrives.')
         } else {
-          setMsg('Account created. Check your email to confirm your address, then sign in to continue.')
+          setMsg('Account created. Check your email and confirm your address before signing in.')
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })

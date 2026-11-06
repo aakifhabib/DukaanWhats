@@ -8,10 +8,10 @@ DukaanWhats is a Next.js store builder for Pakistani sellers. Customers browse a
 
 ## Local development
 
-1. Create a Supabase project and enable the authentication providers you intend to offer (email/password and, optionally, Google).
+1. Create a Supabase project, enable the authentication providers you intend to offer (email/password and, optionally, Google), and turn on email confirmation for the Email provider. The app signs out any password signup that unexpectedly receives an active session, but Supabase must enforce confirmation before it issues sessions.
 2. Create the app's `profiles`, `products`, `plan_payments`, and `store_analytics` tables and the public `product-images` storage bucket. Ensure row-level security lets each authenticated user manage only their own profile/products/payments, and lets storefront visitors read the store/product data needed to render a public shop.
 3. Copy `.env.local.example` to `.env.local` and set the Supabase project URL plus `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (or `NEXT_PUBLIC_SUPABASE_ANON_KEY` for older projects). Set the server-only `SUPABASE_SERVICE_ROLE_KEY` for admin/user data and validated analytics, plus a comma-separated `ADMIN_EMAILS` allowlist. Never expose or commit the service-role key.
-4. In Supabase Auth URL configuration, allow the production, preview, and local URLs used for auth redirects: `/auth/callback` and `/reset-password`. Password recovery redirects directly to `/reset-password` so the browser client can process Supabase's recovery URL fragment.
+4. In Supabase Auth URL configuration, allow the production, preview, and local URLs used for auth redirects: `/auth/callback`, `/auth/complete`, and `/reset-password`. Email confirmations complete in the browser at `/auth/complete`; password recovery redirects directly to `/reset-password` so the browser client can process Supabase's recovery URL fragment.
 5. Run `npm ci`, then `npm run dev`.
 
 ## Admin panel
@@ -30,7 +30,7 @@ Payment submissions are validated server-side; each transaction is still manuall
 ## Production checklist
 
 - Configure `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (or the legacy anon key), `SUPABASE_SERVICE_ROLE_KEY`, and `ADMIN_EMAILS` in the deployment platform.
-- Configure Supabase Auth redirect URLs and verify email/password, Google sign-in (if enabled), and password recovery against the production domain.
+- Enable Supabase Email confirmation and configure the production Auth redirect allowlist for `/auth/callback`, `/auth/complete`, and `/reset-password`; verify signup confirmation, email/password, Google sign-in (if enabled), and password recovery against the production domain.
 - Confirm database tables, indexes, RLS policies, storage bucket permissions, and public storefront behavior in the target Supabase project.
 - Verify JazzCash Till ID and payment-review operations before accepting real payments.
 - Run `npx tsc --noEmit` and `npm run build` before deployment.
