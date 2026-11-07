@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { StoreLocaleProvider, StoreLanguageToggle, useStoreLocale } from '@/lib/storeLocale'
 import { OrderCheckoutModal } from '@/components/OrderCheckoutModal'
 
-type Product = {
+export type Product = {
   id: string
   name: string
   price: number
@@ -35,8 +35,8 @@ const publicSupabase = createClient(
   { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } },
 )
 
-function BasicTheme({
-  profile, products, cart, onAdd, onOpen, onRemove, setShowCart, showCart, selectedProduct, setSelectedProduct, onCheckout, track,
+export function BasicTheme({
+  profile, products, cart, onAdd, onOpen, onRemove, setShowCart, showCart, selectedProduct, setSelectedProduct, onCheckout, track, previewMode = false,
 }: {
   profile: any
   products: Product[]
@@ -50,6 +50,7 @@ function BasicTheme({
   setSelectedProduct: (product: Product | null) => void
   onCheckout: () => void
   track: (eventType: string, productId?: string) => Promise<void>
+  previewMode?: boolean
 }) {
   const { t } = useStoreLocale()
   const theme = getTheme(profile?.store_theme) || STORE_THEMES[0]
@@ -111,7 +112,7 @@ function BasicTheme({
     <div className="min-h-screen" style={{ background: colors.bg, color: colors.text }}>
       <div className="h-1" style={{ background: colors.accent }} />
       <header className="sticky top-0 z-30 border-b backdrop-blur-xl" style={{ background: `${colors.bg}ed`, borderColor: colors.border }}>
-        <div className="mx-auto flex h-[68px] max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
+        <div className={`mx-auto flex ${previewMode ? 'h-11' : 'h-[68px]'} max-w-7xl items-center justify-between gap-3 px-4 sm:px-6`}>
           <a href="#top" className="min-w-0">
             <span className="block truncate text-[15px] font-black tracking-[-0.04em] sm:text-[17px]">{profile?.business_name || 'My store'}</span>
           </a>
@@ -124,20 +125,20 @@ function BasicTheme({
         </div>
       </header>
 
-      <main id="top" className="mx-auto max-w-7xl px-4 pb-20 sm:px-6">
-        <section className="relative overflow-hidden py-14 sm:py-20 lg:py-24">
+      <main id="top" className={`mx-auto max-w-7xl px-4 ${previewMode ? 'pb-6' : 'pb-20'} sm:px-6`}>
+        <section className={`relative overflow-hidden ${previewMode ? 'py-3' : 'py-14 sm:py-20 lg:py-24'}`}>
           <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full opacity-20 blur-3xl" style={{ background: colors.accent }} />
           <div className="relative max-w-3xl">
-            <h1 className="text-[clamp(42px,8vw,88px)] font-black leading-[0.9] tracking-[-0.075em]">{t('discover')}<br /><span style={{ color: colors.accent }}>{profile?.business_name || 'our store'}.</span></h1>
-            <p className="mt-6 max-w-xl text-sm leading-7 opacity-65 sm:text-base">{t('intro')}</p>
-            <a href="#collection" className="mt-8 inline-flex h-12 items-center gap-3 rounded-full px-6 text-sm font-bold transition hover:-translate-y-0.5" style={{ background: colors.text, color: colors.bg }}>{t('browse')} <span aria-hidden>↓</span></a>
+            <h1 className={`${previewMode ? 'text-[24px]' : 'text-[clamp(42px,8vw,88px)]'} font-black leading-[0.9] tracking-[-0.075em]`}>{t('discover')}<br /><span style={{ color: colors.accent }}>{profile?.business_name || 'our store'}.</span></h1>
+            {!previewMode && <p className="mt-6 max-w-xl text-sm leading-7 opacity-65 sm:text-base">{t('intro')}</p>}
+            {!previewMode && <a href="#collection" className="mt-8 inline-flex h-12 items-center gap-3 rounded-full px-6 text-sm font-bold transition hover:-translate-y-0.5" style={{ background: colors.text, color: colors.bg }}>{t('browse')} <span aria-hidden>↓</span></a>}
           </div>
         </section>
 
         <section id="collection" className="scroll-mt-24">
-          <div className="flex flex-col gap-5 border-y py-5 sm:flex-row sm:items-center sm:justify-between" style={{ borderColor: colors.border }}>
-            <h2 className="text-2xl font-black tracking-[-0.05em] sm:text-3xl">{t('products')}</h2>
-            <div className="flex flex-col gap-2 sm:flex-row">
+          <div className={`flex flex-col border-y ${previewMode ? 'gap-1 py-2' : 'gap-5 py-5'} sm:flex-row sm:items-center sm:justify-between`} style={{ borderColor: colors.border }}>
+            <h2 className={`${previewMode ? 'text-lg' : 'text-2xl sm:text-3xl'} font-black tracking-[-0.05em]`}>{t('products')}</h2>
+            <div className={`flex flex-col gap-2 sm:flex-row ${previewMode ? 'hidden' : ''}`}>
               <label className="sr-only" htmlFor="store-search">Search products</label>
               <input id="store-search" value={query} onChange={e => setQuery(e.target.value)} placeholder={t('search')} className="h-11 w-full rounded-xl border bg-transparent px-4 text-sm outline-none transition focus:ring-2 sm:w-56" style={{ borderColor: colors.border, ['--tw-ring-color' as any]: colors.accent }} />
               <label className="sr-only" htmlFor="store-sort">Sort products</label>
@@ -147,11 +148,11 @@ function BasicTheme({
             </div>
           </div>
 
-          {categories.length > 1 && <div className="flex gap-2 overflow-x-auto py-4" aria-label="Product categories">
+          {!previewMode && categories.length > 1 && <div className="flex gap-2 overflow-x-auto py-4" aria-label="Product categories">
             {categories.map(category => <button key={category} type="button" onClick={() => setActiveCategory(category)} aria-pressed={activeCategory === category} className="shrink-0 rounded-full border px-4 py-2 text-xs font-semibold transition" style={{ borderColor: activeCategory === category ? colors.text : colors.border, background: activeCategory === category ? colors.text : 'transparent', color: activeCategory === category ? colors.bg : colors.text }}>{category}</button>)}
           </div>}
 
-          {filtered.length ? <div className="grid grid-cols-2 gap-x-3 gap-y-7 pt-3 sm:grid-cols-3 sm:gap-x-5 sm:gap-y-10 lg:grid-cols-4">
+          {filtered.length ? <div className={`grid grid-cols-2 gap-x-3 ${previewMode ? 'gap-y-2 pt-2' : 'gap-y-7 pt-3'} sm:grid-cols-3 sm:gap-x-5 sm:gap-y-10 lg:grid-cols-4`}>
             {filtered.map((product, index) => <article key={product.id} className="group min-w-0">
               <button type="button" onClick={() => onOpen(product)} className="relative block w-full overflow-hidden rounded-2xl text-left" style={{ background: colors.card }} aria-label={`View ${product.name}`}>
                 <div className="aspect-[4/5] overflow-hidden">

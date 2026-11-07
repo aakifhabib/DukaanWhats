@@ -5,7 +5,9 @@ import { RealAnalytics } from '@/components/RealAnalytics'
 import Link from 'next/link'
 import { getTheme, getBasicThemes, getAdvancedList, getAdvancedThemes, getPremiumThemes } from '@/lib/storeThemes'
 import { DukaanWhatsLoader } from '@/components/DukaanWhatsLoader'
-import { PremiumThemeEditor } from '@/components/PremiumThemeEditor'
+import { PremiumThemeEditor, PreviewFrame } from '@/components/PremiumThemeEditor'
+import { BasicTheme } from '@/app/s/[slug]/StorePageClient'
+import { StoreLocaleProvider } from '@/lib/storeLocale'
 import { OrdersDashboard } from '@/components/OrdersDashboard'
 
 const TILL_ID = '984837533'
@@ -269,6 +271,60 @@ function MiniStorefront({ theme }: { theme: any }) {
 }
 
 
+const THEME_PREVIEW_CATALOGS: Record<string, { name: string; category: string; products: Array<{ name: string; price: number; image_url: string; category: string }> }> = {
+  clothing: { name: 'Studio Noor', category: 'Clothing', products: [
+    { name: 'Everyday Linen Set', price: 4200, image_url: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&w=720&q=80', category: 'New arrivals' },
+    { name: 'Cotton Kurta', price: 2850, image_url: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=720&q=80', category: 'Clothing' },
+    { name: 'Woven Crossbody', price: 1950, image_url: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=720&q=80', category: 'Accessories' },
+  ] },
+  shoes: { name: 'Street Sole', category: 'Shoes', products: [
+    { name: 'Cloud Runner', price: 5900, image_url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=720&q=80', category: 'Sneakers' },
+    { name: 'Classic Leather', price: 7200, image_url: 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=720&q=80', category: 'Leather' },
+    { name: 'Everyday Low', price: 4800, image_url: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=720&q=80', category: 'Sneakers' },
+  ] },
+  food: { name: 'Saffron & Crumb', category: 'Food', products: [
+    { name: 'Pistachio Cake', price: 1800, image_url: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=720&q=80', category: 'Bakery' },
+    { name: 'Sourdough Loaf', price: 850, image_url: 'https://images.unsplash.com/photo-1585478259715-876acc5be8eb?auto=format&fit=crop&w=720&q=80', category: 'Fresh daily' },
+    { name: 'Saffron Latte', price: 620, image_url: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=720&q=80', category: 'Drinks' },
+  ] },
+  tech: { name: 'Mono Supply', category: 'Technology', products: [
+    { name: 'Studio Headphones', price: 8900, image_url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=720&q=80', category: 'Audio' },
+    { name: 'Pocket Speaker', price: 5200, image_url: 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?auto=format&fit=crop&w=720&q=80', category: 'Audio' },
+    { name: 'Everyday Camera', price: 14900, image_url: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=720&q=80', category: 'Gear' },
+  ] },
+}
+
+function ActualThemeMock({ theme }: { theme: any }) {
+  const [cart, setCart] = useState<any[]>([])
+  const [showCart, setShowCart] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState<any>(null)
+  const category = theme.id.includes('food') || theme.id.includes('bakery') || theme.id.includes('organic') ? 'food'
+    : theme.id.includes('tech') || theme.id.includes('gadget') || theme.id.includes('electro') ? 'tech'
+    : theme.id.includes('shoe') ? 'shoes' : 'clothing'
+  const catalog = THEME_PREVIEW_CATALOGS[category]
+  const products = catalog.products.map((product, index) => ({ ...product, id: `preview-${theme.id}-${index}`, user_id: 'preview', stock: 12, sizes: [], colors: [], image_urls: [product.image_url] }))
+  const profile = { id: 'preview', business_name: catalog.name, store_slug: 'preview-store', whatsapp_number: '923001234567', store_theme: theme.id, current_plan: theme.tier === 'basic' ? 'basic' : 'advanced', store_growth_ready: false, delivery_enabled: false, pickup_enabled: true }
+  return (
+    <StoreLocaleProvider initialLanguage="en">
+      <BasicTheme
+        profile={profile}
+        products={products}
+        cart={cart}
+        onAdd={(product: any, quantity = 1) => setCart(current => [...current, ...Array.from({ length: quantity }, () => product)])}
+        onOpen={setSelectedProduct}
+        onRemove={(index: number) => setCart(current => current.filter((_, itemIndex) => itemIndex !== index))}
+        setShowCart={setShowCart}
+        showCart={showCart}
+        selectedProduct={selectedProduct}
+        setSelectedProduct={setSelectedProduct}
+        onCheckout={() => setShowCart(false)}
+        track={async () => {}}
+        previewMode
+      />
+    </StoreLocaleProvider>
+  )
+}
+
 /* -------------------- EXTRA ICONS -------------------- */
 const IconX = ({ c = '' }) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
 const IconCopy = ({ c = '' }) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="12" height="12" rx="2.5" /><path d="M5 15V6a2 2 0 0 1 2-2h9" /></svg>
@@ -293,9 +349,7 @@ const BTN_LIGHT = `${BTN} bg-white text-zinc-900 border border-zinc-200/80 hover
 const BTN_LIME = `${BTN} dw-shine dw-magnet bg-[#E8FF86] text-black hover:brightness-95 hover:shadow-[0_14px_30px_-10px_rgba(232,255,134,0.9)]`
 
 /* -------------------- SMALL PRIMITIVES -------------------- */
-/* -------------------- SCALED PREVIEW (fixes cropped / mis-proportioned previews) -------------------- */
-/* MiniStorefront is drawn with fixed px sizes for a ~240px-wide canvas. We lay it out at that
-   design width and scale the whole thing to whatever box it lives in, so it never crops or stretches. */
+/* -------------------- SCALED PREVIEW (real storefronts for Basic and Advanced) -------------------- */
 function ScaledPreview({ theme, baseW = 240 }: { theme: any; baseW?: number }) {
   const ref = useRef<HTMLDivElement>(null)
   const [box, setBox] = useState({ w: 0, h: 0 })
@@ -309,12 +363,19 @@ function ScaledPreview({ theme, baseW = 240 }: { theme: any; baseW?: number }) {
     return () => ro.disconnect()
   }, [])
   const s = box.w ? box.w / baseW : 0
-  const baseH = s ? box.h / s : 0
+  const isRealStorefront = theme?.tier === 'basic' || theme?.tier === 'advanced'
+  // Show the top of a real storefront page (header, hero, and the start of its collection),
+  // rather than squeezing the whole shop into the thumbnail's shallow aspect ratio.
+  const baseH = s ? Math.max(box.h / s, isRealStorefront ? baseW * 1.55 : 0) : 0
   return (
     <div ref={ref} data-theme-exempt className="absolute inset-0 overflow-hidden">
       {s > 0 && (
-        <div style={{ width: baseW, height: baseH, transform: `scale(${s})`, transformOrigin: 'top left' }}>
-          <MiniStorefront theme={theme} />
+        <div className="pointer-events-none" style={{ width: baseW, height: baseH, transform: `scale(${s})`, transformOrigin: 'top left' }}>
+          {isRealStorefront ? (
+            <PreviewFrame key={theme.id} width={baseW} height={baseH} title={`${theme.name} storefront preview`} hideScrollbar tabIndex={-1}>
+              <ActualThemeMock theme={theme} />
+            </PreviewFrame>
+          ) : <MiniStorefront theme={theme} />}
         </div>
       )}
     </div>
@@ -1227,14 +1288,22 @@ Upgrade to unlock all 8 Advanced themes.`)
 
       {/* Premium theme editor — THEME-SPECIFIC REAL PREVIEW — AUTO-SWITCH */}
       <div id="premium-editor-anchor" />
-      {profile && (
+      {profile && (isPremium && isPremiumTheme(getTheme(theme) || { id: theme }) ? (
         <div className="dw-static mt-6">
           <PremiumThemeEditor
-            profile={{ ...profile, premium_custom: premiumCustom }}
-            onSave={(d: any) => { setPremiumCustom(d); setProfile({ ...profile, premium_custom: d } as any) }}
+            profile={{ ...profile, store_theme: theme, premium_custom: premiumCustom }}
+            onSave={(d: any) => { setPremiumCustom(d); setProfile((prev: any) => prev ? { ...prev, premium_custom: d } : prev) }}
           />
         </div>
-      )}
+      ) : (
+        <div className="dw-static mt-6 rounded-[24px] border border-zinc-200/80 bg-white p-5 md:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <div className="text-sm font-bold text-zinc-950">Make your storefront yours</div>
+            <p className="mt-1 max-w-2xl text-[12.5px] leading-5 text-zinc-500">Choose an unlocked Premium theme above to open its live editor. Your saved design stays attached to that theme.</p>
+          </div>
+          {!isPremium && <button type="button" onClick={() => setActiveTab('payments')} className="h-10 shrink-0 rounded-full bg-[#0A0A0A] px-5 text-xs font-semibold text-white hover:bg-zinc-800">Explore Premium</button>}
+        </div>
+      ))}
     </div>
   )
 
