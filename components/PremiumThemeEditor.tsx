@@ -20,15 +20,38 @@ const THEMES = [
   { id: 'noir-gilt', name: 'Noir & Gilt', color: '#0C0A07', accent: '#C8A96B', icon: '✦' },
 ]
 
-/* Sample products shown in the preview until the customer adds real ones */
-const MOCK_PRODUCTS = [
-  { id: 'm1', name: 'Air Max Pulse', price: 6400, original_price: 8200, category: 'Nike', stock: 3, sizes: ['40', '41', '42', '43', '44'], colors: ['Black', 'White', 'Red'], description: 'Responsive cushioning meets a street-ready silhouette. Breathable mesh upper, durable outsole and a padded collar for all-day comfort.', image_url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=900&q=80', image_urls: ['https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=900&q=80', 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=900&q=80', 'https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=900&q=80'] },
-  { id: 'm2', name: 'Court Classic Low', price: 4200, original_price: 0, category: 'Adidas', stock: 100, sizes: ['39', '40', '41', '42'], colors: ['Off White', 'Navy'], description: 'A clean leather court shoe for everyday wear.', image_url: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=900&q=80', image_urls: ['https://images.unsplash.com/photo-1549298916-b41d501d3772?w=900&q=80', 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=900&q=80'] },
-  { id: 'm3', name: 'Runner 550', price: 5100, original_price: 6000, category: 'New Balance', stock: 12, sizes: [], colors: ['Grey'], description: 'Lightweight daily trainer with soft foam cushioning.', image_url: 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=900&q=80', image_urls: ['https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=900&q=80'] },
-  { id: 'm4', name: 'RS-X Reinvent', price: 3800, original_price: 0, category: 'Puma', stock: 0, sizes: ['41', '42'], colors: ['Black'], description: 'Bold retro-futurist runner. Currently sold out.', image_url: 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=900&q=80', image_urls: ['https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=900&q=80', 'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=900&q=80'] },
-  { id: 'm5', name: 'Trail Hiker GTX', price: 7900, original_price: 9500, category: 'Shoes', stock: 5, sizes: ['42', '43', '44'], colors: ['Olive', 'Black'], description: 'Waterproof trail boot with grippy lugs.', image_url: 'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=900&q=80', image_urls: ['https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=900&q=80'] },
-  { id: 'm6', name: 'Cloud Slide', price: 1800, original_price: 0, category: 'Shoes', stock: 60, sizes: ['40', '41', '42', '43'], colors: ['Pink', 'Sky Blue'], description: 'Pillow-soft recovery slide.', image_url: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=900&q=80', image_urls: ['https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=900&q=80'] },
-]
+/* Category-aware demo products keep each premium theme preview relevant before a seller adds products. */
+const SAMPLE_PRODUCTS: Record<string, any[]> = {
+  shoes: [
+    { id: 'sample-shoe-1', name: 'Air Max Pulse', price: 6400, original_price: 8200, category: 'Sneakers', stock: 3, sizes: ['40', '41', '42', '43', '44'], colors: ['Black', 'White', 'Red'], description: 'Responsive cushioning meets a street-ready silhouette.', image_url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=900&q=80' },
+    { id: 'sample-shoe-2', name: 'Court Classic Low', price: 4200, category: 'Everyday', stock: 100, sizes: ['39', '40', '41', '42'], colors: ['Off White', 'Navy'], description: 'A clean leather court shoe for everyday wear.', image_url: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=900&q=80' },
+    { id: 'sample-shoe-3', name: 'Runner 550', price: 5100, original_price: 6000, category: 'New arrivals', stock: 12, colors: ['Grey'], description: 'Lightweight daily trainer with soft foam cushioning.', image_url: 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=900&q=80' },
+  ],
+  clothing: [
+    { id: 'sample-clothing-1', name: 'Everyday Linen Set', price: 4200, category: 'New arrivals', stock: 8, sizes: ['S', 'M', 'L'], colors: ['Sand', 'Olive'], description: 'An easy, breathable set made for everyday wear.', image_url: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=900&q=80' },
+    { id: 'sample-clothing-2', name: 'Cotton Essential', price: 2850, category: 'Clothing', stock: 14, sizes: ['S', 'M', 'L', 'XL'], colors: ['White', 'Black'], description: 'Soft cotton, thoughtful details, and a relaxed fit.', image_url: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=900&q=80' },
+    { id: 'sample-clothing-3', name: 'Woven Carryall', price: 1950, category: 'Accessories', stock: 6, colors: ['Natural'], description: 'A handcrafted everyday accessory with room for the essentials.', image_url: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=900&q=80' },
+  ],
+  food: [
+    { id: 'sample-food-1', name: 'Pistachio Celebration Cake', price: 1800, category: 'Bakery', stock: 8, description: 'A soft sponge layered with cream and roasted pistachio.', image_url: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=900&q=80' },
+    { id: 'sample-food-2', name: 'Sourdough Loaf', price: 850, category: 'Fresh daily', stock: 12, description: 'Slow-fermented, crisp crust, baked fresh each morning.', image_url: 'https://images.unsplash.com/photo-1585478259715-876acc5be8eb?w=900&q=80' },
+    { id: 'sample-food-3', name: 'Saffron Latte', price: 620, category: 'Drinks', stock: 20, description: 'A warm espresso with milk and a hint of saffron.', image_url: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=900&q=80' },
+  ],
+  tech: [
+    { id: 'sample-tech-1', name: 'Studio Headphones', price: 8900, category: 'Audio', stock: 8, colors: ['Black', 'Silver'], description: 'Comfortable over-ear sound for work and travel.', image_url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=900&q=80' },
+    { id: 'sample-tech-2', name: 'Pocket Speaker', price: 5200, category: 'Audio', stock: 11, colors: ['Black', 'Cream'], description: 'Room-filling sound in a compact, portable design.', image_url: 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=900&q=80' },
+    { id: 'sample-tech-3', name: 'Everyday Camera', price: 14900, category: 'Gear', stock: 4, description: 'A compact camera ready for the next great moment.', image_url: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=900&q=80' },
+  ],
+  home: [
+    { id: 'sample-home-1', name: 'Sculpted Ceramic Vase', price: 3200, category: 'Objects', stock: 5, colors: ['Ivory'], description: 'A softly sculpted ceramic piece for a quiet corner.', image_url: 'https://images.unsplash.com/photo-1578500494198-246f612d3b3d?w=900&q=80' },
+    { id: 'sample-home-2', name: 'Sunday Candle', price: 1650, category: 'Home fragrance', stock: 16, description: 'A warm, clean scent poured in small batches.', image_url: 'https://images.unsplash.com/photo-1603006905003-be475563bc59?w=900&q=80' },
+    { id: 'sample-home-3', name: 'Little Green Plant', price: 2100, category: 'Living', stock: 7, description: 'An easy-care green companion for your home.', image_url: 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=900&q=80' },
+  ],
+}
+const getSampleProducts = (themeId: string) => {
+  const category = themeId.includes('saffron') ? 'food' : themeId.includes('mono') ? 'tech' : themeId.includes('atelier') ? 'home' : themeId.includes('spike') || themeId.includes('shoe') ? 'shoes' : 'clothing'
+  return SAMPLE_PRODUCTS[category]
+}
 
 /* =====================================================================
    UI TOKENS
@@ -109,7 +132,7 @@ function syncStyles(from: Document, to: Document) {
   have.forEach((n, k) => { if (!seen.has(k)) n.remove() })
 }
 
-function PreviewFrame({ width, height, title, hideScrollbar, children }: { width: number; height: number; title: string; hideScrollbar?: boolean; children: React.ReactNode }) {
+export function PreviewFrame({ width, height, title, hideScrollbar, tabIndex, children }: { width: number; height: number; title: string; hideScrollbar?: boolean; tabIndex?: number; children: React.ReactNode }) {
   const ref = useRef<HTMLIFrameElement>(null)
   const [mount, setMount] = useState<HTMLElement | null>(null)
 
@@ -144,7 +167,7 @@ function PreviewFrame({ width, height, title, hideScrollbar, children }: { width
 
   return (
     <>
-      <iframe ref={ref} title={title} srcDoc={srcDoc} onLoad={onLoad} className="block border-0 bg-white" style={{ width, height }} />
+      <iframe ref={ref} title={title} tabIndex={tabIndex} srcDoc={srcDoc} onLoad={onLoad} className="block border-0 bg-white" style={{ width, height }} />
       {mount && createPortal(children, mount)}
     </>
   )
@@ -490,6 +513,8 @@ export function PremiumThemeEditor({ profile, onSave }: { profile: any; onSave: 
   const [snap, setSnap] = useState<string>(() => JSON.stringify(resolveContent(themeId, profile)))
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [saveError, setSaveError] = useState('')
+  const [fieldSearch, setFieldSearch] = useState('')
   const [activeTab, setActiveTab] = useState('brand')
   const [device, setDevice] = useState<'mobile' | 'tablet' | 'desktop'>('mobile')
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
@@ -505,6 +530,8 @@ export function PremiumThemeEditor({ profile, onSave }: { profile: any; onSave: 
     setCustom(next)
     setSnap(JSON.stringify(next))
     setActiveTab('brand')
+    setFieldSearch('')
+    setSaveError('')
     setSelectedProduct(null)
   }, [themeId])
 
@@ -521,7 +548,11 @@ export function PremiumThemeEditor({ profile, onSave }: { profile: any; onSave: 
     return () => { alive = false }
   }, [profile?.id])
 
-  const update = (k: string, v: any) => setCustom((s: any) => ({ ...s, [k]: v }))
+  const update = (k: string, v: any) => {
+    setSaveError('')
+    setSaved(false)
+    setCustom((s: any) => ({ ...s, [k]: v }))
+  }
   const dirty = JSON.stringify(custom) !== snap
 
   const save = async () => {
@@ -544,13 +575,20 @@ export function PremiumThemeEditor({ profile, onSave }: { profile: any; onSave: 
       onSave(toSave)
       setSnap(JSON.stringify(custom))
       setSaved(true)
+      setSaveError('')
       setTimeout(() => setSaved(false), 2500)
-    } catch (e: any) { alert(e.message || 'Save failed') }
-    setSaving(false)
+    } catch (e: any) {
+      setSaveError(e?.message || 'Your theme could not be saved. Check your connection and try again.')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const resetAll = () => {
     if (typeof window !== 'undefined' && !window.confirm('Reset every field in this theme back to its defaults? Your saved version stays until you press Save.')) return
+    setSaveError('')
+    setSaved(false)
+    setFieldSearch('')
     setCustom(resolveContent(themeId, { business_name: profile?.business_name, premium_custom: {} }))
   }
 
@@ -564,7 +602,7 @@ export function PremiumThemeEditor({ profile, onSave }: { profile: any; onSave: 
     return data.publicUrl as string
   }
 
-  const previewProducts = userProducts.length ? userProducts : MOCK_PRODUCTS
+  const previewProducts = userProducts.length ? userProducts : getSampleProducts(themeId)
   const galleryImages = useMemo(() => {
     const out: string[] = []
     const add = (u: any) => { if (typeof u === 'string' && u && !out.includes(u)) out.push(u) }
@@ -582,6 +620,8 @@ export function PremiumThemeEditor({ profile, onSave }: { profile: any; onSave: 
   }), [profile, custom])
 
   const section = schema.find(s => s.id === activeTab) || schema[0]
+  const searchTerm = fieldSearch.trim().toLowerCase()
+  const visibleFields = section.fields.filter((field: Field) => !searchTerm || `${field.label} ${field.hint || ''}`.toLowerCase().includes(searchTerm))
   const split = rootSize.w >= 900
   const storeHost = `dukaanwhats.pk/s/${liveProfile.store_slug || liveProfile.business_name?.toLowerCase().replace(/\s/g, '') || 'store'}`
 
@@ -635,27 +675,41 @@ export function PremiumThemeEditor({ profile, onSave }: { profile: any; onSave: 
             <div className="font-mono text-[11px] text-white/45 truncate">{themeId} · Premium editor</div>
           </div>
         </div>
-        <button type="button" onClick={save} disabled={saving} className={`${BTN} h-10 px-5 bg-[#E8FF86] text-black text-[12.5px] hover:brightness-95 focus-visible:ring-offset-[#0A0A0A]`}>{saveLabel}</button>
+        <button type="button" onClick={save} disabled={saving || !dirty} className={`${BTN} h-10 px-5 bg-[#E8FF86] text-black text-[12.5px] hover:brightness-95 focus-visible:ring-offset-[#0A0A0A]`}>{saveLabel}</button>
       </div>
+
+      {saveError && <div role="alert" className="mx-5 md:mx-6 mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[12.5px] leading-5 text-red-800">{saveError}</div>}
 
       <div className={split ? 'grid' : 'block'} style={split ? { gridTemplateColumns: 'minmax(0,1fr) clamp(400px, 46%, 540px)' } : undefined}>
         <div className="min-w-0 flex flex-col bg-white">
           <div role="tablist" aria-label="Sections" className="pte-ns flex gap-1.5 overflow-x-auto px-5 md:px-6 pt-5">
             {schema.map(t => (
-              <button key={t.id} type="button" role="tab" aria-selected={activeTab === t.id} onClick={() => setActiveTab(t.id)} className={`shrink-0 h-9 px-4 rounded-full text-[12.5px] font-semibold tracking-[-0.01em] inline-flex items-center gap-2 transition-all duration-300 ${activeTab === t.id ? 'bg-[#0A0A0A] text-white shadow-[0_8px_18px_-8px_rgba(10,10,10,0.6)]' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200/80'}`}>
+              <button key={t.id} type="button" role="tab" aria-selected={activeTab === t.id} onClick={() => { setActiveTab(t.id); setFieldSearch('') }} className={`shrink-0 h-9 px-4 rounded-full text-[12.5px] font-semibold tracking-[-0.01em] inline-flex items-center gap-2 transition-all duration-300 ${activeTab === t.id ? 'bg-[#0A0A0A] text-white shadow-[0_8px_18px_-8px_rgba(10,10,10,0.6)]' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200/80'}`}>
                 {activeTab === t.id && <span className="w-1.5 h-1.5 rounded-full bg-[#E8FF86]" />}{t.label}
               </button>
             ))}
           </div>
-          <div className="px-5 md:px-6 mt-3 flex flex-wrap items-center justify-between gap-2 text-[12.5px] text-zinc-500"><span>{section.sub}</span><span className="font-mono text-[10.5px] text-zinc-400">{userProducts.length ? `Previewing your ${userProducts.length} product${userProducts.length > 1 ? 's' : ''}` : 'Previewing sample products'}</span></div>
+          <div className="px-5 md:px-6 mt-3 flex flex-wrap items-center justify-between gap-2 text-[12.5px] text-zinc-500"><span>{section.sub}</span><span className="font-mono text-[10.5px] text-zinc-400">{userProducts.length ? `Previewing your ${userProducts.length} product${userProducts.length > 1 ? 's' : ''}` : 'Sample products match this theme'} · edits preview here, then save to publish</span></div>
 
-          <div key={section.id + themeId} className="pte-panel px-5 md:px-6 py-6 grid sm:grid-cols-2 gap-x-4 gap-y-5 flex-1 content-start">
-            {section.fields.map(f => <FieldRenderer key={f.key} f={f} value={custom[f.key]} onChange={v => update(f.key, v)} ctx={ctx} />)}
+          <div key={section.id + themeId} className="pte-panel px-5 md:px-6 py-5 grid sm:grid-cols-2 gap-x-4 gap-y-5 flex-1 content-start">
+            <div className="sm:col-span-2 flex flex-wrap items-center gap-3">
+              <label className="relative min-w-[220px] flex-1">
+                <span className="sr-only">Find a setting in this section</span>
+                <input type="search" value={fieldSearch} onChange={e => setFieldSearch(e.target.value)} placeholder={`Find a ${section.label.toLowerCase()} setting…`} className={`${INPUT} !h-10 !pl-10`} />
+                <span aria-hidden className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400">⌕</span>
+              </label>
+              <span className="font-mono text-[10.5px] text-zinc-400">{visibleFields.length} of {section.fields.length} settings</span>
+            </div>
+            {visibleFields.map((f: Field) => <FieldRenderer key={f.key} f={f} value={custom[f.key]} onChange={v => update(f.key, v)} ctx={ctx} />)}
+            {!visibleFields.length && <div className="sm:col-span-2 rounded-2xl border border-dashed border-zinc-200 px-5 py-8 text-center text-[12.5px] text-zinc-500">No settings match “{fieldSearch}”. Try a different word or clear your search.</div>}
           </div>
 
-          <div className="px-5 md:px-6 py-4 border-t border-zinc-200/80 flex justify-between items-center gap-3">
-            <button type="button" onClick={resetAll} className="text-[12px] font-semibold text-zinc-500 hover:text-red-600 underline underline-offset-4 transition-colors">Reset to defaults</button>
-            <button type="button" onClick={save} disabled={saving} className={`${BTN} h-10 px-6 bg-[#0A0A0A] text-white text-[12.5px] hover:bg-zinc-800`}>{saveLabel}</button>
+          <div className="px-5 md:px-6 py-4 border-t border-zinc-200/80 flex flex-wrap justify-between items-center gap-3">
+            <div className="flex flex-col gap-1.5">
+              <button type="button" onClick={resetAll} className="self-start text-[12px] font-semibold text-zinc-500 hover:text-red-600 underline underline-offset-4 transition-colors">Reset to defaults</button>
+              <span aria-live="polite" className={`text-[10.5px] ${dirty ? 'text-amber-700' : saved ? 'text-emerald-700' : 'text-zinc-400'}`}>{dirty ? 'Unsaved edits — save to publish' : saved ? 'Changes saved to your live store' : 'Your live store is up to date'}</span>
+            </div>
+            <button type="button" onClick={save} disabled={saving || !dirty} className={`${BTN} h-10 px-6 bg-[#0A0A0A] text-white text-[12.5px] hover:bg-zinc-800`}>{saveLabel}</button>
           </div>
         </div>
 
