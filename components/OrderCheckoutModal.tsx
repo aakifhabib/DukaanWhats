@@ -139,7 +139,7 @@ export function OrderCheckoutModal({ profile, cart, onClose, onSuccess, track }:
               </div>
             </fieldset> : <div className="flex items-start gap-3 rounded-2xl border p-3.5 text-sm" style={{ borderColor: border, backgroundColor: fieldBg }}>
               <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl text-lg" style={{ backgroundColor: accent, color: accentText }}>⌖</span>
-              <span><strong className="block">Pickup only</strong><span className="mt-1 block text-xs leading-5" style={{ color: muted }}>This store hasn’t enabled delivery, so a delivery address isn’t needed. The seller can turn on delivery in Store settings.</span></span>
+              <span><strong className="block">{canDeliver ? t('delivery') : 'Pickup only'}</strong><span className="mt-1 block text-xs leading-5" style={{ color: muted }}>{canDeliver ? `Delivery fee: ${money(Number(profile.delivery_fee) || 0)}. Add your delivery address below.` : 'This store hasn’t enabled delivery, so a delivery address isn’t needed. The seller can turn on delivery in Store settings.'}</span></span>
             </div>}
 
             <div className="grid gap-3 sm:grid-cols-2">
