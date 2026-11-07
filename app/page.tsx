@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
+import { TiltSurface } from '@/components/TiltSurface'
 
 export default function LandingPage() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -96,7 +97,9 @@ export default function LandingPage() {
           </div>
 
           <div className="relative">
-            <div className="relative mx-auto max-w-[440px] rounded-[28px] border border-black/10 bg-white p-2.5 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.3)] md:mr-0">
+            <div aria-hidden="true" className="dw-float pointer-events-none absolute -right-2 top-12 z-0 h-24 w-24 rounded-full bg-[#E8FF86]/35 blur-2xl md:-right-8 md:top-20 md:h-36 md:w-36" />
+            <TiltSurface className="mx-auto w-full max-w-[440px] md:mr-0" maxTilt={5}>
+            <div className="relative rounded-[28px] border border-black/10 bg-white p-2.5 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.3)]">
               <div className="rounded-[20px] border border-black/10 bg-[#F8F7F5] p-2">
                 <div className="flex items-center gap-1.5 px-3 py-2">
                   <span className="h-2.5 w-2.5 rounded-full bg-red-400" /><span className="h-2.5 w-2.5 rounded-full bg-yellow-400" /><span className="h-2.5 w-2.5 rounded-full bg-green-400" />
@@ -124,9 +127,8 @@ export default function LandingPage() {
                   </div>
                 </div>
               </div>
-
             </div>
-
+            </TiltSurface>
           </div>
         </section>
 
@@ -156,11 +158,13 @@ export default function LandingPage() {
               { n: '02', title: 'Share one link', body: 'Your storefront is ready to share in chats, stories, and your bio.' },
               { n: '03', title: 'Chat and confirm', body: 'Customers browse your catalog, then reach you directly on WhatsApp.' },
             ].map((step, index) => (
-              <article key={step.n} className={`group relative overflow-hidden rounded-[22px] border border-black/[0.07] p-6 md:p-7 transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_48px_-28px_rgba(0,0,0,0.28)] ${index === 1 ? 'bg-[#E8FF86]' : 'bg-white'}`}>
-                <div className="flex items-center justify-between"><span className="grid h-10 w-10 place-items-center rounded-full bg-black text-[11px] font-mono font-semibold text-[#E8FF86]">{step.n}</span><span className="text-2xl transition-transform group-hover:translate-x-1">↗</span></div>
-                <h3 className="mt-8 text-[18px] font-bold tracking-[-0.03em]">{step.title}</h3>
-                <p className="mt-2 text-[13px] leading-5 text-zinc-600">{step.body}</p>
-              </article>
+              <TiltSurface key={step.n} className="rounded-[22px]" maxTilt={6}>
+                <article className={`group relative h-full overflow-hidden rounded-[22px] border border-black/[0.07] p-6 md:p-7 transition duration-300 hover:shadow-[0_22px_48px_-28px_rgba(0,0,0,0.28)] ${index === 1 ? 'bg-[#E8FF86]' : 'bg-white'}`}>
+                  <div className="flex items-center justify-between"><span className="grid h-10 w-10 place-items-center rounded-full bg-black text-[11px] font-mono font-semibold text-[#E8FF86]">{step.n}</span><span className="text-2xl transition-transform group-hover:translate-x-1">↗</span></div>
+                  <h3 className="mt-8 text-[18px] font-bold tracking-[-0.03em]">{step.title}</h3>
+                  <p className="mt-2 text-[13px] leading-5 text-zinc-600">{step.body}</p>
+                </article>
+              </TiltSurface>
             ))}
           </div>
         </section>

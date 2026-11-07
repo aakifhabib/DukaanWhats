@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
+import { TiltSurface } from '@/components/TiltSurface'
 
 const TILL_ID = '984837533'
 
@@ -126,15 +127,12 @@ export default function PricingPage() {
     <div data-app-page className="min-h-screen bg-[#07052e] text-white relative overflow-hidden">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        .card { height: 400px; width: 285px; background-image: linear-gradient(to top, #210c93, #0d117a, #011160, #010e47, #07052e); box-shadow: rgba(0,0,0,0.24) -20px 30px 10px; transform-style: preserve-3d; transform: perspective(400px) rotateX(60deg) rotateZ(-30deg); border-radius: 16px; transition: transform 2s, filter 0.6s ease, opacity 0.6s ease, box-shadow 0.6s ease; position: relative; overflow: hidden; filter: brightness(0.55) saturate(0.7); opacity: 0.7; }
-        .card:hover { transform: perspective(800px) rotateY(19deg) rotateX(8deg) translateZ(30px) scale(1.02); filter: brightness(1) saturate(1); opacity: 1; }
-        .card-basic { background: linear-gradient(to top, #1a1a2e, #16213e, #0f3460); border: 1px solid rgba(255,255,255,0.1); }
-        .card-basic:hover { box-shadow: rgba(0,0,0,0.4) -20px 40px 20px, 0 0 30px rgba(15,52,96,0.3); }
-        .card-advanced { background-image: linear-gradient(to top, #210c93, #0d117a, #011160, #010e47, #07052e); border: 1px solid rgba(105,70,255,0.3); }
-        .card-advanced:hover { box-shadow: rgba(0,0,0,0.5) -20px 40px 30px, 0 0 50px rgba(105,70,255,0.5); }
-        .card-premium { background: linear-gradient(to top, #2e1a07, #5c3a12, #8a5a1a, #d4a574); border: 1px solid rgba(212,165,116,0.3); }
-        .card-premium:hover { box-shadow: rgba(0,0,0,0.5) -20px 40px 30px, 0 0 40px rgba(212,165,116,0.4); }
-        @media (max-width: 900px) { .card { width: 100%; max-width: 320px; height: 440px; transform: perspective(600px) rotateX(10deg) rotateZ(-2deg); } .card:hover { transform: perspective(800px) rotateY(10deg) rotateX(5deg) translateZ(20px); } }
+        .card { height: 400px; width: 285px; background-image: linear-gradient(145deg, #210c93, #0d117a 42%, #010e47 100%); border-radius: 20px; position: relative; overflow: hidden; filter: saturate(1); }
+        .card-basic { background: linear-gradient(145deg, #283a5b, #16213e 55%, #0f172a); border: 1px solid rgba(255,255,255,0.14); }
+        .card-advanced { background-image: linear-gradient(145deg, #3924a6, #0d117a 48%, #010e47); border: 1px solid rgba(180,160,255,0.42); }
+        .card-premium { background: linear-gradient(145deg, #d4a574, #8a5a1a 48%, #2e1a07); border: 1px solid rgba(255,226,185,0.4); }
+        .card-featured { border-color: rgba(232,255,134,0.72); box-shadow: 0 0 0 1px rgba(232,255,134,0.26), 0 26px 60px -34px rgba(105,70,255,0.9); }
+        @media (max-width: 900px) { .card { width: 100%; max-width: 360px; height: 420px; } }
         .billing-toggle{display:flex;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:999px;padding:4px;gap:4px;backdrop-filter:blur(12px)}
         .billing-btn{height:30px;padding:0 14px;border-radius:999px;font-size:11px;font-weight:600;transition:all .3s;white-space:nowrap}
         .billing-btn-active{background:#fff;color:#07052e}
@@ -142,8 +140,8 @@ export default function PricingPage() {
       `}</style>
 
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-[-10%] left-[20%] w-[600px] h-[600px] bg-[#210c93]/20 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-20%] right-[10%] w-[500px] h-[500px] bg-[#0d117a]/20 rounded-full blur-[100px]" />
+        <div className="dw-float absolute top-[-10%] left-[20%] w-[600px] h-[600px] bg-[#210c93]/20 rounded-full blur-[120px]" />
+        <div className="dw-float absolute bottom-[-20%] right-[10%] w-[500px] h-[500px] bg-[#0d117a]/20 rounded-full blur-[100px]" style={{ animationDelay: '-3s' }} />
       </div>
 
       <header className="relative z-10 max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -168,7 +166,7 @@ export default function PricingPage() {
             const price = getPrice(p)
             const total = getTotal(p)
             return (
-              <div key={p.id} className={`card ${p.cardClass} p-6 flex flex-col ${p.popular ? 'md:scale-[1.08] md:-translate-y-4' : ''} relative`}>
+              <TiltSurface key={p.id} className={`card ${p.cardClass} ${p.popular ? 'card-featured' : ''}`} contentClassName="relative flex h-full w-full flex-col p-6">
                 {p.popular && <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-[#E8FF86] text-black text-[9px] tracking-[0.15em] uppercase font-bold flex items-center gap-1"><span className="w-1 h-1 rounded-full bg-black animate-pulse" /> MOST POPULAR</div>}
                 <div className="flex items-center justify-between mb-3 mt-2"><span className="text-[10px] tracking-[0.2em] uppercase text-white/50 font-medium">{p.name}</span><span className="text-[9px] px-2 py-0.5 rounded-full bg-white/10 border border-white/10 tracking-widest">{p.badge}</span></div>
                 <div className="mb-3">
@@ -179,7 +177,7 @@ export default function PricingPage() {
                 <div className="h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent mb-4" />
                 <ul className="space-y-2 flex-1">{p.features.map((f,i)=><li key={i} className="flex items-center gap-2 text-[11px] text-white/70"><span className="text-[#E8FF86]">—</span> {f}</li>)}</ul>
                 <button onClick={()=>setSelectedPlan(p)} className={`mt-5 h-10 rounded-full flex items-center justify-center text-[11px] tracking-[0.12em] uppercase font-medium transition-all ${p.popular ? 'bg-[#E8FF86] text-black font-bold hover:bg-[#dfff6b]' : p.id==='basic' ? 'border border-white/20 hover:bg-white hover:text-black' : 'bg-gradient-to-r from-[#d4a574] to-[#f5d6a8] text-black font-bold'}`}>{p.id==='basic'?p.btn:`Pay Rs. ${total} • ${p.btn}`}</button>
-              </div>
+              </TiltSurface>
             )
           })}
         </div>

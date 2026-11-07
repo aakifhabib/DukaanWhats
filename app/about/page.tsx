@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { TiltSurface } from '@/components/TiltSurface'
 
 const principles = [
   {
@@ -39,7 +40,8 @@ export default function AboutPage() {
         </section>
 
         <section className="mt-12 grid gap-5 md:mt-16 md:grid-cols-[1.2fr_0.8fr]">
-          <article className="rounded-[28px] border border-black/[0.06] bg-white p-6 sm:p-9">
+          <TiltSurface className="rounded-[28px]" maxTilt={4}>
+          <article className="h-full rounded-[28px] border border-black/[0.06] bg-white p-6 sm:p-9">
             <p className="text-[10px] font-black tracking-[0.18em] text-zinc-400">THE STORY</p>
             <h2 className="mt-4 text-2xl font-black tracking-tight sm:text-3xl">Built in Islamabad, for sellers across Pakistan.</h2>
             <div className="mt-5 space-y-4 text-sm leading-7 text-zinc-600">
@@ -48,8 +50,10 @@ export default function AboutPage() {
               <p>The goal is practical: help sellers get online with less friction, keep the buying conversation direct, and give each business a page that feels like its own.</p>
             </div>
           </article>
-          <aside className="relative overflow-hidden rounded-[28px] bg-black p-7 text-white sm:p-9">
-            <div aria-hidden="true" className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-[#E8FF86]/20 blur-3xl" />
+          </TiltSurface>
+          <TiltSurface className="rounded-[28px]" maxTilt={5}>
+          <aside className="relative h-full overflow-hidden rounded-[28px] bg-black p-7 text-white sm:p-9">
+            <div aria-hidden="true" className="dw-float absolute -right-16 -top-16 h-56 w-56 rounded-full bg-[#E8FF86]/20 blur-3xl" />
             <div className="relative">
               <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#E8FF86] text-sm font-black text-black">MA</div>
               <p className="mt-7 text-[10px] font-bold tracking-[0.18em] text-white/50">FOUNDER & BUILDER</p>
@@ -58,6 +62,7 @@ export default function AboutPage() {
               <p className="mt-7 inline-flex items-center gap-2 rounded-full border border-white/15 px-3 py-2 text-xs text-white/75"><span className="h-2 w-2 rounded-full bg-[#E8FF86]" /> Islamabad, Pakistan</p>
             </div>
           </aside>
+          </TiltSurface>
         </section>
 
         <section className="mt-16 sm:mt-20">
@@ -71,11 +76,13 @@ export default function AboutPage() {
               ['02', 'Share one link', 'Put your store link on Instagram, WhatsApp Status or anywhere customers find you.'],
               ['03', 'Talk directly', 'A customer can start an order conversation with you on WhatsApp. You manage payment and fulfilment directly.'],
             ].map(([number, title, text]) => (
-              <article key={number} className="rounded-[22px] border border-black/[0.06] bg-white p-6">
-                <div className="text-xs font-black text-zinc-300">{number}</div>
-                <h3 className="mt-5 text-lg font-extrabold tracking-tight">{title}</h3>
-                <p className="mt-2 text-sm leading-6 text-zinc-500">{text}</p>
-              </article>
+              <TiltSurface key={number} className="rounded-[22px]" maxTilt={6}>
+                <article className="h-full rounded-[22px] border border-black/[0.06] bg-white p-6">
+                  <div className="text-xs font-black text-zinc-300">{number}</div>
+                  <h3 className="mt-5 text-lg font-extrabold tracking-tight">{title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-zinc-500">{text}</p>
+                </article>
+              </TiltSurface>
             ))}
           </div>
         </section>
@@ -84,11 +91,13 @@ export default function AboutPage() {
           <p className="text-[10px] font-black tracking-[0.18em] text-zinc-400">WHAT MATTERS TO US</p>
           <div className="mt-7 grid gap-3 md:grid-cols-3">
             {principles.map(({ number, title, text }) => (
-              <article key={number} className="rounded-[22px] border border-black/[0.06] bg-white p-6">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E8FF86] text-xs font-black">{number}</div>
-                <h3 className="mt-5 text-lg font-extrabold tracking-tight">{title}</h3>
-                <p className="mt-2 text-sm leading-6 text-zinc-500">{text}</p>
-              </article>
+              <TiltSurface key={number} className="rounded-[22px]" maxTilt={6}>
+                <article className="h-full rounded-[22px] border border-black/[0.06] bg-white p-6">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E8FF86] text-xs font-black">{number}</div>
+                  <h3 className="mt-5 text-lg font-extrabold tracking-tight">{title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-zinc-500">{text}</p>
+                </article>
+              </TiltSurface>
             ))}
           </div>
         </section>
