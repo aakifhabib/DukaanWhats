@@ -664,6 +664,9 @@ export function PremiumThemeEditor({ profile, onSave }: { profile: any; onSave: 
         .pte-fade { animation: pteFade 0.25s ease both; }
         .pte-ns { scrollbar-width: none; }
         .pte-ns::-webkit-scrollbar { display: none; }
+        .pte-fields-scroll { scrollbar-width: thin; scrollbar-color: #d4d4d8 transparent; }
+        .pte-fields-scroll::-webkit-scrollbar { width: 8px; }
+        .pte-fields-scroll::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 999px; border: 2px solid white; }
         @media (prefers-reduced-motion: reduce) { .pte-panel, .pte-fade { animation: none; } }
       `}</style>
 
@@ -691,7 +694,11 @@ export function PremiumThemeEditor({ profile, onSave }: { profile: any; onSave: 
           </div>
           <div className="px-5 md:px-6 mt-3 flex flex-wrap items-center justify-between gap-2 text-[12.5px] text-zinc-500"><span>{section.sub}</span><span className="font-mono text-[10.5px] text-zinc-400">{userProducts.length ? `Previewing your ${userProducts.length} product${userProducts.length > 1 ? 's' : ''}` : 'Sample products match this theme'} · edits preview here, then save to publish</span></div>
 
-          <div key={section.id + themeId} className="pte-panel px-5 md:px-6 py-5 grid sm:grid-cols-2 gap-x-4 gap-y-5 flex-1 content-start">
+          <div
+            key={section.id + themeId}
+            className={`pte-panel px-5 md:px-6 py-5 grid sm:grid-cols-2 gap-x-4 gap-y-5 flex-1 content-start ${split ? 'pte-fields-scroll min-h-0 overflow-y-auto overscroll-contain' : ''}`}
+            style={split ? { maxHeight: 'min(calc(100vh - 340px), 720px)' } : undefined}
+          >
             <div className="sm:col-span-2 flex flex-wrap items-center gap-3">
               <label className="relative min-w-[220px] flex-1">
                 <span className="sr-only">Find a setting in this section</span>
