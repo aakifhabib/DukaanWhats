@@ -1,4 +1,6 @@
+'use client'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 const links = [
   { href: '/about', label: 'About' },
@@ -9,6 +11,10 @@ const links = [
 ]
 
 export function SiteFooter() {
+  const pathname = usePathname()
+  // The landing page has its own compact footer; keep the global footer on all other routes.
+  if (pathname === '/') return null
+
   return (
     <footer id="site-footer" className="mt-auto border-t border-black/10 bg-white px-5 py-8 text-[#111] sm:px-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
