@@ -41,7 +41,8 @@ export default function LandingPage() {
             <span className="text-[16px] font-semibold tracking-[-0.02em]">DukaanWhats.pk</span>
             <span className="hidden md:inline-flex ml-3 rounded-[8px] bg-[#E8FF86] px-2 py-[2px] text-[11px] font-medium tracking-wide">LIVE</span>
           </Link>
-          <nav className="flex items-center gap-2">
+          <nav aria-label="Main navigation" className="flex items-center gap-2 md:gap-3">
+            <Link href="#how-it-works" className="hidden lg:inline-flex h-10 items-center px-3 text-[13px] font-medium text-zinc-600 transition hover:text-black">How it works</Link>
 
       {/* Variant 1 - Dark Pill + Lime Arrow - Header */}
       <Link href="/pricing" className="group relative hidden md:inline-flex items-center gap-[10px] rounded-full bg-[#0A0A0A] pl-[18px] pr-[6px] py-[6px] text-[13px] font-[550] tracking-[-0.01em] text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]" style={{boxShadow:'inset 0 1px 0 rgba(255,255,255,0.08)'}}>
@@ -108,15 +109,13 @@ export default function LandingPage() {
                     <div className="rounded-full bg-[#E8FF86] px-2 py-1 text-[10px] font-medium">● Online</div>
                   </div>
                   <div className="mt-4 grid grid-cols-2 gap-3">
-                    <div className="rounded-[14px] border bg-white p-2">
-                      <div className="h-[84px] rounded-[10px] bg-gradient-to-br from-zinc-100 to-zinc-200" />
-                      <div className="mt-2 text-[12px] font-medium">Lawn Suit</div>
-                      <div className="text-[12px] font-bold">Rs. 2,500</div>
+                    <div className="group rounded-[14px] border border-zinc-200/80 bg-white p-2 transition hover:-translate-y-1 hover:shadow-lg">
+                      <div className="h-[112px] overflow-hidden rounded-[10px] bg-zinc-100"><img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&w=640&q=80" alt="Lawn suit on a model" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" /></div>
+                      <div className="mt-2 flex items-start justify-between gap-2"><div><div className="text-[12px] font-medium">Lawn Suit</div><div className="text-[12px] font-bold">Rs. 2,500</div></div><span className="mt-0.5 rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9px] font-medium text-zinc-500">NEW</span></div>
                     </div>
-                    <div className="rounded-[14px] border bg-white p-2">
-                      <div className="h-[84px] rounded-[10px] bg-gradient-to-br from-zinc-100 to-zinc-200" />
-                      <div className="mt-2 text-[12px] font-medium">Kurta Set</div>
-                      <div className="text-[12px] font-bold">Rs. 3,200</div>
+                    <div className="group rounded-[14px] border border-zinc-200/80 bg-white p-2 transition hover:-translate-y-1 hover:shadow-lg">
+                      <div className="h-[112px] overflow-hidden rounded-[10px] bg-zinc-100"><img src="https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=640&q=80" alt="Folded cotton clothing" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" /></div>
+                      <div className="mt-2 flex items-start justify-between gap-2"><div><div className="text-[12px] font-medium">Kurta Set</div><div className="text-[12px] font-bold">Rs. 3,200</div></div><span className="mt-0.5 rounded-full bg-[#E8FF86] px-1.5 py-0.5 text-[9px] font-medium">POPULAR</span></div>
                     </div>
                   </div>
                   <div className="mt-4 flex gap-2">
@@ -131,7 +130,47 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="mt-16 grid gap-4 md:grid-cols-3">
+        <section aria-label="Store benefits" className="mt-4 grid grid-cols-2 overflow-hidden rounded-[20px] border border-black/[0.06] bg-white sm:grid-cols-4">
+          {[
+            { value: 'Start free', label: 'No setup fee' },
+            { value: 'No code', label: 'Easy to manage' },
+            { value: 'Direct orders', label: 'Through WhatsApp' },
+            { value: 'No commission', label: 'Keep your sales' },
+          ].map((item, index) => (
+            <div key={item.value} className={`px-4 py-4 text-center ${index % 2 === 0 ? 'border-r' : ''} ${index < 2 ? 'border-b sm:border-b-0' : ''} sm:border-r last:border-r-0`}>
+              <div className="text-[13px] font-bold tracking-[-0.02em]">{item.value}</div>
+              <div className="mt-0.5 text-[11px] text-zinc-500">{item.label}</div>
+            </div>
+          ))}
+        </section>
+
+        <section id="how-it-works" className="mt-16 md:mt-24">
+          <div className="max-w-2xl">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">How it works</div>
+            <h2 className="mt-3 text-[32px] font-bold leading-[0.98] tracking-[-0.045em] md:text-[48px]">From product to first order.</h2>
+            <p className="mt-3 max-w-xl text-[15px] leading-6 text-zinc-600">A simple storefront that fits the way you already sell.</p>
+          </div>
+          <div className="mt-7 grid gap-3 md:grid-cols-3">
+            {[
+              { n: '01', title: 'Add your products', body: 'Upload photos, set prices, and organize your catalog in minutes.' },
+              { n: '02', title: 'Share one link', body: 'Your storefront is ready to share in chats, stories, and your bio.' },
+              { n: '03', title: 'Chat and confirm', body: 'Customers browse your catalog, then reach you directly on WhatsApp.' },
+            ].map((step, index) => (
+              <article key={step.n} className={`group relative overflow-hidden rounded-[22px] border border-black/[0.07] p-6 md:p-7 transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_48px_-28px_rgba(0,0,0,0.28)] ${index === 1 ? 'bg-[#E8FF86]' : 'bg-white'}`}>
+                <div className="flex items-center justify-between"><span className="grid h-10 w-10 place-items-center rounded-full bg-black text-[11px] font-mono font-semibold text-[#E8FF86]">{step.n}</span><span className="text-2xl transition-transform group-hover:translate-x-1">↗</span></div>
+                <h3 className="mt-8 text-[18px] font-bold tracking-[-0.03em]">{step.title}</h3>
+                <p className="mt-2 text-[13px] leading-5 text-zinc-600">{step.body}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section id="features" className="mt-16 md:mt-24">
+          <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+            <div><div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Made for small shops</div><h2 className="mt-2 text-[28px] font-bold tracking-[-0.04em] md:text-[38px]">A storefront that does the busywork.</h2></div>
+            <Link href="/pricing" className="text-[13px] font-semibold underline underline-offset-4 decoration-zinc-300 hover:decoration-black">Compare plans ↗</Link>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
           <div className="rounded-[20px] border bg-white p-6">
             <div className="grid h-10 w-10 place-items-center rounded-[12px] bg-[#E8FF86]">🖼️</div>
             <h3 className="mt-4 text-[16px] font-semibold">Multi-Photo Galleries</h3>
@@ -146,6 +185,7 @@ export default function LandingPage() {
             <div className="grid h-10 w-10 place-items-center rounded-[12px] bg-white/10">⚡</div>
             <h3 className="mt-4 text-[16px] font-semibold">Copy Link in 1 Tap</h3>
             <p className="mt-2 text-[13px] leading-[1.5] text-zinc-400">Share your store link on social media or in chat.</p>
+          </div>
           </div>
         </section>
 
@@ -175,7 +215,15 @@ export default function LandingPage() {
           </div>
         </section>
 
-
+        <footer className="flex flex-col gap-4 border-t border-black/10 py-7 text-[12px] text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2 text-zinc-900"><span className="grid h-7 w-7 place-items-center rounded-lg bg-black text-[11px] font-bold text-white">D</span><span className="font-semibold">DukaanWhats.pk</span><span className="text-zinc-400">· Made for the way you sell.</span></div>
+          <nav aria-label="Footer" className="flex flex-wrap gap-x-5 gap-y-2">
+            <Link href="/pricing" className="hover:text-black">Pricing</Link>
+            <Link href="/about" className="hover:text-black">About</Link>
+            <Link href="/terms" className="hover:text-black">Terms</Link>
+            <Link href="/privacy" className="hover:text-black">Privacy</Link>
+          </nav>
+        </footer>
       </main>
     </div>
   )

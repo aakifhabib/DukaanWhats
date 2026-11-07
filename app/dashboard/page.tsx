@@ -1120,6 +1120,45 @@ Upgrade to unlock all 8 Advanced themes.`)
   /* ---------------- THEMES PAGE ---------------- */
   const themesPage = (
     <div className="dw-page dw-stagger">
+      {profile && (
+        <section className="mb-6 overflow-hidden rounded-[24px] border border-zinc-200/80 bg-white shadow-[0_14px_38px_-28px_rgba(10,10,10,0.22)]">
+          <div className="flex flex-col gap-5 p-5 md:flex-row md:items-center md:justify-between md:px-7 md:py-6">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-400">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-100 px-2.5 py-1 text-zinc-600"><span className={`h-1.5 w-1.5 rounded-full ${publishedSlug ? 'bg-emerald-500' : 'bg-amber-500'}`} />Store overview</span>
+                <span>{!publishedSlug ? 'Finish setup to publish your link' : products.length ? 'Your storefront is ready to share' : 'Add your first product to get started'}</span>
+              </div>
+              <h2 className="mt-3 truncate text-[25px] font-extrabold tracking-[-0.04em] text-zinc-950 md:text-[30px]">Welcome back, {profile.business_name || 'store owner'}</h2>
+              <p className="mt-1 max-w-xl text-[12.5px] leading-5 text-zinc-500">Your products, storefront design, and customer orders — all in one place.</p>
+            </div>
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
+              {publishedSlug ? (
+                <Link href={`/s/${publishedSlug}`} target="_blank" rel="noopener noreferrer" className={`${BTN_LIGHT} h-10 px-4 text-[12px]`}><IconExternal c="h-3.5 w-3.5" />View storefront</Link>
+              ) : (
+                <button type="button" onClick={() => setActiveTab('store')} className={`${BTN_LIGHT} h-10 px-4 text-[12px]`}>Finish store setup <span aria-hidden>→</span></button>
+              )}
+              <button type="button" onClick={() => setActiveTab('products')} className={`${BTN_DARK} h-10 px-4 text-[12px]`}><IconPlus c="h-3.5 w-3.5" />Add product</button>
+            </div>
+          </div>
+          <div className="grid border-t border-zinc-200/80 sm:grid-cols-3">
+            <button type="button" onClick={() => setActiveTab('products')} className="group border-b border-zinc-200/80 px-5 py-4 text-left transition hover:bg-zinc-50 sm:border-b-0 sm:border-r md:px-7">
+              <span className="flex items-center justify-between gap-3 text-[11px] font-medium text-zinc-500"><span>Product catalog</span><span className="font-mono text-zinc-400">{maxLabel(productLimit)} max</span></span>
+              <span className="mt-1 block text-[21px] font-bold tracking-[-0.04em] text-zinc-950">{products.length}<span className="ml-1 text-[12px] font-medium text-zinc-400">products</span></span>
+              <span className="mt-2 block h-1.5 overflow-hidden rounded-full bg-zinc-100"><span className="block h-full rounded-full bg-[#0A0A0A] transition-all" style={{ width: `${productPct}%` }} /></span>
+            </button>
+            <button type="button" onClick={() => setActiveTab('themes')} className="group border-b border-zinc-200/80 px-5 py-4 text-left transition hover:bg-zinc-50 sm:border-b-0 sm:border-r md:px-7">
+              <span className="block text-[11px] font-medium text-zinc-500">Current storefront design</span>
+              <span className="mt-1 flex items-center gap-2 text-[16px] font-bold tracking-[-0.03em] text-zinc-950"><span className="grid h-7 w-7 place-items-center rounded-lg" style={{ background: currentTheme.colors?.accent || '#E8FF86' }}>✦</span>{currentTheme.name}</span>
+              <span className="mt-1 block text-[10.5px] text-zinc-400">{currentTier} theme · select to customize</span>
+            </button>
+            <button type="button" onClick={() => setActiveTab('payments')} className="group px-5 py-4 text-left transition hover:bg-zinc-50 md:px-7">
+              <span className="block text-[11px] font-medium text-zinc-500">Your plan</span>
+              <span className="mt-1 block text-[21px] font-bold tracking-[-0.04em] text-zinc-950">{currentPlanDef.name}</span>
+              <span className="mt-1 block text-[10.5px] text-zinc-400">{maxLabel(productLimit)} products · manage plan →</span>
+            </button>
+          </div>
+        </section>
+      )}
       <PageHeader
         title="Themes"
         subtitle={currentPlanId === 'basic' ? 'All 3 Basic themes + 3 of 8 Advanced. Premium is locked.'
