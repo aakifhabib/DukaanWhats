@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@supabase/supabase-js'
 import { PremiumThemeRenderer } from '@/components/PremiumThemeRenderer'
 import { STORE_THEMES, getTheme } from '@/lib/storeThemes'
 import Link from 'next/link'
@@ -26,6 +26,14 @@ type Product = {
 }
 
 const money = (value: number) => `Rs. ${new Intl.NumberFormat('en-PK').format(Number(value) || 0)}`
+const PUBLIC_PROFILE_COLUMNS = 'id,business_name,store_slug,whatsapp_number,store_theme,current_plan,premium_custom'
+const STORE_SETTINGS_COLUMNS = 'store_language,delivery_enabled,delivery_fee,delivery_areas,pickup_enabled,cod_enabled,cod_details,seo_title,seo_description'
+const PUBLIC_PRODUCT_COLUMNS = 'id,user_id,name,price,stock,image_url,image_urls,created_at,description,category,sizes,colors,original_price'
+const publicSupabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)!,
+  { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } },
+)
 
 function BasicTheme({
   profile, products, cart, onAdd, onOpen, onRemove, setShowCart, showCart, selectedProduct, setSelectedProduct, onCheckout, track,
@@ -84,7 +92,7 @@ function BasicTheme({
 
   const placeOrder = () => {
     if (!whatsappNumber || cart.length === 0) return
-    if (profile?.current_plan === 'advanced' || profile?.current_plan === 'premium') { onCheckout(); setShowCart(false); return }
+    if (profile?.store_growth_ready && (profile?.current_plan === 'advanced' || profile?.current_plan === 'premium')) { onCheckout(); setShowCart(false); return }
     const counts = new Map<string, { product: Product; quantity: number }>()
     cart.forEach(product => {
       const key = `${product.id}|${product.selectedSize || ''}|${product.selectedColor || ''}`
@@ -217,13 +225,15 @@ export default function StorePageClient({ slug }: { slug: string }) {
       setLoading(true)
       setLoadError('')
       try {
-        const { data: prof, error: profErr } = await (supabase as any).from('profiles').select('*').eq('store_slug', slug).maybeSingle()
+        const { data: prof, error: profErr } = await publicSupabase.from('profiles').select(PUBLIC_PROFILE_COLUMNS).eq('store_slug', slug).maybeSingle()
         if (profErr) throw profErr
         if (!prof) { if (active) setProfile(null); return }
-        const { data: prods, error: productsError } = await (supabase as any).from('products').select('*').eq('user_id', prof.id).order('created_at', { ascending: false })
+        const { data: settings, error: settingsError } = await publicSupabase.from('profiles').select(STORE_SETTINGS_COLUMNS).eq('id', prof.id).maybeSingle()
+        const storeProfile = { ...prof, ...(settings || {}), store_growth_ready: !settingsError && Boolean(settings) }
+        const { data: prods, error: productsError } = await publicSupabase.from('products').select(PUBLIC_PRODUCT_COLUMNS).eq('user_id', prof.id).order('created_at', { ascending: false })
         if (productsError) throw productsError
         if (!active) return
-        setProfile(prof)
+        setProfile(storeProfile)
         setProducts(prods || [])
         void fetch('/api/analytics/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ store_slug: slug, event_type: 'store_view' }) }).catch(() => {})
       } catch (error: any) {

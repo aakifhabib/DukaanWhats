@@ -61,6 +61,14 @@ export default function AdminPayments() {
       return fetch(url, { ...init, headers, cache: 'no-store' })
     }
     let response = await send(session.access_token)
+    if (response.status === 403) {
+      const result = await response.clone().json().catch(() => ({}))
+      if (result.code === 'mfa_required') {
+        await supabase.auth.signOut({ scope: 'local' })
+        setSession(null)
+        throw new Error('Administrator MFA is required. Sign in again to complete authenticator verification.')
+      }
+    }
     if (response.status === 401) {
       const { data, error: refreshError } = await supabase.auth.refreshSession()
       if (refreshError || !data.session) throw new Error('Your session expired. Sign out and sign in again.')

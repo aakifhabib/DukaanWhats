@@ -17,6 +17,131 @@ alter table public.products
   add column if not exists sizes text[] not null default '{}',
   add column if not exists colors text[] not null default '{}';
 
+-- Remove legacy permissive policies and column grants that let anonymous callers mutate profiles/products.
+do $$
+declare column_name text;
+begin
+  for column_name in
+    select attname from pg_attribute where attrelid = 'public.profiles'::regclass and attnum > 0 and not attisdropped
+  loop
+    execute format('revoke all privileges (%I) on table public.profiles from public, anon, authenticated', column_name);
+  end loop;
+  for column_name in
+    select attname from pg_attribute where attrelid = 'public.products'::regclass and attnum > 0 and not attisdropped
+  loop
+    execute format('revoke all privileges (%I) on table public.products from public, anon, authenticated', column_name);
+  end loop;
+end $$;
+
+alter table public.profiles enable row level security;
+alter table public.products enable row level security;
+revoke all privileges on table public.profiles, public.products from public, anon, authenticated;
+grant select (id, business_name, store_slug, whatsapp_number, store_theme, current_plan, premium_custom,
+  store_language, delivery_enabled, delivery_fee, delivery_areas, pickup_enabled, cod_enabled, cod_details,
+  seo_title, seo_description) on table public.profiles to anon;
+grant select on table public.profiles to authenticated;
+grant insert (id, business_name, whatsapp_number, store_slug, store_theme) on table public.profiles to authenticated;
+grant update (id, business_name, whatsapp_number, store_slug, store_theme, premium_custom, store_language,
+  delivery_enabled, delivery_fee, delivery_areas, pickup_enabled, cod_enabled, cod_details, seo_title,
+  seo_description) on table public.profiles to authenticated;
+
+grant select (id, user_id, name, price, stock, image_url, image_urls, created_at, description, category,
+  sizes, colors, original_price) on table public.products to anon;
+grant select on table public.products to authenticated;
+grant insert (user_id, name, price, stock, image_url, image_urls, description, category, sizes, colors, original_price)
+  on table public.products to authenticated;
+grant update (name, price, stock, image_url, image_urls, description, category, sizes, colors, original_price)
+  on table public.products to authenticated;
+grant delete on table public.products to authenticated;
+
+drop policy if exists "Allow all" on public.profiles;
+drop policy if exists "Allow all for now" on public.profiles;
+drop policy if exists "Public can view stores" on public.profiles;
+drop policy if exists "Users can view own profile" on public.profiles;
+drop policy if exists "Users can insert own profile" on public.profiles;
+drop policy if exists "Users can update own profile" on public.profiles;
+create policy "Public can view stores" on public.profiles for select to anon using (true);
+create policy "Users can view own profile" on public.profiles for select to authenticated using (auth.uid() = id);
+create policy "Users can insert own profile" on public.profiles for insert to authenticated with check (auth.uid() = id);
+create policy "Users can update own profile" on public.profiles for update to authenticated using (auth.uid() = id) with check (auth.uid() = id);
+
+drop policy if exists "Allow all" on public.products;
+drop policy if exists "Allow all for now" on public.products;
+drop policy if exists "Public can view products" on public.products;
+drop policy if exists "Users can view own products" on public.products;
+drop policy if exists "Users can insert own products" on public.products;
+drop policy if exists "Users can update own products" on public.products;
+drop policy if exists "Users can delete own products" on public.products;
+create policy "Public can view products" on public.products for select to anon using (true);
+create policy "Users can view own products" on public.products for select to authenticated using (auth.uid() = user_id);
+create policy "Users can insert own products" on public.products for insert to authenticated with check (auth.uid() = user_id);
+create policy "Users can update own products" on public.products for update to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "Users can delete own products" on public.products for delete to authenticated using (auth.uid() = user_id);
+
+-- Payment rows are written only by the validated server endpoint and reviewed by the server admin API.
+alter table public.plan_payments enable row level security;
+revoke all privileges on table public.plan_payments from public, anon, authenticated;
+grant select on table public.plan_payments to authenticated;
+drop policy if exists "Admin can update" on public.plan_payments;
+drop policy if exists "Admin can view all" on public.plan_payments;
+drop policy if exists "Users can manage own plan payments" on public.plan_payments;
+drop policy if exists "Users can insert own payment" on public.plan_payments;
+drop policy if exists "users can insert own payments" on public.plan_payments;
+drop policy if exists "Users can view own payments" on public.plan_payments;
+drop policy if exists "users can view own payments" on public.plan_payments;
+create policy "Users can view own payments" on public.plan_payments
+  for select to authenticated using (auth.uid() = user_id);
+
+-- These legacy tables/views are unused by the app; block direct client access to avoid leaking or forging records.
+alter table public.orders enable row level security;
+revoke all privileges on table public.orders from public, anon, authenticated;
+drop policy if exists "Allow all for orders" on public.orders;
+drop policy if exists "Allow all to insert orders" on public.orders;
+drop policy if exists "Allow all to update orders" on public.orders;
+drop policy if exists "Allow all to view orders" on public.orders;
+
+alter table public.plan_purchases enable row level security;
+revoke all privileges on table public.plan_purchases from public, anon, authenticated;
+drop policy if exists "Allow all for plan_purchases" on public.plan_purchases;
+
+revoke all privileges on table public.daily_store_stats from public, anon, authenticated;
+
+alter table public.plans enable row level security;
+revoke all privileges on table public.plans from public, anon, authenticated;
+grant select on table public.plans to anon, authenticated;
+drop policy if exists "Allow public read plans" on public.plans;
+create policy "Allow public read plans" on public.plans for select to anon, authenticated using (true);
+
+-- Analytics writes are server-mediated; store owners may read their own events only.
+alter table public.store_analytics enable row level security;
+revoke all privileges on table public.store_analytics from public, anon, authenticated;
+grant select on table public.store_analytics to authenticated;
+drop policy if exists "Allow public insert" on public.store_analytics;
+drop policy if exists "Owners can read own analytics" on public.store_analytics;
+create policy "Owners can read own analytics" on public.store_analytics
+  for select to authenticated using (store_owner_id = auth.uid());
+
+-- Public image access remains read-only. Upload/update/delete require a path scoped to the caller's auth UID.
+alter table storage.objects enable row level security;
+revoke all privileges on table storage.objects from public, anon, authenticated;
+grant select on table storage.objects to anon, authenticated;
+grant insert, update, delete on table storage.objects to authenticated;
+drop policy if exists "Allow all" on storage.objects;
+drop policy if exists "Allow all storage" on storage.objects;
+drop policy if exists "Public read product images" on storage.objects;
+drop policy if exists "Users can upload product images" on storage.objects;
+drop policy if exists "Users can update own product images" on storage.objects;
+drop policy if exists "Users can delete own product images" on storage.objects;
+create policy "Public read product images" on storage.objects
+  for select to anon, authenticated using (bucket_id = 'product-images');
+create policy "Users can upload own product images" on storage.objects
+  for insert to authenticated with check (bucket_id = 'product-images' and (storage.foldername(name))[1] = auth.uid()::text);
+create policy "Users can update own product images" on storage.objects
+  for update to authenticated using (bucket_id = 'product-images' and (storage.foldername(name))[1] = auth.uid()::text)
+  with check (bucket_id = 'product-images' and (storage.foldername(name))[1] = auth.uid()::text);
+create policy "Users can delete own product images" on storage.objects
+  for delete to authenticated using (bucket_id = 'product-images' and (storage.foldername(name))[1] = auth.uid()::text);
+
 create table if not exists public.store_orders (
   id uuid primary key default gen_random_uuid(),
   store_owner_id uuid not null references auth.users(id) on delete cascade,
@@ -93,7 +218,7 @@ create or replace function public.create_store_order(
 ) returns jsonb
 language plpgsql
 security definer
-set search_path = public, pg_temp
+set search_path = pg_catalog, public, pg_temp
 as $$
 declare
   v_profile record;

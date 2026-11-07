@@ -19,14 +19,17 @@ export async function POST(request: Request) {
     if (!token) return json({ error: 'Sign in before submitting a payment.' }, 401)
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL
     const anonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    if (!url || !anonKey) return json({ error: 'Payment submission is not configured.' }, 503)
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    if (!url || !anonKey || !serviceKey) return json({ error: 'Payment submission is not configured.' }, 503)
 
-    const supabase = createClient(url, anonKey, {
+    const authClient = createClient(url, anonKey, {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-      global: { headers: { Authorization: `Bearer ${token}` } },
     })
-    const { data: authData, error: authError } = await supabase.auth.getUser(token)
+    const { data: authData, error: authError } = await authClient.auth.getUser(token)
     if (authError || !authData.user) return json({ error: 'Your session expired. Sign in again.' }, 401)
+    const adminClient = createClient(url, serviceKey, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    })
 
     const body = await request.json().catch(() => null)
     const planId = body?.planId
@@ -42,7 +45,7 @@ export async function POST(request: Request) {
     const validPlanId = planId as keyof typeof PLAN_PRICES
     const validBilling = billing as keyof typeof PLAN_PRICES.advanced
     const amount = PLAN_PRICES[validPlanId][validBilling]
-    const { error: insertError } = await supabase.from('plan_payments').insert({
+    const { error: insertError } = await adminClient.from('plan_payments').insert({
       user_id: authData.user.id,
       plan_id: validPlanId,
       amount,

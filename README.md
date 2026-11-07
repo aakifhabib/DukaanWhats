@@ -16,7 +16,7 @@ DukaanWhats is a Next.js store builder for Pakistani sellers. Customers browse a
 
 ## Admin panel
 
-The customer login page does not link to administrator access. Open `/admin/sign-in` directly and sign in using a Supabase account whose email is explicitly listed in `ADMIN_EMAILS`. The sign-in form has no customer sign-up or Google sign-in; the server independently verifies the user's Supabase identity and allowlist status on every admin API request before using the service-role key. The panel contains paginated registered-user data and payment review actions. There is no default administrator account: if `ADMIN_EMAILS` is unset, admin access fails closed. Keep the admin URL private, but do not treat an unlisted URL as a security boundary—the server-side checks are the protection.
+The customer login page does not link to administrator access. Open `/admin/sign-in` directly and sign in using a Supabase account whose email is explicitly listed in `ADMIN_EMAILS`. The sign-in form has no customer sign-up or Google sign-in. Allowlisted administrators must enroll or verify a TOTP authenticator, and the server rejects admin API requests unless the verified Supabase JWT has AAL2. Each request also verifies the Supabase user and allowlist before using the server-only service-role key. The panel contains paginated registered-user data and payment review actions. There is no default administrator account: if `ADMIN_EMAILS` is unset, admin access fails closed. Keep the admin URL private, but do not treat an unlisted URL as a security boundary—the server-side checks are the protection.
 
 ## Plans and payments
 
@@ -33,6 +33,6 @@ Payment submissions are validated server-side; each transaction is still manuall
 - Back up the target database before applying `supabase/migrations/20261106_store_growth_features.sql`; then verify the RPC, constraints, grants, and RLS policies in Supabase before accepting customer orders.
 - Enable Supabase Email confirmation and configure the production Auth redirect allowlist for `/auth/callback`, `/auth/complete`, and `/reset-password`; verify signup confirmation, email/password, Google sign-in (if enabled), and password recovery against the production domain.
 - Configure and test automated backups / point-in-time recovery for the Supabase project. Confirm database tables, indexes, RLS policies, storage bucket permissions, and public storefront behavior.
-- Admin TOTP/MFA is not yet enforced by this app. Do not treat an email allowlist as MFA; implement and verify an AAL2 gate for admin API requests before claiming MFA readiness.
+- Confirm every allowlisted admin can enroll a TOTP factor and that the production admin API rejects AAL1 sessions and accepts only AAL2 after a valid code. Keep recovery codes and break-glass access under the project owner's control.
 - Verify JazzCash Till ID and payment-review operations before accepting real payments.
 - Run `npx tsc --noEmit`, `npm run build`, and authenticated checkout/order/status tests against a staging Supabase project before deployment.

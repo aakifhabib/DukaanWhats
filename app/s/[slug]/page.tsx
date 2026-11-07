@@ -9,10 +9,11 @@ async function getPublicStore(slug: string) {
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   if (!url || !key) return null
   const client = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } })
-  const { data: store } = await client.from('profiles').select('id,business_name,store_slug,seo_title,seo_description').eq('store_slug', slug).maybeSingle()
+  const { data: store } = await client.from('profiles').select('id,business_name,store_slug').eq('store_slug', slug).maybeSingle()
   if (!store) return null
+  const { data: seo } = await client.from('profiles').select('seo_title,seo_description').eq('id', store.id).maybeSingle()
   const { data: product } = await client.from('products').select('image_url').eq('user_id', store.id).not('image_url', 'is', null).order('created_at', { ascending: false }).limit(1).maybeSingle()
-  return { ...store, cover: product?.image_url || null }
+  return { ...store, ...(seo || {}), cover: product?.image_url || null }
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {

@@ -562,7 +562,7 @@ function useStore(props: any, themeId: string) {
     c, profile, t, language, products, filtered, chips, active, setActive, query, setQuery, sort, setSort, savedOnly, setSavedOnly,
     wish, toggleWish, isWished: (id: string) => wish.includes(id),
     cart, cartCount, cartTotal, lines, cartOpen, openCart, closeCart, changeQty, canRemove: !!onRemove,
-    orderInboxEnabled: profile?.current_plan === 'advanced' || profile?.current_plan === 'premium', onCheckout,
+    orderInboxEnabled: Boolean(profile?.store_growth_ready) && (profile?.current_plan === 'advanced' || profile?.current_plan === 'premium'), onCheckout,
     sel, openProduct, closeProduct, addToCart, quickAdd, track, toast, flash, onAdd,
     isHot: (p: any) => products.indexOf(p) < 2 && stockState(p) !== 'out',
     m, digits, storeUrl, scrollTo, heroImg, heroImg2, initial, rootRef, lines2: lines,

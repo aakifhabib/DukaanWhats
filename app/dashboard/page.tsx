@@ -575,6 +575,7 @@ export default function Dashboard() {
     { id: 'premium', name: 'Premium', monthly: 2999, yearlyMonthly: 2499, yearlyTotal: 29988, products: 999999, imagesPerProduct: 999999, advancedAllowed: 'all', premiumAllowed: 'all', stores: 999999, features: ['Unlimited Products', 'Unlimited Images', 'Every Theme (3 Basic + 8 Advanced + 10 Premium)', 'No Watermark', 'Live Analytics', 'Orders Dashboard + delivery settings'] },
   ]
 
+  const storeGrowthReady = Boolean(profile && Object.prototype.hasOwnProperty.call(profile, 'store_language'))
   const currentPlanId = (profile?.current_plan || 'basic') as 'basic' | 'advanced' | 'premium'
   const currentPlanDef = plans.find(p => p.id === currentPlanId) || plans[0]
   const isPremium = currentPlanId === 'premium'
@@ -624,7 +625,7 @@ export default function Dashboard() {
         if (!prof) {
           const metaName = String(user.user_metadata?.business_name || user.email?.split('@')[0] || 'My Store').trim() || 'My Store'
           const baseSlug = metaName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 20) || 'my-store'
-          const newProfile = { id: user.id, business_name: metaName, whatsapp_number: '', store_slug: `${baseSlug}-${user.id.slice(0, 6)}`, store_theme: 'clothing-noor', current_plan: 'basic' }
+          const newProfile = { id: user.id, business_name: metaName, whatsapp_number: '', store_slug: `${baseSlug}-${user.id.slice(0, 6)}`, store_theme: 'clothing-noor' }
           const { data: created, error: createError } = await supabase.from('profiles').upsert(newProfile, { onConflict: 'id' }).select().single()
           if (createError) throw createError
           if (!created) throw new Error('Your store profile could not be created. Please refresh or contact support.')
@@ -756,26 +757,28 @@ Upgrade to unlock all 8 Advanced themes.`)
       return
     }
     const cleanDeliveryFee = Number(deliveryFee)
-    if (!Number.isInteger(cleanDeliveryFee) || cleanDeliveryFee < 0 || cleanDeliveryFee > 1000000) {
-      setErrorMsg('Delivery fee must be a whole number between Rs. 0 and Rs. 1,000,000.')
-      return
-    }
-    if (!deliveryEnabled && !pickupEnabled) {
-      setErrorMsg('Enable delivery or pickup so customers have a way to receive their order.')
-      return
-    }
     const cleanDeliveryAreas = [...new Set(deliveryAreas.split(',').map(value => value.trim()).filter(Boolean))]
-    if (deliveryEnabled && cleanDeliveryAreas.length === 0) {
-      setErrorMsg('Add at least one delivery area before enabling delivery.')
-      return
-    }
-    if (cleanDeliveryAreas.length > 50 || cleanDeliveryAreas.some(area => area.length > 80)) {
-      setErrorMsg('Use no more than 50 delivery areas, with each area 80 characters or fewer.')
-      return
-    }
-    if (codDetails.trim().length > 300) {
-      setErrorMsg('Cash-on-delivery details must be 300 characters or fewer.')
-      return
+    if (storeGrowthReady) {
+      if (!Number.isInteger(cleanDeliveryFee) || cleanDeliveryFee < 0 || cleanDeliveryFee > 1000000) {
+        setErrorMsg('Delivery fee must be a whole number between Rs. 0 and Rs. 1,000,000.')
+        return
+      }
+      if (!deliveryEnabled && !pickupEnabled) {
+        setErrorMsg('Enable delivery or pickup so customers have a way to receive their order.')
+        return
+      }
+      if (deliveryEnabled && cleanDeliveryAreas.length === 0) {
+        setErrorMsg('Add at least one delivery area before enabling delivery.')
+        return
+      }
+      if (cleanDeliveryAreas.length > 50 || cleanDeliveryAreas.some(area => area.length > 80)) {
+        setErrorMsg('Use no more than 50 delivery areas, with each area 80 characters or fewer.')
+        return
+      }
+      if (codDetails.trim().length > 300) {
+        setErrorMsg('Cash-on-delivery details must be 300 characters or fewer.')
+        return
+      }
     }
 
     setSaving(true)
@@ -787,15 +790,17 @@ Upgrade to unlock all 8 Advanced themes.`)
         store_slug: cleanSlug,
         store_theme: theme,
         premium_custom: premiumCustom,
-        store_language: storeLanguage,
-        delivery_enabled: deliveryEnabled,
-        delivery_fee: cleanDeliveryFee,
-        delivery_areas: cleanDeliveryAreas,
-        pickup_enabled: pickupEnabled,
-        cod_enabled: codEnabled,
-        cod_details: codDetails.trim().slice(0, 300),
-        seo_title: seoTitle.trim().slice(0, 80) || null,
-        seo_description: seoDescription.trim().slice(0, 250) || null,
+        ...(storeGrowthReady ? {
+          store_language: storeLanguage,
+          delivery_enabled: deliveryEnabled,
+          delivery_fee: cleanDeliveryFee,
+          delivery_areas: cleanDeliveryAreas,
+          pickup_enabled: pickupEnabled,
+          cod_enabled: codEnabled,
+          cod_details: codDetails.trim().slice(0, 300),
+          seo_title: seoTitle.trim().slice(0, 80) || null,
+          seo_description: seoDescription.trim().slice(0, 250) || null,
+        } : {}),
       }
       const { data, error } = await supabase.from('profiles').update(updatedProfile).eq('id', profile.id).select('id').maybeSingle()
       if (error) {
@@ -1396,7 +1401,7 @@ Upgrade to unlock all 8 Advanced themes.`)
               <input value={slug} onChange={e => { setSlug(e.target.value.toLowerCase()); setSaved(false) }} maxLength={40} autoComplete="off" spellCheck={false} className="flex-1 min-w-0 h-11 pr-3.5 bg-transparent text-[13.5px] font-mono outline-none border-none" />
             </div>
           </Field>
-          <section className="space-y-4 border-t border-zinc-200/80 pt-5">
+          {storeGrowthReady ? <section className="space-y-4 border-t border-zinc-200/80 pt-5">
             <div><h3 className="text-sm font-bold">Store experience</h3><p className="mt-1 text-xs text-zinc-500">Set your storefront language, delivery and search preview.</p></div>
             <Field label="Storefront language">
               <select value={storeLanguage} onChange={event => { setStoreLanguage(event.target.value as 'en' | 'ur'); setSaved(false) }} className={UI.input}><option value="en">English</option><option value="ur">اردو</option></select>
@@ -1417,7 +1422,7 @@ Upgrade to unlock all 8 Advanced themes.`)
             <Field label="Search description" hint="Optional description for search and social previews (up to 250 characters).">
               <textarea value={seoDescription} onChange={event => { setSeoDescription(event.target.value); setSaved(false) }} maxLength={250} className={`${UI.input} !h-auto min-h-[76px] py-3 resize-none`} placeholder="Describe your store and what customers can find." />
             </Field>
-          </section>
+          </section> : <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-950">Storefront growth settings are temporarily unavailable while the database update is being prepared. Your existing store settings remain usable.</div>}
           <div className="flex gap-2 pt-1 flex-wrap">
             <button type="button" onClick={copyLink} title="Copy your store link to share" className={`${BTN_LIGHT} h-10 px-5 text-[13px]`}>
               {copied ? <><IconCheck c="w-3.5 h-3.5" /> Copied</> : <><IconCopy c="w-3.5 h-3.5" /> Copy link</>}
@@ -1456,7 +1461,7 @@ Upgrade to unlock all 8 Advanced themes.`)
   /* ---------------- ORDERS PAGE ---------------- */
   const ordersPage = (
     <div className="dw-page dw-stagger">
-      {profile ? <OrdersDashboard userId={profile.id} isAdvanced={isAdvanced} /> : <div className="p-8 text-center text-zinc-500">Loading orders…</div>}
+      {!profile ? <div className="p-8 text-center text-zinc-500">Loading orders…</div> : !storeGrowthReady ? <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-sm leading-6 text-amber-950">The order inbox is being prepared. It will become available once the store database update is complete.</div> : <OrdersDashboard userId={profile.id} isAdvanced={isAdvanced} />}
     </div>
   )
 
