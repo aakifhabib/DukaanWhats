@@ -135,44 +135,20 @@ export async function PATCH(request: Request) {
       return json({ error: 'Provide a payment ID and an approved or rejected status.' }, 400)
     }
 
-    const { data: payment, error: lookupError } = await admin
-      .from('plan_payments')
-      .select('id,user_id,plan_id,status')
-      .eq('id', paymentId)
-      .maybeSingle()
-    if (lookupError) return json({ error: lookupError.message }, 500)
-    if (!payment) return json({ error: 'Payment not found.' }, 404)
-    if (payment.status !== 'pending') return json({ error: 'This payment has already been reviewed.' }, 409)
-    if (!['advanced', 'premium'].includes(payment.plan_id)) return json({ error: 'The payment has an invalid plan.' }, 400)
-
-    let previousPlan: string | null = null
-    if (status === 'approved') {
-      const { data: profile, error: profileLookupError } = await admin
-        .from('profiles')
-        .select('current_plan')
-        .eq('id', payment.user_id)
-        .maybeSingle()
-      if (profileLookupError) return json({ error: `Could not load the customer profile: ${profileLookupError.message}` }, 500)
-      if (!profile) return json({ error: 'The customer profile was not found, so their plan cannot be activated.' }, 404)
-      previousPlan = profile.current_plan || 'basic'
-      const { error: planError } = await admin.from('profiles').update({ current_plan: payment.plan_id }).eq('id', payment.user_id)
-      if (planError) return json({ error: `Could not update the customer's plan: ${planError.message}` }, 500)
+    const { data: payment, error: reviewError } = await admin.rpc('review_plan_payment', {
+      p_payment_id: paymentId,
+      p_status: status,
+    })
+    if (reviewError) {
+      const message = reviewError.message || 'Payment review failed.'
+      const responseStatus = reviewError.code === 'P0002' ? 404
+        : reviewError.code === '23505' ? 409
+          : reviewError.code === '22023' ? 400
+            : 500
+      return json({ error: message }, responseStatus)
     }
-
-    const { data: updated, error: updateError } = await admin
-      .from('plan_payments')
-      .update({ status })
-      .eq('id', paymentId)
-      .eq('status', 'pending')
-      .select('id,status,plan_id,amount,txn_id,user_id')
-      .maybeSingle()
-    if (updateError || !updated) {
-      if (status === 'approved' && previousPlan) {
-        await admin.from('profiles').update({ current_plan: previousPlan }).eq('id', payment.user_id)
-      }
-      return json({ error: updateError?.message || 'Payment status changed elsewhere. Refresh and try again.' }, updateError ? 500 : 409)
-    }
-    return json({ payment: updated })
+    if (!payment) return json({ error: 'Payment review returned no result. Refresh and try again.' }, 500)
+    return json({ payment })
   } catch (error: any) {
     return json({ error: error?.message || 'Payment update failed.' }, 500)
   }

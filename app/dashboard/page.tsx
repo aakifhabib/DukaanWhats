@@ -1102,6 +1102,14 @@ Upgrade to unlock all 8 Advanced themes.`)
   const productPct = productLimit === 999999 ? 3 : Math.min(100, (products.length / productLimit) * 100)
   const limitReached = products.length >= productLimit
   const publishedSlug = String(profile?.store_slug || '')
+  const hasStoreIdentity = Boolean(profile?.business_name?.trim() && /^\d{10,15}$/.test(String(profile.whatsapp_number || '').replace(/\D/g, '')) && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(publishedSlug))
+  const storeSetupSteps = [
+    { title: 'Store details', detail: 'Add your business name, WhatsApp number, and store URL.', done: hasStoreIdentity, tab: 'store' as const },
+    { title: 'First product', detail: 'Add at least one product customers can order.', done: products.length > 0, tab: 'products' as const },
+    { title: 'Storefront design', detail: 'Choose a theme that fits your business.', done: Boolean(profile?.store_theme), tab: 'themes' as const },
+    { title: 'Delivery or pickup', detail: 'Turn on at least one way for customers to receive orders.', done: storeGrowthReady && Boolean(profile?.delivery_enabled || profile?.pickup_enabled), tab: 'store' as const },
+  ]
+  const completedSetupSteps = storeSetupSteps.filter(step => step.done).length
   const activeIdx = Math.max(0, sidebarNav.findIndex(n => n.id === activeTab))
 
   const CurrentPlanButton = () => (
@@ -1156,6 +1164,29 @@ Upgrade to unlock all 8 Advanced themes.`)
               <span className="mt-1 block text-[21px] font-bold tracking-[-0.04em] text-zinc-950">{currentPlanDef.name}</span>
               <span className="mt-1 block text-[10.5px] text-zinc-400">{maxLabel(productLimit)} products · manage plan →</span>
             </button>
+          </div>
+        </section>
+      )}
+      {profile && completedSetupSteps < storeSetupSteps.length && (
+        <section aria-labelledby="setup-checklist-title" className="mb-6 rounded-[22px] border border-zinc-200/80 bg-white p-5 shadow-[0_12px_32px_-28px_rgba(10,10,10,0.25)] md:p-6">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-400">Getting started</p>
+              <h2 id="setup-checklist-title" className="mt-1 text-lg font-extrabold tracking-tight text-zinc-950">Set up your store</h2>
+              <p className="mt-1 text-xs text-zinc-500">Complete the essentials to get your storefront ready for customers.</p>
+            </div>
+            <span className="rounded-full bg-zinc-100 px-3 py-1.5 text-xs font-bold text-zinc-700">{completedSetupSteps} of {storeSetupSteps.length} complete</span>
+          </div>
+          <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-zinc-100" role="progressbar" aria-label="Store setup progress" aria-valuemin={0} aria-valuemax={storeSetupSteps.length} aria-valuenow={completedSetupSteps}>
+            <span className="block h-full rounded-full bg-emerald-500 transition-all" style={{ width: `${(completedSetupSteps / storeSetupSteps.length) * 100}%` }} />
+          </div>
+          <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+            {storeSetupSteps.map((step, index) => (
+              <button key={step.title} type="button" onClick={() => setActiveTab(step.tab)} className="group flex min-h-[88px] items-start gap-3 rounded-2xl border border-zinc-200 p-3.5 text-left transition hover:border-zinc-400 hover:bg-zinc-50">
+                <span className={`mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full text-[11px] font-bold ${step.done ? 'bg-emerald-100 text-emerald-700' : 'bg-zinc-100 text-zinc-500'}`} aria-hidden="true">{step.done ? <IconCheck c="h-3.5 w-3.5" /> : index + 1}</span>
+                <span><span className="block text-xs font-bold text-zinc-900">{step.title}{step.done && <span className="ml-1.5 font-medium text-emerald-700">Done</span>}</span><span className="mt-1 block text-[11px] leading-4 text-zinc-500">{step.detail}</span></span>
+              </button>
+            ))}
           </div>
         </section>
       )}
@@ -1646,6 +1677,7 @@ Upgrade to unlock all 8 Advanced themes.`)
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-[13px] font-bold tracking-[-0.01em]">{p.plan_id.toUpperCase()}</span>
+                        <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-semibold capitalize text-zinc-600">{p.billing_cycle || 'monthly'}</span>
                         <span className="text-[12.5px] font-medium text-zinc-600 tabular-nums">Rs. {p.amount}</span>
                       </div>
                       <div className="flex items-center gap-2 mt-1 flex-wrap">

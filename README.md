@@ -25,12 +25,16 @@ The customer login page does not link to administrator access. Open `/admin/sign
 - Premium: Rs. 2,999/month or Rs. 29,988/year; unlimited products and images.
 - JazzCash Till ID: `984837533`.
 
-Payment submissions are validated server-side; each transaction is still manually reviewed in the admin panel before the plan is activated. The legacy JazzCash/Alfalah direct-checkout endpoints are disabled because their old callbacks did not verify gateway signatures. Do not enable those routes until the provider's signed callback is verified server-side and the amount, plan, user, and transaction reference are matched to a server-created order.
+Payment submissions are validated server-side; each transaction is still manually reviewed in the admin panel before the plan is activated. The review now updates the payment and profile plan in one database transaction through `review_plan_payment`. The legacy JazzCash/Alfalah direct-checkout endpoints are disabled because their old callbacks did not verify gateway signatures. Do not enable those routes until the provider's signed callback is verified server-side and the amount, plan, user, and transaction reference are matched to a server-created order.
+
+## Order lifecycle
+
+Seller order statuses progress through New → Confirmed → Preparing → Ready → Out for delivery → Completed, with cancellation available before completion. The database validates these transitions and restores tracked product stock on cancellation. Sellers can open a prefilled WhatsApp status update for a customer; sending remains an explicit seller action, not an automatic message.
 
 ## Production checklist
 
 - Configure `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (or the legacy anon key), `SUPABASE_SERVICE_ROLE_KEY`, and `ADMIN_EMAILS` in the deployment platform.
-- Back up the target database before applying `supabase/migrations/20261106_store_growth_features.sql`; then verify the RPC, constraints, grants, and RLS policies in Supabase before accepting customer orders.
+- Back up the target database before applying `supabase/migrations/20261106_store_growth_features.sql` and then `supabase/migrations/20261107213502_order_and_payment_reliability.sql` in order. The newer migration does not touch Supabase Storage. Verify the order-status trigger, stock restoration, `review_plan_payment` RPC, grants, and RLS policies before enabling the new workflow.
 - Enable Supabase Email confirmation and configure the production Auth redirect allowlist for `/auth/callback`, `/auth/complete`, and `/reset-password`; verify signup confirmation, email/password, Google sign-in (if enabled), and password recovery against the production domain.
 - Configure and test automated backups / point-in-time recovery for the Supabase project. Confirm database tables, indexes, RLS policies, storage bucket permissions, and public storefront behavior.
 - Confirm every allowlisted admin can enroll a TOTP factor and that the production admin API rejects AAL1 sessions and accepts only AAL2 after a valid code. Keep recovery codes and break-glass access under the project owner's control.
