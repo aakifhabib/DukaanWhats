@@ -36,6 +36,9 @@ async function authorize(request: Request): Promise<
   if (!data.user.email || !emails.includes(data.user.email.toLowerCase())) {
     return { response: json({ error: 'This account does not have administrator access.' }, 403) }
   }
+  let claims: any = {}
+  try { claims = JSON.parse(Buffer.from(token.split('.')[1] || '', 'base64url').toString('utf8')) } catch { /* getUser above already validates the token; fail closed below */ }
+  if (claims.aal !== 'aal2') return { response: json({ error: 'Complete administrator multi-factor verification.', code: 'mfa_required' }, 403) }
 
   const admin = createClient(url, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
