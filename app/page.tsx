@@ -6,12 +6,21 @@ import { TiltSurface } from '@/components/TiltSurface'
 
 export default function LandingPage() {
   const [loggedIn, setLoggedIn] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setLoggedIn(!!data.session))
+    let active = true
+    supabase.auth.getSession()
+      .then(({ data }) => { if (active) setLoggedIn(!!data.session) })
+      .catch(() => { if (active) setLoggedIn(false) })
+      .finally(() => { if (active) setAuthReady(true) })
+    return () => { active = false }
   }, []);
 
   const handleCreate = () => {
+    if (!authReady) return
+    setMenuOpen(false)
     window.location.href = loggedIn ? '/dashboard' : '/login'
   };
 
@@ -44,23 +53,30 @@ export default function LandingPage() {
           </Link>
           <nav aria-label="Main navigation" className="flex items-center gap-2 md:gap-3">
             <Link href="#how-it-works" className="hidden lg:inline-flex h-10 items-center px-3 text-[13px] font-medium text-zinc-600 transition hover:text-black">How it works</Link>
-
-      {/* Variant 1 - Dark Pill + Lime Arrow - Header */}
-      <Link href="/pricing" className="group relative hidden md:inline-flex items-center gap-[10px] rounded-full bg-[#0A0A0A] pl-[18px] pr-[6px] py-[6px] text-[13px] font-[550] tracking-[-0.01em] text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]" style={{boxShadow:'inset 0 1px 0 rgba(255,255,255,0.08)'}}>
-        <span className="absolute inset-[2px] rounded-full bg-[#E8FF86] origin-left scale-x-[0.08] scale-y-[0.36] group-hover:scale-100 transition-transform duration-[520ms] ease-[cubic-bezier(0.16,1,0.3,1)]" />
-        <span className="relative z-10 flex items-center gap-[10px]">
-          <span className="h-[8px] w-[8px] rounded-full bg-[#E8FF86] group-hover:bg-[#0A0A0A] transition-colors" />
-          <span className="pr-1 group-hover:text-[#0A0A0A] transition-colors">Pricing</span>
-        </span>
-        <span className="relative z-10 grid h-[28px] w-[28px] place-items-center rounded-full bg-white/[0.08] group-hover:bg-[#0A0A0A] transition-colors">
-          <span className="text-[12px] transition-all group-hover:rotate-45 group-hover:text-[#E8FF86]">↗</span>
-        </span>
-      </Link>
-
+            <Link href="/pricing" className="group relative hidden md:inline-flex items-center gap-[10px] rounded-full bg-[#0A0A0A] pl-[18px] pr-[6px] py-[6px] text-[13px] font-[550] tracking-[-0.01em] text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]" style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)' }}>
+              <span className="absolute inset-[2px] rounded-full bg-[#E8FF86] origin-left scale-x-[0.08] scale-y-[0.36] transition-transform duration-[520ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-100" />
+              <span className="relative z-10 flex items-center gap-[10px]"><span className="h-[8px] w-[8px] rounded-full bg-[#E8FF86] transition-colors group-hover:bg-[#0A0A0A]" /><span className="pr-1 transition-colors group-hover:text-[#0A0A0A]">Pricing</span></span>
+              <span className="relative z-10 grid h-[28px] w-[28px] place-items-center rounded-full bg-white/[0.08] transition-colors group-hover:bg-[#0A0A0A]"><span className="text-[12px] transition-all group-hover:rotate-45 group-hover:text-[#E8FF86]">↗</span></span>
+            </Link>
             <Link href="/s/premiumstore" className="hidden md:inline-flex h-10 items-center rounded-[10px] border border-black/10 bg-white px-5 text-[13px] font-medium hover:bg-black hover:text-white">View Demo</Link>
-            <button onClick={handleCreate} className="inline-flex h-10 items-center justify-center rounded-[10px] bg-black px-5 text-[13px] font-medium text-white hover:scale-[1.02] active:scale-[0.98]">{loggedIn ? 'Go to Dashboard' : 'Create Store'}</button>
+            <button type="button" onClick={handleCreate} disabled={!authReady} className="hidden h-10 items-center justify-center rounded-[10px] bg-black px-5 text-[13px] font-medium text-white transition hover:scale-[1.02] active:scale-[0.98] disabled:cursor-wait disabled:opacity-60 md:inline-flex">{authReady ? loggedIn ? 'Go to Dashboard' : 'Create Store' : 'Loading…'}</button>
+            <button type="button" onClick={() => setMenuOpen(open => !open)} aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'} aria-expanded={menuOpen} aria-controls="mobile-navigation" className="inline-flex h-10 w-10 items-center justify-center rounded-[10px] border border-black/10 bg-white text-lg md:hidden">
+              <span aria-hidden="true">{menuOpen ? '×' : '☰'}</span>
+            </button>
           </nav>
         </div>
+        {menuOpen && (
+          <nav id="mobile-navigation" aria-label="Mobile navigation" className="absolute inset-x-0 top-full border-b border-black/10 bg-[#F8F7F5] p-4 shadow-[0_18px_35px_-24px_rgba(0,0,0,0.4)] md:hidden">
+            <div className="mx-auto grid max-w-[1280px] gap-1">
+              <Link href="#how-it-works" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium hover:bg-black/5">How it works</Link>
+              <Link href="#features" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium hover:bg-black/5">Features</Link>
+              <Link href="/pricing" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium hover:bg-black/5">Pricing and plans</Link>
+              <Link href="/s/premiumstore" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium hover:bg-black/5">View demo store</Link>
+              <Link href="/about" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium hover:bg-black/5">About DukaanWhats</Link>
+              <button type="button" onClick={handleCreate} disabled={!authReady} className="mt-2 flex h-12 items-center justify-center rounded-xl bg-black px-4 text-sm font-semibold text-white disabled:cursor-wait disabled:opacity-60">{authReady ? loggedIn ? 'Open dashboard' : 'Create your free store' : 'Checking account…'}</button>
+            </div>
+          </nav>
+        )}
       </header>
 
       <main className="relative z-10 mx-auto max-w-[1280px] px-6 md:px-8 w-full">
