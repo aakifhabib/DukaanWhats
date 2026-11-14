@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
 
-export function LegalPage({ title, summary, children }: { title: string; summary: string; children: ReactNode }) {
+export function LegalPage({ title, summary, children, effectiveDate = 'November 4, 2026' }: { title: string; summary: string; children: ReactNode; effectiveDate?: string }) {
   return (
     <div data-app-page className="min-h-screen bg-[#F8F7F5] text-[#111]">
       <header className="border-b border-black/5 bg-white">
@@ -18,7 +18,7 @@ export function LegalPage({ title, summary, children }: { title: string; summary
           <p className="text-[10px] font-black tracking-[0.18em] text-zinc-400">DUKAANWHATS.PK · LEGAL</p>
           <h1 className="mt-4 text-3xl font-black tracking-[-0.045em] sm:text-5xl">{title}</h1>
           <p className="mt-4 text-base leading-7 text-zinc-600">{summary}</p>
-          <p className="mt-4 text-xs text-zinc-400">Effective date: November 4, 2026</p>
+          <p className="mt-4 text-xs text-zinc-400">Effective date: {effectiveDate}</p>
           <div className="mt-9 divide-y divide-black/[0.07]">{children}</div>
           <p className="mt-9 rounded-2xl bg-[#F8F7F5] p-4 text-sm leading-6 text-zinc-600">Questions? Contact us at <a className="font-semibold text-black underline underline-offset-4" href="mailto:hello@dukaanwhats.pk">hello@dukaanwhats.pk</a>.</p>
         </article>

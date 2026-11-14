@@ -31,6 +31,10 @@ Payment submissions are validated server-side; each transaction is still manuall
 
 Seller order statuses progress through New → Confirmed → Preparing → Ready → Out for delivery → Completed, with cancellation available before completion. The database validates these transitions and restores tracked product stock on cancellation. Sellers can open a prefilled WhatsApp status update for a customer; sending remains an explicit seller action, not an automatic message.
 
+## Help assistant
+
+A site-wide DukaanWhats guide answers store setup, product, plan, order, and payment FAQs. It uses built-in answers when no AI provider key is configured. To enable generative responses, set the server-only `OPENAI_API_KEY` in the deployment environment; `OPENAI_MODEL` is optional and defaults to `gpt-4o-mini`. AI requests go from the server to OpenAI, not directly from the browser, and message length/rate limits are applied. Chat history is not saved in the app database. OpenAI usage is billed separately from Supabase, so set a provider usage budget. The assistant cannot access or change accounts and tells users not to submit passwords, OTPs, payment credentials, or private customer information.
+
 ## Production checklist
 
 - Configure `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (or the legacy anon key), `SUPABASE_SERVICE_ROLE_KEY`, and `ADMIN_EMAILS` in the deployment platform.

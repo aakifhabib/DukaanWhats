@@ -4,6 +4,7 @@ import { AppThemeProvider } from '@/components/AppThemeProvider';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { FloatingLogoutButton } from '@/components/FloatingLogoutButton';
 import { PageTransition } from '@/components/PageTransition';
+import { SupportChatbot } from '@/components/SupportChatbot';
 
 export const metadata = {
   title: {
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <SiteFooter />
           </div>
           <FloatingLogoutButton />
+          <SupportChatbot />
         </AppThemeProvider>
       </body>
     </html>
