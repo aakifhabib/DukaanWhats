@@ -113,28 +113,60 @@ export async function POST(request: Request) {
   }
 
   const latestQuestion = messages.at(-1)!.content
-  const apiKey = process.env.OPENAI_API_KEY
-  if (!apiKey) return json({ answer: faqAnswer(latestQuestion), mode: 'faq' })
+  const geminiKey = process.env.GEMINI_API_KEY
+  const openaiKey = process.env.OPENAI_API_KEY
 
-  try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
-        messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages.slice(-8)],
-        max_completion_tokens: 300,
-        temperature: 0.3,
-      }),
-      signal: AbortSignal.timeout(18000),
-      cache: 'no-store',
-    })
-    if (!response.ok) return json({ answer: faqAnswer(latestQuestion), mode: 'faq' })
-    const result = await response.json()
-    const answer = result?.choices?.[0]?.message?.content
-    if (typeof answer !== 'string' || !answer.trim()) return json({ answer: faqAnswer(latestQuestion), mode: 'faq' })
-    return json({ answer: answer.trim().slice(0, MAX_OUTPUT_LENGTH), mode: 'ai' })
-  } catch {
-    return json({ answer: faqAnswer(latestQuestion), mode: 'faq' })
+  if (geminiKey) {
+    try {
+      const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash'
+      const contents = messages.slice(-8).map((message: { role: 'user' | 'assistant'; content: string }) => ({
+        role: message.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: message.content }],
+      }))
+      // Gemini conversations must begin with a user turn; the first item can be our greeting.
+      if (contents[0]?.role === 'model') contents.shift()
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+        method: 'POST',
+        headers: { 'x-goog-api-key': geminiKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          contents,
+          generationConfig: { maxOutputTokens: 300, temperature: 0.3 },
+        }),
+        signal: AbortSignal.timeout(18000),
+        cache: 'no-store',
+      })
+      if (response.ok) {
+        const result = await response.json()
+        const answer = result?.candidates?.[0]?.content?.parts
+          ?.map((part: { text?: string }) => part.text || '')
+          .join('')
+        if (typeof answer === 'string' && answer.trim()) return json({ answer: answer.trim().slice(0, MAX_OUTPUT_LENGTH), mode: 'ai' })
+      }
+    } catch { /* Use another configured provider or the built-in FAQ below. */ }
   }
+
+  if (openaiKey) {
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+          messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages.slice(-8)],
+          max_completion_tokens: 300,
+          temperature: 0.3,
+        }),
+        signal: AbortSignal.timeout(18000),
+        cache: 'no-store',
+      })
+      if (response.ok) {
+        const result = await response.json()
+        const answer = result?.choices?.[0]?.message?.content
+        if (typeof answer === 'string' && answer.trim()) return json({ answer: answer.trim().slice(0, MAX_OUTPUT_LENGTH), mode: 'ai' })
+      }
+    } catch { /* Use the built-in FAQ below. */ }
+  }
+
+  return json({ answer: faqAnswer(latestQuestion), mode: 'faq' })
 }

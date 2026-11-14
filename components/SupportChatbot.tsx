@@ -142,7 +142,7 @@ export function SupportChatbot() {
               />
               <button type="submit" aria-label="Send message" disabled={busy || !input.trim()} className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-black text-[#E8FF86] transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40">↑</button>
             </div>
-            <p className="mt-2 text-center text-[9px] leading-4 text-zinc-400">When AI is enabled, messages are processed by OpenAI. Don’t share passwords, OTPs, payment details, or customer private information.</p>
+            <p className="mt-2 text-center text-[9px] leading-4 text-zinc-400">When AI is enabled, messages may be processed by Google Gemini or OpenAI. Don’t share passwords, OTPs, payment details, or customer private information.</p>
           </form>
         </section>
       )}

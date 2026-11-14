@@ -33,7 +33,7 @@ Seller order statuses progress through New → Confirmed → Preparing → Ready
 
 ## Help assistant
 
-A site-wide DukaanWhats guide answers store setup, product, plan, order, and payment FAQs. It uses built-in answers when no AI provider key is configured. To enable generative responses, set the server-only `OPENAI_API_KEY` in the deployment environment; `OPENAI_MODEL` is optional and defaults to `gpt-4o-mini`. AI requests go from the server to OpenAI, not directly from the browser, and message length/rate limits are applied. Chat history is not saved in the app database. OpenAI usage is billed separately from Supabase, so set a provider usage budget. The assistant cannot access or change accounts and tells users not to submit passwords, OTPs, payment credentials, or private customer information.
+A site-wide DukaanWhats guide answers store setup, product, plan, order, and payment FAQs. It uses built-in answers when no AI provider key is configured. To enable generative responses, set a server-only `GEMINI_API_KEY` in the deployment environment; `GEMINI_MODEL` is optional and defaults to `gemini-2.5-flash`. Gemini is preferred when both providers are configured. An optional `OPENAI_API_KEY` / `OPENAI_MODEL` can be used as an alternative. AI requests go from the server to the configured provider, not directly from the browser, and message length/rate limits are applied. Chat history is not saved in the app database. Provider usage is billed separately from Supabase and depends on the provider's quota and pricing; set usage budgets. The assistant cannot access or change accounts and tells users not to submit passwords, OTPs, payment credentials, or private customer information.
 
 ## Production checklist
 
