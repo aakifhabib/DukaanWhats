@@ -33,7 +33,7 @@ const sections = [
     title: '4. Service providers and disclosures',
     paragraphs: [
       'We use service providers to host the application and operate authentication, database and file-storage features. Information may be processed by those providers to deliver the service. We limit access to account and payment-review information to people who need it to operate DukaanWhats.',
-      'The optional site-wide help assistant sends the current conversation to our server. If generative AI is enabled, our server sends those messages to OpenAI to produce a response; otherwise, built-in FAQ answers are used. DukaanWhats does not save chat history to its database. Avoid entering passwords, one-time codes, payment credentials or private customer information. OpenAI processes AI requests under its own service terms.',
+      'The optional site-wide help assistant sends the current conversation to our server. If generative AI is enabled, our server sends those messages to Google Gemini or OpenAI, depending on the configured provider, to produce a response; otherwise, built-in FAQ answers are used. DukaanWhats does not save chat history to its database. Avoid entering passwords, one-time codes, payment credentials or private customer information. The selected AI provider processes requests under its own service terms.',
       'We may disclose information where required by law, to address security or abuse, or to protect the rights and safety of users and the service. We do not sell personal information.',
     ],
   },
