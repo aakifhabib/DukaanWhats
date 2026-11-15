@@ -4,19 +4,21 @@ import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-type Message = { id: string; role: 'user' | 'assistant'; content: string }
+type ChatAction = { label: string; href: string }
+type Message = { id: string; role: 'user' | 'assistant'; content: string; suggestions?: string[]; actions?: ChatAction[]; setupStep?: number }
 type AssistantMode = 'ai' | 'faq' | 'unknown'
 
 const quickQuestions = [
-  'Help me create my store',
+  'Guide me step by step',
   'What do the plans cost?',
   'How do customer orders work?',
 ]
 
-const makeMessage = (role: Message['role'], content: string): Message => ({
+const makeMessage = (role: Message['role'], content: string, extras: Pick<Message, 'suggestions' | 'actions' | 'setupStep'> = {}): Message => ({
   id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
   role,
   content,
+  ...extras,
 })
 
 export function SupportChatbot() {
@@ -26,7 +28,7 @@ export function SupportChatbot() {
   const [busy, setBusy] = useState(false)
   const [mode, setMode] = useState<AssistantMode>('unknown')
   const [messages, setMessages] = useState<Message[]>([
-    makeMessage('assistant', 'Assalamu alaikum! I’m your DukaanWhats guide. I can help you set up a store, understand plans, add products, and manage orders. What would you like help with?'),
+    makeMessage('assistant', 'Assalamu alaikum! I’m your DukaanWhats guide. I can walk you through creating your store one step at a time, or help with plans, products, and orders. What would you like help with?'),
   ])
   const endOfMessages = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -59,14 +61,22 @@ export function SupportChatbot() {
       const response = await fetch('/api/assistant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: history.map(({ role, content }) => ({ role, content })) }),
+        body: JSON.stringify({ messages: history.map(({ role, content, setupStep }) => ({ role, content, ...(setupStep !== undefined ? { setupStep } : {}) })) }),
       })
       const result = await response.json().catch(() => null)
       if (!response.ok || typeof result?.answer !== 'string') {
         throw new Error(result?.error || 'I couldn’t answer that just now. Please try again.')
       }
       setMode(result.mode === 'ai' ? 'ai' : 'faq')
-      setMessages(current => [...current, makeMessage('assistant', result.answer)])
+      const allowedPaths = new Set(['/login', '/dashboard', '/pricing', '/s/premiumstore'])
+      const suggestions = Array.isArray(result.suggestions)
+        ? result.suggestions.filter((item: unknown): item is string => typeof item === 'string' && item.length <= 100).slice(0, 3)
+        : []
+      const actions = Array.isArray(result.actions)
+        ? result.actions.filter((item: any) => item && typeof item.label === 'string' && allowedPaths.has(item.href)).slice(0, 2)
+        : []
+      const setupStep = Number.isInteger(result.setupStep) && result.setupStep >= 0 && result.setupStep <= 5 ? result.setupStep : undefined
+      setMessages(current => [...current, makeMessage('assistant', result.answer, { suggestions, actions, ...(setupStep !== undefined ? { setupStep } : {}) })])
     } catch (error) {
       const message = error instanceof Error ? error.message : 'I couldn’t answer that just now. Please try again.'
       setMessages(current => [...current, makeMessage('assistant', message)])
@@ -97,7 +107,7 @@ export function SupportChatbot() {
               <h2 id="dw-assistant-title" className="truncate text-sm font-bold">DukaanWhats Guide</h2>
               <p className="mt-0.5 text-[11px] text-white/65">Store setup, plans, products & orders</p>
             </div>
-            {mode !== 'unknown' && <span className="rounded-full border border-white/15 px-2 py-1 text-[9px] font-semibold text-white/75">{mode === 'ai' ? 'AI assistant' : 'Instant FAQ'}</span>}
+            {mode !== 'unknown' && <span className="rounded-full border border-white/15 px-2 py-1 text-[9px] font-semibold text-white/75">{mode === 'ai' ? 'AI assistant' : 'Free guide'}</span>}
             <button type="button" aria-label="Close chat" onClick={() => setOpen(false)} className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-xl text-white/75 transition hover:bg-white/10 hover:text-white">×</button>
           </header>
 
@@ -110,9 +120,17 @@ export function SupportChatbot() {
           <div className="min-h-0 flex-1 space-y-3 overflow-y-auto bg-[#FAFAF8] px-4 py-4" role="log" aria-live="polite" aria-relevant="additions text" aria-label="Chat messages">
             {messages.map(message => (
               <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <p dir="auto" className={`max-w-[88%] whitespace-pre-wrap break-words rounded-[18px] px-3.5 py-3 text-[12px] leading-[1.65] ${message.role === 'user' ? 'rounded-br-md bg-black text-white' : 'rounded-bl-md border border-zinc-200/80 bg-white text-zinc-700 shadow-sm'}`}>
-                  {message.content}
-                </p>
+                <div className="max-w-[90%]">
+                  <p dir="auto" className={`whitespace-pre-wrap break-words rounded-[18px] px-3.5 py-3 text-[12px] leading-[1.65] ${message.role === 'user' ? 'rounded-br-md bg-black text-white' : 'rounded-bl-md border border-zinc-200/80 bg-white text-zinc-700 shadow-sm'}`}>
+                    {message.content}
+                  </p>
+                  {message.role === 'assistant' && message.actions?.length ? <div className="mt-2 flex flex-wrap gap-1.5">
+                    {message.actions.map(action => <Link key={action.href} href={action.href} onClick={() => setOpen(false)} className="rounded-full bg-[#E8FF86] px-3 py-1.5 text-[10px] font-bold text-zinc-950">{action.label}</Link>)}
+                  </div> : null}
+                  {message.role === 'assistant' && message.suggestions?.length ? <div className="mt-2 flex flex-wrap gap-1.5">
+                    {message.suggestions.map(suggestion => <button key={suggestion} type="button" disabled={busy} onClick={() => void sendMessage(suggestion)} className="rounded-full border border-zinc-200 bg-white px-2.5 py-1.5 text-left text-[10px] font-medium text-zinc-600 hover:border-zinc-400 disabled:opacity-50">{suggestion}</button>)}
+                  </div> : null}
+                </div>
               </div>
             ))}
             {messages.length === 1 && !busy && (
@@ -142,7 +160,7 @@ export function SupportChatbot() {
               />
               <button type="submit" aria-label="Send message" disabled={busy || !input.trim()} className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-black text-[#E8FF86] transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40">↑</button>
             </div>
-            <p className="mt-2 text-center text-[9px] leading-4 text-zinc-400">When AI is enabled, messages may be processed by Google Gemini or OpenAI. Don’t share passwords, OTPs, payment details, or customer private information.</p>
+            <p className="mt-2 text-center text-[9px] leading-4 text-zinc-400">Free mode uses built-in answers only. If an external AI provider is enabled, messages may be sent to Google or OpenAI. Don’t share passwords, OTPs, payment details, or private customer information.</p>
           </form>
         </section>
       )}
