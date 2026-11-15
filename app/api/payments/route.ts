@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { checkRateLimit, requestBodyTooLarge, textBodyTooLarge } from '@/lib/requestSecurity'
 
 export const dynamic = 'force-dynamic'
 const TILL_ID = '984837533'
+const MAX_BODY_BYTES = 4_096
+const RATE_LIMIT = 5
+const RATE_WINDOW_MS = 30 * 60 * 1000
+const MAX_PENDING_SUBMISSIONS = 5
 const PLAN_PRICES = {
   advanced: { monthly: 899, yearly: 8388 },
   premium: { monthly: 2999, yearly: 29988 },
@@ -14,6 +19,7 @@ const json = (body: unknown, status = 200) => NextResponse.json(body, {
 })
 
 export async function POST(request: Request) {
+  if (requestBodyTooLarge(request, MAX_BODY_BYTES)) return json({ error: 'Payment submission is too large.' }, 413)
   try {
     const token = request.headers.get('authorization')?.match(/^Bearer\s+(.+)$/i)?.[1]
     if (!token) return json({ error: 'Sign in before submitting a payment.' }, 401)
@@ -27,11 +33,19 @@ export async function POST(request: Request) {
     })
     const { data: authData, error: authError } = await authClient.auth.getUser(token)
     if (authError || !authData.user) return json({ error: 'Your session expired. Sign in again.' }, 401)
+    const rateLimit = checkRateLimit(`payment:${authData.user.id}`, RATE_LIMIT, RATE_WINDOW_MS)
+    if (rateLimit.limited) return NextResponse.json({ error: 'Too many payment submissions. Please try again later.' }, {
+      status: 429,
+      headers: { 'Cache-Control': 'private, no-store, max-age=0', 'Retry-After': String(rateLimit.retryAfter) },
+    })
     const adminClient = createClient(url, serviceKey, {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     })
 
-    const body = await request.json().catch(() => null)
+    const rawBody = await request.text()
+    if (textBodyTooLarge(rawBody, MAX_BODY_BYTES)) return json({ error: 'Payment submission is too large.' }, 413)
+    let body: any = null
+    try { body = JSON.parse(rawBody || 'null') } catch { return json({ error: 'Payment submission is invalid.' }, 400) }
     const planId = body?.planId
     const billing = body?.billing
     const transactionId = typeof body?.transactionId === 'string' ? body.transactionId.trim() : ''
@@ -40,6 +54,16 @@ export async function POST(request: Request) {
     }
     if (transactionId.length < 4 || transactionId.length > 80 || !/^[a-zA-Z0-9\-_. ]+$/.test(transactionId)) {
       return json({ error: 'Enter a valid transaction ID (4–80 letters, numbers, spaces, hyphens, underscores, or dots).' }, 400)
+    }
+
+    const { count: pendingCount, error: pendingCountError } = await adminClient
+      .from('plan_payments')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', authData.user.id)
+      .eq('status', 'pending')
+    if (pendingCountError) return json({ error: 'Could not validate pending payment submissions. Please try again later.' }, 503)
+    if ((pendingCount || 0) >= MAX_PENDING_SUBMISSIONS) {
+      return json({ error: 'You already have several payment submissions awaiting review. Please wait for those to be reviewed before submitting another.' }, 429)
     }
 
     const validPlanId = planId as keyof typeof PLAN_PRICES

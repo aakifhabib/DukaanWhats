@@ -1,7 +1,6 @@
 'use client'
 
 import { useMemo, useState, type FormEvent } from 'react'
-import { supabase } from '@/lib/supabase'
 import { useStoreLocale } from '@/lib/storeLocale'
 import { getTheme } from '@/lib/storeThemes'
 
@@ -70,19 +69,25 @@ export function OrderCheckoutModal({ profile, cart, onClose, onSuccess, track }:
     setBusy(true)
     setError('')
     try {
-      const { data, error: rpcError } = await supabase.rpc('create_store_order', {
-        p_store_slug: profile.store_slug,
-        p_customer_name: name.trim(),
-        p_customer_phone: phone.trim(),
-        p_delivery_method: method,
-        p_delivery_area: method === 'delivery' ? area.trim() : null,
-        p_delivery_address: method === 'delivery' ? address.trim() : null,
-        p_notes: notes.trim() || null,
-        p_items: items,
-        p_language: language,
-        p_payment_method: paymentMethod,
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          storeSlug: profile.store_slug,
+          customerName: name.trim(),
+          customerPhone: phone.trim(),
+          deliveryMethod: method,
+          deliveryArea: method === 'delivery' ? area.trim() : null,
+          deliveryAddress: method === 'delivery' ? address.trim() : null,
+          notes: notes.trim() || null,
+          items,
+          language,
+          paymentMethod,
+        }),
       })
-      if (rpcError) throw rpcError
+      const result = await response.json().catch(() => null)
+      if (!response.ok) throw new Error(result?.error || 'Could not submit the order. Please try again.')
+      const data = result?.order
       if (!data?.id) throw new Error('The order request could not be confirmed. Please try again.')
       setOrder(data)
       onSuccess()
