@@ -129,7 +129,7 @@ export function SleekDarkPremiumTheme({ S }: { S: any }) {
       {/* INVENTORY */}
       <section id="pm-collection" className="max-w-[1320px] mx-auto px-4 md:px-6 pb-20">
         <div className="flex flex-wrap items-end justify-between gap-5 border-b border-white/10 pb-6">
-          <div><div className="mono text-[11px] tracking-[0.2em] text-[var(--pm-accent)]">// {c.hudLabel}</div><h2 className="mt-2 text-[clamp(30px,4.2vw,56px)] leading-none font-bold tracking-[-0.04em]">{c.collectionTitle} <span className="mono text-[0.4em] align-top text-white/35 font-medium">[{filtered.length}]</span></h2>{c.collectionSubtitle && <p className="mono mt-2 text-[11.5px] text-white/40">{c.collectionSubtitle}</p>}</div>
+          <div><div className="mono text-[11px] tracking-[0.2em] text-[var(--pm-accent)]">{'// '}{c.hudLabel}</div><h2 className="mt-2 text-[clamp(30px,4.2vw,56px)] leading-none font-bold tracking-[-0.04em]">{c.collectionTitle} <span className="mono text-[0.4em] align-top text-white/35 font-medium">[{filtered.length}]</span></h2>{c.collectionSubtitle && <p className="mono mt-2 text-[11.5px] text-white/40">{c.collectionSubtitle}</p>}</div>
           <div className="flex flex-wrap gap-2.5 items-center">
             {c.showSearch && <SearchBox S={S} className="w-[210px]" inputClass={`h-10 text-[13px] ${SKIN.input}`} />}
             {c.showSort && <SortSelect S={S} className="mono h-10 px-3 rounded-lg bg-white/[0.05] border border-white/12 text-[12px]" />}
