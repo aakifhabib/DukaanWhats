@@ -14,6 +14,10 @@ DukaanWhats is a Next.js store builder for Pakistani sellers. Customers browse a
 4. In Supabase Auth URL configuration, allow the production, preview, and local URLs used for auth redirects: `/auth/callback`, `/auth/complete`, and `/reset-password`. Email confirmations complete in the browser at `/auth/complete`; password recovery redirects directly to `/reset-password` so the browser client can process Supabase's recovery URL fragment.
 5. Run `npm ci`, then `npm run dev`.
 
+## Validation
+
+Before deployment, run `npm run lint`, `npm test`, `npx tsc --noEmit`, and `npm run build`. The current automated test suite covers request-size and in-process rate-limit helpers; it does not replace end-to-end checks of real signup, recovery, Google OAuth, checkout, admin MFA, or payment review flows. `npm run lint` passes with existing non-blocking warnings, primarily raw image tags and React hook dependencies.
+
 ## Admin panel
 
 The customer login page does not link to administrator access. Open `/admin/sign-in` directly and sign in using a Supabase account whose email is explicitly listed in `ADMIN_EMAILS`. The sign-in form has no customer sign-up or Google sign-in. Allowlisted administrators must enroll or verify a TOTP authenticator, and the server rejects admin API requests unless the verified Supabase JWT has AAL2. Each request also verifies the Supabase user and allowlist before using the server-only service-role key. The panel contains paginated registered-user data and payment review actions. There is no default administrator account: if `ADMIN_EMAILS` is unset, admin access fails closed. Keep the admin URL private, but do not treat an unlisted URL as a security boundary—the server-side checks are the protection.

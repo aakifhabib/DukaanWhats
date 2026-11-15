@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useMemo, useRef } from 'react'
-// @ts-ignore -- keeps the build green even when @types/react-dom is not installed
+// @ts-expect-error -- react-dom is a runtime dependency but its type package is not installed
 import { createPortal } from 'react-dom'
 import { supabase } from '@/lib/supabase'
 import { PremiumThemeRenderer, buildSchema, resolveContent, getImages, type Field as SchemaField } from './PremiumThemeRenderer'
