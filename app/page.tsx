@@ -1,250 +1,240 @@
-'use client'
-import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase'
+import type { Metadata } from 'next'
 import Link from 'next/link'
-import { TiltSurface } from '@/components/TiltSurface'
+
+export const metadata: Metadata = {
+  title: 'DukaanWhats — A simple online store for WhatsApp sellers',
+  description: 'Create a mobile-friendly storefront, share one link, and let customers order from your business on WhatsApp. Start free with DukaanWhats.',
+  openGraph: {
+    title: 'DukaanWhats — A simple online store for WhatsApp sellers',
+    description: 'Create a storefront, share your products, and talk to customers on WhatsApp.',
+    type: 'website',
+    url: 'https://dukaanwhats.pk',
+  },
+}
+
+const steps = [
+  { number: '01', title: 'Set up your store', text: 'Add your business name, WhatsApp number, and a link customers can remember.' },
+  { number: '02', title: 'Add your products', text: 'Upload product photos, set prices, and organize the details customers need.' },
+  { number: '03', title: 'Share and chat', text: 'Post your store link. Customers browse, then contact you through WhatsApp.' },
+]
+
+const features = [
+  { number: '01', title: 'A storefront that is yours', text: 'Give your products a clear, mobile-friendly home that is easy to share anywhere.' },
+  { number: '02', title: 'Made for WhatsApp selling', text: 'Keep the customer conversation direct. You stay in control of your orders and replies.' },
+  { number: '03', title: 'Room to grow', text: 'Choose a theme, organize product options, and move to a larger plan when you need it.' },
+]
 
 export default function LandingPage() {
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [authReady, setAuthReady] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  useEffect(() => {
-    let active = true
-    supabase.auth.getSession()
-      .then(({ data }) => { if (active) setLoggedIn(!!data.session) })
-      .catch(() => { if (active) setLoggedIn(false) })
-      .finally(() => { if (active) setAuthReady(true) })
-    return () => { active = false }
-  }, []);
-
-  const handleCreate = () => {
-    if (!authReady) return
-    setMenuOpen(false)
-    window.location.href = loggedIn ? '/dashboard' : '/login'
-  };
-
   return (
-    <div data-app-page className="min-h-screen bg-[#F8F7F5] text-[#0A0A0A] selection:bg-[#E8FF86] selection:text-black antialiased overflow-x-clip relative w-full max-w-full"
-      style={{ fontFamily: `'Instrument Sans', system-ui, -apple-system, sans-serif` }}
-    >
-      <div className="pointer-events-none fixed inset-0 z-0 opacity-[0.55] mix-blend-multiply"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E"), radial-gradient(1200px 600px at 10% -10%, rgba(232,255,134,0.18), transparent 60%), radial-gradient(900px 500px at 90% 10%, rgba(0,0,0,0.06), transparent 60%)`,
-        }}
-      />
-      <div className="pointer-events-none fixed inset-0 z-0 opacity-[0.04]"
-        style={{ backgroundImage: `radial-gradient(circle at 1px 1px, black 1px, transparent 0)`, backgroundSize: '28px 28px' }}
-      />
-
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Fragment+Mono&display=swap');
-        @keyframes fadeUp { from { opacity:0; transform: translateY(14px); } to { opacity:1; transform: translateY(0); } }
-      `}</style>
-
-      <header className="sticky top-0 z-40 border-b border-black/[0.06] w-full"
-        style={{ backdropFilter: 'blur(22px)', WebkitBackdropFilter: 'blur(22px)', background: 'rgba(248,247,245,0.84)' }}
-      >
-        <div className="mx-auto flex h-[64px] max-w-[1280px] items-center justify-between px-6 md:px-8">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="grid h-8 w-8 place-items-center rounded-[10px] bg-black text-[14px] font-bold tracking-tight text-white">D</div>
-            <span className="text-[16px] font-semibold tracking-[-0.02em]">DukaanWhats.pk</span>
-            <span className="hidden md:inline-flex ml-3 rounded-[8px] bg-[#E8FF86] px-2 py-[2px] text-[11px] font-medium tracking-wide">LIVE</span>
+    <div data-app-page className="min-h-screen overflow-hidden bg-[#f7f8f4] text-zinc-900 selection:bg-[#E8FF86] selection:text-zinc-900">
+      <header className="relative z-20 border-b border-[#17221d]/[0.08] bg-white/95 backdrop-blur">
+        <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-5 sm:px-8">
+          <Link href="/" aria-label="DukaanWhats home" className="flex items-center gap-3 rounded-sm">
+            <span aria-hidden="true" className="grid h-10 w-10 place-items-center rounded-[14px] bg-[#17221d] text-lg font-bold text-[#d7f36b]">D</span>
+            <span className="hidden text-[17px] font-bold tracking-[-0.04em] min-[360px]:inline">DukaanWhats</span>
           </Link>
-          <nav aria-label="Main navigation" className="flex items-center gap-2 md:gap-3">
-            <Link href="#how-it-works" className="hidden lg:inline-flex h-10 items-center px-3 text-[13px] font-medium text-zinc-600 transition hover:text-black">How it works</Link>
-            <Link href="/pricing" className="group relative hidden md:inline-flex items-center gap-[10px] rounded-full bg-[#0A0A0A] pl-[18px] pr-[6px] py-[6px] text-[13px] font-[550] tracking-[-0.01em] text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]" style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)' }}>
-              <span className="absolute inset-[2px] rounded-full bg-[#E8FF86] origin-left scale-x-[0.08] scale-y-[0.36] transition-transform duration-[520ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-100" />
-              <span className="relative z-10 flex items-center gap-[10px]"><span className="h-[8px] w-[8px] rounded-full bg-[#E8FF86] transition-colors group-hover:bg-[#0A0A0A]" /><span className="pr-1 transition-colors group-hover:text-[#0A0A0A]">Pricing</span></span>
-              <span className="relative z-10 grid h-[28px] w-[28px] place-items-center rounded-full bg-white/[0.08] transition-colors group-hover:bg-[#0A0A0A]"><span className="text-[12px] transition-all group-hover:rotate-45 group-hover:text-[#E8FF86]">↗</span></span>
+
+          <nav aria-label="Main navigation" className="hidden items-center gap-8 md:flex">
+            <Link href="#how-it-works" className="text-sm font-medium text-[#5f6b64] transition hover:text-zinc-900">How it works</Link>
+            <Link href="#features" className="text-sm font-medium text-[#5f6b64] transition hover:text-zinc-900">Features</Link>
+            <Link href="/pricing" className="text-sm font-medium text-[#5f6b64] transition hover:text-zinc-900">Pricing</Link>
+            <Link href="/s/premiumstore" className="text-sm font-medium text-[#5f6b64] transition hover:text-zinc-900">Demo store</Link>
+          </nav>
+
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link href="/login" className="hidden min-h-11 items-center rounded-full px-4 text-sm font-semibold text-zinc-600 transition hover:bg-black/[0.05] sm:inline-flex">Sign in</Link>
+            <details className="group relative md:hidden">
+              <summary aria-label="Open navigation menu" className="flex min-h-11 cursor-pointer list-none items-center rounded-full border border-[#17221d]/10 bg-white/70 px-4 text-sm font-semibold text-zinc-700 marker:hidden focus-visible:outline-offset-4">
+                <span className="min-[360px]:hidden" aria-hidden="true">☰</span><span className="hidden min-[360px]:inline">Menu</span><span aria-hidden="true" className="ml-2 hidden text-xs transition-transform group-open:rotate-180 min-[360px]:inline">⌄</span>
+              </summary>
+              <nav aria-label="Mobile navigation" className="absolute right-0 top-[calc(100%+0.6rem)] z-30 grid w-52 gap-1 rounded-2xl border border-[#17221d]/10 bg-white p-2 shadow-xl">
+                <Link href="#how-it-works" className="rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50">How it works</Link>
+                <Link href="#features" className="rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50">Features</Link>
+                <Link href="/pricing" className="rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50">Pricing</Link>
+                <Link href="/s/premiumstore" className="rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50">Demo store</Link>
+              </nav>
+            </details>
+            <Link href="/login" className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#17221d] px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#293930] focus-visible:outline-offset-4">
+              <span className="hidden sm:inline">Create your store</span><span className="hidden min-[360px]:inline sm:hidden">Start free</span><span className="min-[360px]:hidden">Start</span><span aria-hidden="true" className="ml-2 text-[#d7f36b]">↗</span>
             </Link>
-            <Link href="/s/premiumstore" className="hidden md:inline-flex h-10 items-center rounded-[10px] border border-black/10 bg-white px-5 text-[13px] font-medium hover:bg-black hover:text-white">View Demo</Link>
-            <button type="button" onClick={handleCreate} disabled={!authReady} className="hidden h-10 items-center justify-center rounded-[10px] bg-black px-5 text-[13px] font-medium text-white transition hover:scale-[1.02] active:scale-[0.98] disabled:cursor-wait disabled:opacity-60 md:inline-flex">{authReady ? loggedIn ? 'Go to Dashboard' : 'Create Store' : 'Loading…'}</button>
-            <button type="button" onClick={() => setMenuOpen(open => !open)} aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'} aria-expanded={menuOpen} aria-controls="mobile-navigation" className="inline-flex h-10 w-10 items-center justify-center rounded-[10px] border border-black/10 bg-white text-lg md:hidden">
-              <span aria-hidden="true">{menuOpen ? '×' : '☰'}</span>
-            </button>
-          </nav>
+          </div>
         </div>
-        {menuOpen && (
-          <nav id="mobile-navigation" aria-label="Mobile navigation" className="absolute inset-x-0 top-full border-b border-black/10 bg-[#F8F7F5] p-4 shadow-[0_18px_35px_-24px_rgba(0,0,0,0.4)] md:hidden">
-            <div className="mx-auto grid max-w-[1280px] gap-1">
-              <Link href="#how-it-works" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium hover:bg-black/5">How it works</Link>
-              <Link href="#features" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium hover:bg-black/5">Features</Link>
-              <Link href="/pricing" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium hover:bg-black/5">Pricing and plans</Link>
-              <Link href="/s/premiumstore" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium hover:bg-black/5">View demo store</Link>
-              <Link href="/about" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium hover:bg-black/5">About DukaanWhats</Link>
-              <button type="button" onClick={handleCreate} disabled={!authReady} className="mt-2 flex h-12 items-center justify-center rounded-xl bg-black px-4 text-sm font-semibold text-white disabled:cursor-wait disabled:opacity-60">{authReady ? loggedIn ? 'Open dashboard' : 'Create your free store' : 'Checking account…'}</button>
-            </div>
-          </nav>
-        )}
       </header>
 
-      <main className="relative z-10 mx-auto max-w-[1280px] px-6 md:px-8 w-full">
-        <section className="grid gap-10 py-14 md:grid-cols-[1.05fr_0.95fr] md:items-center md:py-24">
-          <div className="flex flex-col">
-            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-black/10 bg-white px-3.5 py-1.5 text-[12.5px] font-medium shadow-[0_1px_0_0_rgba(0,0,0,0.04)]">
-              <span className="grid h-5 w-5 place-items-center rounded-full bg-[#E8FF86] text-[10px]">✦</span>
-              NEW: Multi-photo galleries
-              <span className="ml-1 h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+      <main>
+        <section className="relative isolate">
+          <div aria-hidden="true" className="pointer-events-none absolute -right-44 -top-24 -z-10 h-[520px] w-[520px] rounded-full bg-[#e7f4c6] blur-3xl sm:-right-20" />
+          <div className="mx-auto grid max-w-7xl items-center gap-14 px-5 pb-20 pt-14 sm:px-8 sm:pt-20 lg:grid-cols-[1fr_0.9fr] lg:gap-16 lg:pb-28 lg:pt-24">
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#17221d]/10 bg-white/80 px-3.5 py-2 text-xs font-semibold text-zinc-600 shadow-sm">
+                <span aria-hidden="true" className="h-2 w-2 rounded-full bg-[#86a42c]" />
+                A simpler way to sell online
+              </div>
+              <h1 className="mt-7 text-[clamp(42px,7vw,76px)] font-semibold leading-[0.98] tracking-[-0.065em] text-zinc-900">
+                Your products.<br />
+                <span className="text-zinc-600">One easy link.</span>
+              </h1>
+              <p className="mt-6 max-w-xl text-base leading-7 text-zinc-600 sm:text-lg sm:leading-8">
+                Create a clean online storefront, share it with customers, and continue the conversation on WhatsApp. No code needed.
+              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Link href="/login" className="inline-flex min-h-14 items-center justify-center rounded-full bg-[#17221d] px-7 text-[15px] font-semibold text-white shadow-[0_12px_30px_-16px_rgba(23,34,29,.65)] transition hover:-translate-y-0.5 hover:bg-[#293930] focus-visible:outline-offset-4">
+                  Start with the free plan <span aria-hidden="true" className="ml-3 text-[#d7f36b]">→</span>
+                </Link>
+                <Link href="/s/premiumstore" className="inline-flex min-h-14 items-center justify-center rounded-full border border-[#17221d]/15 bg-white/70 px-7 text-[15px] font-semibold text-zinc-800 transition hover:border-[#17221d]/35 hover:bg-white focus-visible:outline-offset-4">
+                  Explore the demo
+                </Link>
+              </div>
+              <p className="mt-4 text-xs leading-5 text-zinc-500">Start free · No coding · No sales commission</p>
             </div>
 
-            <h1 className="mt-7 max-w-[560px] text-[40px] font-bold leading-[0.92] tracking-[-0.04em] md:text-[64px]">
-              Your WhatsApp store,
-              <span className="block text-zinc-400 font-[600]">live in 30 seconds.</span>
-            </h1>
-
-            <p className="mt-5 max-w-[440px] text-[18px] leading-[1.5] tracking-[-0.01em] text-zinc-600">
-              Create your store, share one link, and receive orders directly on WhatsApp. No coding or commission.
-            </p>
-
-
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <button onClick={handleCreate} className="group inline-flex h-[48px] items-center justify-center gap-2 rounded-[12px] bg-black px-7 text-[15px] font-medium text-white shadow-[0_8px_20px_-8px_rgba(0,0,0,0.5)] transition hover:scale-[1.01] active:scale-[0.99]">
-                {loggedIn ? 'Open Dashboard' : 'Create Store — Free'}
-                <span className="grid h-6 w-6 place-items-center rounded-[8px] bg-white/15 text-white">→</span>
-              </button>
-              <Link href="/pricing" className="group inline-flex h-[48px] items-center gap-3 rounded-full bg-[#E8FF86] pl-2 pr-7 text-[14px] font-[600] tracking-[-0.01em] text-black transition-all hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_0_1px_rgba(0,0,0,0.06),0_8px_20px_-8px_rgba(232,255,134,0.6)]">
-                <span className="grid h-[36px] w-[36px] place-items-center rounded-full bg-black text-[#E8FF86] text-[14px] transition-transform group-hover:rotate-[-12deg]">○</span>
-                <span className="flex items-center gap-1.5">Pricing <span className="transition-transform group-hover:translate-x-0.5">↗</span></span>
-              </Link>
-            </div>
-
-
-          </div>
-
-          <div className="relative">
-            <div aria-hidden="true" className="dw-float pointer-events-none absolute -right-2 top-12 z-0 h-24 w-24 rounded-full bg-[#E8FF86]/35 blur-2xl md:-right-8 md:top-20 md:h-36 md:w-36" />
-            <TiltSurface className="mx-auto w-full max-w-[440px] md:mr-0" maxTilt={5}>
-            <div className="relative rounded-[28px] border border-black/10 bg-white p-2.5 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.3)]">
-              <div className="rounded-[20px] border border-black/10 bg-[#F8F7F5] p-2">
-                <div className="flex items-center gap-1.5 px-3 py-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-red-400" /><span className="h-2.5 w-2.5 rounded-full bg-yellow-400" /><span className="h-2.5 w-2.5 rounded-full bg-green-400" />
-                  <span className="ml-3 text-[11px] font-mono text-zinc-500">dukaanwhats.pk/s/premiumstore</span>
-                  <span className="ml-auto rounded-[8px] bg-black px-2 py-1 text-[10px] font-medium text-white">LIVE</span>
+            <div className="relative mx-auto w-full max-w-[510px] lg:ml-auto">
+              <div aria-hidden="true" className="absolute -inset-4 rounded-[36px] bg-[#e5eddb] sm:-inset-6" />
+              <div className="relative rounded-[28px] border border-[#17221d]/10 bg-white p-3 shadow-[0_28px_70px_-40px_rgba(23,34,29,.45)] sm:p-4">
+                <div className="flex items-center gap-2 rounded-[18px] bg-zinc-50 px-4 py-3">
+                  <span aria-hidden="true" className="h-2.5 w-2.5 rounded-full bg-[#e6a39a]" />
+                  <span aria-hidden="true" className="h-2.5 w-2.5 rounded-full bg-[#e3c46f]" />
+                  <span aria-hidden="true" className="h-2.5 w-2.5 rounded-full bg-[#9ebc84]" />
+                  <span className="ml-auto rounded-full bg-white px-3 py-1 text-[10px] font-medium text-[#768078]">Sample storefront</span>
                 </div>
-                <div className="mt-1 rounded-[16px] bg-white p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="text-[15px] font-semibold">Ayesha Boutique</div>
-                    <div className="rounded-full bg-[#E8FF86] px-2 py-1 text-[10px] font-medium">● Online</div>
-                  </div>
-                  <div className="mt-4 grid grid-cols-2 gap-3">
-                    <div className="group rounded-[14px] border border-zinc-200/80 bg-white p-2 transition hover:-translate-y-1 hover:shadow-lg">
-                      <div className="h-[112px] overflow-hidden rounded-[10px] bg-zinc-100"><img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&w=640&q=80" alt="Lawn suit on a model" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" /></div>
-                      <div className="mt-2 flex items-start justify-between gap-2"><div><div className="text-[12px] font-medium">Lawn Suit</div><div className="text-[12px] font-bold">Rs. 2,500</div></div><span className="mt-0.5 rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9px] font-medium text-zinc-500">NEW</span></div>
+                <div className="px-4 pb-4 pt-5 sm:px-6 sm:pb-6 sm:pt-7">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <span aria-hidden="true" className="grid h-11 w-11 place-items-center rounded-2xl bg-[#E8FF86] text-sm font-bold text-zinc-900">N</span>
+                      <div>
+                        <div className="text-sm font-bold tracking-tight text-zinc-900">Nura Studio</div>
+                        <div className="mt-0.5 text-[11px] text-zinc-500">Everyday pieces, thoughtfully made</div>
+                      </div>
                     </div>
-                    <div className="group rounded-[14px] border border-zinc-200/80 bg-white p-2 transition hover:-translate-y-1 hover:shadow-lg">
-                      <div className="h-[112px] overflow-hidden rounded-[10px] bg-zinc-100"><img src="https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=640&q=80" alt="Folded cotton clothing" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" /></div>
-                      <div className="mt-2 flex items-start justify-between gap-2"><div><div className="text-[12px] font-medium">Kurta Set</div><div className="text-[12px] font-bold">Rs. 3,200</div></div><span className="mt-0.5 rounded-full bg-[#E8FF86] px-1.5 py-0.5 text-[9px] font-medium">POPULAR</span></div>
-                    </div>
+                    <span className="rounded-full border border-[#17221d]/10 px-3 py-1.5 text-[10px] font-semibold text-zinc-600">STORE</span>
                   </div>
-                  <div className="mt-4 flex gap-2">
-                    <div className="flex-1 h-9 rounded-[10px] bg-black text-white text-[12px] font-medium grid place-items-center">Add to bag</div>
-                    <div className="h-9 w-9 grid place-items-center rounded-[10px] border bg-white" aria-hidden="true">♥</div>
+
+                  <div className="mt-7 flex items-end justify-between gap-4">
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">The collection</p>
+                      <h2 className="mt-1 text-2xl font-semibold tracking-[-0.05em] text-zinc-900">Made for your day.</h2>
+                    </div>
+                    <span className="pb-1 text-xs text-zinc-400">View all <span aria-hidden="true">↗</span></span>
+                  </div>
+
+                  <div className="mt-5 grid grid-cols-2 gap-3">
+                    <article className="overflow-hidden rounded-[18px] border border-[#17221d]/[0.07] bg-white">
+                      <div aria-hidden="true" className="relative grid aspect-[1.05] place-items-center overflow-hidden bg-[#e9e5dc]">
+                        <span className="absolute -left-5 -top-8 h-36 w-36 rounded-full bg-[#d5a88d]/50 blur-2xl" />
+                        <span className="relative grid h-28 w-20 place-items-center rounded-[42%_42%_22%_22%] bg-[#b77f63] shadow-[inset_-12px_-6px_20px_rgba(59,34,21,.15)]"><span className="absolute -top-3 h-8 w-12 rounded-full border-[6px] border-[#dfb69b]" /></span>
+                        <span className="absolute bottom-3 left-3 rounded-full bg-white/80 px-2.5 py-1 text-[9px] font-semibold text-[#5c5149]">NEW ARRIVAL</span>
+                      </div>
+                      <div className="p-3.5">
+                        <h3 className="text-xs font-semibold text-[#26332b]">Linen co-ord</h3>
+                        <p className="mt-1 text-xs text-[#7d867e]">Rs. 3,200</p>
+                      </div>
+                    </article>
+                    <article className="overflow-hidden rounded-[18px] border border-[#17221d]/[0.07] bg-white">
+                      <div aria-hidden="true" className="relative grid aspect-[1.05] place-items-center overflow-hidden bg-[#e4e8dc]">
+                        <span className="absolute -right-8 top-2 h-36 w-36 rounded-full bg-[#a8b48a]/50 blur-2xl" />
+                        <span className="relative grid h-28 w-20 place-items-center rounded-[42%_42%_22%_22%] bg-[#77815e] shadow-[inset_-12px_-6px_20px_rgba(30,40,24,.16)]"><span className="absolute -top-3 h-8 w-12 rounded-full border-[6px] border-[#a6ae8c]" /></span>
+                        <span className="absolute bottom-3 left-3 rounded-full bg-white/80 px-2.5 py-1 text-[9px] font-semibold text-[#5c6252]">BESTSELLER</span>
+                      </div>
+                      <div className="p-3.5">
+                        <h3 className="text-xs font-semibold text-[#26332b]">Soft cotton shirt</h3>
+                        <p className="mt-1 text-xs text-[#7d867e]">Rs. 2,450</p>
+                      </div>
+                    </article>
+                  </div>
+
+                  <div className="mt-4 flex items-center justify-between gap-3 rounded-[16px] bg-zinc-50 p-3.5">
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500">Your store link</p>
+                      <p className="mt-1 truncate text-xs font-medium text-[#334037]">dukaanwhats.pk/s/your-store</p>
+                    </div>
+                    <span aria-hidden="true" className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white text-sm text-zinc-700">↗</span>
                   </div>
                 </div>
               </div>
+              <div className="absolute -bottom-5 left-1/2 hidden -translate-x-1/2 items-center gap-2 rounded-full border border-[#17221d]/10 bg-white px-4 py-2.5 text-xs font-semibold text-zinc-600 shadow-lg sm:flex">
+                <span aria-hidden="true" className="grid h-5 w-5 place-items-center rounded-full bg-[#E8FF86] text-[11px]">✓</span>
+                Ready to share with customers
+              </div>
             </div>
-            </TiltSurface>
           </div>
         </section>
 
-        <section aria-label="Store benefits" className="mt-4 grid grid-cols-2 overflow-hidden rounded-[20px] border border-black/[0.06] bg-white sm:grid-cols-4">
-          {[
-            { value: 'Start free', label: 'No setup fee' },
-            { value: 'No code', label: 'Easy to manage' },
-            { value: 'Direct orders', label: 'Through WhatsApp' },
-            { value: 'No commission', label: 'Keep your sales' },
-          ].map((item, index) => (
-            <div key={item.value} className={`px-4 py-4 text-center ${index % 2 === 0 ? 'border-r' : ''} ${index < 2 ? 'border-b sm:border-b-0' : ''} sm:border-r last:border-r-0`}>
-              <div className="text-[13px] font-bold tracking-[-0.02em]">{item.value}</div>
-              <div className="mt-0.5 text-[11px] text-zinc-500">{item.label}</div>
-            </div>
-          ))}
+        <section aria-label="DukaanWhats benefits" className="border-y border-[#17221d]/[0.08] bg-white/65">
+          <div className="mx-auto grid max-w-7xl grid-cols-1 divide-y divide-[#17221d]/[0.08] px-5 sm:grid-cols-3 sm:divide-x sm:divide-y-0 sm:px-8">
+            <div className="flex items-center gap-3 py-5 sm:justify-center sm:py-6"><span aria-hidden="true" className="text-[#799338]">✦</span><span className="text-sm font-semibold text-zinc-700">A free plan to get started</span></div>
+            <div className="flex items-center gap-3 py-5 sm:justify-center sm:py-6"><span aria-hidden="true" className="text-[#799338]">✦</span><span className="text-sm font-semibold text-zinc-700">Your customers, your conversation</span></div>
+            <div className="flex items-center gap-3 py-5 sm:justify-center sm:py-6"><span aria-hidden="true" className="text-[#799338]">✦</span><span className="text-sm font-semibold text-zinc-700">No commission on your sales</span></div>
+          </div>
         </section>
 
-        <section id="how-it-works" className="mt-16 md:mt-24">
+        <section id="how-it-works" className="mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-28">
           <div className="max-w-2xl">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">How it works</div>
-            <h2 className="mt-3 text-[32px] font-bold leading-[0.98] tracking-[-0.045em] md:text-[48px]">From product to first order.</h2>
-            <p className="mt-3 max-w-xl text-[15px] leading-6 text-zinc-600">A simple storefront that fits the way you already sell.</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-600">A short path to online</p>
+            <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.05em] text-zinc-900 sm:text-5xl">Everything starts with one shareable store.</h2>
+            <p className="mt-4 max-w-xl text-base leading-7 text-zinc-600">Keep the setup simple and the customer experience familiar.</p>
           </div>
-          <div className="mt-7 grid gap-3 md:grid-cols-3">
-            {[
-              { n: '01', title: 'Add your products', body: 'Upload photos, set prices, and organize your catalog in minutes.' },
-              { n: '02', title: 'Share one link', body: 'Your storefront is ready to share in chats, stories, and your bio.' },
-              { n: '03', title: 'Chat and confirm', body: 'Customers browse your catalog, then reach you directly on WhatsApp.' },
-            ].map((step, index) => (
-              <TiltSurface key={step.n} className="rounded-[22px]" maxTilt={6}>
-                <article className={`group relative h-full overflow-hidden rounded-[22px] border border-black/[0.07] p-6 md:p-7 transition duration-300 hover:shadow-[0_22px_48px_-28px_rgba(0,0,0,0.28)] ${index === 1 ? 'bg-[#E8FF86]' : 'bg-white'}`}>
-                  <div className="flex items-center justify-between"><span className="grid h-10 w-10 place-items-center rounded-full bg-black text-[11px] font-mono font-semibold text-[#E8FF86]">{step.n}</span><span className="text-2xl transition-transform group-hover:translate-x-1">↗</span></div>
-                  <h3 className="mt-8 text-[18px] font-bold tracking-[-0.03em]">{step.title}</h3>
-                  <p className="mt-2 text-[13px] leading-5 text-zinc-600">{step.body}</p>
-                </article>
-              </TiltSurface>
+          <div className="mt-10 grid gap-4 md:grid-cols-3">
+            {steps.map((step, index) => (
+              <article key={step.number} className={`rounded-[24px] border p-6 sm:p-7 ${index === 1 ? 'border-[#d4e7a5] bg-zinc-50' : 'border-[#17221d]/[0.09] bg-white'}`}>
+                <p className="text-xs font-bold tracking-[0.16em] text-zinc-500">{step.number}</p>
+                <h3 className="mt-8 text-xl font-semibold tracking-[-0.03em] text-zinc-900">{step.title}</h3>
+                <p className="mt-3 text-sm leading-6 text-zinc-600">{step.text}</p>
+              </article>
             ))}
           </div>
         </section>
 
-        <section id="features" className="mt-16 md:mt-24">
-          <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-            <div><div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Made for small shops</div><h2 className="mt-2 text-[28px] font-bold tracking-[-0.04em] md:text-[38px]">A storefront that does the busywork.</h2></div>
-            <Link href="/pricing" className="text-[13px] font-semibold underline underline-offset-4 decoration-zinc-300 hover:decoration-black">Compare plans ↗</Link>
-          </div>
-          <div className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-[20px] border bg-white p-6">
-            <div className="grid h-10 w-10 place-items-center rounded-[12px] bg-[#E8FF86]">🖼️</div>
-            <h3 className="mt-4 text-[16px] font-semibold">Multi-Photo Galleries</h3>
-            <p className="mt-2 text-[13px] leading-[1.5] text-zinc-600">Show products from every angle with multiple photos.</p>
-          </div>
-          <div className="rounded-[20px] border bg-white p-6">
-            <div className="grid h-10 w-10 place-items-center rounded-[12px] bg-zinc-900 text-white">💬</div>
-            <h3 className="mt-4 text-[16px] font-semibold">WhatsApp orders</h3>
-            <p className="mt-2 text-[13px] leading-[1.5] text-zinc-600">Customers contact you directly to place their orders.</p>
-          </div>
-          <div className="rounded-[20px] border bg-black text-white p-6">
-            <div className="grid h-10 w-10 place-items-center rounded-[12px] bg-white/10">⚡</div>
-            <h3 className="mt-4 text-[16px] font-semibold">Copy Link in 1 Tap</h3>
-            <p className="mt-2 text-[13px] leading-[1.5] text-zinc-400">Share your store link on social media or in chat.</p>
-          </div>
-          </div>
-        </section>
-
-        <section id="final" className="mt-16 pb-10">
-          <div className="relative overflow-hidden rounded-[32px] bg-black px-6 py-14 md:px-12 md:py-20 text-white">
-            <div className="pointer-events-none absolute right-0 -top-10 h-[360px] w-[360px] rounded-full bg-[#E8FF86] opacity-90" style={{ clipPath: 'ellipse(60% 50% at 60% 40%)' }} />
-            <div className="relative z-10 grid gap-10 md:grid-cols-[1.2fr_0.8fr] md:items-end">
+        <section id="features" className="border-y border-[#17221d]/[0.08] bg-zinc-50">
+          <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-24">
+            <div className="grid gap-8 md:grid-cols-[0.8fr_1.2fr] md:items-end">
               <div>
-                <h2 className="max-w-[560px] text-[38px] font-bold leading-[0.9] tracking-[-0.04em] md:text-[64px]">Ready to sell<br/>on WhatsApp?</h2>
-                <p className="mt-4 max-w-[420px] text-[16px] leading-[1.5] text-zinc-300">Create your store and start sharing your products with customers.</p>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-600">Made for small businesses</p>
+                <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.05em] text-zinc-900 sm:text-4xl">The essentials, without the extra complexity.</h2>
               </div>
-
-              <div className="md:text-right flex flex-col items-end gap-3">
-                <div className="flex flex-wrap gap-3">
-                  <Link href="/pricing" className="group inline-flex h-[56px] items-center gap-3 rounded-full bg-[#E8FF86] pl-2 pr-8 text-[15px] font-[700] tracking-[-0.01em] text-black transition-all hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_0_1px_rgba(0,0,0,0.06),0_14px_30px_-10px_rgba(232,255,134,0.8)]">
-                    <span className="grid h-[44px] w-[44px] place-items-center rounded-full bg-black text-[#E8FF86] text-[18px] transition-transform group-hover:rotate-[-12deg] group-hover:scale-110">●</span>
-                    <span className="flex items-center gap-2">See Pricing <span className="grid h-6 w-6 place-items-center rounded-full bg-black/10 text-[12px] transition-transform group-hover:translate-x-0.5 group-hover:rotate-45">↗</span></span>
-                  </Link>
-                  <button onClick={handleCreate} className="group inline-flex h-[56px] items-center justify-center gap-2 rounded-[12px] bg-white px-8 text-[16px] font-semibold text-black shadow-[0_10px_30px_-10px_rgba(255,255,255,0.4)] transition hover:scale-[1.02] active:scale-[0.98]">
-                    {loggedIn ? 'Open Dashboard' : 'Create Store — Free'}
-                    <span className="grid h-6 w-6 place-items-center rounded-[8px] bg-black text-white">→</span>
-                  </button>
-                </div>
-              </div>
-
+              <p className="max-w-xl text-base leading-7 text-zinc-600 md:justify-self-end">Build a storefront around the way you already sell, with room to add more tools as your business grows.</p>
+            </div>
+            <div className="mt-10 grid gap-4 md:grid-cols-3">
+              {features.map(feature => (
+                <article key={feature.number} className="rounded-[22px] border border-[#17221d]/[0.08] bg-white p-6 sm:p-7">
+                  <span className="grid h-10 w-10 place-items-center rounded-[13px] bg-[#17221d] text-[11px] font-bold text-[#d7f36b]">{feature.number}</span>
+                  <h3 className="mt-7 text-lg font-semibold tracking-[-0.03em] text-zinc-900">{feature.title}</h3>
+                  <p className="mt-3 text-sm leading-6 text-zinc-600">{feature.text}</p>
+                </article>
+              ))}
             </div>
           </div>
         </section>
 
-        <footer className="flex flex-col gap-4 border-t border-black/10 py-7 text-[12px] text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2 text-zinc-900"><span className="grid h-7 w-7 place-items-center rounded-lg bg-black text-[11px] font-bold text-white">D</span><span className="font-semibold">DukaanWhats.pk</span><span className="text-zinc-400">· Made for the way you sell.</span></div>
-          <nav aria-label="Footer" className="flex flex-wrap gap-x-5 gap-y-2">
-            <Link href="/pricing" className="hover:text-black">Pricing</Link>
-            <Link href="/about" className="hover:text-black">About</Link>
-            <Link href="/terms" className="hover:text-black">Terms</Link>
-            <Link href="/privacy" className="hover:text-black">Privacy</Link>
-          </nav>
-        </footer>
+        <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-28">
+          <div className="grid gap-8 rounded-[28px] bg-[#17221d] p-7 text-white sm:p-10 md:grid-cols-[1fr_auto] md:items-center">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#d7f36b]">Start small. Grow at your pace.</p>
+              <h2 className="mt-3 text-3xl font-semibold tracking-[-0.05em] sm:text-4xl">A free place to begin selling.</h2>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-white/70">The Basic plan includes up to 5 products and 1 image per product. Compare plans to see which tools fit your shop.</p>
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row md:flex-col">
+              <Link href="/pricing" className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#E8FF86] px-6 text-sm font-bold text-zinc-900 transition hover:bg-[#e4f98e]">Compare plans <span aria-hidden="true" className="ml-2">↗</span></Link>
+              <Link href="/login" className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/20 px-6 text-sm font-semibold text-white transition hover:border-white/50 hover:bg-white/[0.06]">Create your store</Link>
+            </div>
+          </div>
+        </section>
       </main>
+
+      <footer className="border-t border-[#17221d]/[0.08] bg-white/60">
+        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-7 sm:px-8 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-2.5">
+            <span aria-hidden="true" className="grid h-8 w-8 place-items-center rounded-[11px] bg-[#17221d] text-xs font-bold text-[#d7f36b]">D</span>
+            <span className="text-sm font-bold text-zinc-800">DukaanWhats</span>
+            <span className="text-xs text-zinc-400">· Built in Pakistan</span>
+          </div>
+          <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-zinc-600">
+            <Link href="/about" className="hover:text-zinc-900">About</Link>
+            <Link href="/pricing" className="hover:text-zinc-900">Pricing</Link>
+            <Link href="/terms" className="hover:text-zinc-900">Terms</Link>
+            <Link href="/privacy" className="hover:text-zinc-900">Privacy</Link>
+          </nav>
+        </div>
+      </footer>
     </div>
   )
 }
